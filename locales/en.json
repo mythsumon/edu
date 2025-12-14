@@ -1,0 +1,47 @@
+{
+  "header": {
+    "title": "Overall Program Status",
+    "notifications": "Notifications",
+    "profile": "Profile"
+  },
+  "sidebar": {
+    "title": "Education Management System",
+    "home": "Home",
+    "dashboard": "Overall Program Status",
+    "institutions": "Institution Management",
+    "programs": "Program Management",
+    "settings": "Settings"
+  },
+  "pageHeader": {
+    "breadcrumbHome": "Home",
+    "breadcrumbCurrent": "Overall Program Status",
+    "title": "Overall Program Status",
+    "description": "View Gyeonggi Future Chimae regional data at a glance",
+    "yearLabel": "",
+    "monthLabel": "",
+    "resetFilter": "Reset Filters",
+    "months": {
+      "all": "All",
+      "jan": "January",
+      "feb": "February",
+      "mar": "March",
+      "apr": "April",
+      "may": "May",
+      "jun": "June",
+      "jul": "July",
+      "aug": "August",
+      "sep": "September",
+      "oct": "October",
+      "nov": "November",
+      "dec": "December"
+    }
+  },
+  "kpi": {
+    "totalPrograms": "Total Programs",
+    "progressRate": "Progress Rate",
+    "completedThisMonth": "Completed This Month",
+    "participatingInstitutions": "Participating Institutions",
+    "trendUp": "+{{value}} vs last month",
+    "trendDown": "-{{value}} vs last month"
+  }
+}

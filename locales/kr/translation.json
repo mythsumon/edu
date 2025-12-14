@@ -1,0 +1,57 @@
+{
+  "hello": "안녕하세요",
+  "common": {
+    "save": "저장",
+    "cancel": "취소",
+    "delete": "삭제",
+    "edit": "편집",
+    "add": "추가",
+    "search": "검색",
+    "filter": "필터",
+    "reset": "초기화",
+    "apply": "적용",
+    "close": "닫기",
+    "confirm": "확인",
+    "yes": "예",
+    "no": "아니오"
+  },
+  "dashboard": {
+    "title": "대시보드",
+    "kpi": {
+      "totalPrograms": "전체 프로그램 수",
+      "progressRate": "진행률",
+      "completedThisMonth": "이번 달 완료",
+      "participatingInstitutions": "참여 기관 수"
+    },
+    "regions": {
+      "title": "권역별 진행 현황",
+      "cardView": "카드 보기",
+      "mapView": "지도 보기"
+    },
+    "specialItems": {
+      "title": "특수 항목 진행률",
+      "books": "도서·벽지",
+      "sessions": "50차시",
+      "specialClasses": "특수학급"
+    },
+    "programs": {
+      "title": "프로그램 목록",
+      "searchPlaceholder": "프로그램 검색...",
+      "table": {
+        "name": "프로그램명",
+        "institution": "교육기관",
+        "startDate": "시작일",
+        "endDate": "종료일",
+        "progress": "진행상태",
+        "actions": "작업"
+      }
+    }
+  },
+  "navigation": {
+    "home": "홈",
+    "dashboard": "대시보드",
+    "institutions": "교육기관 관리",
+    "programs": "프로그램 관리",
+    "settings": "설정"
+  }
+}

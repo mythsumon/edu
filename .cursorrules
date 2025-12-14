@@ -1,0 +1,343 @@
+---
+description: >
+  Next.js 15 + TypeScript 프로젝트 기본 규칙. 프로젝트 구조, 컴포넌트 패턴, 
+  상태 관리, 스타일링, 국제화 등의 표준을 정의합니다.
+globs:
+  - "**/*"
+  - "!node_modules/**"
+  - "!.next/**"
+  - "!build/**"
+  - "!out/**"
+alwaysApply: false
+---
+
+# 프로젝트 기본 규칙
+
+## ⚠️ 핵심 개발 원칙 (필수 준수)
+
+### 🔍 **중복 작업 방지**
+
+- **모든 요청 전 기존 구현 확인**: 새로운 컴포넌트/페이지/기능 개발 전 반드시 기존 코드베이스에서 유사한 구현이 있는지 확인
+- **기존 구현 재사용**: 이미 구현된 컴포넌트, 훅, 유틸리티가 있다면 새로 만들지 말고 기존 것을 활용
+- **확장 우선**: 기존 컴포넌트가 요구사항과 90% 일치한다면 새로 만들지 말고 기존 것을 확장
+
+### 🧩 **공통 컴포넌트 활용**
+
+- **페이지 생성 시 필수**: 새 페이지 개발 시 `components/shared/common/`의 기존 컴포넌트들을 우선 활용
+- **커스텀 컴포넌트 금지**: 기본 HTML 요소 대신 반드시 공통 컴포넌트 사용 (Button, Input, Modal 등)
+- **일관성 유지**: 모든 페이지에서 동일한 UI 컴포넌트를 사용하여 디자인 일관성 보장
+
+### 📦 **공통 모듈 생성 및 관리**
+
+- **2곳 이상 사용 시 공통화**: 동일한 로직이나 컴포넌트가 2곳 이상에서 사용될 경우 반드시 공통 모듈로 분리
+- **적절한 위치 배치**:
+  - 컴포넌트 → `components/shared/common/` 또는 `components/shared/ui/`
+  - 커스텀 훅 → `hooks/`
+  - 라이브러리 설정 → `libs/`
+  - 유틸리티 함수 → `components/shared/utils/`
+- **index.ts 필수 관리**: 모든 공통 모듈은 해당 폴더의 `index.ts`에서 export 관리
+
+### 📋 **개발 워크플로우**
+
+1. **요구사항 분석** → 기존 구현 확인
+2. **기존 코드 재사용** → 없다면 공통 모듈 생성
+3. **공통 모듈 등록** → index.ts에 export 추가
+4. **페이지에서 import** → 공통 모듈 활용
+
+## 기술 스택
+
+- **Framework**: Next.js 15.5.3 (App Router)
+- **Language**: TypeScript 5
+- **React**: 19.1.0
+- **Styling**: Tailwind CSS 4 + Ant Design 5.26.7
+- **State Management**: Zustand 5.0.7
+- **Form**: React Hook Form 7.62.0 + Zod 4.0.15
+- **HTTP Client**: Axios 1.11.0
+- **Icons**: Lucide React 0.537.0
+- **i18n**: React i18next 15.6.1
+- **Notifications**: React Toastify 11.0.5
+
+## 프로젝트 구조
+
+```
+/
+├── app/                    # Next.js App Router 페이지
+│   ├── layout.tsx         # 루트 레이아웃
+│   ├── page.tsx           # 홈 페이지
+│   ├── globals.css        # 전역 스타일
+│   └── [feature]/         # 기능별 페이지 디렉토리
+├── components/            # 컴포넌트 구조
+│   ├── layout/           # 레이아웃 컴포넌트 (Header, Footer)
+│   ├── page/             # 페이지별 특화 컴포넌트
+│   └── shared/           # 공유 컴포넌트
+│       ├── common/       # 기본 UI 컴포넌트 (Button, Input, etc.)
+│       ├── ui/           # 복합 UI 컴포넌트
+│       └── utils/        # 유틸리티 컴포넌트
+├── entities/             # 데이터 엔티티 및 비즈니스 로직
+│   ├── [feature]/        # 기능별 엔티티
+│   │   ├── [feature]-types.ts      # 타입 정의
+│   │   ├── [feature]-query.ts      # 조회 로직
+│   │   ├── [feature]-mutation.ts   # 변경 로직
+│   │   ├── [feature]-dummy.ts      # 더미 데이터
+│   │   └── index.ts               # 내보내기
+│   ├── endpoints.ts      # API 엔드포인트 정의
+│   └── index.ts          # 전체 엔티티 내보내기
+├── hooks/                # 커스텀 훅
+├── libs/                 # 외부 라이브러리 설정
+├── locales/              # 다국어 지원
+│   ├── kr/translation.json
+│   └── en/translation.json
+├── providers/            # Context Providers
+├── assets/               # 정적 자산
+│   ├── fonts/           # 폰트 파일
+│   └── imgs/            # 이미지 및 아이콘
+└── public/              # 퍼블릭 자산
+```
+
+## 컴포넌트 패턴
+
+### 1. 컴포넌트 분류
+
+- **Layout**: 페이지 레이아웃 (Header, Footer)
+- **Page**: 특정 페이지에서만 사용되는 컴포넌트
+- **Shared/Common**: 재사용 가능한 기본 UI 컴포넌트
+- **Shared/UI**: 복합 UI 컴포넌트
+
+### 2. 컴포넌트 작성 규칙
+
+```typescript
+// 컴포넌트 템플릿
+import React from "react";
+
+interface ComponentProps {
+  // props 타입 정의
+}
+
+const Component: React.FC<ComponentProps> = ({ ...props }) => {
+  return (
+    // JSX
+  );
+};
+
+export default Component;
+```
+
+### 3. Ant Design 확장 패턴
+
+```typescript
+// Ant Design 컴포넌트 확장 예시
+import { Button as AntButton, ButtonProps } from "antd";
+
+interface CustomButtonProps extends ButtonProps {
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+}
+
+const Button: React.FC<CustomButtonProps> = ({ leftIcon, rightIcon, ...props }) => {
+  return <AntButton {...props} icon={leftIcon || rightIcon} iconPosition={leftIcon ? "start" : "end"} />;
+};
+```
+
+## 엔티티 구조
+
+### 1. 기능별 엔티티 구조
+
+각 기능은 다음 파일들로 구성:
+
+- `[feature]-types.ts`: TypeScript 타입 정의
+- `[feature]-query.ts`: 데이터 조회 로직 (React Query 등)
+- `[feature]-mutation.ts`: 데이터 변경 로직
+- `[feature]-dummy.ts`: 개발용 더미 데이터
+- `index.ts`: 해당 기능의 모든 export 관리
+
+### 2. 타입 정의 규칙
+
+```typescript
+// 기본 엔티티 타입
+export interface FeatureEntity {
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// API 응답 타입
+export interface FeatureResponse {
+  data: FeatureEntity[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+  };
+}
+```
+
+## 스타일링 규칙
+
+### 1. Tailwind CSS 사용
+
+- 유틸리티 클래스 우선 사용
+- 커스텀 CSS는 최소화
+- CSS 변수를 통한 테마 관리
+
+### 2. CSS 모듈 사용 (필요시)
+
+```css
+/* common.module.css */
+.select :global(.ant-select-selector) {
+  border: 1px solid var(--antd-form) !important;
+}
+
+.error :global(.ant-select-selector) {
+  border-color: #ef4444 !important;
+}
+```
+
+### 3. 다크 모드 지원
+
+```css
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+```
+
+## 상태 관리
+
+### 1. Zustand 사용
+
+- 전역 상태 관리는 Zustand
+- 컴포넌트 로컬 상태는 useState
+
+### 2. 폼 상태 관리
+
+- React Hook Form + Zod 조합 사용
+- 폼 검증은 Zod 스키마로 정의
+
+## 국제화 (i18n)
+
+### 1. React i18next 사용
+
+- `locales/` 디렉토리에 언어별 번역 파일
+- 키-값 구조로 번역 관리
+
+### 2. 번역 파일 구조
+
+```json
+{
+  "hello": "안녕하세요",
+  "common": {
+    "save": "저장",
+    "cancel": "취소"
+  }
+}
+```
+
+## 개발 설정
+
+### 1. ESLint 설정
+
+- Next.js 권장 설정 사용
+- TypeScript 지원
+- 자동 포맷팅 적용
+
+### 2. TypeScript 설정
+
+- Strict 모드 활성화
+- Path alias `@/*` 사용
+- ES2017 타겟
+
+### 3. 개발 서버
+
+- 포트: 3050
+- Turbopack 사용 (빌드 시)
+
+## 파일 명명 규칙
+
+### 1. 컴포넌트
+
+- PascalCase: `Button.tsx`, `UserProfile.tsx`
+- 디렉토리: kebab-case
+
+### 2. 유틸리티/훅
+
+- camelCase: `useAutoFocus.ts`, `utils.ts`
+
+### 3. 엔티티
+
+- kebab-case: `user-types.ts`, `product-query.ts`
+
+## 코딩 컨벤션
+
+### 1. Import 순서
+
+```typescript
+// 1. React 및 Next.js
+import React from "react";
+import type { Metadata } from "next";
+
+// 2. 외부 라이브러리
+import { Button } from "antd";
+import axios from "axios";
+
+// 3. 내부 모듈 (@/ 경로) - 공통 모듈 우선
+import { useAutoFocus } from "@/hooks";
+import { Button as CustomButton } from "@/components/shared/common";
+import { UserEntity } from "@/entities";
+```
+
+### 2. 컴포넌트 props 타입
+
+```typescript
+// Interface 사용 권장
+interface ComponentProps {
+  title: string;
+  optional?: boolean;
+}
+
+// 확장 시에는 extends 사용
+interface ExtendedProps extends ComponentProps {
+  extraProp: number;
+}
+```
+
+### 3. 내보내기 패턴
+
+```typescript
+// Named export 우선
+export const Component = () => {};
+
+// Default export는 메인 컴포넌트에만
+export default Component;
+
+// index.ts에서 re-export (필수)
+export { Component } from "./Component";
+```
+
+### 4. 🚨 **필수 체크리스트**
+
+#### 새 컴포넌트/페이지 개발 시:
+
+- [ ] 기존 `components/shared/common/` 컴포넌트 확인 및 활용
+- [ ] 유사한 기능의 기존 구현 검색 완료
+- [ ] 2곳 이상 사용될 가능성이 있는 로직은 공통 모듈로 분리
+- [ ] `index.ts`에 새로운 export 추가
+
+#### 코드 작성 시:
+
+- [ ] HTML 기본 요소 대신 공통 컴포넌트 사용 (button → Button, input → Input)
+- [ ] 반복되는 로직은 커스텀 훅으로 분리
+- [ ] 유틸리티 함수는 `components/shared/utils/`에 배치
+
+#### 완료 전 최종 점검:
+
+- [ ] 중복 코드 없음
+- [ ] 공통 컴포넌트 최대한 활용
+- [ ] 새로 생성한 공통 모듈이 적절한 위치에 배치됨
+- [ ] `index.ts` 파일들이 올바르게 업데이트됨
+
+## 🎯 **개발 목표**
+
+이 규칙들은 **코드 재사용성 극대화**, **개발 속도 향상**, **일관된 UI/UX 제공**을 위한 필수 가이드라인입니다. 모든 개발자는 이 원칙을 철저히 준수해야 합니다.

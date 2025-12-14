@@ -1,0 +1,57 @@
+{
+  "hello": "Hello",
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter",
+    "reset": "Reset",
+    "apply": "Apply",
+    "close": "Close",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "kpi": {
+      "totalPrograms": "Total Programs",
+      "progressRate": "Progress Rate",
+      "completedThisMonth": "Completed This Month",
+      "participatingInstitutions": "Participating Institutions"
+    },
+    "regions": {
+      "title": "Regional Progress Status",
+      "cardView": "Card View",
+      "mapView": "Map View"
+    },
+    "specialItems": {
+      "title": "Special Item Progress Rates",
+      "books": "Books/Wallpaper",
+      "sessions": "50 Sessions",
+      "specialClasses": "Special Classes"
+    },
+    "programs": {
+      "title": "Program List",
+      "searchPlaceholder": "Search programs...",
+      "table": {
+        "name": "Program Name",
+        "institution": "Institution",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "progress": "Progress",
+        "actions": "Actions"
+      }
+    }
+  },
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "institutions": "Institution Management",
+    "programs": "Program Management",
+    "settings": "Settings"
+  }
+}
