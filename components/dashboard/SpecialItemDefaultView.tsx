@@ -23,7 +23,7 @@ export function SpecialItemDefaultView() {
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col h-full">
       {/* Header - Fixed */}
       <div className="flex items-center justify-between p-4 lg:p-6 shrink-0 border-b border-gray-200">
-        <h3 className="text-base lg:text-lg font-bold text-gray-900">특수 항목별 세부조회</h3>
+        <h3 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">특수 항목별 세부조회</h3>
       </div>
 
       {/* Scrollable Content */}

@@ -8,12 +8,49 @@
   }
   
   body {
-    @apply bg-background text-gray-900;
+    @apply bg-background text-gray-900 text-base;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
       'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
       sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-size: 18px;
+  }
+  
+  /* Increase base font sizes */
+  html {
+    font-size: 18px;
+  }
+  
+  /* Increase text sizes throughout */
+  .text-sm {
+    font-size: 1rem; /* 18px instead of 14px */
+    line-height: 1.625rem;
+  }
+  
+  .text-base {
+    font-size: 1.125rem; /* 20px instead of 16px */
+    line-height: 1.75rem;
+  }
+  
+  .text-lg {
+    font-size: 1.375rem; /* 22px instead of 18px */
+    line-height: 2rem;
+  }
+  
+  .text-xl {
+    font-size: 1.5rem; /* 24px instead of 20px */
+    line-height: 2.25rem;
+  }
+  
+  .text-2xl {
+    font-size: 1.875rem; /* 30px instead of 24px */
+    line-height: 2.5rem;
+  }
+  
+  .text-3xl {
+    font-size: 2.375rem; /* 38px instead of 30px */
+    line-height: 2.75rem;
   }
 }
 

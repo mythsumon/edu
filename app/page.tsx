@@ -37,8 +37,7 @@ export default function DashboardPage() {
   }, [searchParams])
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-[1600px] mx-auto py-6 lg:py-8 px-4 lg:px-6">
+    <div className="p-6">
         {error && (
           <ErrorToast
             message={error}
@@ -48,7 +47,7 @@ export default function DashboardPage() {
         
         <PageHeader />
 
-        <CollapsibleSection title="주요 지표" defaultExpanded={true}>
+        <CollapsibleSection title="주요 지표" defaultExpanded={false}>
           <div className="space-y-6">
             {/* KPI Section */}
             <div>
@@ -68,21 +67,12 @@ export default function DashboardPage() {
             {/* Region Selection Mode - Large Cards + Map */}
             {showRegionSelection ? (
               <div className="bg-white rounded-2xl shadow-md border border-slate-200 p-6 lg:p-8">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">권역별 교육 진행 현황</h2>
-                  <button
-                    type="button"
-                    onClick={() => setShowRegionSelection(false)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 transition-colors"
-                  >
-                    닫기
-                  </button>
-                </div>
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6">
                   {/* Left Side - Region Cards (Big Cards) + Special Items */}
                   <div className="space-y-6">
                     {/* Region Cards */}
                     <div>
+                      <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">권역별 교육 진행 현황</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {[1, 2, 3, 4, 5, 6].map((regionNumber) => {
                           const regionData = [
@@ -144,7 +134,7 @@ export default function DashboardPage() {
                     
                     {/* Special Items Cards */}
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">특수 항목별 세부조회</h3>
+                      <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">특수 항목별 세부조회</h3>
                       <div className="grid grid-cols-1 gap-4">
                         {[
                           { label: '도서·벽지 진행률', category: '도서·벽지' as SpecialCategory, progress: 50, completed: 10, target: 20, color: '#F97316' },
@@ -183,7 +173,7 @@ export default function DashboardPage() {
                   </div>
                   {/* Right Side - Region Map */}
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">권역 지도</h3>
+                    <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">권역 지도</h3>
                     <RegionMap 
                       selectedRegion={selectedRegion} 
                       onRegionSelect={(id) => {
@@ -197,7 +187,7 @@ export default function DashboardPage() {
               </div>
             ) : (
               /* Search Panel + Result Panel Layout */
-              <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1.6fr] gap-6">
                 {/* Search Panel - Left Side (Desktop) / Top (Mobile) */}
                 <div className="lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto">
                   {/* Back Button - Separate */}
@@ -252,7 +242,6 @@ export default function DashboardPage() {
         <div className="mb-8 mt-8">
           <ProgramList selectedRegion={selectedRegion} />
         </div>
-      </div>
     </div>
   )
 }

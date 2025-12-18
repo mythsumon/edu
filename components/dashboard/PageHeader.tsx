@@ -32,19 +32,21 @@ export function PageHeader() {
   }
 
   return (
-    <div className="mb-8">
+    <div className="mb-6">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-[12px] text-gray-500 mb-4">
+      <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
         <span>{t('pageHeader.breadcrumbHome')}</span>
         <ChevronRight className="w-3 h-3" />
         <span>{t('pageHeader.breadcrumbCurrent')}</span>
       </div>
 
       {/* Title Row */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-[22px] font-bold text-gray-900 mb-2">{t('pageHeader.title')}</h1>
-          <p className="text-[14px] text-gray-600">{t('pageHeader.description')}</p>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">
+            {t('pageHeader.title')}
+          </h1>
+          <p className="text-sm text-gray-600">{t('pageHeader.description')}</p>
         </div>
 
         {/* Filter Group */}
@@ -52,7 +54,7 @@ export function PageHeader() {
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
-            className="px-4 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            className="h-11 px-3 text-sm border border-gray-300 rounded-xl bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
           >
             {years.map((year) => (
               <option key={year} value={year}>
@@ -64,7 +66,7 @@ export function PageHeader() {
           <select
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
-            className="px-4 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            className="h-11 px-3 text-sm border border-gray-300 rounded-xl bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
           >
             {months.map((month) => (
               <option key={month.value} value={month.value}>
@@ -75,7 +77,7 @@ export function PageHeader() {
 
           <button
             onClick={handleReset}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            className="flex items-center gap-2 h-11 px-4 text-sm text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors font-medium"
           >
             <RotateCcw className="w-4 h-4" />
             {t('pageHeader.resetFilter')}

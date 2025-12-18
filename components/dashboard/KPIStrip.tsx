@@ -10,19 +10,15 @@ interface KPICardProps {
     value: string
     isPositive: boolean
   }
-  onClick?: () => void
 }
 
-function KPICard({ label, value, trend, onClick }: KPICardProps) {
+function KPICard({ label, value, trend }: KPICardProps) {
   return (
-    <div
-      onClick={onClick}
-      className="bg-white rounded-card px-5 py-4 shadow-card hover:shadow-card-hover transition-all cursor-pointer border border-transparent hover:border-primary-light"
-    >
-      <div className="text-[13px] text-[#6B7280] mb-2">{label}</div>
-      <div className="text-[26px] font-semibold text-gray-900 mb-1">{value}</div>
+    <div className="flex flex-col gap-1 px-2">
+      <div className="text-xs font-semibold text-gray-500">{label}</div>
+      <div className="text-2xl font-bold text-gray-900">{value}</div>
       {trend && (
-        <div className={`flex items-center gap-1 text-[12px] ${trend.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+        <div className={`flex items-center gap-1 text-xs ${trend.isPositive ? 'text-green-600' : 'text-red-600'}`}>
           {trend.isPositive ? (
             <TrendingUp className="w-3 h-3" />
           ) : (
@@ -62,7 +58,7 @@ export function KPIStrip() {
   ]
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
       {kpis.map((kpi, index) => (
         <KPICard key={index} {...kpi} />
       ))}

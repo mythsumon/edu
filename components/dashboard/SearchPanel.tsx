@@ -33,7 +33,7 @@ export function SearchPanel({
       <div className="space-y-4">
         {/* Region Grid - Compact */}
         <div>
-          <h2 className="text-xs font-semibold text-gray-700 mb-2">권역별 교육 진행 현황</h2>
+          <h3 className="text-sm font-semibold text-gray-700 mb-2">권역별 교육 진행 현황</h3>
           <RegionGrid 
             selectedRegion={selectedRegion} 
             onRegionSelect={(id) => {
@@ -45,7 +45,7 @@ export function SearchPanel({
 
         {/* Region Map - Common between sections */}
         <div>
-          <h2 className="text-xs font-semibold text-gray-700 mb-2">권역 지도</h2>
+          <h3 className="text-sm font-semibold text-gray-700 mb-2">권역 지도</h3>
           <RegionMap 
             selectedRegion={selectedRegion} 
             onRegionSelect={(id) => {
@@ -57,7 +57,7 @@ export function SearchPanel({
 
         {/* Special Items - Compact */}
         <div>
-          <h3 className="text-xs font-semibold text-gray-700 mb-2">특수 항목별 세부조회</h3>
+          <h3 className="text-sm font-semibold text-gray-700 mb-2">특수 항목별 세부조회</h3>
           <SpecialItemCards 
             selectedCategory={selectedSpecialCategory}
             onCategorySelect={(category) => {

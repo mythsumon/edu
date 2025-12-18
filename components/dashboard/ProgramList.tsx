@@ -2,18 +2,10 @@
 
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { ProgramListItem } from '@/types/program'
 
-interface Program {
-  id: number
-  name: string
-  institution: string
-  mainInstructor: string
-  subInstructor: string
-  createdDate: string
-  lastUpdated: string
-}
-
-const mockPrograms: Program[] = [
+const mockPrograms: ProgramListItem[] = [
   {
     id: 1,
     name: '창의융합교육 프로그램',
@@ -62,6 +54,7 @@ const mockPrograms: Program[] = [
 ]
 
 export function ProgramList({ selectedRegion }: { selectedRegion?: number }) {
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
   const [showAll, setShowAll] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
@@ -84,8 +77,16 @@ export function ProgramList({ selectedRegion }: { selectedRegion?: number }) {
   )
 
   const handleDetailClick = (type: 'attendance' | 'activity' | 'equipment', programId: number) => {
-    // In a real app, navigate to the appropriate detail page
-    console.log(`Opening ${type} detail for program ${programId}`)
+    if (type === 'attendance') {
+      router.push(`/attendance/${programId}`)
+    } else if (type === 'activity') {
+      router.push(`/activity/${programId}`)
+    } else if (type === 'equipment') {
+      router.push(`/equipment/${programId}`)
+    } else {
+      // In a real app, navigate to the appropriate detail page
+      console.log(`Opening ${type} detail for program ${programId}`)
+    }
   }
 
   return (
@@ -93,7 +94,7 @@ export function ProgramList({ selectedRegion }: { selectedRegion?: number }) {
       {/* Section Header */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-[18px] font-bold text-gray-900">전체 프로그램 리스트</h2>
+          <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">전체 프로그램 리스트</h2>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowAll(true)}
@@ -195,7 +196,7 @@ export function ProgramList({ selectedRegion }: { selectedRegion?: number }) {
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = 'transparent'
                   }}
-                  onClick={() => console.log('Open program detail:', program.id)}
+                  onClick={() => router.push(`/program`)}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-[14px] font-medium text-primary hover:text-primary-dark cursor-pointer">
@@ -220,7 +221,7 @@ export function ProgramList({ selectedRegion }: { selectedRegion?: number }) {
                         e.stopPropagation()
                         handleDetailClick('attendance', program.id)
                       }}
-                      className="px-[14px] py-[6px] text-[13px] font-medium text-primary bg-primary-light rounded-full hover:bg-primary-lighter hover:text-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-outline transition-colors"
+                      className="h-8 px-4 rounded-lg border border-gray-300 hover:bg-gray-50 font-medium text-sm transition-all"
                     >
                       상세보기
                     </button>
@@ -231,7 +232,7 @@ export function ProgramList({ selectedRegion }: { selectedRegion?: number }) {
                         e.stopPropagation()
                         handleDetailClick('activity', program.id)
                       }}
-                      className="px-[14px] py-[6px] text-[13px] font-medium text-primary bg-primary-light rounded-full hover:bg-primary-lighter hover:text-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-outline transition-colors"
+                      className="h-8 px-4 rounded-lg border border-gray-300 hover:bg-gray-50 font-medium text-sm transition-all"
                     >
                       상세보기
                     </button>
@@ -242,7 +243,7 @@ export function ProgramList({ selectedRegion }: { selectedRegion?: number }) {
                         e.stopPropagation()
                         handleDetailClick('equipment', program.id)
                       }}
-                      className="px-[14px] py-[6px] text-[13px] font-medium text-primary bg-primary-light rounded-full hover:bg-primary-lighter hover:text-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-outline transition-colors"
+                      className="h-8 px-4 rounded-lg border border-gray-300 hover:bg-gray-50 font-medium text-sm transition-all"
                     >
                       상세보기
                     </button>
@@ -301,4 +302,3 @@ export function ProgramList({ selectedRegion }: { selectedRegion?: number }) {
     </div>
   )
 }
-
