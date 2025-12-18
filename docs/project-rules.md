@@ -59,6 +59,12 @@ The project follows a specific directory structure:
 └── public/                # Public assets
 ```
 
+## Menu Structure Documentation
+
+For admin role menu structure mapping and implementation details, see:
+- [Admin Menu Structure Mapping](ADMIN_MENU_STRUCTURE.md)
+- [Admin Implementation Summary](ADMIN_IMPLEMENTATION_SUMMARY.md)
+
 ## Component Patterns
 
 ### Component Classification
