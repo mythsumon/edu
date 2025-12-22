@@ -1180,6 +1180,3 @@ export default function EducationManagementPage() {
     </ProtectedRoute>
   )
 }
-
-  )
-}
