@@ -156,8 +156,8 @@ export default function AdminEquipmentDetailPage() {
           <Card className="rounded-xl shadow-sm border border-gray-200">
             <div className="space-y-4">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">{data.name}</h2>
-                <p className="text-gray-600 mt-2">{data.description}</p>
+                <h2 className="text-2xl font-bold text-gray-900">{data.courseName}</h2>
+                <p className="text-gray-600 mt-2">{data.assignmentNumber} · {data.institution}</p>
               </div>
             </div>
           </Card>

@@ -160,7 +160,7 @@ export default function AdminActivityDetailPage() {
             <div className="space-y-4">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">{data.title}</h2>
-                <p className="text-gray-600 mt-2">{data.description}</p>
+                <p className="text-gray-600 mt-2">{data.activityCode} · {data.institutionName}</p>
               </div>
             </div>
           </Card>
