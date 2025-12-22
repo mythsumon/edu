@@ -1,6 +1,15 @@
 // Mock data for dashboard components
 import type { Region } from '@/types/region'
 
+interface KPI {
+  id: string
+  title: string
+  value: string
+  change: string
+  changeType: 'positive' | 'negative'
+  description: string
+}
+
 export const mockRegionData: Region[] = [
   {
     id: 'region1',
@@ -116,7 +125,7 @@ export const mockSpecialItems = [
   }
 ]
 
-export const mockKpiData = [
+export const mockKpiData: KPI[] = [
   {
     id: 'total-programs',
     title: '전체 프로그램 수',
@@ -149,7 +158,7 @@ export const mockKpiData = [
     changeType: 'positive',
     description: '활성 강사 수'
   }
-]
+] as KPI[]
 
 export const mockChartData = [
   { name: '1월', programs: 45, completed: 32 },
