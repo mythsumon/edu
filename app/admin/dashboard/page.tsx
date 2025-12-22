@@ -137,11 +137,11 @@ export default function DashboardPage() {
 
   // Render error state
   if (error) {
-    const errorMessage = typeof error === 'string' ? error : '오류가 발생했습니다.'
+    const safeErrorMessage: string = error ?? '오류가 발생했습니다.'
     return (
       <ProtectedRoute requiredRole="admin">
         <div className="p-6">
-          <ErrorToast message={errorMessage} onClose={() => window.location.reload()} />
+          <ErrorToast message={safeErrorMessage} onClose={() => window.location.reload()} />
         </div>
       </ProtectedRoute>
     )
