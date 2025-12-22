@@ -758,6 +758,3 @@ export default function InstructorManagementPage() {
     </ProtectedRoute>
   )
 }
-    </ProtectedRoute>
-  )
-}
