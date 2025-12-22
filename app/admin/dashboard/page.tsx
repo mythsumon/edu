@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { RegionCard } from '@/components/dashboard/RegionCard'
@@ -26,7 +28,7 @@ import {
 } from '@/mock/dashboardData'
 
 // Types - using the correct types from region.ts
-import type { Region } from '@/types/region'
+import type { Region, SpecialCategory } from '@/types/region'
 
 // Define types for special items and KPI data based on mock data structure
 interface SpecialItem {
@@ -63,6 +65,8 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null)
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null)
   const [selectedSpecialItem, setSelectedSpecialItem] = useState<string | null>(null)
+  const [selectedRegionNumber, setSelectedRegionNumber] = useState<number | undefined>(undefined)
+  const [selectedSpecialCategory, setSelectedSpecialCategory] = useState<SpecialCategory | undefined>(undefined)
   const [showSearchPanel, setShowSearchPanel] = useState(true)
   const [showResultPanel, setShowResultPanel] = useState(false)
   const [regionData, setRegionData] = useState<Region[]>([])
@@ -116,10 +120,36 @@ export default function DashboardPage() {
     }, 100)
   }
 
+  // Handle region selection from SearchPanel (number-based)
+  const handleRegionNumberSelect = (regionNumber: number) => {
+    setSelectedRegionNumber(regionNumber)
+    setSelectedSpecialCategory(undefined)
+    // Map region number to region ID (e.g., 1 -> 'region1')
+    const regionId = `region${regionNumber}`
+    handleRegionSelect(regionId)
+  }
+
+  // Handle category selection from SearchPanel
+  const handleCategorySelect = (category: SpecialCategory) => {
+    setSelectedSpecialCategory(category)
+    setSelectedRegionNumber(undefined)
+    setSelectedRegion(null)
+    setSelectedSpecialItem(null)
+    setShowSearchPanel(false)
+    setShowResultPanel(true)
+    
+    // Scroll to detail panel
+    setTimeout(() => {
+      detailPanelRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }, 100)
+  }
+
   // Reset to initial state
   const handleReset = () => {
     setSelectedRegion(null)
     setSelectedSpecialItem(null)
+    setSelectedRegionNumber(undefined)
+    setSelectedSpecialCategory(undefined)
     setShowSearchPanel(true)
     setShowResultPanel(false)
   }
@@ -164,7 +194,13 @@ export default function DashboardPage() {
           <div className="lg:col-span-2 space-y-6">
             {showSearchPanel && (
               <div className="card card-hover">
-                <SearchPanel onReset={handleReset} />
+                <SearchPanel 
+                  selectedRegion={selectedRegionNumber}
+                  selectedSpecialCategory={selectedSpecialCategory}
+                  onRegionSelect={handleRegionNumberSelect}
+                  onCategorySelect={handleCategorySelect}
+                  onReset={handleReset}
+                />
               </div>
             )}
 

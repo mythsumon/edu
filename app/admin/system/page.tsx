@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useState, useMemo } from 'react'
 import { Table, Button, Card, Form, Select, Space, Switch, Tabs } from 'antd'
 import { Input } from '@/components/shared/common'

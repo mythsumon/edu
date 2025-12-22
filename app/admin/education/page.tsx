@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Table, Button, Card, Form, Input, Select, DatePicker, InputNumber, TimePicker, Checkbox, Space, Upload } from 'antd'

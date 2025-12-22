@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useState, useMemo, useRef } from 'react'
 import { Table, Button, Card, Input, Select, Space, Form, Descriptions, Tag, Checkbox } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
