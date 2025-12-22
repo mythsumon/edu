@@ -156,7 +156,7 @@ export default function DashboardPage() {
         </div>
 
         {/* KPI Strip */}
-        <KPIStrip kpiData={kpiData} defaultExpanded={false} />
+        <KPIStrip />
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
