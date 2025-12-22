@@ -2,7 +2,7 @@
 
 import { Form, Button } from 'antd'
 import { InputField } from '@/components/shared/common'
-import { Lock, Mail, Shield, Users, ArrowRight, BookOpen, GraduationCap } from 'lucide-react'
+import { GraduationCap } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
@@ -66,234 +66,148 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#fff5f0] p-4 md:p-8">
-      {/* Main Container with super-elliptical rounded corners and peach glow */}
-      <div 
-        className="w-full max-w-7xl bg-white rounded-[40px] shadow-[0_20px_60px_rgba(255,138,101,0.15)] overflow-hidden flex flex-col lg:flex-row"
-        style={{
-          borderRadius: '40px',
-          boxShadow: '0 20px 60px rgba(255, 138, 101, 0.15)'
-        }}
-      >
-        {/* Left Panel - 5/12 width, deep charcoal-brown with peach dot grid */}
-        <div className="hidden lg:flex lg:w-[41.67%] relative overflow-hidden bg-[#3a2e2a]">
-          {/* Dot Grid Pattern with animation */}
-          <div 
-            className="absolute inset-0 opacity-20 animate-pulse"
-            style={{
-              backgroundImage: 'radial-gradient(circle, #ff8a65 1px, transparent 1px)',
-              backgroundSize: '24px 24px',
-              animation: 'float 20s ease-in-out infinite'
-            }}
-          />
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4 font-sans">
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-20px); }
+        }
+        @keyframes float-subtle {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+        @keyframes slideUpFade {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-float-slow { animation: float 8s ease-in-out infinite reverse; }
+        .animate-float-content { animation: float-subtle 6s ease-in-out infinite; }
+        .animate-slide-up { animation: slideUpFade 0.8s ease-out forwards; }
+        .animate-slide-up-delay-1 { animation: slideUpFade 0.8s ease-out 0.2s forwards; opacity: 0; }
+        .animate-slide-up-delay-2 { animation: slideUpFade 0.8s ease-out 0.4s forwards; opacity: 0; }
+      `}</style>
+      
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden max-w-6xl w-full flex flex-col md:flex-row min-h-[800px]">
+        
+        {/* Left Side - Hero / Branding */}
+        <div className={`w-full md:w-1/2 p-16 text-white flex flex-col justify-between relative overflow-hidden transition-colors duration-500 ${selectedRole === 'admin' ? 'bg-slate-900' : 'bg-indigo-600'}`}>
           
-          {/* Floating 3D Book Icon with glow and animation - Centered */}
-          <div 
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 opacity-30"
-            style={{
-              animation: 'floatBook 8s ease-in-out infinite, glow 3s ease-in-out infinite'
-            }}
-          >
-            <BookOpen className="w-full h-full text-[#ff8a65] drop-shadow-[0_0_40px_rgba(255,138,101,0.5)]" />
+          {/* Animated Background Elements */}
+          <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-white opacity-10 rounded-full blur-3xl animate-float"></div>
+          <div className="absolute bottom-[10%] left-[-10%] w-48 h-48 bg-white opacity-10 rounded-full blur-2xl animate-float-slow"></div>
+
+          <div className="absolute top-0 left-0 w-full h-full opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+          
+          {/* Main Content with Continuous Float */}
+          <div className="relative z-10 animate-float-content">
+            <div className="flex items-center gap-3 mb-10 animate-slide-up">
+              <div className="w-12 h-12 bg-white bg-opacity-20 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                <GraduationCap size={28} className="text-white" />
+              </div>
+              <span className="text-3xl font-bold tracking-tight">EduMatrix</span>
+            </div>
+            <h1 className="text-5xl font-bold leading-tight mb-6 animate-slide-up-delay-1">
+              Welcome to the Future of Learning.
+            </h1>
+            <p className="text-xl opacity-80 animate-slide-up-delay-2">
+              Streamline your educational journey with our comprehensive management dashboard.
+            </p>
+          </div>
+          <div className="relative z-10 text-sm opacity-60 animate-slide-up-delay-2">
+            © 2024 EduMatrix Inc.
           </div>
         </div>
 
-        {/* Add CSS animations */}
-        <style jsx>{`
-          @keyframes float {
-            0%, 100% {
-              transform: translateY(0px);
-            }
-            50% {
-              transform: translateY(-10px);
-            }
-          }
-          
-          @keyframes floatBook {
-            0%, 100% {
-              transform: translate(-50%, -50%) rotate(0deg) translateY(0px);
-            }
-            25% {
-              transform: translate(-50%, -50%) rotate(5deg) translateY(-10px);
-            }
-            50% {
-              transform: translate(-50%, -50%) rotate(0deg) translateY(0px);
-            }
-            75% {
-              transform: translate(-50%, -50%) rotate(-5deg) translateY(10px);
-            }
-          }
-          
-          @keyframes glow {
-            0%, 100% {
-              opacity: 0.3;
-              filter: drop-shadow(0 0 40px rgba(255, 138, 101, 0.5));
-            }
-            50% {
-              opacity: 0.5;
-              filter: drop-shadow(0 0 60px rgba(255, 138, 101, 0.8));
-            }
-          }
-          
-          @keyframes fadeInDown {
-            from {
-              opacity: 0;
-              transform: translateY(-20px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          
-          @keyframes fadeInLeft {
-            from {
-              opacity: 0;
-              transform: translateX(-30px);
-            }
-            to {
-              opacity: 1;
-              transform: translateX(0);
-            }
-          }
-          
-          @keyframes fadeInUp {
-            from {
-              opacity: 0;
-              transform: translateY(30px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          
-          @keyframes fadeInRight {
-            from {
-              opacity: 0;
-              transform: translateX(30px);
-            }
-            to {
-              opacity: 1;
-              transform: translateX(0);
-            }
-          }
-        `}</style>
+        {/* Right Side - Login Form */}
+        <div className="w-full md:w-1/2 p-16 flex flex-col justify-center">
+          <div className="mb-10">
+            <h2 className="text-3xl font-bold text-slate-900 mb-3">Sign In</h2>
+            <p className="text-base text-slate-500">Access your dashboard using your credentials.</p>
+          </div>
 
-        {/* Right Panel - 7/12 width, clean white authentication */}
-        <div className="w-full lg:w-[58.33%] flex items-center justify-center px-8 py-12 lg:px-16">
-        <div className="w-full max-w-md">
-            {/* Role Switcher Toggle with animation */}
-            <div 
-              className="mb-8"
-              style={{
-                animation: 'fadeInRight 1s ease-out 0.1s both'
-              }}
+          {/* Role Toggle */}
+          <div className="flex bg-slate-100 p-1.5 rounded-xl mb-10">
+            <button 
+              type="button"
+              onClick={() => handleRoleSelect('admin')}
+              className={`flex-1 py-3 text-base font-semibold rounded-lg transition-all duration-200 ${selectedRole === 'admin' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             >
-              <div className="inline-flex bg-[#fff5f0] rounded-[32px] p-1 gap-1">
-                  <button
-                    type="button"
-                    onClick={() => handleRoleSelect('admin')}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-[32px] font-semibold text-sm transition-all duration-300 transform hover:scale-105 ${
-                      selectedRole === 'admin'
-                      ? 'bg-[#ff8a65] text-white shadow-peach scale-105'
-                      : 'text-[#8d7c77] hover:text-[#3a2e2a]'
-                    }`}
-                  >
-                  <Shield className="w-4 h-4" />
-                  Admin
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleRoleSelect('instructor')}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-[32px] font-semibold text-sm transition-all duration-300 transform hover:scale-105 ${
-                      selectedRole === 'instructor'
-                      ? 'bg-[#ff8a65] text-white shadow-peach scale-105'
-                      : 'text-[#8d7c77] hover:text-[#3a2e2a]'
-                  }`}
-              >
-                  <Users className="w-4 h-4" />
-                  Instructor
-                </button>
-              </div>
+              Administrator
+            </button>
+            <button 
+              type="button"
+              onClick={() => handleRoleSelect('instructor')}
+              className={`flex-1 py-3 text-base font-semibold rounded-lg transition-all duration-200 ${selectedRole === 'instructor' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              Instructor
+            </button>
+          </div>
+
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleSubmit}
+            requiredMark={false}
+            className="space-y-6"
+          >
+            <Form.Item
+              label={<span className="block text-base font-medium text-slate-700 mb-2">Email Address</span>}
+              name="email"
+              rules={[
+                { required: true, message: '이메일을 입력해주세요' },
+                { type: 'email', message: '올바른 이메일 형식이 아닙니다' },
+              ]}
+            >
+              <InputField
+                type="email"
+                placeholder={selectedRole === 'admin' ? "admin@example.com" : "instructor@example.com"}
+              />
+            </Form.Item>
+            
+            <Form.Item
+              label={<span className="block text-base font-medium text-slate-700 mb-2">Password</span>}
+              name="password"
+              rules={[{ required: true, message: '비밀번호를 입력해주세요' }]}
+            >
+              <InputField
+                type="password"
+                placeholder="••••••••"
+              />
+            </Form.Item>
+            
+            <div className="flex items-center justify-between text-base">
+              <label className="flex items-center text-slate-600 cursor-pointer">
+                <input type="checkbox" className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 mr-2" />
+                Remember me
+              </label>
+              <a href="#" className="text-indigo-600 hover:text-indigo-700 font-medium">Forgot Password?</a>
             </div>
 
-            {/* Form with fade-in animation */}
-            <div 
-              className="mb-6"
+            <Button 
+              type="primary"
+              htmlType="submit" 
+              className="w-full py-4 rounded-lg font-semibold text-lg text-white transition-all hover:opacity-90"
               style={{
-                animation: 'fadeInRight 1s ease-out 0.3s both'
+                backgroundColor: '#1a202c',
+                borderColor: '#1a202c',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#2d3748'
+                e.currentTarget.style.borderColor = '#2d3748'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#1a202c'
+                e.currentTarget.style.borderColor = '#1a202c'
               }}
             >
-              <h2 className="text-3xl font-bold text-[#3a2e2a] mb-2">Welcome back</h2>
-      </div>
+              Login to Dashboard
+            </Button>
+          </Form>
 
-            <Form
-              form={form}
-              layout="vertical"
-              onFinish={handleSubmit}
-              requiredMark={false}
-              className="space-y-5"
-              style={{
-                animation: 'fadeInRight 1s ease-out 0.6s both'
-              }}
-            >
-              <Form.Item
-                label={<span className="text-sm font-semibold text-[#3a2e2a]">이메일</span>}
-                name="email"
-                rules={[
-                  { required: true, message: '이메일을 입력해주세요' },
-                  { type: 'email', message: '올바른 이메일 형식이 아닙니다' },
-                ]}
-              >
-                <InputField
-                  type="email"
-                  prefixIcon={<Mail className="w-5 h-5 text-[#8d7c77]" />}
-                  placeholder="이메일 주소를 입력하세요"
-                />
-              </Form.Item>
-
-              <Form.Item
-                label={<span className="text-sm font-semibold text-[#3a2e2a]">비밀번호</span>}
-                name="password"
-                rules={[{ required: true, message: '비밀번호를 입력해주세요' }]}
-              >
-                <InputField
-                  type="password"
-                  prefixIcon={<Lock className="w-5 h-5 text-[#8d7c77]" />}
-                  placeholder="비밀번호를 입력하세요"
-                />
-              </Form.Item>
-
-              <div className="flex items-center justify-between text-xs text-[#8d7c77] mb-1">
-                <span>비밀번호를 잊으셨나요?</span>
-                <button
-                  type="button"
-                  className="font-medium text-[#ff8a65] hover:text-[#ff7043] transition-colors duration-200"
-                >
-                  비밀번호 재설정
-                </button>
-              </div>
-
-              <Button
-                type="primary"
-                htmlType="submit"
-                className="w-full h-14 mt-4 rounded-[32px] border-0 font-semibold text-base shadow-peach-lg hover:shadow-peach-lg transition-all duration-300 flex items-center justify-center gap-2 transform hover:scale-[1.02] active:scale-[0.98]"
-                style={{ 
-                  borderRadius: '32px',
-                  background: 'linear-gradient(135deg, #ff8a65 0%, #ff9e7d 100%)',
-                  boxShadow: '0 4px 12px rgba(255, 138, 101, 0.25)'
-                }}
-              >
-                Sign In
-                <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-              </Button>
-            </Form>
-
-            <p className="mt-8 text-xs text-[#8d7c77] leading-relaxed">
-              본 시스템은 권한이 부여된 사용자만 사용할 수 있습니다. 무단 접속 또는 부정 사용 시
-              관련 법령에 따라 처벌될 수 있습니다.
-            </p>
+          <div className="mt-10 text-center text-base text-slate-400">
+            Don't have an account? <a href="#" className="text-slate-600 font-medium hover:underline">Contact Support</a>
           </div>
         </div>
       </div>

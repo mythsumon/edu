@@ -545,16 +545,6 @@ export default function InstructorApplicationPage() {
   return (
     <ProtectedRoute requiredRole="admin">
       <div className="p-6">
-      {/* Breadcrumb - list view only */}
-      {viewMode === 'list' && (
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-          <span>홈</span>
-          <ChevronRight className="w-4 h-4" />
-          <span>강사 배정</span>
-          <ChevronRight className="w-4 h-4" />
-          <span>강사 신청 관리</span>
-        </div>
-      )}
 
       {viewMode === 'list' ? (
         <>
@@ -565,7 +555,21 @@ export default function InstructorApplicationPage() {
               <Button
                 type="primary"
                 onClick={() => router.push('/instructor?view=register')}
-                className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md w-full md:w-auto"
+                className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md w-full md:w-auto text-white"
+                style={{
+                  backgroundColor: '#1a202c',
+                  borderColor: '#1a202c',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                  color: '#ffffff',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#2d3748'
+                  e.currentTarget.style.borderColor = '#2d3748'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#1a202c'
+                  e.currentTarget.style.borderColor = '#1a202c'
+                }}
               >
                 + 강사 등록
               </Button>
@@ -611,7 +615,20 @@ export default function InstructorApplicationPage() {
                 <Button
                   type="primary"
                   onClick={handleSearch}
-                  className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
+                  className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md"
+              style={{
+                backgroundColor: '#1a202c',
+                borderColor: '#1a202c',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#2d3748'
+                e.currentTarget.style.borderColor = '#2d3748'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#1a202c'
+                e.currentTarget.style.borderColor = '#1a202c'
+              }}
                 >
                   검색
                 </Button>
@@ -659,18 +676,9 @@ export default function InstructorApplicationPage() {
         /* Detail View */
         selectedApplication && (
           <div className="space-y-6">
-            {/* Top breadcrumb + actions */}
+            {/* Top actions */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 text-sm text-gray-500">
-                <Button
-                  type="text"
-                  icon={<ArrowLeft className="w-4 h-4" />}
-                  onClick={handleBackToList}
-                  className="text-gray-600 hover:text-gray-900 px-0"
-                >
-                  강사 신청 관리
-                </Button>
-                <ChevronRight className="w-4 h-4 text-gray-400" />
                 <span className="text-gray-900 font-medium">상세 정보</span>
               </div>
               <div className="flex gap-2">

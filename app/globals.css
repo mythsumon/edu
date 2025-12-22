@@ -93,7 +93,7 @@
   
   /* Custom utility classes for the admin dashboard */
   .card {
-    @apply bg-white rounded-[32px] shadow-peach border border-[#ffeae0] dark:bg-gray-800 dark:border-gray-700;
+    @apply bg-white rounded-lg shadow-peach border border-[#ffeae0] dark:bg-gray-800 dark:border-gray-700;
   }
   
   .card-hover {
@@ -101,23 +101,31 @@
   }
   
   .btn-primary {
-    @apply btn-peach-gradient text-white font-medium rounded-[32px] px-6 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#ff8a65] focus:ring-offset-2;
+    @apply text-white font-medium rounded-lg px-6 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#1a202c] focus:ring-offset-2;
+    background-color: #1a202c;
+    border-color: #1a202c;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .btn-primary:hover {
+    background-color: #2d3748;
+    border-color: #2d3748;
   }
   
   .btn-secondary {
-    @apply bg-[#3b82f6] hover:bg-[#2563eb] text-white font-medium rounded-[32px] px-6 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:ring-offset-2;
+    @apply bg-[#3b82f6] hover:bg-[#2563eb] text-white font-medium rounded-lg px-6 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:ring-offset-2;
   }
   
   .btn-outline {
-    @apply border-2 border-[#ff8a65] text-[#ff8a65] hover:bg-[#ff8a65] hover:text-white font-medium rounded-[32px] px-6 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#ff8a65] focus:ring-offset-2;
+    @apply border-2 border-[#ff8a65] text-[#ff8a65] hover:bg-[#ff8a65] hover:text-white font-medium rounded-lg px-6 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#ff8a65] focus:ring-offset-2;
   }
   
   .btn-danger {
-    @apply bg-[#EF4444] hover:bg-[#dc2626] text-white font-medium rounded-[32px] px-6 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#EF4444] focus:ring-offset-2;
+    @apply bg-[#EF4444] hover:bg-[#dc2626] text-white font-medium rounded-lg px-6 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#EF4444] focus:ring-offset-2;
   }
   
   .input-base {
-    @apply w-full px-4 py-2.5 border border-[#ffeae0] rounded-[32px] bg-[#fff5f0] text-[#3a2e2a] placeholder-[#8d7c77] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#ff8a65] focus:border-transparent;
+    @apply w-full px-4 py-2.5 border border-[#ffeae0] rounded-lg bg-white text-[#3a2e2a] placeholder-[#8d7c77] transition-all duration-200 focus:outline-none;
   }
   
   /* Peach gradient button */

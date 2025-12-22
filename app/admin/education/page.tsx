@@ -446,7 +446,20 @@ export default function EducationManagementPage() {
               <Button
                 type="primary"
                 onClick={handleRegisterClick}
-                className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
+                className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md"
+                style={{
+                  backgroundColor: '#1a202c',
+                  borderColor: '#1a202c',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#2d3748'
+                  e.currentTarget.style.borderColor = '#2d3748'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#1a202c'
+                  e.currentTarget.style.borderColor = '#1a202c'
+                }}
               >
                 + 교육 등록
               </Button>
@@ -473,7 +486,21 @@ export default function EducationManagementPage() {
               type="primary"
               icon={<Save className="w-4 h-4" />}
               onClick={() => form.submit()}
-              className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
+              className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
+              style={{
+                backgroundColor: '#1a202c',
+                borderColor: '#1a202c',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                color: '#ffffff',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#2d3748'
+                e.currentTarget.style.borderColor = '#2d3748'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#1a202c'
+                e.currentTarget.style.borderColor = '#1a202c'
+              }}
             >
               저장
             </Button>
@@ -487,22 +514,45 @@ export default function EducationManagementPage() {
           </Space>
         )}
         {viewMode === 'detail' && (
-          <Space>
+          <>
             <Button
-              icon={<FileText className="w-4 h-4" />}
-              onClick={() => console.log('Print detail')}
+              icon={<ArrowLeft className="w-4 h-4" />}
+              onClick={handleBackToList}
               className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
             >
-              인쇄
+              목록으로
             </Button>
-            <Button
-              type="primary"
-              onClick={handleEditFromDetail}
-              className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
-            >
-              수정하기
-            </Button>
-          </Space>
+            <Space>
+              <Button
+                icon={<FileText className="w-4 h-4" />}
+                onClick={() => console.log('Print detail')}
+                className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+              >
+                인쇄
+              </Button>
+              <Button
+                type="primary"
+                onClick={handleEditFromDetail}
+                className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
+                style={{
+                  backgroundColor: '#1a202c',
+                  borderColor: '#1a202c',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                  color: '#ffffff',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#2d3748'
+                  e.currentTarget.style.borderColor = '#2d3748'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#1a202c'
+                  e.currentTarget.style.borderColor = '#1a202c'
+                }}
+              >
+                수정하기
+              </Button>
+            </Space>
+          </>
         )}
       </div>
 
@@ -513,7 +563,7 @@ export default function EducationManagementPage() {
           <div className="flex items-center h-16 px-4 py-3 bg-white border border-[#ECECF3] rounded-2xl shadow-[0_8px_24px_rgba(15,15,30,0.06)] mb-4 gap-3 flex-wrap">
             {/* Search Input - Primary, flex-grow */}
             <div className="flex-1 min-w-[200px]">
-              <div className="relative h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 focus-within:border-[#ff8a65] focus-within:shadow-[0_0_0_4px_rgba(255,122,89,0.18)] hover:border-[#D3D3E0]">
+              <div className="relative h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
                 <Input
                   placeholder="Search by name, ID, or email..."
                   value={searchText}
@@ -527,7 +577,7 @@ export default function EducationManagementPage() {
             
             {/* Status Filter */}
             <div className="w-[220px]">
-              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 focus-within:border-[#ff8a65] focus-within:shadow-[0_0_0_4px_rgba(255,122,89,0.18)] hover:border-[#D3D3E0]">
+              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
                 <Select
                   placeholder="ALL STATUS"
                   value={statusFilter}
@@ -583,20 +633,8 @@ export default function EducationManagementPage() {
       ) : viewMode === 'detail' && selectedEducation ? (
         /* Detail View */
         <div className="space-y-6">
-          {/* Top breadcrumb + actions */}
+          {/* Top actions */}
           <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-3 text-sm text-gray-500">
-              <Button
-                type="text"
-                icon={<ArrowLeft className="w-4 h-4" />}
-                onClick={handleBackToList}
-                className="text-gray-600 hover:text-gray-900 px-0"
-              >
-                교육 관리
-              </Button>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
-              <span className="text-gray-900 font-medium">상세 정보</span>
-            </div>
 
             <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-5 md:p-6 flex flex-col gap-4">
               <div className="flex flex-wrap items-center gap-3">
@@ -837,7 +875,20 @@ export default function EducationManagementPage() {
                   />
                   <Button
                     onClick={handleAddTag}
-                    className="h-11 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium text-white transition-all shadow-sm hover:shadow-md"
+                    className="h-11 px-4 rounded-lg border-0 font-medium text-white transition-all shadow-sm hover:shadow-md"
+                    style={{
+                      backgroundColor: '#1a202c',
+                      borderColor: '#1a202c',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#2d3748'
+                      e.currentTarget.style.borderColor = '#2d3748'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#1a202c'
+                      e.currentTarget.style.borderColor = '#1a202c'
+                    }}
                   >
                     추가
                   </Button>

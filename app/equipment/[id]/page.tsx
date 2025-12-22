@@ -9,7 +9,7 @@ import 'dayjs/locale/ko'
 import { programService } from '@/services/programService'
 import { EquipmentData, RentalItem } from '@/types/program'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Breadcrumb, PageTitle } from '@/components/shared/common'
+import { PageTitle } from '@/components/shared/common'
 
 const { TextArea } = Input
 dayjs.locale('ko')
@@ -135,8 +135,6 @@ export default function EquipmentDetailPage() {
   return (
     <ProtectedRoute requiredRole="admin">
       <div className="p-6">
-        <Breadcrumb />
-        
         <div className="flex items-center justify-between mb-6">
           <PageTitle />
           <Space>
@@ -145,7 +143,21 @@ export default function EquipmentDetailPage() {
                 <Button
                   type="primary"
                   onClick={handleEdit}
-                  className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
+                  className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
+                  style={{
+                    backgroundColor: '#1a202c',
+                    borderColor: '#1a202c',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    color: '#ffffff',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#2d3748'
+                    e.currentTarget.style.borderColor = '#2d3748'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#1a202c'
+                    e.currentTarget.style.borderColor = '#1a202c'
+                  }}
                 >
                   수정하기
                 </Button>
@@ -164,7 +176,21 @@ export default function EquipmentDetailPage() {
                   type="primary"
                   icon={<Save className="w-4 h-4" />}
                   onClick={handleSave}
-                  className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
+                  className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
+                  style={{
+                    backgroundColor: '#1a202c',
+                    borderColor: '#1a202c',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    color: '#ffffff',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#2d3748'
+                    e.currentTarget.style.borderColor = '#2d3748'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#1a202c'
+                    e.currentTarget.style.borderColor = '#1a202c'
+                  }}
                 >
                   저장
                 </Button>

@@ -135,9 +135,9 @@ export function Header() {
   }
 
   return (
-    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 relative z-20 dark:bg-gray-800 dark:border-gray-700">
+    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 relative z-20 dark:bg-gray-800 dark:border-gray-700">
       <div className="flex items-center gap-4">
-        <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{getPageTitle()}</h1>
+        <h1 className="text-xl font-bold text-slate-900">{getPageTitle()}</h1>
         <Breadcrumb className="mb-0" />
       </div>
       <div className="flex items-center gap-4">
@@ -157,7 +157,7 @@ export function Header() {
         {/* Language toggle */}
         <button 
           onClick={toggleLanguage}
-          className="flex items-center gap-2 h-8 px-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
+          className="flex items-center gap-2 h-8 px-3 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
         >
           {locale === 'ko' ? 'KO' : 'EN'}
           <Globe className="w-4 h-4" />
@@ -166,7 +166,7 @@ export function Header() {
         {/* Notification dropdown */}
         <div className="relative">
           <button
-            className="relative flex items-center justify-center w-9 h-9 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700"
+            className="relative flex items-center justify-center w-9 h-9 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700"
             onClick={() => {
               setIsNotificationOpen((prev) => !prev)
               setIsProfileOpen(false)
@@ -184,8 +184,8 @@ export function Header() {
             <div className="absolute right-0 mt-2 w-80 rounded-2xl bg-white shadow-lg ring-1 ring-black/5 overflow-hidden dark:bg-gray-800 dark:ring-gray-700">
               <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between dark:border-gray-700">
                 <div>
-                  <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">{t('header.notifications')}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                  <div className="text-sm font-semibold text-slate-900 dark:text-gray-100">{t('header.notifications')}</div>
+                  <div className="text-xs text-slate-500 dark:text-gray-400">
                     {locale === 'ko' 
                       ? '최근 시스템 및 신청 관련 알림입니다.' 
                       : 'Recent system and application related notifications.'}
@@ -203,7 +203,7 @@ export function Header() {
                 {notifications.map((item) => (
                   <button
                     key={item.id}
-                    className={`w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-gray-50 transition-colors dark:hover:bg-gray-700/50 ${
+                    className={`w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-slate-50 transition-colors dark:hover:bg-gray-700/50 ${
                       !item.read ? 'bg-red-50/40 dark:bg-red-900/20' : ''
                     }`}
                     onClick={() => {
@@ -221,10 +221,10 @@ export function Header() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className={`text-sm font-medium line-clamp-1 ${
-                        !item.read ? 'text-gray-900 dark:text-gray-100' : 'text-gray-600 dark:text-gray-400'
+                        !item.read ? 'text-slate-900 dark:text-gray-100' : 'text-slate-600 dark:text-gray-400'
                       }`}>{item.title}</div>
-                      <div className="mt-0.5 text-xs text-gray-500 line-clamp-2 dark:text-gray-400">{item.description}</div>
-                      <div className="mt-1 text-[11px] text-gray-400 dark:text-gray-500">{item.time}</div>
+                      <div className="mt-0.5 text-xs text-slate-500 line-clamp-2 dark:text-gray-400">{item.description}</div>
+                      <div className="mt-1 text-[11px] text-slate-400 dark:text-gray-500">{item.time}</div>
                     </div>
                   </button>
                 ))}
@@ -234,20 +234,20 @@ export function Header() {
                   </div>
                 )}
               </div>
-              <div className="px-4 py-2 border-t border-gray-100 bg-gray-50 flex items-center justify-between dark:border-gray-700 dark:bg-gray-800/50">
-                <button className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                <div className="px-4 py-2 border-t border-slate-100 bg-slate-50 flex items-center justify-between dark:border-gray-700 dark:bg-gray-800/50">
+                <button className="text-xs text-slate-500 hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-300">
                   {locale === 'ko' ? '알림 설정' : 'Notification Settings'}
                 </button>
                 <div className="flex items-center gap-3">
                   {unreadCount > 0 && (
                     <button 
                       onClick={handleMarkAllAsRead}
-                      className="text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                      className="text-xs font-medium text-indigo-600 hover:text-indigo-700 dark:text-blue-400 dark:hover:text-blue-300"
                     >
                       {locale === 'ko' ? '모두 읽음' : 'Mark all as read'}
                     </button>
                   )}
-                  <button className="text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
+                  <button className="text-xs font-medium text-indigo-600 hover:text-indigo-700 dark:text-blue-400 dark:hover:text-blue-300">
                     {locale === 'ko' ? '전체 알림 보기' : 'View all notifications'}
                   </button>
                 </div>
@@ -259,7 +259,7 @@ export function Header() {
         {/* Profile dropdown */}
         <div className="relative">
           <button
-            className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors border border-transparent hover:border-gray-200 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:border-gray-600"
+            className="flex items-center gap-2 px-3 py-2 text-slate-700 hover:bg-slate-100 rounded-full transition-colors border border-transparent hover:border-slate-200 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:border-gray-600"
             onClick={() => {
               setIsProfileOpen((prev) => !prev)
               setIsNotificationOpen(false)
@@ -281,15 +281,15 @@ export function Header() {
 
           {isProfileOpen && (
             <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white shadow-lg ring-1 ring-black/5 overflow-hidden dark:bg-gray-800 dark:ring-gray-700">
-              <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-                <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              <div className="px-4 py-3 border-b border-slate-100 dark:border-gray-700">
+                <div className="text-sm font-semibold text-slate-900 dark:text-gray-100">
                   {locale === 'ko' ? '관리자' : 'Administrator'}
                 </div>
-                <div className="text-xs text-gray-500 mt-0.5 dark:text-gray-400">admin@example.com</div>
+                <div className="text-xs text-slate-500 mt-0.5 dark:text-gray-400">admin@example.com</div>
               </div>
               <div className="py-1">
                 <button
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700/50"
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-700/50"
                   onClick={() => {
                     setIsProfileModalOpen(true)
                     setIsProfileOpen(false)
@@ -299,7 +299,7 @@ export function Header() {
                   <span>{t('header.profile')}</span>
                 </button>
                 <button
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700/50"
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-700/50"
                   onClick={() => {
                     accountForm.setFieldsValue({
                       name: locale === 'ko' ? '관리자' : 'Administrator',
@@ -315,7 +315,7 @@ export function Header() {
                   <span>{locale === 'ko' ? '계정 설정' : 'Account Settings'}</span>
                 </button>
               </div>
-              <div className="border-t border-gray-100 dark:border-gray-700">
+              <div className="border-t border-slate-100 dark:border-gray-700">
                 <button
                   className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
                   onClick={() => {
@@ -345,15 +345,15 @@ export function Header() {
             KJ
           </div>
           <div className="flex flex-col">
-            <span className="text-base font-semibold text-gray-900">
+            <span className="text-base font-semibold text-slate-900">
               {locale === 'ko' ? '관리자' : 'Administrator'}
             </span>
-            <span className="text-sm text-gray-500">admin@example.com</span>
+            <span className="text-sm text-slate-500">admin@example.com</span>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
-            <div className="text-xs font-semibold text-gray-500">
+            <div className="text-xs font-semibold text-slate-500">
               {locale === 'ko' ? '역할' : 'Role'}
             </div>
             <div className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300">
@@ -361,24 +361,24 @@ export function Header() {
             </div>
           </div>
           <div className="space-y-1">
-            <div className="text-xs font-semibold text-gray-500">
+            <div className="text-xs font-semibold text-slate-500">
               {locale === 'ko' ? '소속' : 'Affiliation'}
             </div>
-            <div className="text-sm font-medium text-gray-900">
+            <div className="text-sm font-medium text-slate-900">
               {locale === 'ko' ? '경기미래채움 운영팀' : 'Gyeonggi Future Chimae Operations Team'}
             </div>
           </div>
           <div className="space-y-1">
-            <div className="text-xs font-semibold text-gray-500">
+            <div className="text-xs font-semibold text-slate-500">
               {locale === 'ko' ? '연락처' : 'Contact'}
             </div>
-            <div className="text-sm font-medium text-gray-900">010-1234-5678</div>
+            <div className="text-sm font-medium text-slate-900">010-1234-5678</div>
           </div>
           <div className="space-y-1">
-            <div className="text-xs font-semibold text-gray-500">
+            <div className="text-xs font-semibold text-slate-500">
               {locale === 'ko' ? '언어' : 'Language'}
             </div>
-            <div className="text-sm font-medium text-gray-900">
+            <div className="text-sm font-medium text-slate-900">
               {locale === 'ko' ? '한국어' : 'English'}
             </div>
           </div>

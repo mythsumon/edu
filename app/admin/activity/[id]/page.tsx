@@ -11,7 +11,7 @@ import 'dayjs/locale/ko'
 import { programService } from '@/services/programService'
 import { ActivityData, Session, Photo } from '@/types/program'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Breadcrumb, PageTitle } from '@/components/shared/common'
+import { PageTitle } from '@/components/shared/common'
 
 dayjs.locale('ko')
 
@@ -109,20 +109,42 @@ export default function AdminActivityDetailPage() {
     )
   }
 
+  const handleBackToList = () => {
+    router.push('/admin/program')
+  }
+
   return (
     <ProtectedRoute requiredRole="admin">
       <div className="p-6">
-        <Breadcrumb />
-        
         <div className="flex items-center justify-between mb-6">
-          <PageTitle />
+          <Button
+            icon={<ArrowLeft className="w-4 h-4" />}
+            onClick={handleBackToList}
+            className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+          >
+            목록으로
+          </Button>
           <Space>
             {!isEditMode ? (
               <>
                 <Button
                   type="primary"
                   onClick={handleEdit}
-                  className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
+                  className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
+                  style={{
+                    backgroundColor: '#1a202c',
+                    borderColor: '#1a202c',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    color: '#ffffff',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#2d3748'
+                    e.currentTarget.style.borderColor = '#2d3748'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#1a202c'
+                    e.currentTarget.style.borderColor = '#1a202c'
+                  }}
                 >
                   수정하기
                 </Button>
@@ -141,7 +163,21 @@ export default function AdminActivityDetailPage() {
                   type="primary"
                   icon={<Save className="w-4 h-4" />}
                   onClick={handleSave}
-                  className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
+                  className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
+                  style={{
+                    backgroundColor: '#1a202c',
+                    borderColor: '#1a202c',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    color: '#ffffff',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#2d3748'
+                    e.currentTarget.style.borderColor = '#2d3748'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#1a202c'
+                    e.currentTarget.style.borderColor = '#1a202c'
+                  }}
                 >
                   저장
                 </Button>

@@ -255,16 +255,6 @@ export default function ProgramManagementPage() {
 
   return (
     <div className="p-6">
-      {/* Breadcrumb */}
-      {viewMode === 'list' && (
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-          <span>홈</span>
-          <ChevronRight className="w-4 h-4" />
-          <span>기준정보 관리</span>
-          <ChevronRight className="w-4 h-4" />
-          <span>프로그램 관리</span>
-        </div>
-      )}
 
       {/* Page Header */}
       <div className="flex items-center justify-between mb-6">
@@ -283,7 +273,21 @@ export default function ProgramManagementPage() {
             <Button
               type="primary"
               onClick={handleRegisterClick}
-              className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
+              className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
+              style={{
+                backgroundColor: '#1a202c',
+                borderColor: '#1a202c',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                color: '#ffffff',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#2d3748'
+                e.currentTarget.style.borderColor = '#2d3748'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#1a202c'
+                e.currentTarget.style.borderColor = '#1a202c'
+              }}
             >
               + 프로그램 등록
             </Button>
@@ -301,7 +305,21 @@ export default function ProgramManagementPage() {
               type="primary"
               icon={<Save className="w-4 h-4" />}
               onClick={() => form.submit()}
-              className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
+              className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
+              style={{
+                backgroundColor: '#1a202c',
+                borderColor: '#1a202c',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                color: '#ffffff',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#2d3748'
+                e.currentTarget.style.borderColor = '#2d3748'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#1a202c'
+                e.currentTarget.style.borderColor = '#1a202c'
+              }}
             >
               등록하기
             </Button>
@@ -345,7 +363,21 @@ export default function ProgramManagementPage() {
                 <Button
                   type="primary"
                   onClick={handleSearch}
-                  className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
+                  className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
+              style={{
+                backgroundColor: '#1a202c',
+                borderColor: '#1a202c',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                color: '#ffffff',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#2d3748'
+                e.currentTarget.style.borderColor = '#2d3748'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#1a202c'
+                e.currentTarget.style.borderColor = '#1a202c'
+              }}
                 >
                   검색
                 </Button>

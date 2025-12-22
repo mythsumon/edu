@@ -1,8 +1,10 @@
 'use client'
 
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Table, Card, Button } from 'antd'
+import type { ColumnsType } from 'antd/es/table'
 import { ProgramListItem } from '@/types/program'
 
 const mockPrograms: ProgramListItem[] = [
@@ -58,7 +60,7 @@ export function ProgramList({ selectedRegion }: { selectedRegion?: number }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [showAll, setShowAll] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 10
+  const [pageSize, setPageSize] = useState(10)
 
   const filteredPrograms = mockPrograms.filter((program) => {
     const matchesSearch =
@@ -70,13 +72,8 @@ export function ProgramList({ selectedRegion }: { selectedRegion?: number }) {
     return matchesSearch
   })
 
-  const totalPages = Math.ceil(filteredPrograms.length / itemsPerPage)
-  const paginatedPrograms = filteredPrograms.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  )
-
-  const handleDetailClick = (type: 'attendance' | 'activity' | 'equipment', programId: number) => {
+  const handleDetailClick = (type: 'attendance' | 'activity' | 'equipment', programId: number, e: React.MouseEvent) => {
+    e.stopPropagation()
     if (type === 'attendance') {
       router.push(`/admin/attendance/${programId}`)
     } else if (type === 'activity') {
@@ -89,8 +86,111 @@ export function ProgramList({ selectedRegion }: { selectedRegion?: number }) {
     }
   }
 
+  const columns: ColumnsType<ProgramListItem> = [
+    {
+      title: '프로그램명',
+      dataIndex: 'name',
+      key: 'name',
+      width: 200,
+      render: (text: string) => (
+        <span className="text-sm font-medium text-gray-900">{text}</span>
+      ),
+    },
+    {
+      title: '교육기관',
+      dataIndex: 'institution',
+      key: 'institution',
+      width: 150,
+      render: (text: string) => (
+        <span className="text-sm text-gray-700">{text}</span>
+      ),
+    },
+    {
+      title: '주강사',
+      dataIndex: 'mainInstructor',
+      key: 'mainInstructor',
+      width: 120,
+      render: (text: string) => (
+        <span className="text-sm text-gray-700">{text}</span>
+      ),
+    },
+    {
+      title: '보조강사',
+      dataIndex: 'subInstructor',
+      key: 'subInstructor',
+      width: 120,
+      render: (text: string) => (
+        <span className="text-sm text-gray-700">{text}</span>
+      ),
+    },
+    {
+      title: '프로그램 생성날짜',
+      dataIndex: 'createdDate',
+      key: 'createdDate',
+      width: 150,
+      render: (text: string) => (
+        <span className="text-sm text-gray-700">{text}</span>
+      ),
+    },
+    {
+      title: '교육 출석부',
+      key: 'attendance',
+      width: 120,
+      align: 'center',
+      render: (_, record) => (
+        <Button
+          size="small"
+          onClick={(e) => handleDetailClick('attendance', record.id, e)}
+          className="h-8 px-4 rounded-lg border border-gray-300 hover:bg-gray-50 font-medium text-sm"
+        >
+          상세보기
+        </Button>
+      ),
+    },
+    {
+      title: '교육 활동 일지',
+      key: 'activity',
+      width: 120,
+      align: 'center',
+      render: (_, record) => (
+        <Button
+          size="small"
+          onClick={(e) => handleDetailClick('activity', record.id, e)}
+          className="h-8 px-4 rounded-lg border border-gray-300 hover:bg-gray-50 font-medium text-sm"
+        >
+          상세보기
+        </Button>
+      ),
+    },
+    {
+      title: '교구 확인서',
+      key: 'equipment',
+      width: 120,
+      align: 'center',
+      render: (_, record) => (
+        <Button
+          size="small"
+          onClick={(e) => handleDetailClick('equipment', record.id, e)}
+          className="h-8 px-4 rounded-lg border border-gray-300 hover:bg-gray-50 font-medium text-sm"
+        >
+          상세보기
+        </Button>
+      ),
+    },
+    {
+      title: '마지막 수정일',
+      dataIndex: 'lastUpdated',
+      key: 'lastUpdated',
+      width: 150,
+      align: 'right',
+      render: (text: string) => (
+        <span className="text-xs text-gray-500">{text}</span>
+      ),
+    },
+  ]
+
   return (
-    <div className="bg-white rounded-card shadow-card">
+    <Card className="rounded-xl shadow-sm border border-gray-200">
       {/* Section Header */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between mb-4">
@@ -98,9 +198,9 @@ export function ProgramList({ selectedRegion }: { selectedRegion?: number }) {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowAll(true)}
-              className={`px-4 py-2 text-sm rounded-button transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+              className={`px-4 py-2 text-sm rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
                 showAll
-                  ? 'bg-primary text-white shadow-sm'
+                  ? 'bg-[#ff8a65] text-white shadow-sm'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -108,9 +208,9 @@ export function ProgramList({ selectedRegion }: { selectedRegion?: number }) {
             </button>
             <button
               onClick={() => setShowAll(false)}
-              className={`px-4 py-2 text-sm rounded-button transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+              className={`px-4 py-2 text-sm rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
                 !showAll
-                  ? 'bg-primary text-white shadow-sm'
+                  ? 'bg-[#ff8a65] text-white shadow-sm'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -130,177 +230,45 @@ export function ProgramList({ selectedRegion }: { selectedRegion?: number }) {
               setSearchQuery(e.target.value)
               setCurrentPage(1)
             }}
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-input bg-white text-gray-900 placeholder-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
         </div>
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider">
-                프로그램명
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider">
-                교육기관
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider">
-                주강사
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider">
-                보조강사
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider">
-                프로그램 생성날짜
-              </th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider">
-                교육 출석부
-              </th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider">
-                교육 활동 일지
-              </th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider">
-                교구 확인서
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider">
-                마지막 수정일
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-            {paginatedPrograms.length === 0 ? (
-              <tr>
-                <td colSpan={9} className="px-6 py-12 text-center">
-                  <div className="flex flex-col items-center justify-center">
-                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
-                      <Search className="w-8 h-8 text-gray-400 dark:text-gray-500" />
-                    </div>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">검색 결과가 없습니다</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">검색어 또는 필터를 다시 확인해 주세요.</p>
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              paginatedPrograms.map((program) => (
-                <tr
-                  key={program.id}
-                  className="transition-colors cursor-pointer"
-                  style={{ 
-                    '--hover-bg': 'rgba(15, 23, 42, 0.02)'
-                  } as React.CSSProperties}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = window.matchMedia('(prefers-color-scheme: dark)').matches 
-                      ? 'rgba(255, 255, 255, 0.05)' 
-                      : 'rgba(15, 23, 42, 0.02)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent'
-                  }}
-                  onClick={() => router.push(`/program`)}
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-[14px] font-medium text-primary hover:text-primary-dark cursor-pointer transition-colors duration-200">
-                      {program.name}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-[14px] text-gray-700 dark:text-gray-300">
-                    {program.institution}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-[14px] text-gray-700 dark:text-gray-300">
-                    {program.mainInstructor}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-[14px] text-gray-700 dark:text-gray-300">
-                    {program.subInstructor}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-[14px] text-gray-700 dark:text-gray-300">
-                    {program.createdDate}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleDetailClick('attendance', program.id)
-                      }}
-                      className="h-8 px-4 rounded-button border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium text-sm text-black dark:text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
-                    >
-                      상세보기
-                    </button>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleDetailClick('activity', program.id)
-                      }}
-                      className="h-8 px-4 rounded-button border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium text-sm text-black dark:text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
-                    >
-                      상세보기
-                    </button>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleDetailClick('equipment', program.id)
-                      }}
-                      className="h-8 px-4 rounded-button border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium text-sm text-black dark:text-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
-                    >
-                      상세보기
-                    </button>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-[12px] text-gray-500 dark:text-gray-400">
-                    {program.lastUpdated}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination */}
-      {filteredPrograms.length > 0 && (
-        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <div className="text-sm text-gray-700 dark:text-gray-300">
-            총 {filteredPrograms.length}개 중 {(currentPage - 1) * itemsPerPage + 1}-
-            {Math.min(currentPage * itemsPerPage, filteredPrograms.length)}개 표시
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="flex items-center gap-1 px-3 py-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              <span>이전</span>
-            </button>
-            {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`px-3 py-1 text-sm rounded-lg transition-colors ${
-                  currentPage === page
-                    ? 'bg-primary text-white'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-            {totalPages > 10 && <span className="px-2 text-gray-500 dark:text-gray-400">...</span>}
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="flex items-center gap-1 px-3 py-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <span>다음</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+      <Table
+        columns={columns}
+        dataSource={filteredPrograms.map((p) => ({ ...p, key: p.id }))}
+        pagination={{
+          current: currentPage,
+          pageSize: pageSize,
+          total: filteredPrograms.length,
+          showSizeChanger: true,
+          showTotal: (total) => `총 ${total}건`,
+          onChange: (page, size) => {
+            setCurrentPage(page)
+            setPageSize(size)
+          },
+        }}
+        rowKey="id"
+        scroll={{ x: 'max-content' }}
+        className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:sticky [&_.ant-table-thead>tr>th]:top-0 [&_.ant-table-thead>tr>th]:z-10 [&_.ant-table-tbody>tr]:border-b [&_.ant-table-tbody>tr]:border-gray-100 [&_.ant-pagination]:!mt-4 [&_.ant-pagination]:!mb-0 [&_.ant-pagination-item]:!rounded-lg [&_.ant-pagination-item]:!border-[#E6E6EF] [&_.ant-pagination-item]:!h-9 [&_.ant-pagination-item]:!min-w-[36px] [&_.ant-pagination-item-active]:!border-[#ff8a65] [&_.ant-pagination-item-active]:!bg-[#ff8a65] [&_.ant-pagination-item-active>a]:!text-white [&_.ant-pagination-prev]:!rounded-lg [&_.ant-pagination-prev]:!border-[#E6E6EF] [&_.ant-pagination-next]:!rounded-lg [&_.ant-pagination-next]:!border-[#E6E6EF] [&_.ant-pagination-options]:!ml-4 [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-[#E6E6EF] [&_.ant-pagination-total-text]:!text-[#151827] [&_.ant-pagination-total-text]:!mr-4"
+        onRow={(record) => ({
+          onClick: () => router.push(`/program`),
+          className: 'cursor-pointer hover:bg-gray-50',
+        })}
+        locale={{
+          emptyText: (
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <Search className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-1">검색 결과가 없습니다</h3>
+              <p className="text-sm text-gray-500">검색어 또는 필터를 다시 확인해 주세요.</p>
+            </div>
+          ),
+        }}
+      />
+    </Card>
   )
 }

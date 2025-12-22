@@ -568,7 +568,7 @@ export default function InstructorApplicationPage() {
           <div className="flex items-center h-16 px-4 py-3 bg-white border border-[#ECECF3] rounded-2xl shadow-[0_8px_24px_rgba(15,15,30,0.06)] mb-4 gap-3 flex-wrap">
             {/* Search Input - Primary, flex-grow */}
             <div className="flex-1 min-w-[200px]">
-              <div className="relative h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 focus-within:border-[#ff8a65] focus-within:shadow-[0_0_0_4px_rgba(255,122,89,0.18)] hover:border-[#D3D3E0]">
+              <div className="relative h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
                 <Input
                   placeholder="Search by name, ID, or email..."
                   value={searchText}
@@ -583,7 +583,7 @@ export default function InstructorApplicationPage() {
             
             {/* Role Filter */}
             <div className="w-[220px]">
-              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 focus-within:border-[#ff8a65] focus-within:shadow-[0_0_0_4px_rgba(255,122,89,0.18)] hover:border-[#D3D3E0]">
+              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
                 <Select
                   placeholder="ALL ROLES"
                   value={roleFilter === 'all' ? undefined : roleFilter}
@@ -597,7 +597,7 @@ export default function InstructorApplicationPage() {
             
             {/* Status Filter */}
             <div className="w-[220px]">
-              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 focus-within:border-[#ff8a65] focus-within:shadow-[0_0_0_4px_rgba(255,122,89,0.18)] hover:border-[#D3D3E0]">
+              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
                 <Select
                   placeholder="ALL STATUS"
                   value={statusFilter === 'all' ? undefined : statusFilter}
@@ -650,18 +650,9 @@ export default function InstructorApplicationPage() {
         /* Detail View */
         selectedApplication && (
           <div className="space-y-6">
-            {/* Top breadcrumb + actions */}
+            {/* Top actions */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 text-sm text-gray-500">
-                <Button
-                  type="text"
-                  icon={<ArrowLeft className="w-4 h-4" />}
-                  onClick={handleBackToList}
-                  className="text-gray-600 hover:text-gray-900 px-0"
-                >
-                  강사 신청 관리
-                </Button>
-                <ChevronRight className="w-4 h-4 text-gray-400" />
                 <span className="text-gray-900 font-medium">상세 정보</span>
               </div>
               <div className="flex gap-2">

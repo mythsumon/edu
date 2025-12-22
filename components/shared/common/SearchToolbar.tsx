@@ -73,7 +73,6 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
               h-11
               border-0
               bg-transparent
-              rounded-xl
               text-[#151827]
               placeholder:text-[#9AA0AE]
               [&_.ant-input]:!h-11
@@ -97,7 +96,6 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
           <div
             className="
               h-11
-              rounded-xl
               bg-white
               border border-[#E6E6EF]
               transition-all
@@ -141,7 +139,6 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
               w-10
               h-10
               p-0
-              rounded-full
               bg-transparent
               border border-[#EDEDF5]
               hover:bg-[#FFF3ED]

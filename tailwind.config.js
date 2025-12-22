@@ -73,16 +73,16 @@ module.exports = {
         },
       },
       borderRadius: {
-        'input': '32px',    // Super-elliptical for inputs
-        'button': '32px',   // Super-elliptical for buttons
-        'card': '32px',     // Super-elliptical for cards
-        'card-lg': '32px',  // Super-elliptical for large cards
-        'sm': '8px',
-        'md': '12px',
-        'lg': '16px',
-        'xl': '24px',
-        '2xl': '32px',
-        '3xl': '40px',
+        'input': '8px',    // Rounded for inputs
+        'button': '8px',   // Rounded for buttons
+        'card': '8px',     // Rounded for cards
+        'card-lg': '12px',  // Rounded for large cards
+        'sm': '4px',
+        'md': '6px',
+        'lg': '8px',
+        'xl': '12px',
+        '2xl': '16px',
+        '3xl': '24px',
       },
       boxShadow: {
         'card': '0 2px 8px rgba(255, 138, 101, 0.08), 0 1px 3px rgba(255, 138, 101, 0.12)',

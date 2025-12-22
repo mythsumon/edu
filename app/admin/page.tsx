@@ -43,7 +43,7 @@ export default function DashboardPage() {
 
   return (
     <ProtectedRoute requiredRole="admin">
-      <div className="p-6 bg-background min-h-screen">
+      <div className="p-6">
         {error && (
           <ErrorToast
             message={error}

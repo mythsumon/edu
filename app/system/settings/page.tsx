@@ -277,15 +277,6 @@ export default function SystemSettingsPage() {
   return (
     <ProtectedRoute requiredRole="admin">
       <div className="p-6">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-        <span>홈</span>
-        <ChevronRight className="w-4 h-4" />
-        <span>시스템 관리</span>
-        <ChevronRight className="w-4 h-4" />
-        <span>설정 및 사용자 관리</span>
-      </div>
-
       {/* Page Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">설정 및 사용자 관리</h1>
@@ -445,7 +436,21 @@ export default function SystemSettingsPage() {
                     type="primary"
                     icon={<Save className="w-4 h-4" />}
                     onClick={() => settingsForm.submit()}
-                    className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
+                    className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
+                    style={{
+                      backgroundColor: '#1a202c',
+                      borderColor: '#1a202c',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                      color: '#ffffff',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#2d3748'
+                      e.currentTarget.style.borderColor = '#2d3748'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#1a202c'
+                      e.currentTarget.style.borderColor = '#1a202c'
+                    }}
                   >
                     저장
                   </Button>
@@ -512,7 +517,21 @@ export default function SystemSettingsPage() {
                     <Button
                       type="primary"
                       onClick={handleUserSearch}
-                      className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
+                      className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
+                    style={{
+                      backgroundColor: '#1a202c',
+                      borderColor: '#1a202c',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                      color: '#ffffff',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#2d3748'
+                      e.currentTarget.style.borderColor = '#2d3748'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#1a202c'
+                      e.currentTarget.style.borderColor = '#1a202c'
+                    }}
                     >
                       검색
                     </Button>
@@ -551,7 +570,21 @@ export default function SystemSettingsPage() {
                       type="primary"
                       icon={<UserPlus className="w-4 h-4" />}
                       onClick={handleRegisterClick}
-                      className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
+                      className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
+                    style={{
+                      backgroundColor: '#1a202c',
+                      borderColor: '#1a202c',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                      color: '#ffffff',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#2d3748'
+                      e.currentTarget.style.borderColor = '#2d3748'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#1a202c'
+                      e.currentTarget.style.borderColor = '#1a202c'
+                    }}
                     >
                       + 사용자 등록
                     </Button>
@@ -585,21 +618,8 @@ export default function SystemSettingsPage() {
               ) : viewMode === 'detail' && selectedUser ? (
                 /* Detail View */
                 <div className="space-y-6">
-                  {/* Top breadcrumb + actions */}
+                  {/* Top actions */}
                   <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-3 text-sm text-gray-500">
-                      <Button
-                        type="text"
-                        icon={<ArrowLeft className="w-4 h-4" />}
-                        onClick={handleBackToList}
-                        className="text-gray-600 hover:text-gray-900 px-0"
-                      >
-                        사용자 관리
-                      </Button>
-                      <ChevronRight className="w-4 h-4 text-gray-400" />
-                      <span className="text-gray-900 font-medium">상세 정보</span>
-                    </div>
-
                     <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-5 md:p-6 flex flex-col gap-4">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="inline-flex items-center px-3 py-1 text-xs font-semibold text-gray-700 bg-gray-100 rounded-full">
@@ -667,7 +687,21 @@ export default function SystemSettingsPage() {
                         <Button
                           type="primary"
                           onClick={handleEditFromDetail}
-                          className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
+                          className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
+                    style={{
+                      backgroundColor: '#1a202c',
+                      borderColor: '#1a202c',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                      color: '#ffffff',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#2d3748'
+                      e.currentTarget.style.borderColor = '#2d3748'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#1a202c'
+                      e.currentTarget.style.borderColor = '#1a202c'
+                    }}
                         >
                           수정하기
                         </Button>
@@ -752,20 +786,6 @@ export default function SystemSettingsPage() {
               ) : (
                 /* Register/Edit View */
                 <div className="space-y-6">
-                  {/* Breadcrumb */}
-                  <div className="flex items-center gap-3 text-sm text-gray-500">
-                    <Button
-                      type="text"
-                      icon={<ArrowLeft className="w-4 h-4" />}
-                      onClick={handleBackToList}
-                      className="text-gray-600 hover:text-gray-900 px-0"
-                    >
-                      사용자 관리
-                    </Button>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                    <span className="text-gray-900 font-medium">{formMode === 'create' ? '사용자 등록' : '사용자 수정'}</span>
-                  </div>
-
                   {/* Form Card */}
                   <Card className="rounded-2xl shadow-sm border border-gray-200">
                     <Form
@@ -852,7 +872,21 @@ export default function SystemSettingsPage() {
                           type="primary"
                           icon={<Save className="w-4 h-4" />}
                           onClick={() => form.submit()}
-                          className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
+                          className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
+                    style={{
+                      backgroundColor: '#1a202c',
+                      borderColor: '#1a202c',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                      color: '#ffffff',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#2d3748'
+                      e.currentTarget.style.borderColor = '#2d3748'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#1a202c'
+                      e.currentTarget.style.borderColor = '#1a202c'
+                    }}
                         >
                           {formMode === 'create' ? '등록하기' : '저장하기'}
                         </Button>

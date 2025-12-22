@@ -29,12 +29,11 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(({
       className={`
         flex items-center
         h-12
-        rounded-[9999px]
-        bg-[#fff5f0]
+        rounded-lg
+        bg-white
         border border-[#ffeae0]
         transition-all duration-200
-        focus-within:ring-2 focus-within:ring-[#ff8a65]/20 focus-within:border-[#ff8a65]
-        ${error ? 'border-red-500 focus-within:ring-red-500/20' : ''}
+        ${error ? 'border-red-500' : ''}
         ${className}
       `}
     >

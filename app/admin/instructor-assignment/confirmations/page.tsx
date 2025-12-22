@@ -327,7 +327,7 @@ export default function InstructorConfirmationPage() {
           <div className="flex items-center h-16 px-4 py-3 bg-white border border-[#ECECF3] rounded-2xl shadow-[0_8px_24px_rgba(15,15,30,0.06)] mb-4 gap-3 flex-wrap">
             {/* Search Input - Primary, flex-grow */}
             <div className="flex-1 min-w-[200px]">
-              <div className="relative h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 focus-within:border-[#ff8a65] focus-within:shadow-[0_0_0_4px_rgba(255,122,89,0.18)] hover:border-[#D3D3E0]">
+              <div className="relative h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
                 <Input
                   placeholder="Search by name, ID, or email..."
                   value={searchText}
@@ -342,7 +342,7 @@ export default function InstructorConfirmationPage() {
             
             {/* Status Filter */}
             <div className="w-[220px]">
-              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 focus-within:border-[#ff8a65] focus-within:shadow-[0_0_0_4px_rgba(255,122,89,0.18)] hover:border-[#D3D3E0]">
+              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
                 <Select
                   placeholder="ALL STATUS"
                   value={statusFilter}
@@ -356,7 +356,7 @@ export default function InstructorConfirmationPage() {
             
             {/* Assigned Lessons Filter */}
             <div className="w-[220px]">
-              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 focus-within:border-[#ff8a65] focus-within:shadow-[0_0_0_4px_rgba(255,122,89,0.18)] hover:border-[#D3D3E0]">
+              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
                 <Select
                   placeholder="ASSIGNED"
                   value={assignedLessonsFilter}
@@ -409,21 +409,8 @@ export default function InstructorConfirmationPage() {
         /* Detail View */
         selectedInstructor && (
           <div className="space-y-6">
-            {/* Top breadcrumb + actions */}
+            {/* Top actions */}
             <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-3 text-sm text-gray-500">
-                <Button
-                  type="text"
-                  icon={<ArrowLeft className="w-4 h-4" />}
-                  onClick={handleBackToList}
-                  className="text-gray-600 hover:text-gray-900 px-0"
-                >
-                  출강 확정 관리
-                </Button>
-                <ChevronRight className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-900 font-medium">상세 정보</span>
-              </div>
-
               <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-5 md:p-6 flex flex-col gap-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="inline-flex items-center px-3 py-1 text-xs font-semibold text-gray-700 bg-gray-100 rounded-full">

@@ -360,7 +360,21 @@ export default function InstitutionManagementPage() {
               <Button
                 type="primary"
                 onClick={handleRegisterClick}
-                className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
+              className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
+              style={{
+                backgroundColor: '#1a202c',
+                borderColor: '#1a202c',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                color: '#ffffff',
+              }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#2d3748'
+                  e.currentTarget.style.borderColor = '#2d3748'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#1a202c'
+                  e.currentTarget.style.borderColor = '#1a202c'
+                }}
               >
                 + 기관 등록
               </Button>
@@ -390,7 +404,21 @@ export default function InstitutionManagementPage() {
                 <Button
                   type="primary"
                   onClick={handleEditFromDetail}
-                  className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
+              className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
+              style={{
+                backgroundColor: '#1a202c',
+                borderColor: '#1a202c',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                color: '#ffffff',
+              }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#2d3748'
+                  e.currentTarget.style.borderColor = '#2d3748'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#1a202c'
+                  e.currentTarget.style.borderColor = '#1a202c'
+                }}
                 >
                   수정하기
                 </Button>
@@ -408,7 +436,21 @@ export default function InstitutionManagementPage() {
                   type="primary"
                   icon={<Save className="w-4 h-4" />}
                   onClick={() => form.submit()}
-                  className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
+              className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
+              style={{
+                backgroundColor: '#1a202c',
+                borderColor: '#1a202c',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                color: '#ffffff',
+              }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#2d3748'
+                  e.currentTarget.style.borderColor = '#2d3748'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#1a202c'
+                  e.currentTarget.style.borderColor = '#1a202c'
+                }}
                 >
                   저장
                 </Button>
@@ -432,7 +474,7 @@ export default function InstitutionManagementPage() {
           <div className="flex items-center h-16 px-4 py-3 bg-white border border-[#ECECF3] rounded-2xl shadow-[0_8px_24px_rgba(15,15,30,0.06)] mb-4 gap-3 flex-wrap">
             {/* Search Input - Primary, flex-grow */}
             <div className="flex-1 min-w-[200px]">
-              <div className="relative h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 focus-within:border-[#ff8a65] focus-within:shadow-[0_0_0_4px_rgba(255,122,89,0.18)] hover:border-[#D3D3E0]">
+              <div className="relative h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
                 <Input
                   placeholder="Search by name, ID, or email..."
                   value={searchText}
@@ -446,7 +488,7 @@ export default function InstitutionManagementPage() {
             
             {/* Region Filter */}
             <div className="w-[220px]">
-              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 focus-within:border-[#ff8a65] focus-within:shadow-[0_0_0_4px_rgba(255,122,89,0.18)] hover:border-[#D3D3E0]">
+              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
                 <Select
                   placeholder="ALL REGIONS"
                   value={regionFilter}

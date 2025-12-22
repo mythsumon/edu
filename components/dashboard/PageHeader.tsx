@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronRight, RotateCcw } from 'lucide-react'
+import { RotateCcw } from 'lucide-react'
 import { useState } from 'react'
 import { useLanguage } from '@/components/localization/LanguageContext'
 
@@ -33,13 +33,6 @@ export function PageHeader() {
 
   return (
     <div className="mb-6">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-        <span>{t('pageHeader.breadcrumbHome')}</span>
-        <ChevronRight className="w-3 h-3" />
-        <span>{t('pageHeader.breadcrumbCurrent')}</span>
-      </div>
-
       {/* Title Row */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div>

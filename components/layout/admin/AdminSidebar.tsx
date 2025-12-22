@@ -101,15 +101,15 @@ export function AdminSidebar({ isCollapsed, setIsCollapsed }: AdminSidebarProps)
   }
 
   return (
-    <aside className={`${isCollapsed ? 'w-20' : 'w-64'} bg-[#3a2e2a] text-white flex flex-col h-screen fixed left-0 top-0 z-40 transition-all duration-300`}>
+    <aside className={`${isCollapsed ? 'w-20' : 'w-64'} bg-slate-900 text-white flex flex-col h-screen fixed left-0 top-0 z-40 transition-all duration-300`}>
       {/* Sidebar Header */}
-      <div className="p-4 border-b border-[#4a3e3a] flex items-center justify-between">
+      <div className="p-4 border-b border-slate-800 flex items-center justify-between">
         {!isCollapsed ? (
           <>
             <h1 className="text-xl font-bold text-white">{t('sidebar.title')}</h1>
             <button 
               onClick={toggleSidebar}
-              className="p-1 rounded-md text-white/70 hover:text-[#ff8a65] hover:bg-[#4a3e3a] transition-colors"
+              className="p-1 rounded-md text-white/70 hover:text-white hover:bg-slate-800 transition-colors"
             >
               <Menu className="w-5 h-5" />
             </button>
@@ -154,8 +154,8 @@ export function AdminSidebar({ isCollapsed, setIsCollapsed }: AdminSidebarProps)
                   }}
                   className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors ${
                     group.items.some(item => isItemActive(item.href))
-                      ? 'bg-[#4a3e3a] text-[#ff8a65]'
-                      : 'text-white/90 hover:bg-[#4a3e3a] hover:text-[#ff8a65]'
+                      ? 'bg-slate-800 text-white'
+                      : 'text-white/90 hover:bg-slate-800 hover:text-white'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -184,8 +184,8 @@ export function AdminSidebar({ isCollapsed, setIsCollapsed }: AdminSidebarProps)
                               href={item.href}
                               className={`flex items-center w-full px-4 py-2.5 text-sm rounded-lg transition-colors ${
                                 isActive
-                                  ? 'bg-[#ff8a65] text-white'
-                                  : 'text-white/80 hover:bg-[#4a3e3a] hover:text-[#ff8a65]'
+                                  ? 'bg-slate-800 text-white'
+                                  : 'text-white/80 hover:bg-slate-800 hover:text-white'
                               }`}
                             >
                               <span>{t(item.labelKey)}</span>
@@ -196,7 +196,7 @@ export function AdminSidebar({ isCollapsed, setIsCollapsed }: AdminSidebarProps)
                     </ul>
                   ) : (
                     isGroupHovered && (
-                      <div className="fixed left-20 ml-2 w-48 bg-[#3a2e2a] rounded-lg shadow-lg z-50 py-2 border border-[#4a3e3a]">
+                      <div className="fixed left-20 ml-2 w-48 bg-slate-900 rounded-lg shadow-lg z-50 py-2 border border-slate-800">
                         {group.items.map((item) => {
                           const isActive = isItemActive(item.href)
                           

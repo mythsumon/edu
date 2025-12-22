@@ -79,15 +79,15 @@ export function InstructorSidebar({ isCollapsed, setIsCollapsed }: InstructorSid
   }
 
   return (
-    <aside className={`${isCollapsed ? 'w-20' : 'w-64'} bg-[#3a2e2a] text-white flex flex-col h-screen fixed left-0 top-0 z-40 transition-all duration-300`}>
+    <aside className={`${isCollapsed ? 'w-20' : 'w-64'} bg-indigo-600 text-white flex flex-col h-screen fixed left-0 top-0 z-40 transition-all duration-300`}>
       {/* Sidebar Header */}
-      <div className="p-4 border-b border-[#4a3e3a] flex items-center justify-between">
+      <div className="p-4 border-b border-indigo-700 flex items-center justify-between">
         {!isCollapsed ? (
           <>
             <h1 className="text-xl font-bold text-white">{t('sidebar.title')}</h1>
             <button 
               onClick={toggleSidebar}
-              className="p-1 rounded-md text-white/70 hover:text-[#ff8a65] hover:bg-[#4a3e3a] transition-colors"
+              className="p-1 rounded-md text-white/70 hover:text-white hover:bg-indigo-700 transition-colors"
             >
               <Menu className="w-5 h-5" />
             </button>
@@ -132,8 +132,8 @@ export function InstructorSidebar({ isCollapsed, setIsCollapsed }: InstructorSid
                   }}
                   className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors ${
                     group.items.some(item => isItemActive(item.href))
-                      ? 'bg-[#4a3e3a] text-[#ff8a65]'
-                      : 'text-white/90 hover:bg-[#4a3e3a] hover:text-[#ff8a65]'
+                      ? 'bg-indigo-700 text-white'
+                      : 'text-white/90 hover:bg-indigo-700 hover:text-white'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -163,8 +163,8 @@ export function InstructorSidebar({ isCollapsed, setIsCollapsed }: InstructorSid
                               href={item.href}
                               className={`flex items-center gap-3 w-full px-4 py-2.5 text-sm rounded-lg transition-colors ${
                                 isActive
-                                  ? 'bg-[#ff8a65] text-white'
-                                  : 'text-white/80 hover:bg-[#4a3e3a] hover:text-[#ff8a65]'
+                                  ? 'bg-indigo-700 text-white'
+                                  : 'text-white/80 hover:bg-indigo-700 hover:text-white'
                               }`}
                             >
                               {ItemIcon && <ItemIcon className="w-4 h-4" />}
@@ -176,7 +176,7 @@ export function InstructorSidebar({ isCollapsed, setIsCollapsed }: InstructorSid
                     </ul>
                   ) : (
                     isGroupHovered && (
-                      <div className="fixed left-20 ml-2 w-48 bg-[#3a2e2a] rounded-lg shadow-lg z-50 py-2 border border-[#4a3e3a]">
+                      <div className="fixed left-20 ml-2 w-48 bg-indigo-600 rounded-lg shadow-lg z-50 py-2 border border-indigo-700">
                         {group.items.map((item) => {
                           const ItemIcon = item.icon
                           const isActive = isItemActive(item.href)
@@ -187,8 +187,8 @@ export function InstructorSidebar({ isCollapsed, setIsCollapsed }: InstructorSid
                               href={item.href}
                               className={`flex items-center gap-3 w-full px-4 py-2.5 text-sm rounded-lg transition-colors mx-2 ${
                                 isActive
-                                  ? 'bg-primary text-white dark:bg-primary'
-                                  : 'text-sidebar-text hover:bg-sidebar-hover hover:text-sidebar-textHover dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
+                                  ? 'bg-indigo-700 text-white'
+                                  : 'text-white/80 hover:bg-indigo-700 hover:text-white'
                               }`}
                             >
                               {ItemIcon && <ItemIcon className="w-4 h-4" />}
