@@ -137,7 +137,7 @@ export default function DashboardPage() {
 
   // Render error state
   if (error) {
-    const errorMessage: string = error
+    const errorMessage = typeof error === 'string' ? error : '오류가 발생했습니다.'
     return (
       <ProtectedRoute requiredRole="admin">
         <div className="p-6">
