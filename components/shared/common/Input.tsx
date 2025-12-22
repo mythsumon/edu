@@ -1,6 +1,7 @@
 'use client'
 
-import { Input as AntInput, InputProps, TextAreaProps } from 'antd'
+import { Input as AntInput, InputProps } from 'antd'
+import type { TextAreaProps } from 'antd/es/input'
 import React from 'react'
 
 interface CustomInputProps extends Omit<InputProps, 'variant'> {

@@ -21,7 +21,7 @@ export function RegionGrid({ selectedRegion, onRegionSelect }: { selectedRegion?
             key={region.regionNumber}
             region={{
               id: `region${region.regionNumber}`,
-              name: region.name,
+              name: `${region.regionNumber}권역`,
               totalCount: 0,
               completedCount: 0,
               inProgressCount: 0,

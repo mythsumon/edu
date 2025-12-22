@@ -60,7 +60,7 @@ export function SearchPanel({
                     e.stopPropagation()
                     try {
                       onRegionSelect(regionNumber)
-                      onCategorySelect(undefined as SpecialCategory)
+                      onCategorySelect(undefined)
                     } catch (error) {
                       console.error('Error selecting region:', error)
                     }
