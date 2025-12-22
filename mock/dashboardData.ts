@@ -1,6 +1,7 @@
 // Mock data for dashboard components
+import type { Region } from '@/types/region'
 
-export const mockRegionData = [
+export const mockRegionData: Region[] = [
   {
     id: 'region1',
     name: '1권역',

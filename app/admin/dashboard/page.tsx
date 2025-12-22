@@ -26,7 +26,7 @@ import {
 } from '@/mock/dashboardData'
 
 // Types - using the correct types from region.ts
-import type { RegionData } from '@/types/region'
+import type { Region } from '@/types/region'
 
 // Define types for special items and KPI data based on mock data structure
 interface SpecialItem {
@@ -65,7 +65,7 @@ export default function DashboardPage() {
   const [selectedSpecialItem, setSelectedSpecialItem] = useState<string | null>(null)
   const [showSearchPanel, setShowSearchPanel] = useState(true)
   const [showResultPanel, setShowResultPanel] = useState(false)
-  const [regionData, setRegionData] = useState<RegionData[]>([])
+  const [regionData, setRegionData] = useState<Region[]>([])
   const [specialItems, setSpecialItems] = useState<SpecialItem[]>([])
   const [kpiData, setKpiData] = useState<KPI[]>([])
   const [chartData, setChartData] = useState<any[]>([])

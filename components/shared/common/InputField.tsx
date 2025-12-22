@@ -14,11 +14,15 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(({
   type = 'text',
   error = false,
   className = '',
+  value,
   ...props
 }, ref) => {
   const [showPassword, setShowPassword] = useState(false)
   const isPassword = type === 'password'
   const inputType = isPassword && showPassword ? 'text' : type
+
+  // Ensure value is never undefined to prevent controlled/uncontrolled warning
+  const inputValue = value ?? ''
 
   return (
     <div
@@ -45,6 +49,7 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(({
       <input
         ref={ref}
         type={inputType}
+        value={inputValue}
         className={`
           block
           flex-1
