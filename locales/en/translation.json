@@ -53,5 +53,31 @@
     "institutions": "Institution Management",
     "programs": "Program Management",
     "settings": "Settings"
+  },
+  "header": {
+    "title": "Overall Program Status",
+    "notifications": "Notifications",
+    "profile": "Profile"
+  },
+  "sidebar": {
+    "title": "Instructor Management System",
+    "dashboard": "Dashboard",
+    "overallStatus": "Overall Status",
+    "myDashboard": "My Dashboard",
+    "educationOperations": "Education Operations",
+    "educationManagement": "Education Management",
+    "instructorAssignment": "Instructor Assignment",
+    "instructorApplication": "Instructor Application",
+    "instructorAllocation": "Manual Instructor Allocation",
+    "teachingConfirmation": "Teaching Confirmation",
+    "educationApplication": "Education Application",
+    "educationAssignment": "Education Assignment",
+    "referenceInfo": "Reference Information",
+    "institution": "Institution",
+    "program": "Program",
+    "instructor": "Instructor",
+    "systemManagement": "System Management",
+    "settings": "Settings",
+    "systemSettings": "System Settings"
   }
 }

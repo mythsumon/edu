@@ -7,10 +7,24 @@
   "sidebar": {
     "title": "교육 관리 시스템",
     "home": "홈",
-    "dashboard": "전체 프로그램 현황",
-    "institutions": "교육기관 관리",
-    "programs": "프로그램 관리",
-    "settings": "설정"
+    "dashboard": "대시보드",
+    "overallStatus": "전체 프로그램 현황",
+    "educationOperations": "교육 운영",
+    "educationManagement": "교육 관리",
+    "instructorAssignment": "강사 배정",
+    "instructorApplication": "강사 신청 관리",
+    "instructorAllocation": "강사 배정 관리",
+    "teachingConfirmation": "출강 확정 관리",
+    "referenceInfo": "기준정보 관리",
+    "institutionManagement": "교육기관 관리",
+    "programManagement": "프로그램 관리",
+    "instructorManagement": "강사 관리",
+    "systemManagement": "시스템 관리",
+    "settings": "설정 및 사용자 관리",
+    "institution": "교육기관",
+    "program": "프로그램",
+    "instructor": "강사",
+    "systemSettings": "시스템 설정"
   },
   "pageHeader": {
     "breadcrumbHome": "홈",

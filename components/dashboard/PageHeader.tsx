@@ -43,9 +43,6 @@ export function PageHeader() {
       {/* Title Row */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">
-            {t('pageHeader.title')}
-          </h1>
           <p className="text-sm text-gray-600">{t('pageHeader.description')}</p>
         </div>
 

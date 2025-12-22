@@ -975,8 +975,6 @@ export default function InstructorAssignmentPage() {
         >
           <p>정말 이 강사를 삭제하시겠습니까?</p>
         </Modal>
-      )}
     </div>
   )
 }
-

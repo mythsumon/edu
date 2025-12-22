@@ -53,5 +53,31 @@
     "institutions": "교육기관 관리",
     "programs": "프로그램 관리",
     "settings": "설정"
+  },
+  "header": {
+    "title": "전체 프로그램 현황",
+    "notifications": "알림",
+    "profile": "프로필"
+  },
+  "sidebar": {
+    "title": "강사 관리 시스템",
+    "dashboard": "대시보드",
+    "overallStatus": "전체 현황",
+    "myDashboard": "내 대시보드",
+    "educationOperations": "교육 운영",
+    "educationManagement": "교육 관리",
+    "instructorAssignment": "강사 배정",
+    "instructorApplication": "강사 신청",
+    "instructorAllocation": "강사 수동배정",
+    "teachingConfirmation": "출강 확정",
+    "educationApplication": "교육 신청",
+    "educationAssignment": "교육 배정",
+    "referenceInfo": "참고 정보",
+    "institution": "교육기관",
+    "program": "프로그램",
+    "instructor": "강사",
+    "systemManagement": "시스템 관리",
+    "settings": "설정",
+    "systemSettings": "시스템 설정"
   }
 }

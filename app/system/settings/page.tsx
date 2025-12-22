@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Table, Button, Card, Form, Input, Select, Space, Switch, Tabs } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { ChevronRight, Save, Trash2, RotateCcw, Eye, UserPlus, ArrowLeft } from 'lucide-react'
@@ -274,7 +275,8 @@ export default function SystemSettingsPage() {
   }
 
   return (
-    <div className="p-6">
+    <ProtectedRoute requiredRole="admin">
+      <div className="p-6">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
         <span>홈</span>
@@ -865,7 +867,11 @@ export default function SystemSettingsPage() {
           ]}
         />
       </Card>
-    </div>
+      </div>
+    </ProtectedRoute>
   )
+}
+
+
 }
 

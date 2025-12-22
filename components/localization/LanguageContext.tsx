@@ -16,15 +16,19 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Check for saved language preference
-    const savedLocale = localStorage.getItem('locale') as Locale | null
-    if (savedLocale && (savedLocale === 'ko' || savedLocale === 'en')) {
-      setLocale(savedLocale)
+    if (typeof window !== 'undefined') {
+      const savedLocale = localStorage.getItem('locale') as Locale | null
+      if (savedLocale && (savedLocale === 'ko' || savedLocale === 'en')) {
+        setLocale(savedLocale)
+      }
     }
   }, [])
 
   const updateLocale = (newLocale: Locale) => {
     setLocale(newLocale)
-    localStorage.setItem('locale', newLocale)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('locale', newLocale)
+    }
   }
 
   const translate = (key: string, params?: Record<string, string>) => {

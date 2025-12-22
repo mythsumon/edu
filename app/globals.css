@@ -3,64 +3,140 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Luminous Peach Academy Palette */
+    --background: #fffbf9; /* Cream White - primary canvas */
+    --background-surface: #fff5f0; /* Soft Peach - input fields, sidebars */
+    --foreground: #3a2e2a; /* Deep Cocoa - primary text */
+    --foreground-secondary: #8d7c77; /* Muted Brown - labels, descriptions */
+    --peach-primary: #ff8a65; /* Vibrant Peach - primary buttons, active icons */
+    --peach-primary-dark: #ff7043; /* Deep Sunset - hover states */
+    --peach-primary-light: #ffeae0; /* Pastel Peach - borders & dividers */
+    --peach-gradient-start: #ff8a65;
+    --peach-gradient-end: #ff9e7d;
+    --success: #4ade80;
+    --success-bg: #f0fdf4;
+    --info: #3b82f6;
+    --info-bg: #eff6ff;
+    --warning: #f97316;
+    --warning-bg: #fff7ed;
+  }
+  
+  .dark {
+    --background: #1F2937;
+    --background-surface: #2D1B0E;
+    --foreground: #F9FAFB;
+    --foreground-secondary: #D1D5DB;
+    --peach-primary: #ff9e7d;
+    --peach-primary-dark: #ff8a65;
+    --peach-primary-light: #2D1B0E;
+  }
+  
   * {
-    @apply border-gray-200;
+    @apply border-gray-200 dark:border-gray-700;
   }
   
   body {
-    @apply bg-background text-gray-900 text-base;
+    background-color: #fffbf9; /* Cream White */
+    color: #3a2e2a; /* Deep Cocoa */
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
       'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
       sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-size: 18px;
+    font-size: 16px;
   }
   
-  /* Increase base font sizes */
+  /* Base text sizes */
   html {
-    font-size: 18px;
+    font-size: 16px;
   }
   
-  /* Increase text sizes throughout */
+  /* Text sizes throughout */
   .text-sm {
-    font-size: 1rem; /* 18px instead of 14px */
-    line-height: 1.625rem;
+    font-size: 0.875rem; /* 14px */
+    line-height: 1.25rem;
   }
   
   .text-base {
-    font-size: 1.125rem; /* 20px instead of 16px */
-    line-height: 1.75rem;
+    font-size: 1rem; /* 16px */
+    line-height: 1.5rem;
   }
   
   .text-lg {
-    font-size: 1.375rem; /* 22px instead of 18px */
-    line-height: 2rem;
+    font-size: 1.125rem; /* 18px */
+    line-height: 1.75rem;
   }
   
   .text-xl {
-    font-size: 1.5rem; /* 24px instead of 20px */
-    line-height: 2.25rem;
+    font-size: 1.25rem; /* 20px */
+    line-height: 1.75rem;
   }
   
   .text-2xl {
-    font-size: 1.875rem; /* 30px instead of 24px */
-    line-height: 2.5rem;
+    font-size: 1.5rem; /* 24px */
+    line-height: 2rem;
   }
   
   .text-3xl {
-    font-size: 2.375rem; /* 38px instead of 30px */
-    line-height: 2.75rem;
+    font-size: 1.875rem; /* 30px */
+    line-height: 2.25rem;
   }
 }
 
 @layer utilities {
   .text-balance {
-    text-wrap: balance;
+    /* text-wrap: balance; - may not be supported by all CSS parsers */
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  /* Custom utility classes for the admin dashboard */
+  .card {
+    @apply bg-white rounded-[32px] shadow-peach border border-[#ffeae0] dark:bg-gray-800 dark:border-gray-700;
+  }
+  
+  .card-hover {
+    @apply hover:shadow-peach-lg transition-shadow duration-200;
+  }
+  
+  .btn-primary {
+    @apply btn-peach-gradient text-white font-medium rounded-[32px] px-6 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#ff8a65] focus:ring-offset-2;
+  }
+  
+  .btn-secondary {
+    @apply bg-[#3b82f6] hover:bg-[#2563eb] text-white font-medium rounded-[32px] px-6 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:ring-offset-2;
+  }
+  
+  .btn-outline {
+    @apply border-2 border-[#ff8a65] text-[#ff8a65] hover:bg-[#ff8a65] hover:text-white font-medium rounded-[32px] px-6 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#ff8a65] focus:ring-offset-2;
+  }
+  
+  .btn-danger {
+    @apply bg-[#EF4444] hover:bg-[#dc2626] text-white font-medium rounded-[32px] px-6 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#EF4444] focus:ring-offset-2;
+  }
+  
+  .input-base {
+    @apply w-full px-4 py-2.5 border border-[#ffeae0] rounded-[32px] bg-[#fff5f0] text-[#3a2e2a] placeholder-[#8d7c77] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#ff8a65] focus:border-transparent;
+  }
+  
+  /* Peach gradient button */
+  .btn-peach-gradient {
+    background: linear-gradient(135deg, #ff8a65 0%, #ff9e7d 100%);
+    box-shadow: 0 4px 12px rgba(255, 138, 101, 0.25);
+  }
+  
+  .btn-peach-gradient:hover {
+    background: linear-gradient(135deg, #ff7043 0%, #ff8a65 100%);
+    box-shadow: 0 6px 16px rgba(255, 138, 101, 0.35);
+  }
+  
+  /* Soft peach-tinted shadow */
+  .shadow-peach {
+    box-shadow: 0 4px 20px rgba(255, 138, 101, 0.12);
+  }
+  
+  .shadow-peach-lg {
+    box-shadow: 0 8px 32px rgba(255, 138, 101, 0.15);
   }
 }
-
-
-
-
-

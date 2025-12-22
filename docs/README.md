@@ -9,6 +9,9 @@ Welcome to the Education Dashboard documentation. This folder contains guides an
 ## Technical Documentation
 - [Project Structure](../README.md#project-structure) - Overview of the codebase organization
 - [Development Setup](../README.md#getting-started) - Instructions for setting up the development environment
+- [Admin Role Menu Structure](ADMIN_ROLE_MENU_STRUCTURE.md) - Menu structure for admin users
+- [Admin Menu File Mapping](ADMIN_MENU_FILE_MAPPING.md) - Mapping of admin menu items to file paths
+- [Role-Based Access Control](ROLE_BASED_ACCESS.md) - Implementation of user roles and permissions
 
 ## Feature Guides
 - [Multilingual Support](../USER_GUIDE.md#language-support) - How to use and configure language options

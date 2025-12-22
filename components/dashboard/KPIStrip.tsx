@@ -18,7 +18,7 @@ function KPICard({ label, value, trend }: KPICardProps) {
       <div className="text-xs font-semibold text-gray-500">{label}</div>
       <div className="text-2xl font-bold text-gray-900">{value}</div>
       {trend && (
-        <div className={`flex items-center gap-1 text-xs ${trend.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+        <div className={`flex items-center gap-1 text-xs ${trend.isPositive ? 'text-success' : 'text-danger'}`}>
           {trend.isPositive ? (
             <TrendingUp className="w-3 h-3" />
           ) : (
@@ -60,7 +60,9 @@ export function KPIStrip() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
       {kpis.map((kpi, index) => (
-        <KPICard key={index} {...kpi} />
+        <div key={index} className="bg-white rounded-2xl shadow-card p-4 border border-gray-100 hover:shadow-card-hover transition-shadow">
+          <KPICard {...kpi} />
+        </div>
       ))}
     </div>
   )

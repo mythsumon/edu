@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Table, Button, Card, Form, Input, Select, Checkbox, Space } from 'antd'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { Table, Button, Card, Form, Select, Checkbox, Space } from 'antd'
+import { Input } from '@/components/shared/common'
 import type { ColumnsType } from 'antd/es/table'
 import { ChevronRight, Download, ArrowLeft, Save, Trash2, RotateCcw, Eye } from 'lucide-react'
 
@@ -334,7 +336,8 @@ export default function InstitutionManagementPage() {
   }
 
   return (
-    <div className="p-6">
+    <ProtectedRoute requiredRole="admin">
+      <div className="p-6">
       {/* Breadcrumb */}
       {viewMode === 'list' && (
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
@@ -350,17 +353,26 @@ export default function InstitutionManagementPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">교육기관 관리</h1>
         {viewMode === 'list' ? (
-          <Space>
-            {selectedRowKeys.length > 0 && (
+          <div className="flex items-center gap-3">
+            <Space>
+              {selectedRowKeys.length > 0 && (
+                <Button
+                  danger
+                  icon={<Trash2 className="w-4 h-4" />}
+                  onClick={handleBulkDelete}
+                  className="h-11 px-6 rounded-xl font-medium transition-all"
+                >
+                  삭제 ({selectedRowKeys.length})
+                </Button>
+              )}
               <Button
-                danger
-                icon={<Trash2 className="w-4 h-4" />}
-                onClick={handleBulkDelete}
-                className="h-11 px-6 rounded-xl font-medium transition-all"
+                type="primary"
+                onClick={handleRegisterClick}
+                className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
               >
-                삭제 ({selectedRowKeys.length})
+                + 기관 등록
               </Button>
-            )}
+            </Space>
             <Button
               icon={<Download className="w-4 h-4" />}
               onClick={() => console.log('Export to Excel')}
@@ -368,14 +380,7 @@ export default function InstitutionManagementPage() {
             >
               엑셀 추출
             </Button>
-            <Button
-              type="primary"
-              onClick={handleRegisterClick}
-              className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
-            >
-              + 기관 등록
-            </Button>
-          </Space>
+          </div>
         ) : (
           <Space>
             {viewMode === 'edit' && (
@@ -854,7 +859,11 @@ export default function InstitutionManagementPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </ProtectedRoute>
   )
+}
+
+
 }
 

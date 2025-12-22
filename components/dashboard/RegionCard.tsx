@@ -3,16 +3,22 @@
 import { Check } from 'lucide-react'
 
 interface RegionCardProps {
-  regionNumber: number
-  progress: number
-  educationProgress: number
-  items: {
-    도서벽지: number
-    '50차시': number
-    특수학급: number
+  region: {
+    id: string
+    name: string
+    totalCount: number
+    completedCount: number
+    inProgressCount: number
+    notStartedCount: number
+    progress: number
+    institutions: {
+      id: string
+      name: string
+      progress: number
+    }[]
   }
   isSelected?: boolean
-  onClick?: () => void
+  onSelect?: () => void
 }
 
 const regionColors = {
@@ -34,27 +40,31 @@ const regionBorderColors = {
 }
 
 export function RegionCard({
-  regionNumber,
-  progress,
-  educationProgress,
-  items,
+  region,
   isSelected = false,
-  onClick,
+  onSelect,
 }: RegionCardProps) {
+  // Safety check for undefined region
+  if (!region) {
+    return null
+  }
+
+  // Extract region number from name (e.g., "1권역" -> 1)
+  const regionNumber = parseInt(region.name.charAt(0))
   const radius = 20 // Smaller radius for compact version
   const circumference = 2 * Math.PI * radius
-  const offset = circumference - (progress / 100) * circumference
+  const offset = circumference - (region.progress / 100) * circumference
 
   return (
     <div
-      onClick={onClick}
-      className={`bg-white rounded-xl shadow-sm border border-slate-100 p-2 hover:shadow-md transition-all cursor-pointer border-2 ${
-        isSelected ? 'border-primary shadow-md bg-blue-50' : 'border-slate-100 hover:border-gray-300'
+      onClick={onSelect}
+      className={`bg-white rounded-card shadow-sm border border-slate-100 p-2 hover:shadow-card-hover transition-all duration-200 cursor-pointer border-2 ${
+        isSelected ? 'border-primary shadow-card-hover bg-primary-light' : 'border-slate-100 hover:border-gray-300'
       }`}
     >
       <div className="flex items-center justify-between mb-1">
         <span className={`text-xs font-semibold ${regionColors[regionNumber as keyof typeof regionColors]}`}>
-          {regionNumber}권역
+          {region.name}
         </span>
         {isSelected && (
           <div className={`${regionColors[regionNumber as keyof typeof regionColors]}`}>
@@ -63,7 +73,7 @@ export function RegionCard({
         )}
       </div>
 
-      <div className="text-[10px] text-gray-500 mb-1.5">교육: {educationProgress}%</div>
+      <div className="text-[10px] text-gray-500 mb-1.5">교육: {region.progress.toFixed(1)}%</div>
 
       {/* Circular Progress - Compact */}
       <div className="flex justify-center mb-1.5">
@@ -92,7 +102,7 @@ export function RegionCard({
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
             <span className={`text-xs font-semibold ${regionColors[regionNumber as keyof typeof regionColors]}`}>
-              {progress}%
+              {region.progress.toFixed(0)}%
             </span>
           </div>
         </div>
@@ -100,11 +110,10 @@ export function RegionCard({
 
       {/* Items - Compact */}
       <div className="space-y-0.5 text-[10px] text-gray-600">
-        <div>도서·벽지: {items.도서벽지}</div>
-        <div>50차시: {items['50차시']}</div>
-        <div>특수학급: {items.특수학급}</div>
+        <div>총 교육: {region.totalCount}</div>
+        <div>완료: {region.completedCount}</div>
+        <div>진행 중: {region.inProgressCount}</div>
       </div>
     </div>
   )
 }
-

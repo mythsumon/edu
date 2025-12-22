@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Table, Button, Card, Input, Select, Space, Form, Descriptions, Tag, Checkbox } from 'antd'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { Table, Button, Card, Select, Space, Form, Descriptions, Tag, Checkbox } from 'antd'
+import { Input } from '@/components/shared/common'
 import type { ColumnsType } from 'antd/es/table'
 import { 
   ChevronRight, 
@@ -272,7 +274,8 @@ export default function InstructorManagementPage() {
   ], [filteredData, selectedRowKeys, setSelectedRowKeys])
 
   return (
-    <div className="p-6">
+    <ProtectedRoute requiredRole="admin">
+      <div className="p-6">
       {/* Breadcrumb */}
       {viewMode === 'list' && (
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
@@ -569,7 +572,7 @@ export default function InstructorManagementPage() {
                     rules={[{ required: true, message: '사용자명을 입력해주세요' }]}
                     className="mb-0"
                   >
-                    <Input placeholder="사용자명을 입력하세요" className="h-11 rounded-xl" />
+                    <Input placeholder="사용자명을 입력하세요" />
                   </Form.Item>
 
                   <Form.Item
@@ -578,7 +581,7 @@ export default function InstructorManagementPage() {
                     rules={[{ required: true, message: '비밀번호를 입력해주세요' }]}
                     className="mb-0"
                   >
-                    <Input.Password placeholder="비밀번호를 입력하세요" className="h-11 rounded-xl" />
+                    <Input.Password placeholder="비밀번호를 입력하세요" />
                   </Form.Item>
 
                   <Form.Item
@@ -587,7 +590,7 @@ export default function InstructorManagementPage() {
                     rules={[{ required: true, message: '강사명을 입력해주세요' }]}
                     className="mb-0"
                   >
-                    <Input placeholder="강사명을 입력하세요" className="h-11 rounded-xl" />
+                    <Input placeholder="강사명을 입력하세요" />
                   </Form.Item>
 
                   <Form.Item
@@ -596,7 +599,7 @@ export default function InstructorManagementPage() {
                     rules={[{ required: true, message: '이메일을 입력해주세요' }]}
                     className="mb-0"
                   >
-                    <Input placeholder="이메일을 입력하세요" className="h-11 rounded-xl" />
+                    <Input placeholder="이메일을 입력하세요" />
                   </Form.Item>
 
                   <Form.Item
@@ -621,7 +624,7 @@ export default function InstructorManagementPage() {
                     rules={[{ required: true, message: '전화번호를 입력해주세요' }]}
                     className="mb-0"
                   >
-                    <Input placeholder="전화번호를 입력하세요" className="h-11 rounded-xl" />
+                    <Input placeholder="전화번호를 입력하세요" />
                   </Form.Item>
 
                   <Form.Item
@@ -630,7 +633,7 @@ export default function InstructorManagementPage() {
                     rules={[{ required: true, message: '생년월일을 입력해주세요' }]}
                     className="mb-0"
                   >
-                    <Input placeholder="생년월일을 입력하세요 (YYYY-MM-DD)" className="h-11 rounded-xl" />
+                    <Input placeholder="생년월일을 입력하세요 (YYYY-MM-DD)" />
                   </Form.Item>
                 </div>
               </Card>
@@ -653,7 +656,7 @@ export default function InstructorManagementPage() {
                     rules={[{ required: true, message: '소속을 입력해주세요' }]}
                     className="mb-0"
                   >
-                    <Input placeholder="소속을 입력하세요" className="h-11 rounded-xl" />
+                    <Input placeholder="소속을 입력하세요" />
                   </Form.Item>
 
                   <Form.Item
@@ -679,7 +682,7 @@ export default function InstructorManagementPage() {
                     initialValue="경기도"
                     className="mb-0"
                   >
-                    <Input placeholder="도시를 입력하세요" className="h-11 rounded-xl" disabled />
+                    <Input placeholder="도시를 입력하세요" disabled />
                   </Form.Item>
 
                   <Form.Item
@@ -688,7 +691,7 @@ export default function InstructorManagementPage() {
                     rules={[{ required: true, message: '도로명주소를 입력해주세요' }]}
                     className="mb-0"
                   >
-                    <Input placeholder="도로명주소를 입력하세요" className="h-11 rounded-xl" />
+                    <Input placeholder="도로명주소를 입력하세요" />
                   </Form.Item>
 
                   <Form.Item
@@ -696,7 +699,7 @@ export default function InstructorManagementPage() {
                     name="buildingDetails"
                     className="mb-0 md:col-span-2"
                   >
-                    <Input placeholder="건물명/호수를 입력하세요" className="h-11 rounded-xl" />
+                    <Input placeholder="건물명/호수를 입력하세요" />
                   </Form.Item>
                 </div>
               </Card>
@@ -751,6 +754,10 @@ export default function InstructorManagementPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </ProtectedRoute>
+  )
+}
+    </ProtectedRoute>
   )
 }

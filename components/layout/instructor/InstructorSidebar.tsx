@@ -4,92 +4,73 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { 
   LayoutDashboard, 
-  BookOpen, 
   GraduationCap, 
-  UserCheck, 
-  Users, 
-  Building2, 
-  FileText, 
-  UserCog, 
-  Settings,
+  FileCheck,
+  Calendar,
   ChevronDown,
   Menu,
-  X
+  BookOpen,
+  ClipboardCheck,
+  UserCheck,
 } from 'lucide-react'
 import { useLanguage } from '@/components/localization/LanguageContext'
 import { useState } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface MenuItem {
-  label: string
+  labelKey: string
   href: string
   icon?: React.ComponentType<{ className?: string }>
 }
 
 interface MenuGroup {
-  label: string
+  labelKey: string
   icon?: React.ComponentType<{ className?: string }>
   items: MenuItem[]
 }
 
-const menuConfig: MenuGroup[] = [
+const instructorMenuConfig: MenuGroup[] = [
   {
-    label: '대시보드',
+    labelKey: 'sidebar.dashboard',
     icon: LayoutDashboard,
     items: [
-      { label: '전체 프로그램 현황', href: '/' },
+      { labelKey: 'sidebar.myDashboard', href: '/instructor/dashboard', icon: LayoutDashboard },
     ],
   },
   {
-    label: '교육 운영',
+    labelKey: 'sidebar.educationManagement',
     icon: BookOpen,
     items: [
-      { label: '교육 관리', href: '/education' },
-    ],
-  },
-  {
-    label: '강사 배정',
-    icon: GraduationCap,
-    items: [
-      { label: '강사 신청 관리', href: '/instructor/application' },
-      { label: '강사 배정 관리', href: '/instructor/assignment' },
-      { label: '출강 확정 관리', href: '/instructor/confirmation' },
-    ],
-  },
-  {
-    label: '기준정보 관리',
-    icon: Building2,
-    items: [
-      { label: '교육기관 관리', href: '/institution' },
-      { label: '프로그램 관리', href: '/program' },
-      { label: '강사 관리', href: '/instructor' },
-    ],
-  },
-  {
-    label: '시스템 관리',
-    icon: Settings,
-    items: [
-      { label: '설정 및 사용자 관리', href: '/system/settings' },
+      { labelKey: 'sidebar.educationApplication', href: '/instructor/application', icon: ClipboardCheck },
+      { labelKey: 'sidebar.educationAssignment', href: '/instructor/assignment', icon: GraduationCap },
+      { labelKey: 'sidebar.teachingConfirmation', href: '/instructor/confirmation', icon: UserCheck },
     ],
   },
 ]
 
-interface SidebarProps {
+interface InstructorSidebarProps {
   isCollapsed: boolean
   setIsCollapsed: (collapsed: boolean) => void
 }
 
-export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
+export function InstructorSidebar({ isCollapsed, setIsCollapsed }: InstructorSidebarProps) {
   const pathname = usePathname()
   const { t } = useLanguage()
+  const { userRole } = useAuth()
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null)
 
+  // Only show instructor sidebar if user is instructor
+  if (userRole !== 'instructor') {
+    return null
+  }
+
   const isItemActive = (href: string) => pathname === href
 
-  const toggleGroup = (label: string) => {
+  const toggleGroup = (labelKey: string) => {
     setOpenGroups(prev => ({
       ...prev,
-      [label]: !prev[label]
+      [labelKey]: !prev[labelKey]
     }))
   }
 
@@ -98,15 +79,15 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   }
 
   return (
-    <aside className={`${isCollapsed ? 'w-20' : 'w-64'} bg-gray-900 text-gray-100 flex flex-col h-screen fixed left-0 top-0 z-40 transition-all duration-300`}>
+    <aside className={`${isCollapsed ? 'w-20' : 'w-64'} bg-[#3a2e2a] text-white flex flex-col h-screen fixed left-0 top-0 z-40 transition-all duration-300`}>
       {/* Sidebar Header */}
-      <div className="p-4 border-b border-gray-800 flex items-center justify-between">
+      <div className="p-4 border-b border-[#4a3e3a] flex items-center justify-between">
         {!isCollapsed ? (
           <>
             <h1 className="text-xl font-bold text-white">{t('sidebar.title')}</h1>
             <button 
               onClick={toggleSidebar}
-              className="p-1 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+              className="p-1 rounded-md text-white/70 hover:text-[#ff8a65] hover:bg-[#4a3e3a] transition-colors"
             >
               <Menu className="w-5 h-5" />
             </button>
@@ -114,7 +95,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
         ) : (
           <button 
             onClick={toggleSidebar}
-            className="p-1 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors w-full flex justify-center"
+            className="p-1 rounded-md text-white/70 hover:text-[#ff8a65] hover:bg-[#4a3e3a] transition-colors w-full flex justify-center"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -124,50 +105,47 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
       {/* Scrollable Menu */}
       <nav className="flex-1 overflow-y-auto py-4">
         <ul className="space-y-1 px-3">
-          {menuConfig.map((group) => {
+          {instructorMenuConfig.map((group) => {
             const GroupIcon = group.icon
-            const isOpen = openGroups[group.label] || group.items.some(item => isItemActive(item.href))
-            const isGroupHovered = hoveredGroup === group.label
+            const isOpen = openGroups[group.labelKey] || group.items.some(item => isItemActive(item.href))
+            const isGroupHovered = hoveredGroup === group.labelKey
             
             return (
               <li 
-                key={group.label} 
+                key={group.labelKey} 
                 className="mb-1"
-                onMouseEnter={() => !isCollapsed && setHoveredGroup(group.label)}
+                onMouseEnter={() => !isCollapsed && setHoveredGroup(group.labelKey)}
                 onMouseLeave={() => !isCollapsed && setHoveredGroup(null)}
               >
                 {/* Group Header */}
                 <button
                   onClick={() => {
                     if (isCollapsed) {
-                      // In collapsed mode, expand the sidebar when clicking a menu group
                       setIsCollapsed(false)
-                      // Also open the clicked group
                       setOpenGroups(prev => ({
                         ...prev,
-                        [group.label]: true
+                        [group.labelKey]: true
                       }))
                     } else {
-                      // In expanded mode, toggle the group normally
-                      toggleGroup(group.label)
+                      toggleGroup(group.labelKey)
                     }
                   }}
                   className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors ${
                     group.items.some(item => isItemActive(item.href))
-                      ? 'bg-gray-800 text-white'
-                      : 'text-gray-300 hover:bg-gray-800'
+                      ? 'bg-[#4a3e3a] text-[#ff8a65]'
+                      : 'text-white/90 hover:bg-[#4a3e3a] hover:text-[#ff8a65]'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     {GroupIcon && <GroupIcon className="w-5 h-5" />}
-                    {!isCollapsed && <span className="font-medium">{group.label}</span>}
+                    {!isCollapsed && <span className="font-medium">{t(group.labelKey)}</span>}
                   </div>
                   {!isCollapsed && (
                     <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                   )}
                 </button>
 
-                {/* Group Items - Show dropdown when open or when collapsed and hovered */}
+                {/* Group Items */}
                 <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
                   isCollapsed 
                     ? (isGroupHovered ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0')
@@ -185,21 +163,20 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                               href={item.href}
                               className={`flex items-center gap-3 w-full px-4 py-2.5 text-sm rounded-lg transition-colors ${
                                 isActive
-                                  ? 'bg-blue-600 text-white'
-                                  : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                                  ? 'bg-[#ff8a65] text-white'
+                                  : 'text-white/80 hover:bg-[#4a3e3a] hover:text-[#ff8a65]'
                               }`}
                             >
                               {ItemIcon && <ItemIcon className="w-4 h-4" />}
-                              <span>{item.label}</span>
+                              <span>{t(item.labelKey)}</span>
                             </Link>
                           </li>
                         )
                       })}
                     </ul>
                   ) : (
-                    // Tooltip-like dropdown for collapsed state
                     isGroupHovered && (
-                      <div className="fixed left-20 ml-2 w-48 bg-gray-800 rounded-lg shadow-lg z-50 py-2">
+                      <div className="fixed left-20 ml-2 w-48 bg-[#3a2e2a] rounded-lg shadow-lg z-50 py-2 border border-[#4a3e3a]">
                         {group.items.map((item) => {
                           const ItemIcon = item.icon
                           const isActive = isItemActive(item.href)
@@ -210,12 +187,12 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                               href={item.href}
                               className={`flex items-center gap-3 w-full px-4 py-2.5 text-sm rounded-lg transition-colors mx-2 ${
                                 isActive
-                                  ? 'bg-blue-600 text-white'
-                                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                                  ? 'bg-primary text-white dark:bg-primary'
+                                  : 'text-sidebar-text hover:bg-sidebar-hover hover:text-sidebar-textHover dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
                               }`}
                             >
                               {ItemIcon && <ItemIcon className="w-4 h-4" />}
-                              <span>{item.label}</span>
+                              <span>{t(item.labelKey)}</span>
                             </Link>
                           )
                         })}
@@ -231,3 +208,4 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
     </aside>
   )
 }
+

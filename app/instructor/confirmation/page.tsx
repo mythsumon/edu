@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Table, Button, Card, Input, Select, Space, DatePicker, Badge, Modal } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { ChevronRight, ArrowLeft, RotateCcw, RefreshCw, Eye, CheckCircle2, XCircle, Bell } from 'lucide-react'
@@ -301,7 +302,8 @@ export default function InstructorConfirmationPage() {
   ]
 
   return (
-    <div className="p-6">
+    <ProtectedRoute requiredRole="admin">
+      <div className="p-6">
       {viewMode === 'list' ? (
         <>
           {/* Breadcrumb */}
@@ -642,7 +644,8 @@ export default function InstructorConfirmationPage() {
       >
         <p>강사에게 알림을 전송하시겠습니까?</p>
       </Modal>
-    </div>
+      </div>
+    </ProtectedRoute>
   )
 }
 

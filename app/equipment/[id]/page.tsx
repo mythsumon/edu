@@ -8,7 +8,8 @@ import dayjs, { Dayjs } from 'dayjs'
 import 'dayjs/locale/ko'
 import { programService } from '@/services/programService'
 import { EquipmentData, RentalItem } from '@/types/program'
-import { PageTitle } from '@/components/common/PageTitle'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { Breadcrumb, PageTitle } from '@/components/shared/common'
 
 const { TextArea } = Input
 dayjs.locale('ko')
@@ -101,82 +102,81 @@ export default function EquipmentDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Spin size="large" />
-      </div>
+      <ProtectedRoute requiredRole="admin">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <Spin size="large" />
+        </div>
+      </ProtectedRoute>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <Alert message="오류" description={error} type="error" showIcon />
-      </div>
+      <ProtectedRoute requiredRole="admin">
+        <div className="min-h-screen bg-gray-50 p-6">
+          <Alert message="오류" description={error} type="error" showIcon />
+        </div>
+      </ProtectedRoute>
     )
   }
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <Alert message="데이터 없음" description="교구 확인서 데이터를 찾을 수 없습니다." type="warning" showIcon />
-      </div>
+      <ProtectedRoute requiredRole="admin">
+        <div className="min-h-screen bg-gray-50 p-6">
+          <Alert message="데이터 없음" description="교구 확인서 데이터를 찾을 수 없습니다." type="warning" showIcon />
+        </div>
+      </ProtectedRoute>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <PageTitle
-        title="교구 확인서"
-        subtitle={`과제번호: ${data.assignmentNumber} | 교육기관: ${data.institution}`}
-        actions={
-          !isEditMode ? (
-            <>
-              <Button
-                type="primary"
-                onClick={handleEdit}
-                className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
-              >
-                수정하기
-              </Button>
-              <Button
-                danger
-                icon={<Trash2 className="w-4 h-4" />}
-                onClick={handleDelete}
-                className="h-11 px-6 rounded-xl font-medium transition-all"
-              >
-                삭제
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                type="primary"
-                icon={<Save className="w-4 h-4" />}
-                onClick={handleSave}
-                className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
-              >
-                저장
-              </Button>
-              <Button
-                icon={<X className="w-4 h-4" />}
-                onClick={handleCancel}
-                className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
-              >
-                취소
-              </Button>
-            </>
-          )
-        }
-      />
-      
-      <Button
-        type="text"
-        icon={<ArrowLeft className="w-4 h-4" />}
-        onClick={handleBack}
-        className="text-gray-600 hover:text-gray-900 px-0 mb-6"
-      >
-        대시보드로 돌아가기
-      </Button>
+    <ProtectedRoute requiredRole="admin">
+      <div className="p-6">
+        <Breadcrumb />
+        
+        <div className="flex items-center justify-between mb-6">
+          <PageTitle />
+          <Space>
+            {!isEditMode ? (
+              <>
+                <Button
+                  type="primary"
+                  onClick={handleEdit}
+                  className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
+                >
+                  수정하기
+                </Button>
+                <Button
+                  danger
+                  icon={<Trash2 className="w-4 h-4" />}
+                  onClick={handleDelete}
+                  className="h-11 px-6 rounded-xl font-medium transition-all"
+                >
+                  삭제
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  type="primary"
+                  icon={<Save className="w-4 h-4" />}
+                  onClick={handleSave}
+                  className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
+                >
+                  저장
+                </Button>
+                <Button
+                  icon={<X className="w-4 h-4" />}
+                  onClick={handleCancel}
+                  className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+                >
+                  취소
+                </Button>
+              </>
+            )}
+          </Space>
+        </div>
 
       <div className="space-y-6 max-w-7xl mx-auto">
         {/* Basic Information Card */}
@@ -635,6 +635,7 @@ export default function EquipmentDetailPage() {
           </div>
         </Card>
       </div>
-    </div>
+      </div>
+    </ProtectedRoute>
   )
 }

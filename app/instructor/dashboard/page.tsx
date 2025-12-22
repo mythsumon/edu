@@ -16,7 +16,6 @@ import {
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { InstructorCourse, instructorCourses, instructorCalendarEvents } from '@/mock/instructorDashboardData'
-import { ScrollToTop } from '@/components/common'
 
 // Status badge component for consistent styling
 const StatusBadge = ({ status }: { status: '예정' | '진행중' | '완료' }) => {
@@ -596,9 +595,6 @@ export default function InstructorDashboard() {
           </div>
         </Card>
       </div>
-      
-      {/* Scroll to top button */}
-      <ScrollToTop />
     </div>
   )
 }

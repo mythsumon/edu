@@ -152,7 +152,38 @@ export const REGIONS: RegionData[] = [
   },
 ]
 
+// Additional types for dashboard components
+export type Region = {
+  id: string
+  name: string
+  totalCount: number
+  completedCount: number
+  inProgressCount: number
+  notStartedCount: number
+  progress: number
+  institutions: {
+    id: string
+    name: string
+    progress: number
+  }[]
+}
 
+export type SpecialItem = {
+  id: string
+  name: string
+  totalCount: number
+  completedCount: number
+  inProgressCount: number
+  notStartedCount: number
+  progress: number
+  target: string
+}
 
-
-
+export type KPI = {
+  id: string
+  title: string
+  value: string
+  change: string
+  changeType: 'positive' | 'negative'
+  description: string
+}

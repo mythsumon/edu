@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import './globals.css'
-import { LanguageProvider } from '@/components/localization/LanguageContext'
-import { AppShell } from '@/components/layout/AppShell'
+import { AppProviders } from './providers'
 
 export const metadata: Metadata = {
   title: '교육 프로그램 현황',
@@ -15,11 +14,9 @@ export default function RootLayout({
   children: ReactNode
 }) {
   return (
-    <html lang="ko">
-      <body className="bg-slate-50">
-        <LanguageProvider>
-          <AppShell>{children}</AppShell>
-        </LanguageProvider>
+    <html lang="ko" suppressHydrationWarning>
+      <body className="bg-slate-50" suppressHydrationWarning>
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   )

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Table, Button, Card, Input, Select, Space, Descriptions } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { ChevronRight, Download, RotateCcw, Check, X, ArrowLeft, Eye } from 'lucide-react'
@@ -542,7 +543,8 @@ export default function InstructorApplicationPage() {
   )
 
   return (
-    <div className="p-6">
+    <ProtectedRoute requiredRole="admin">
+      <div className="p-6">
       {/* Breadcrumb - list view only */}
       {viewMode === 'list' && (
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
@@ -559,14 +561,7 @@ export default function InstructorApplicationPage() {
           {/* Page Header */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">강사 신청 관리</h1>
-            <Space className="w-full md:w-auto">
-              <Button
-                icon={<Download className="w-4 h-4" />}
-                onClick={() => console.log('Export to Excel')}
-                className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all w-full md:w-auto"
-              >
-                엑셀 추출
-              </Button>
+            <div className="flex items-center gap-3 w-full md:w-auto">
               <Button
                 type="primary"
                 onClick={() => router.push('/instructor?view=register')}
@@ -574,7 +569,14 @@ export default function InstructorApplicationPage() {
               >
                 + 강사 등록
               </Button>
-            </Space>
+              <Button
+                icon={<Download className="w-4 h-4" />}
+                onClick={() => console.log('Export to Excel')}
+                className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all w-full md:w-auto"
+              >
+                엑셀 추출
+              </Button>
+            </div>
           </div>
 
           {/* Filter Bar */}
@@ -909,7 +911,11 @@ export default function InstructorApplicationPage() {
           </div>
         )
       )}
-    </div>
+      </div>
+    </ProtectedRoute>
   )
+}
+
+
 }
 

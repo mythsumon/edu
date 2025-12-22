@@ -48,8 +48,8 @@ export function RegionCardLarge({
   return (
     <div
       onClick={onClick}
-      className={`bg-white rounded-2xl shadow-md border border-slate-100 p-6 hover:shadow-lg transition-all cursor-pointer border-2 ${
-        isSelected ? 'border-primary shadow-lg bg-blue-50' : 'border-slate-100 hover:border-gray-300'
+      className={`bg-white rounded-card shadow-card border border-slate-100 p-6 hover:shadow-card-hover transition-all duration-200 cursor-pointer border-2 ${
+        isSelected ? 'border-primary shadow-card-hover bg-primary-light' : 'border-slate-100 hover:border-gray-300'
       }`}
     >
       <div className="flex items-center justify-between mb-3">

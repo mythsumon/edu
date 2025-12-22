@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useMemo, useRef } from 'react'
-import { Table, Button, Card, Input, Select, Space, Form, Descriptions, Tag, Checkbox } from 'antd'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { Table, Button, Card, Select, Space, Form, Descriptions, Tag, Checkbox } from 'antd'
+import { Input } from '@/components/shared/common'
 import type { ColumnsType } from 'antd/es/table'
 import { 
   ChevronRight, 
@@ -252,7 +254,8 @@ export default function ProgramManagementPage() {
   ], [filteredData, selectedRowKeys, setSelectedRowKeys])
 
   return (
-    <div className="p-6">
+    <ProtectedRoute requiredRole="admin">
+      <div className="p-6">
       {/* Breadcrumb */}
       {viewMode === 'list' && (
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
@@ -567,7 +570,8 @@ export default function ProgramManagementPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </ProtectedRoute>
   )
 }
 
