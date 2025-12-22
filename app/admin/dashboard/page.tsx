@@ -137,10 +137,11 @@ export default function DashboardPage() {
 
   // Render error state
   if (error) {
+    const errorMessage: string = error
     return (
       <ProtectedRoute requiredRole="admin">
         <div className="p-6">
-          <ErrorToast message={error} onRetry={() => window.location.reload()} />
+          <ErrorToast message={errorMessage} onClose={() => window.location.reload()} />
         </div>
       </ProtectedRoute>
     )
