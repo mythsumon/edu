@@ -872,6 +872,3 @@ export default function SystemSettingsPage() {
   )
 }
 
-
-}
-
