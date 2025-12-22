@@ -864,6 +864,3 @@ export default function InstitutionManagementPage() {
   )
 }
 
-
-}
-
