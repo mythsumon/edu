@@ -121,7 +121,13 @@ export default function DashboardPage() {
   }
 
   // Handle region selection from SearchPanel (number-based)
-  const handleRegionNumberSelect = (regionNumber: number) => {
+  const handleRegionNumberSelect = (regionNumber: number | undefined) => {
+    if (regionNumber === undefined) {
+      setSelectedRegionNumber(undefined)
+      setSelectedSpecialCategory(undefined)
+      handleReset()
+      return
+    }
     setSelectedRegionNumber(regionNumber)
     setSelectedSpecialCategory(undefined)
     // Map region number to region ID (e.g., 1 -> 'region1')
@@ -130,7 +136,14 @@ export default function DashboardPage() {
   }
 
   // Handle category selection from SearchPanel
-  const handleCategorySelect = (category: SpecialCategory) => {
+  const handleCategorySelect = (category: SpecialCategory | undefined) => {
+    if (category === undefined) {
+      setSelectedSpecialCategory(undefined)
+      setSelectedRegionNumber(undefined)
+      setSelectedRegion(null)
+      handleReset()
+      return
+    }
     setSelectedSpecialCategory(category)
     setSelectedRegionNumber(undefined)
     setSelectedRegion(null)
@@ -207,14 +220,18 @@ export default function DashboardPage() {
             {showResultPanel && (
               <div className="card card-hover">
                 <ResultPanel 
-                  onBack={handleReset}
-                  title={
-                    selectedRegion 
-                      ? regionData.find(r => r.id === selectedRegion)?.name || '' 
-                      : selectedSpecialItem 
-                        ? specialItems.find(s => s.id === selectedSpecialItem)?.name || ''
-                        : ''
-                  }
+                  selectedRegion={selectedRegionNumber}
+                  selectedSpecialCategory={selectedSpecialCategory}
+                  onRegionChange={(id) => {
+                    setSelectedRegionNumber(id)
+                    if (id === undefined) {
+                      handleReset()
+                    }
+                  }}
+                  onCategoryClose={() => {
+                    setSelectedSpecialCategory(undefined)
+                    handleReset()
+                  }}
                 />
               </div>
             )}
@@ -235,7 +252,7 @@ export default function DashboardPage() {
             <div className="card card-hover">
               <SpecialItemCards 
                 items={specialItems}
-                selectedItemId={selectedSpecialItem}
+                selectedItemId={selectedSpecialItem || undefined}
                 onSelect={handleSpecialItemSelect}
               />
             </div>
@@ -246,31 +263,40 @@ export default function DashboardPage() {
             {/* Region Map */}
             <div className="card card-hover">
               <RegionMap 
-                regions={regionData}
-                selectedRegion={selectedRegion}
-                onSelectRegion={handleRegionSelect}
+                selectedRegion={selectedRegionNumber}
+                onRegionSelect={(regionNumber) => {
+                  const regionId = `region${regionNumber}`
+                  handleRegionSelect(regionId)
+                }}
               />
             </div>
 
             {/* Detail Panel Wrapper */}
-            <RegionDetailPanelWrapper ref={detailPanelRef}>
-              {selectedRegion && (
-                <div className="card card-hover">
-                  <RegionDetailPanel 
-                    region={regionData.find(r => r.id === selectedRegion)!}
-                    chartData={chartData}
-                  />
-                </div>
-              )}
-              
-              {selectedSpecialItem && (
-                <div className="card card-hover">
-                  <SpecialItemDetailPanel 
-                    item={specialItems.find(s => s.id === selectedSpecialItem)!}
-                  />
-                </div>
-              )}
-            </RegionDetailPanelWrapper>
+            {selectedRegionNumber !== undefined && (
+              <div ref={detailPanelRef} className="card card-hover">
+                <RegionDetailPanelWrapper 
+                  selectedRegionId={selectedRegionNumber as number}
+                  onRegionChange={(id) => {
+                    setSelectedRegionNumber(id)
+                    if (id === undefined) {
+                      handleReset()
+                    }
+                  }}
+                />
+              </div>
+            )}
+            
+            {selectedSpecialCategory !== undefined && (
+              <div className="card card-hover">
+                <SpecialItemDetailPanel 
+                  selectedCategory={selectedSpecialCategory as SpecialCategory}
+                  onClose={() => {
+                    setSelectedSpecialCategory(undefined)
+                    handleReset()
+                  }}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

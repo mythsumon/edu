@@ -734,7 +734,7 @@ export default function InstructorAssignmentPage() {
                     ghost
                     className="[&_.ant-collapse-item]:border-b [&_.ant-collapse-item]:border-gray-100 [&_.ant-collapse-header]:px-0 [&_.ant-collapse-content]:px-0"
                   >
-                    {selectedEducation.lessons.map((lesson) => (
+                    {(selectedEducation.lessons || []).map((lesson) => (
                       <Panel
                         key={lesson.session}
                         header={

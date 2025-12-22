@@ -6,8 +6,8 @@ import { RegionMap } from './RegionMap'
 interface SearchPanelProps {
   selectedRegion?: number
   selectedSpecialCategory?: SpecialCategory
-  onRegionSelect: (region: number) => void
-  onCategorySelect: (category: SpecialCategory) => void
+  onRegionSelect: (region: number | undefined) => void
+  onCategorySelect: (category: SpecialCategory | undefined) => void
   onReset?: () => void
 }
 
@@ -133,8 +133,8 @@ export function SearchPanel({
             selectedRegion={selectedRegion} 
             onRegionSelect={(id) => {
               try {
-                onRegionSelect(id)
-                onCategorySelect(undefined as SpecialCategory)
+                      onRegionSelect(id)
+                      onCategorySelect(undefined)
               } catch (error) {
                 console.error('Error selecting region from map:', error)
               }
@@ -158,7 +158,7 @@ export function SearchPanel({
                   e.stopPropagation()
                   try {
                     onCategorySelect(item.category)
-                    onRegionSelect(undefined as number)
+                    onRegionSelect(undefined)
                   } catch (error) {
                     console.error('Error selecting category:', error)
                   }

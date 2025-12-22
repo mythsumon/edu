@@ -28,10 +28,12 @@ export default function EquipmentDetailPage() {
     const fetchData = async () => {
       try {
         setLoading(true)
-        const id = parseInt(params.id as string)
-        const equipmentData = await programService.getEquipmentData(id)
-        setData(equipmentData)
-        setRentalItems(equipmentData.rentalItems)
+        if (params && params.id) {
+          const id = parseInt(params.id as string)
+          const equipmentData = await programService.getEquipmentData(id)
+          setData(equipmentData)
+          setRentalItems(equipmentData.rentalItems)
+        }
       } catch (err) {
         setError('데이터를 불러오는 중 오류가 발생했습니다.')
         console.error(err)
@@ -40,10 +42,10 @@ export default function EquipmentDetailPage() {
       }
     }
 
-    if (params.id) {
+    if (params && params.id) {
       fetchData()
     }
-  }, [params.id])
+  }, [params?.id])
 
   const handleEdit = () => {
     setIsEditMode(true)

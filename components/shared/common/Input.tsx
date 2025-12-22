@@ -1,9 +1,9 @@
 'use client'
 
-import { Input as AntInput, InputProps } from 'antd'
+import { Input as AntInput, InputProps, TextAreaProps } from 'antd'
 import React from 'react'
 
-interface CustomInputProps extends InputProps {
+interface CustomInputProps extends Omit<InputProps, 'variant'> {
   variant?: 'default' | 'search'
 }
 
@@ -36,7 +36,7 @@ const PasswordComponent: React.FC<InputProps> = ({
 }
 
 // TextArea component with same styling
-const TextAreaComponent: React.FC<InputProps> = ({ 
+const TextAreaComponent: React.FC<TextAreaProps> = ({ 
   className = '', 
   ...props 
 }) => {

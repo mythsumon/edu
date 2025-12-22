@@ -29,12 +29,14 @@ export default function DashboardPage() {
 
   // Initialize region from URL parameter
   useEffect(() => {
-    const regionParam = searchParams.get('region')
-    if (regionParam) {
-      const regionId = parseInt(regionParam, 10)
-      if (!isNaN(regionId) && regionId >= 1 && regionId <= 6) {
-        setSelectedRegion(regionId)
-        setSelectedSpecialCategory(undefined)
+    if (searchParams) {
+      const regionParam = searchParams.get('region')
+      if (regionParam) {
+        const regionId = parseInt(regionParam, 10)
+        if (!isNaN(regionId) && regionId >= 1 && regionId <= 6) {
+          setSelectedRegion(regionId)
+          setSelectedSpecialCategory(undefined)
+        }
       }
     }
   }, [searchParams])

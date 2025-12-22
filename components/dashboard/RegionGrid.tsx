@@ -19,9 +19,18 @@ export function RegionGrid({ selectedRegion, onRegionSelect }: { selectedRegion?
         {regionData.map((region) => (
           <RegionCard
             key={region.regionNumber}
-            {...region}
+            region={{
+              id: `region${region.regionNumber}`,
+              name: region.name,
+              totalCount: 0,
+              completedCount: 0,
+              inProgressCount: 0,
+              notStartedCount: 0,
+              progress: region.progress,
+              institutions: []
+            }}
             isSelected={selectedRegion === region.regionNumber}
-            onClick={() => onRegionSelect(region.regionNumber)}
+            onSelect={() => onRegionSelect(region.regionNumber)}
           />
         ))}
       </div>
