@@ -916,6 +916,3 @@ export default function InstructorApplicationPage() {
   )
 }
 
-
-}
-
