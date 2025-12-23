@@ -4,7 +4,7 @@ import { useState, ReactNode } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 
 interface CollapsibleSectionProps {
-  title: string
+  title: string | ReactNode
   children: ReactNode
   defaultExpanded?: boolean
   className?: string

@@ -1,12 +1,10 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
 import { useState, useMemo } from 'react'
 import { Table, Button, Card, Select, Space, DatePicker, Badge, Modal, Collapse } from 'antd'
 import { Input } from '@/components/shared/common'
 import type { ColumnsType } from 'antd/es/table'
-import { ChevronRight, ArrowLeft, RotateCcw, RefreshCw, Copy, Trash2, UserPlus, CheckCircle2, Eye, Search, Download, Plus } from 'lucide-react'
+import { ChevronRight, ArrowLeft, RotateCcw, RefreshCw, Copy, Trash2, UserPlus, CheckCircle2, Eye, Search } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useRouter } from 'next/navigation'
 import dayjs, { Dayjs } from 'dayjs'
@@ -353,14 +351,14 @@ export default function InstructorAssignmentPage() {
         dataIndex: 'educationId',
         key: 'educationId',
         width: 150,
-        render: (text: string) => <span className="text-[20px] font-medium text-gray-900">{text}</span>,
+        render: (text: string) => <span className="text-base font-medium text-gray-900">{text}</span>,
       },
       {
         title: '교육명',
         key: 'educationName',
         width: 280,
         render: (_, record) => (
-          <span className="text-[20px] font-medium text-gray-900 line-clamp-1">{record.educationName}</span>
+          <span className="text-base font-medium text-gray-900 line-clamp-1">{record.educationName}</span>
         ),
       },
       {
@@ -368,21 +366,21 @@ export default function InstructorAssignmentPage() {
         dataIndex: 'institution',
         key: 'institution',
         width: 140,
-        render: (text: string) => <span className="text-[20px] font-medium text-gray-900">{text}</span>,
+        render: (text: string) => <span className="text-base font-medium text-gray-900">{text}</span>,
       },
       {
         title: '구역',
         dataIndex: 'region',
         key: 'region',
         width: 100,
-        render: (text: string) => <span className="text-[20px] font-medium text-gray-900">{text}</span>,
+        render: (text: string) => <span className="text-base font-medium text-gray-900">{text}</span>,
       },
       {
         title: '학년·학급',
         dataIndex: 'gradeClass',
         key: 'gradeClass',
         width: 120,
-        render: (text: string) => <span className="text-[20px] font-medium text-gray-900">{text}</span>,
+        render: (text: string) => <span className="text-base font-medium text-gray-900">{text}</span>,
       },
       {
         title: '주강사',
@@ -434,7 +432,7 @@ export default function InstructorAssignmentPage() {
         key: 'period',
         width: 200,
         align: 'right' as const,
-        render: (text: string) => <span className="text-[20px] font-medium text-gray-900">{text}</span>,
+        render: (text: string) => <span className="text-base font-medium text-gray-900">{text}</span>,
       },
       {
         title: '상세',
@@ -466,29 +464,7 @@ export default function InstructorAssignmentPage() {
         <>
           {/* Page Header */}
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <Button
-                type="primary"
-                icon={<Plus className="w-4 h-4" />}
-                onClick={() => console.log('Register Education')}
-                className="h-11 px-6 rounded-lg border-0 font-medium transition-all text-white"
-                style={{
-                  backgroundColor: '#1a202c',
-                  borderColor: '#1a202c',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                  color: '#ffffff',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#2d3748'
-                  e.currentTarget.style.borderColor = '#2d3748'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#1a202c'
-                  e.currentTarget.style.borderColor = '#1a202c'
-                }}
-              >
-                교육 등록
-              </Button>
+            <Space>
               <Button
                 icon={<RefreshCw className="w-4 h-4" />}
                 onClick={() => console.log('Refresh')}
@@ -496,21 +472,14 @@ export default function InstructorAssignmentPage() {
               >
                 새로고침
               </Button>
-            </div>
-            <Button
-              icon={<Download className="w-4 h-4" />}
-              onClick={() => console.log('Excel Extract')}
-              className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
-            >
-              엑셀 추출
-            </Button>
+            </Space>
           </div>
 
           {/* Modern Search Toolbar */}
           <div className="flex items-center h-16 px-4 py-3 bg-white border border-[#ECECF3] rounded-2xl shadow-[0_8px_24px_rgba(15,15,30,0.06)] mb-4 gap-3 flex-wrap">
             {/* Search Input - Primary, flex-grow */}
             <div className="flex-1 min-w-[200px]">
-              <div className="relative h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
+              <div className="relative h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 focus-within:border-[#ff8a65] focus-within:shadow-[0_0_0_4px_rgba(255,122,89,0.18)] hover:border-[#D3D3E0]">
                 <Input
                   placeholder="교육명/교육기관/지역/교육ID 검색"
                   value={searchText}
@@ -525,7 +494,7 @@ export default function InstructorAssignmentPage() {
             
             {/* Region Filter */}
             <div className="w-[220px]">
-              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
+              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 focus-within:border-[#ff8a65] focus-within:shadow-[0_0_0_4px_rgba(255,122,89,0.18)] hover:border-[#D3D3E0]">
                 <Select
                   placeholder="지역"
                   value={regionFilter}
@@ -539,7 +508,7 @@ export default function InstructorAssignmentPage() {
             
             {/* Grade Class Filter */}
             <div className="w-[220px]">
-              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
+              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 focus-within:border-[#ff8a65] focus-within:shadow-[0_0_0_4px_rgba(255,122,89,0.18)] hover:border-[#D3D3E0]">
                 <Select
                   placeholder="학년·학급"
                   value={gradeClassFilter}
@@ -553,7 +522,7 @@ export default function InstructorAssignmentPage() {
             
             {/* Assignment Status Filter */}
             <div className="w-[220px]">
-              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
+              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 focus-within:border-[#ff8a65] focus-within:shadow-[0_0_0_4px_rgba(255,122,89,0.18)] hover:border-[#D3D3E0]">
                 <Select
                   placeholder="배정상태"
                   value={assignmentStatusFilter}
@@ -567,7 +536,7 @@ export default function InstructorAssignmentPage() {
             
             {/* Date Range Picker */}
             <div className="w-[280px]">
-              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
+              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 focus-within:border-[#ff8a65] focus-within:shadow-[0_0_0_4px_rgba(255,122,89,0.18)] hover:border-[#D3D3E0]">
                 <RangePicker
                   value={dateRange}
                   onChange={(dates) => setDateRange(dates as [Dayjs | null, Dayjs | null] | null)}
@@ -589,7 +558,7 @@ export default function InstructorAssignmentPage() {
           </div>
 
           {/* Table Card */}
-          <Card className="rounded-xl shadow-sm border border-gray-200 p-6">
+          <Card className="rounded-xl shadow-sm border border-gray-200">
             <Table
               columns={columns}
               dataSource={filteredData}
@@ -618,52 +587,22 @@ export default function InstructorAssignmentPage() {
           /* Detail View */
           selectedEducation && (
             <div className="space-y-6">
-              {/* Top Header with Back Button and Action Buttons */}
-              <div className="flex items-center justify-between mb-6">
-                <Button
-                  icon={<ArrowLeft className="w-4 h-4" />}
-                  onClick={handleBackToList}
-                  className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
-                >
-                  목록으로
-                </Button>
-                <div className="flex gap-2">
-                  {selectedEducation.assignmentStatus === 'unconfirmed' ? (
-                    <Button
-                      type="primary"
-                      icon={<CheckCircle2 className="w-4 h-4" />}
-                      onClick={() => console.log('Confirm assignment')}
-                      className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
-                      style={{
-                        backgroundColor: '#1a202c',
-                        borderColor: '#1a202c',
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                        color: '#ffffff',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = '#2d3748'
-                        e.currentTarget.style.borderColor = '#2d3748'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = '#1a202c'
-                        e.currentTarget.style.borderColor = '#1a202c'
-                      }}
-                    >
-                      배정 확정
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={() => console.log('Unconfirm assignment')}
-                      className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
-                    >
-                      미확정
-                    </Button>
-                  )}
-                </div>
-              </div>
-              {/* Top actions */}
+              {/* Top breadcrumb + actions */}
               <div className="flex flex-col gap-3">
-                <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-8 md:p-10 flex flex-col gap-6">
+                <div className="flex items-center gap-3 text-sm text-gray-500">
+                  <Button
+                    type="text"
+                    icon={<ArrowLeft className="w-4 h-4" />}
+                    onClick={handleBackToList}
+                    className="text-gray-600 hover:text-gray-900 px-0"
+                  >
+                    강사 수업배정
+                  </Button>
+                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                  <span className="text-gray-900 font-medium">상세 정보</span>
+                </div>
+
+                <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-5 md:p-6 flex flex-col gap-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="inline-flex items-center px-3 py-1 text-xs font-semibold text-gray-700 bg-gray-100 rounded-full">
                       {selectedEducation.educationId}
@@ -711,7 +650,7 @@ export default function InstructorAssignmentPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-start">
+                  <div className="flex items-center justify-between">
                     <div className="flex flex-wrap gap-2 text-sm">
                       <span
                         className={`inline-flex items-center rounded-full px-4 h-9 border cursor-pointer transition-colors ${
@@ -736,19 +675,38 @@ export default function InstructorAssignmentPage() {
                         </span>
                       )}
                     </div>
+                    <div className="flex gap-2">
+                      {selectedEducation.assignmentStatus === 'unconfirmed' ? (
+                        <Button
+                          type="primary"
+                          icon={<CheckCircle2 className="w-4 h-4" />}
+                          onClick={() => console.log('Confirm assignment')}
+                          className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
+                        >
+                          배정 확정
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={() => console.log('Unconfirm assignment')}
+                          className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+                        >
+                          미확정
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
 
               {detailTab === 'info' && (
                 <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-                  <div className="flex items-center justify-between px-8 py-6 border-b border-gray-100">
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-blue-500" />
                       <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">교육 정보</h3>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6 px-8 py-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 px-6 py-6">
                     {[
                       { label: '교육ID', value: selectedEducation.educationId },
                       { label: '교육과정명', value: selectedEducation.educationName },
@@ -764,7 +722,7 @@ export default function InstructorAssignmentPage() {
                     ].map((item) => (
                       <div key={item.label} className="space-y-1">
                         <div className="text-sm font-semibold text-gray-500">{item.label}</div>
-                        <div className="text-[20px] font-medium text-gray-900">{item.value}</div>
+                        <div className="text-base font-medium text-gray-900">{item.value}</div>
                       </div>
                     ))}
                   </div>
@@ -774,7 +732,7 @@ export default function InstructorAssignmentPage() {
               {detailTab === 'lessons' && (
 
                 <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-                  <div className="flex items-center justify-between px-8 py-6 border-b border-gray-100">
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-emerald-500" />
                       <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">수업 정보</h3>
@@ -783,7 +741,7 @@ export default function InstructorAssignmentPage() {
                       총 {selectedEducation.lessons?.length || 0}건
                     </div>
                   </div>
-                  <div className="p-8">
+                  <div className="p-6">
                   <Collapse
                     ghost
                     className="[&_.ant-collapse-item]:border-b [&_.ant-collapse-item]:border-gray-100 [&_.ant-collapse-header]:px-0 [&_.ant-collapse-content]:px-0"
@@ -794,7 +752,7 @@ export default function InstructorAssignmentPage() {
                         header={
                           <div className="flex items-center justify-between w-full pr-4">
                             <div className="flex items-center gap-3">
-                              <span className="text-[20px] font-semibold text-gray-900">
+                              <span className="text-base font-semibold text-gray-900">
                                 {lesson.session}차 수업 · {lesson.date} ({lesson.startTime} ~ {lesson.endTime})
                               </span>
                             </div>
@@ -811,7 +769,7 @@ export default function InstructorAssignmentPage() {
                       >
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
                           {/* Main Instructors */}
-                          <Card className="rounded-lg border border-gray-200 bg-gray-50 p-6">
+                          <Card className="rounded-lg border border-gray-200 bg-gray-50">
                             <h4 className="text-sm font-semibold text-gray-700 mb-3">주강사</h4>
                             {lesson.mainInstructors.length > 0 ? (
                               <div className="space-y-2">
@@ -908,7 +866,7 @@ export default function InstructorAssignmentPage() {
                           </Card>
 
                           {/* Assistant Instructors */}
-                          <Card className="rounded-lg border border-gray-200 bg-gray-50 p-6">
+                          <Card className="rounded-lg border border-gray-200 bg-gray-50">
                             <h4 className="text-sm font-semibold text-gray-700 mb-3">보조강사</h4>
                             {lesson.assistantInstructors.length > 0 ? (
                               <div className="space-y-2">

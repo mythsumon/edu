@@ -60,7 +60,7 @@ export function KPIStrip() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
       {kpis.map((kpi, index) => (
-        <div key={index} className="bg-white rounded-2xl shadow-card p-4 border border-gray-100 hover:shadow-card-hover transition-shadow">
+        <div key={index} className="bg-white rounded-2xl shadow-card p-4 border border-gray-100">
           <KPICard {...kpi} />
         </div>
       ))}

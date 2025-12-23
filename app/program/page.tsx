@@ -259,7 +259,7 @@ export default function ProgramManagementPage() {
 
       {/* Page Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">프로그램 관리</h1>
+        <h1 className="text-2xl font-bold text-[#3a2e2a]">프로그램 관리</h1>
         {viewMode === 'list' ? (
           <Space>
             {selectedRowKeys.length > 0 && (
@@ -454,7 +454,7 @@ export default function ProgramManagementPage() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight">{selectedProgram.name}</h2>
+                <h2 className="text-2xl md:text-3xl font-bold text-[#3a2e2a] leading-tight">{selectedProgram.name}</h2>
                 <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
                   <div className="flex items-center gap-1">
                     <span className="text-gray-500">프로그램 ID</span>
@@ -487,7 +487,7 @@ export default function ProgramManagementPage() {
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-blue-500" />
-                <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">프로그램 정보</h3>
+                <h3 className="text-lg font-semibold text-[#3a2e2a]">프로그램 정보</h3>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 px-6 py-6">

@@ -187,19 +187,22 @@ export default function LoginPage() {
             <Button 
               type="primary"
               htmlType="submit" 
-              className="w-full py-4 rounded-lg font-semibold text-lg text-white transition-all hover:opacity-90"
+              className="w-full h-16 rounded-lg font-semibold text-lg text-white transition-all"
               style={{
                 backgroundColor: '#1a202c',
                 borderColor: '#1a202c',
+                color: '#ffffff',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = '#2d3748'
                 e.currentTarget.style.borderColor = '#2d3748'
+                e.currentTarget.style.color = '#ffffff'
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = '#1a202c'
                 e.currentTarget.style.borderColor = '#1a202c'
+                e.currentTarget.style.color = '#ffffff'
               }}
             >
               Login to Dashboard

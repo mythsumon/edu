@@ -24,9 +24,9 @@
     "settings": "Settings and User Management",
     "commonPages": "Common Pages",
     "education": "Education Management",
-    "institution": "Institution",
-    "program": "Program",
-    "instructor": "Instructor",
+    "institution": "Institution Management",
+    "program": "Program Management",
+    "instructor": "Instructor Management",
     "systemSettings": "System Settings"
   },
   "pageHeader": {

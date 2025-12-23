@@ -232,6 +232,35 @@ export default function InstitutionManagementPage() {
 
   const columns: ColumnsType<InstitutionItem> = [
     {
+      title: (
+        <Checkbox
+          checked={selectedRowKeys.length > 0 && selectedRowKeys.length === filteredData.length}
+          indeterminate={selectedRowKeys.length > 0 && selectedRowKeys.length < filteredData.length}
+          onChange={(e: any) => {
+            if (e.target.checked) {
+              setSelectedRowKeys(filteredData.map(item => item.key))
+            } else {
+              setSelectedRowKeys([])
+            }
+          }}
+        />
+      ),
+      key: 'selection',
+      width: 50,
+      render: (_, record) => (
+        <Checkbox
+          checked={selectedRowKeys.includes(record.key)}
+          onChange={(e: any) => {
+            if (e.target.checked) {
+              setSelectedRowKeys([...selectedRowKeys, record.key])
+            } else {
+              setSelectedRowKeys(selectedRowKeys.filter(key => key !== record.key))
+            }
+          }}
+        />
+      ),
+    },
+    {
       title: '권역',
       dataIndex: 'region',
       key: 'region',
@@ -387,83 +416,80 @@ export default function InstitutionManagementPage() {
               엑셀 추출
             </Button>
           </>
-        ) : (
+        ) : viewMode === 'edit' ? (
           <Space>
-            {viewMode === 'edit' && (
-              <Button
-                danger
-                icon={<Trash2 className="w-4 h-4" />}
-                onClick={handleDelete}
-                className="h-11 px-6 rounded-xl font-medium transition-all"
-              >
-                삭제
-              </Button>
-            )}
-            {viewMode === 'detail' ? (
-              <>
-                <Button
-                  type="primary"
-                  onClick={handleEditFromDetail}
-              className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
-              style={{
-                backgroundColor: '#1a202c',
-                borderColor: '#1a202c',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                color: '#ffffff',
-              }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#2d3748'
-                  e.currentTarget.style.borderColor = '#2d3748'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#1a202c'
-                  e.currentTarget.style.borderColor = '#1a202c'
-                }}
-                >
-                  수정하기
-                </Button>
-                <Button
-                  icon={<ArrowLeft className="w-4 h-4" />}
-                  onClick={handleBackToList}
-                  className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
-                >
-                  목록으로
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  type="primary"
-                  icon={<Save className="w-4 h-4" />}
-                  onClick={() => form.submit()}
-              className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
-              style={{
-                backgroundColor: '#1a202c',
-                borderColor: '#1a202c',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                color: '#ffffff',
-              }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#2d3748'
-                  e.currentTarget.style.borderColor = '#2d3748'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#1a202c'
-                  e.currentTarget.style.borderColor = '#1a202c'
-                }}
-                >
-                  저장
-                </Button>
-                <Button
-                  icon={<ArrowLeft className="w-4 h-4" />}
-                  onClick={handleBackToList}
-                  className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
-                >
-                  취소
-                </Button>
-              </>
-            )}
+            <Button
+              danger
+              icon={<Trash2 className="w-4 h-4" />}
+              onClick={handleDelete}
+              className="h-11 px-6 rounded-xl font-medium transition-all"
+            >
+              삭제
+            </Button>
           </Space>
+        ) : viewMode === 'detail' ? (
+          <Space>
+            <Button
+              type="primary"
+              onClick={handleEditFromDetail}
+              className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
+              style={{
+                backgroundColor: '#1a202c',
+                borderColor: '#1a202c',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                color: '#ffffff',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#2d3748'
+                e.currentTarget.style.borderColor = '#2d3748'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#1a202c'
+                e.currentTarget.style.borderColor = '#1a202c'
+              }}
+            >
+              수정하기
+            </Button>
+            <Button
+              icon={<ArrowLeft className="w-4 h-4" />}
+              onClick={handleBackToList}
+              className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+            >
+              목록으로
+            </Button>
+          </Space>
+        ) : (
+          <div className="flex items-center justify-between w-full">
+            <Button
+              icon={<ArrowLeft className="w-4 h-4" />}
+              onClick={handleBackToList}
+              className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+            >
+              취소
+            </Button>
+            <Button
+              type="primary"
+              icon={<Save className="w-4 h-4" />}
+              onClick={() => form.submit()}
+              className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
+              style={{
+                backgroundColor: '#1a202c',
+                borderColor: '#1a202c',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                color: '#ffffff',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#2d3748'
+                e.currentTarget.style.borderColor = '#2d3748'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#1a202c'
+                e.currentTarget.style.borderColor = '#1a202c'
+              }}
+            >
+              저장
+            </Button>
+          </div>
         )}
       </div>
 
@@ -488,7 +514,7 @@ export default function InstitutionManagementPage() {
             
             {/* Region Filter */}
             <div className="w-[220px]">
-              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
+              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
                 <Select
                   placeholder="ALL REGIONS"
                   value={regionFilter}
@@ -516,12 +542,6 @@ export default function InstitutionManagementPage() {
             <Table
               columns={columns}
               dataSource={filteredData}
-              rowSelection={{
-                selectedRowKeys,
-                onChange: (selectedKeys) => {
-                  setSelectedRowKeys(selectedKeys)
-                },
-              }}
               onRow={(record) => ({
                 onClick: () => handleViewDetail(record),
                 className: 'cursor-pointer hover:bg-gray-50',
@@ -571,7 +591,7 @@ export default function InstitutionManagementPage() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight">{selectedInstitution.name}</h2>
+                <h2 className="text-2xl md:text-3xl font-bold text-[#3a2e2a] leading-tight">{selectedInstitution.name}</h2>
                 <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
                   <div className="flex items-center gap-1">
                     <span className="text-gray-500">주소</span>
@@ -620,7 +640,7 @@ export default function InstitutionManagementPage() {
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-blue-500" />
-                  <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">교육기관 정보</h3>
+                  <h3 className="text-lg font-semibold text-[#3a2e2a]">교육기관 정보</h3>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 px-6 py-6">
@@ -653,7 +673,7 @@ export default function InstitutionManagementPage() {
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">담당자 정보</h3>
+                  <h3 className="text-lg font-semibold text-[#3a2e2a]">담당자 정보</h3>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 px-6 py-6">
@@ -676,7 +696,7 @@ export default function InstitutionManagementPage() {
         <div className="flex gap-6">
           {/* Sticky Section Navigation */}
           <div className="w-64 flex-shrink-0">
-            <Card className="rounded-2xl shadow-sm border border-gray-200 sticky top-6">
+            <Card className="rounded-xl shadow-sm border border-gray-200 sticky top-6">
               <div className="space-y-2">
                 {sections.map((section) => (
                   <button
@@ -709,7 +729,7 @@ export default function InstitutionManagementPage() {
                   sectionRefs.current['institution'] = el
                 }}
                 id="institution"
-                className="rounded-2xl shadow-sm border border-gray-200"
+                className="rounded-xl shadow-sm border border-gray-200"
                 title={<span className="text-lg font-semibold">교육기관 정보</span>}
               >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -823,7 +843,7 @@ export default function InstitutionManagementPage() {
                   sectionRefs.current['manager'] = el
                 }}
                 id="manager"
-                className="rounded-2xl shadow-sm border border-gray-200"
+                className="rounded-xl shadow-sm border border-gray-200"
                 title={<span className="text-lg font-semibold">담당자 정보</span>}
               >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

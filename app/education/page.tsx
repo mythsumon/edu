@@ -424,7 +424,7 @@ export default function EducationManagementPage() {
 
       {/* Page Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">교육 관리</h1>
+        <h1 className="text-2xl font-bold text-[#3a2e2a]">교육 관리</h1>
         {viewMode === 'list' && (
           <div className="flex items-center gap-3">
             <Space>
@@ -638,7 +638,7 @@ export default function EducationManagementPage() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight">{selectedEducation.name}</h2>
+                <h2 className="text-2xl md:text-3xl font-bold text-[#3a2e2a] leading-tight">{selectedEducation.name}</h2>
                 <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
                   <div className="flex items-center gap-1">
                     <span className="text-gray-500">학교</span>
@@ -687,7 +687,7 @@ export default function EducationManagementPage() {
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-blue-500" />
-                  <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">기본 정보</h3>
+                  <h3 className="text-lg font-semibold text-[#3a2e2a]">기본 정보</h3>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 px-6 py-6">
@@ -728,7 +728,7 @@ export default function EducationManagementPage() {
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">수업 일정</h3>
+                  <h3 className="text-lg font-semibold text-[#3a2e2a]">수업 일정</h3>
                 </div>
                 <div className="text-sm text-gray-500">총 {selectedEducation.lessons?.length || 0}건</div>
               </div>
@@ -781,7 +781,7 @@ export default function EducationManagementPage() {
             <div className="space-y-6">
               {/* File Upload Section */}
               <div>
-                <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">첨부 이미지</h3>
+                <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">첨부 이미지</h3>
                 <Dragger
                   multiple
                   beforeUpload={() => false}
@@ -832,7 +832,7 @@ export default function EducationManagementPage() {
               
               {/* Tags Section */}
               <div>
-                <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">태그</h3>
+                <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">태그</h3>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {tags.map((tag) => (
                     <span 

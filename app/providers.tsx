@@ -59,6 +59,9 @@ export function AppProviders({ children }: AppProvidersProps) {
             borderRadiusSM: 8,
             colorBgContainer: '#ffffff',
             colorBorder: '#ffeae0',
+            hoverBorderColor: '#ffeae0',
+            activeBorderColor: '#FF8A65',
+            activeShadow: 'none',
           },
           DatePicker: {
             controlHeight: 44,

@@ -4,6 +4,8 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { Button } from 'antd'
+import { ArrowLeft } from 'lucide-react'
 import { PageHeader } from '@/components/dashboard/PageHeader'
 import { KPIStrip } from '@/components/dashboard/KPIStrip'
 import { ProgramList } from '@/components/dashboard/ProgramList'
@@ -53,7 +55,10 @@ export default function DashboardPage() {
         
         <PageHeader />
 
-        <CollapsibleSection title="주요 지표" defaultExpanded={false}>
+        <CollapsibleSection 
+          title="주요 지표"
+          defaultExpanded={false}
+        >
           <div className="space-y-6">
             {/* KPI Section */}
             <div>
@@ -66,7 +71,7 @@ export default function DashboardPage() {
                 <div className="w-full border-t border-gray-200"></div>
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-white px-4 text-sm text-gray-500">권역별 교육 진행 현황</span>
+                <span className="bg-white px-4 text-sm text-[#3a2e2a]">권역별 교육 진행 현황</span>
               </div>
             </div>
 
@@ -78,7 +83,7 @@ export default function DashboardPage() {
                   <div className="space-y-6">
                     {/* Region Cards */}
                     <div>
-                      <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">권역별 교육 진행 현황</h3>
+                      <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">권역별 교육 진행 현황</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {[1, 2, 3, 4, 5, 6].map((regionNumber) => {
                           const regionData = [
@@ -148,7 +153,7 @@ export default function DashboardPage() {
                     
                     {/* Special Items Cards */}
                     <div>
-                      <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">특수 항목별 세부조회</h3>
+                      <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">특수 항목별 세부조회</h3>
                       <div className="grid grid-cols-1 gap-4">
                         {[
                           { label: '도서·벽지 진행률', category: '도서·벽지' as SpecialCategory, progress: 50, completed: 10, target: 20, color: '#F97316' },
@@ -193,7 +198,7 @@ export default function DashboardPage() {
                   </div>
                   {/* Right Side - Region Map */}
                   <div>
-                    <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">권역 지도</h3>
+                    <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">권역 지도</h3>
                     <RegionMap 
                       selectedRegion={selectedRegion} 
                       onRegionSelect={(id) => {
@@ -212,16 +217,13 @@ export default function DashboardPage() {
                 <div className="lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto">
                   {/* Back Button - Separate */}
                   <div className="mb-4">
-                    <button
-                      type="button"
+                    <Button
+                      icon={<ArrowLeft className="w-4 h-4" />}
                       onClick={handleBackClick}
-                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-gray-700 bg-white border-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100 transition-all shadow-sm"
+                      className="w-full h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                      </svg>
                       뒤로
-                    </button>
+                    </Button>
                   </div>
                   <SearchPanel
                     selectedRegion={selectedRegion}

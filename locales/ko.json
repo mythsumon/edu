@@ -21,9 +21,9 @@
     "instructorManagement": "강사 관리",
     "systemManagement": "시스템 관리",
     "settings": "설정 및 사용자 관리",
-    "institution": "교육기관",
-    "program": "프로그램",
-    "instructor": "강사",
+    "institution": "교육기관 관리",
+    "program": "프로그램 관리",
+    "instructor": "강사 관리",
     "systemSettings": "시스템 설정"
   },
   "pageHeader": {

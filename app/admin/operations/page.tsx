@@ -305,6 +305,35 @@ export default function EducationManagementPage() {
 
   const columns: ColumnsType<EducationItem> = [
     {
+      title: (
+        <Checkbox
+          checked={selectedRowKeys.length > 0 && selectedRowKeys.length === filteredData.length}
+          indeterminate={selectedRowKeys.length > 0 && selectedRowKeys.length < filteredData.length}
+          onChange={(e: any) => {
+            if (e.target.checked) {
+              setSelectedRowKeys(filteredData.map(item => item.key))
+            } else {
+              setSelectedRowKeys([])
+            }
+          }}
+        />
+      ),
+      key: 'selection',
+      width: 50,
+      render: (_, record) => (
+        <Checkbox
+          checked={selectedRowKeys.includes(record.key)}
+          onChange={(e: any) => {
+            if (e.target.checked) {
+              setSelectedRowKeys([...selectedRowKeys, record.key])
+            } else {
+              setSelectedRowKeys(selectedRowKeys.filter(key => key !== record.key))
+            }
+          }}
+        />
+      ),
+    },
+    {
       title: '상태',
       dataIndex: 'status',
       key: 'status',
@@ -381,20 +410,6 @@ export default function EducationManagementPage() {
     },
   ]
 
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (selectedKeys: React.Key[]) => {
-      setSelectedRowKeys(selectedKeys)
-    },
-    onSelectAll: (selected: boolean, selectedRows: EducationItem[], changeRows: EducationItem[]) => {
-      if (selected) {
-        const allKeys = filteredData.map((item) => item.key)
-        setSelectedRowKeys(allKeys)
-      } else {
-        setSelectedRowKeys([])
-      }
-    },
-  }
 
   const sections = [
     { key: 'basic', label: '교육 기본 정보' },
@@ -437,19 +452,6 @@ export default function EducationManagementPage() {
         {viewMode === 'list' && (
           <>
             <Space>
-              {selectedRowKeys.length > 0 && (
-                <Button
-                  danger
-                  icon={<Trash2 className="w-4 h-4" />}
-                  onClick={() => {
-                    console.log('Delete educations:', selectedRowKeys)
-                    setSelectedRowKeys([])
-                  }}
-                  className="h-11 px-6 rounded-xl font-medium transition-all"
-                >
-                  삭제 ({selectedRowKeys.length})
-                </Button>
-              )}
               <Button
                 type="primary"
                 onClick={handleRegisterClick}
@@ -481,6 +483,19 @@ export default function EducationManagementPage() {
               >
                 새로고침
               </Button>
+              {selectedRowKeys.length > 0 && (
+                <Button
+                  danger
+                  icon={<Trash2 className="w-4 h-4" />}
+                  onClick={() => {
+                    console.log('Delete educations:', selectedRowKeys)
+                    setSelectedRowKeys([])
+                  }}
+                  className="h-11 px-6 rounded-xl font-medium transition-all"
+                >
+                  삭제 ({selectedRowKeys.length})
+                </Button>
+              )}
             </Space>
             <Button
               icon={<Download className="w-4 h-4" />}
@@ -492,36 +507,7 @@ export default function EducationManagementPage() {
           </>
         )}
         {viewMode === 'register' && (
-          <Space>
-            <Button
-              icon={<FileText className="w-4 h-4" />}
-              onClick={handleTempSave}
-              className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
-            >
-              임시저장
-            </Button>
-            <Button
-              type="primary"
-              icon={<Save className="w-4 h-4" />}
-              onClick={() => form.submit()}
-              className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
-              style={{
-                backgroundColor: '#1a202c',
-                borderColor: '#1a202c',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                color: '#ffffff',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#2d3748'
-                e.currentTarget.style.borderColor = '#2d3748'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#1a202c'
-                e.currentTarget.style.borderColor = '#1a202c'
-              }}
-            >
-              저장
-            </Button>
+          <div className="flex items-center justify-between w-full">
             <Button
               icon={<ArrowLeft className="w-4 h-4" />}
               onClick={handleBackToList}
@@ -529,7 +515,38 @@ export default function EducationManagementPage() {
             >
               취소
             </Button>
-          </Space>
+            <Space>
+              <Button
+                icon={<FileText className="w-4 h-4" />}
+                onClick={handleTempSave}
+                className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+              >
+                임시저장
+              </Button>
+              <Button
+                type="primary"
+                icon={<Save className="w-4 h-4" />}
+                onClick={() => form.submit()}
+                className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
+                style={{
+                  backgroundColor: '#1a202c',
+                  borderColor: '#1a202c',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                  color: '#ffffff',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#2d3748'
+                  e.currentTarget.style.borderColor = '#2d3748'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#1a202c'
+                  e.currentTarget.style.borderColor = '#1a202c'
+                }}
+              >
+                저장
+              </Button>
+            </Space>
+          </div>
         )}
         {viewMode === 'detail' && (
           <>
@@ -595,7 +612,7 @@ export default function EducationManagementPage() {
             
             {/* Program Filter */}
             <div className="w-[220px]">
-              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
+              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
                 <Select
                   placeholder="ALL PROGRAMS"
                   value={programFilter || undefined}
@@ -609,7 +626,7 @@ export default function EducationManagementPage() {
             
             {/* Status Filter */}
             <div className="w-[220px]">
-              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
+              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
                 <Select
                   placeholder="ALL STATUS"
                   value={statusFilter === 'all' ? undefined : statusFilter}
@@ -637,7 +654,6 @@ export default function EducationManagementPage() {
             <Table
               columns={columns}
               dataSource={filteredData}
-              rowSelection={rowSelection}
               onRow={(record) => ({
                 onClick: () => handleViewDetail(record),
                 className: 'cursor-pointer hover:bg-gray-50',
@@ -681,7 +697,7 @@ export default function EducationManagementPage() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight">{selectedEducation.name}</h2>
+                <h2 className="text-2xl md:text-3xl font-bold text-[#3a2e2a] leading-tight">{selectedEducation.name}</h2>
                 <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
                   <div className="flex items-center gap-1">
                     <span className="text-gray-500">학교</span>
@@ -730,7 +746,7 @@ export default function EducationManagementPage() {
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-blue-500" />
-                  <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">기본 정보</h3>
+                  <h3 className="text-lg font-semibold text-[#3a2e2a]">기본 정보</h3>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 px-6 py-6">
@@ -771,7 +787,7 @@ export default function EducationManagementPage() {
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">수업 일정</h3>
+                  <h3 className="text-lg font-semibold text-[#3a2e2a]">수업 일정</h3>
                 </div>
                 <div className="text-sm text-gray-500">총 {selectedEducation.lessons?.length || 0}건</div>
               </div>
@@ -824,7 +840,7 @@ export default function EducationManagementPage() {
             <div className="space-y-6">
               {/* File Upload Section */}
               <div>
-                <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">첨부 이미지</h3>
+                <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">첨부 이미지</h3>
                 <Dragger
                   multiple
                   beforeUpload={() => false}
@@ -875,7 +891,7 @@ export default function EducationManagementPage() {
               
               {/* Tags Section */}
               <div>
-                <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">태그</h3>
+                <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">태그</h3>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {tags.map((tag) => (
                     <span 

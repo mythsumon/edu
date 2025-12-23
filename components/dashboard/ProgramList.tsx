@@ -1,6 +1,6 @@
 'use client'
 
-import { Search } from 'lucide-react'
+import { Search, Eye } from 'lucide-react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Table, Card, Button } from 'antd'
@@ -140,10 +140,11 @@ export function ProgramList({ selectedRegion }: { selectedRegion?: number }) {
       render: (_, record) => (
         <Button
           size="small"
+          icon={<Eye className="w-3 h-3" />}
           onClick={(e) => handleDetailClick('attendance', record.id, e)}
-          className="h-8 px-4 rounded-lg border border-gray-300 hover:bg-gray-50 font-medium text-sm"
+          className="h-8 px-3 rounded-lg border border-gray-300 hover:bg-gray-50"
         >
-          상세보기
+          상세
         </Button>
       ),
     },
@@ -155,10 +156,11 @@ export function ProgramList({ selectedRegion }: { selectedRegion?: number }) {
       render: (_, record) => (
         <Button
           size="small"
+          icon={<Eye className="w-3 h-3" />}
           onClick={(e) => handleDetailClick('activity', record.id, e)}
-          className="h-8 px-4 rounded-lg border border-gray-300 hover:bg-gray-50 font-medium text-sm"
+          className="h-8 px-3 rounded-lg border border-gray-300 hover:bg-gray-50"
         >
-          상세보기
+          상세
         </Button>
       ),
     },
@@ -170,10 +172,11 @@ export function ProgramList({ selectedRegion }: { selectedRegion?: number }) {
       render: (_, record) => (
         <Button
           size="small"
+          icon={<Eye className="w-3 h-3" />}
           onClick={(e) => handleDetailClick('equipment', record.id, e)}
-          className="h-8 px-4 rounded-lg border border-gray-300 hover:bg-gray-50 font-medium text-sm"
+          className="h-8 px-3 rounded-lg border border-gray-300 hover:bg-gray-50"
         >
-          상세보기
+          상세
         </Button>
       ),
     },

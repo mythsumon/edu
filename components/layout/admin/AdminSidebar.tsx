@@ -65,7 +65,6 @@ const adminMenuConfig: MenuGroup[] = [
     icon: Settings,
     items: [
       { labelKey: 'sidebar.settings', href: '/admin/system' },
-      { labelKey: 'sidebar.systemSettings', href: '/admin/system/settings' },
     ],
   },
 ]

@@ -212,7 +212,7 @@ export default function ActivityDetailPage() {
       <div className="space-y-6 max-w-7xl mx-auto">
         {/* Basic Information Card */}
         <Card className="rounded-xl shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">기본 정보</h3>
+          <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">기본 정보</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
@@ -356,7 +356,7 @@ export default function ActivityDetailPage() {
 
         {/* Statistics Card */}
         <Card className="rounded-xl shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">통계 정보</h3>
+          <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">통계 정보</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-blue-50 rounded-lg p-4">
               <p className="text-sm text-gray-600 mb-1">총 신청자 수</p>
@@ -382,7 +382,7 @@ export default function ActivityDetailPage() {
           className="rounded-xl shadow-sm border border-gray-200"
           title={
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent m-0">차시별 활동 정보</h3>
+              <h3 className="text-lg font-semibold text-[#3a2e2a] m-0">차시별 활동 정보</h3>
               {isEditMode && (
                 <Button
                   type="primary"
@@ -496,7 +496,7 @@ export default function ActivityDetailPage() {
 
         {/* Photos Card */}
         <Card className="rounded-xl shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">활동 사진</h3>
+          <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">활동 사진</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {photos.map((photo) => (
               <div key={photo.id} className="relative group">

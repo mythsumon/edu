@@ -209,7 +209,7 @@ export default function EquipmentDetailPage() {
       <div className="space-y-6 max-w-7xl mx-auto">
         {/* Basic Information Card */}
         <Card className="rounded-xl shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">기본 정보</h3>
+          <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">기본 정보</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">
@@ -327,7 +327,7 @@ export default function EquipmentDetailPage() {
 
         {/* Rental Information Card */}
         <Card className="rounded-xl shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">대여 정보</h3>
+          <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">대여 정보</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">
@@ -458,7 +458,7 @@ export default function EquipmentDetailPage() {
 
         {/* Return Information Card */}
         <Card className="rounded-xl shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">반납 정보</h3>
+          <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">반납 정보</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">

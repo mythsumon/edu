@@ -31,7 +31,7 @@ export function SearchPanel({
       <div className="space-y-4">
         {/* 6 Region Cards - Compact */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-700 mb-2">권역별 교육 진행 현황</h3>
+          <h3 className="text-sm font-semibold text-[#3a2e2a] mb-2">권역별 교육 진행 현황</h3>
           <div className="grid grid-cols-2 gap-2">
             {[1, 2, 3, 4, 5, 6].map((regionNumber) => {
               const regionData = [

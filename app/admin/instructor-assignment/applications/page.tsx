@@ -583,7 +583,7 @@ export default function InstructorApplicationPage() {
             
             {/* Role Filter */}
             <div className="w-[220px]">
-              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
+              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
                 <Select
                   placeholder="ALL ROLES"
                   value={roleFilter === 'all' ? undefined : roleFilter}
@@ -597,7 +597,7 @@ export default function InstructorApplicationPage() {
             
             {/* Status Filter */}
             <div className="w-[220px]">
-              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
+              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
                 <Select
                   placeholder="ALL STATUS"
                   value={statusFilter === 'all' ? undefined : statusFilter}
@@ -708,7 +708,7 @@ export default function InstructorApplicationPage() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight">
+                <h2 className="text-2xl md:text-3xl font-bold text-[#3a2e2a] leading-tight">
                   {selectedApplication.educationName}
                 </h2>
                 <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
@@ -778,7 +778,7 @@ export default function InstructorApplicationPage() {
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-blue-500" />
-                    <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">신청 정보</h3>
+                    <h3 className="text-lg font-semibold text-[#3a2e2a]">신청 정보</h3>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 px-6 py-6">
@@ -822,7 +822,7 @@ export default function InstructorApplicationPage() {
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">신청자 정보</h3>
+                    <h3 className="text-lg font-semibold text-[#3a2e2a]">신청자 정보</h3>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 px-6 py-6">
@@ -868,7 +868,7 @@ export default function InstructorApplicationPage() {
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-purple-500" />
-                    <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">수업 정보</h3>
+                    <h3 className="text-lg font-semibold text-[#3a2e2a]">수업 정보</h3>
                   </div>
                   <div className="text-sm text-gray-500">총 {selectedApplication.lessons.length}건</div>
                 </div>

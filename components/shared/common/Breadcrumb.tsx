@@ -38,7 +38,6 @@ const adminMenuConfig = [
     labelKey: 'sidebar.systemManagement',
     items: [
       { labelKey: 'sidebar.settings', href: '/admin/system' },
-      { labelKey: 'sidebar.systemSettings', href: '/admin/system/settings' },
     ],
   },
 ]

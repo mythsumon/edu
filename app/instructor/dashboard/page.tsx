@@ -343,7 +343,7 @@ export default function InstructorDashboard() {
     <div className="min-h-screen bg-gray-50 p-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+        <h1 className="text-2xl font-bold text-[#3a2e2a] mb-2">
           대시보드
         </h1>
         <p className="text-gray-600">

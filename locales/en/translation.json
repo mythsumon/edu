@@ -73,9 +73,9 @@
     "educationApplication": "Education Application",
     "educationAssignment": "Education Assignment",
     "referenceInfo": "Reference Information",
-    "institution": "Institution",
-    "program": "Program",
-    "instructor": "Instructor",
+    "institution": "Institution Management",
+    "program": "Program Management",
+    "instructor": "Instructor Management",
     "systemManagement": "System Management",
     "settings": "Settings",
     "systemSettings": "System Settings"

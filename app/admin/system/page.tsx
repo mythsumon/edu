@@ -6,7 +6,7 @@ import { useState, useMemo } from 'react'
 import { Table, Button, Card, Form, Select, Space, Switch, Tabs } from 'antd'
 import { Input } from '@/components/shared/common'
 import type { ColumnsType } from 'antd/es/table'
-import { ChevronRight, Save, Trash2, RotateCcw, Eye, UserPlus, ArrowLeft } from 'lucide-react'
+import { ChevronRight, Save, Trash2, RotateCcw, Eye, UserPlus, ArrowLeft, Search } from 'lucide-react'
 
 const { TextArea } = Input
 
@@ -103,8 +103,7 @@ export default function SystemSettingsPage() {
   const [settingsForm] = Form.useForm()
   
   // Filters
-  const [nameSearch, setNameSearch] = useState<string>('')
-  const [emailSearch, setEmailSearch] = useState<string>('')
+  const [searchText, setSearchText] = useState<string>('')
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
@@ -114,30 +113,33 @@ export default function SystemSettingsPage() {
   const [autoBackup, setAutoBackup] = useState(true)
 
   const handleResetFilters = () => {
-    setNameSearch('')
-    setEmailSearch('')
+    setSearchText('')
     setRoleFilter('all')
     setStatusFilter('all')
+  }
+  
+  const handleSearch = () => {
+    setCurrentPage(1)
   }
 
   const filteredUsers = useMemo(() => {
     return dummyUsers.filter((item) => {
-      const matchesName = !nameSearch || item.name.toLowerCase().includes(nameSearch.toLowerCase())
-      const matchesEmail = !emailSearch || item.email.toLowerCase().includes(emailSearch.toLowerCase())
+      const searchLower = searchText.toLowerCase()
+      const matchesSearch = !searchText || 
+        item.name.toLowerCase().includes(searchLower) ||
+        item.email.toLowerCase().includes(searchLower) ||
+        item.userId.toLowerCase().includes(searchLower)
       const matchesRole = roleFilter === 'all' || item.role === roleFilter
       const matchesStatus = statusFilter === 'all' || item.status === statusFilter
-      return matchesName && matchesEmail && matchesRole && matchesStatus
+      return matchesSearch && matchesRole && matchesStatus
     })
-  }, [nameSearch, emailSearch, roleFilter, statusFilter])
+  }, [searchText, roleFilter, statusFilter])
 
   const handleSettingsSubmit = (values: any) => {
     console.log('Settings values:', values)
     // Handle settings save
   }
 
-  const handleUserSearch = () => {
-    setCurrentPage(1)
-  }
 
   const handleRegisterClick = () => {
     setViewMode('register')
@@ -287,7 +289,7 @@ export default function SystemSettingsPage() {
         <Tabs
           activeKey={activeTab}
           onChange={(key) => setActiveTab(key as 'settings' | 'users')}
-          className="[&_.ant-tabs-tab]:px-6 [&_.ant-tabs-tab]:h-12 [&_.ant-tabs-tab-btn]:text-base"
+          className="[&_.ant-tabs-nav]:mb-0 [&_.ant-tabs-tab]:px-6 [&_.ant-tabs-tab]:h-12 [&_.ant-tabs-tab-btn]:text-base [&_.ant-tabs-content-holder]:pt-6"
           items={[
             {
               key: 'settings',
@@ -302,7 +304,7 @@ export default function SystemSettingsPage() {
               >
                 {/* 일반 설정 */}
                 <div className="mb-8">
-                  <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">일반 설정</h3>
+                  <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">일반 설정</h3>
                   <div className="space-y-4">
                     <Form.Item label="시스템 언어" className="mb-0">
                       <Select
@@ -340,7 +342,7 @@ export default function SystemSettingsPage() {
 
                 {/* 알림 설정 */}
                 <div className="mb-8">
-                  <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">알림 설정</h3>
+                  <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">알림 설정</h3>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                       <div>
@@ -369,7 +371,7 @@ export default function SystemSettingsPage() {
 
                 {/* 백업 설정 */}
                 <div className="mb-8">
-                  <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">백업 설정</h3>
+                  <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">백업 설정</h3>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                       <div>
@@ -398,7 +400,7 @@ export default function SystemSettingsPage() {
 
                 {/* 보안 설정 */}
                 <div className="mb-8">
-                  <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">보안 설정</h3>
+                  <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">보안 설정</h3>
                   <div className="space-y-4">
                     <Form.Item label="세션 타임아웃 (분)" className="mb-0">
                       <Input
@@ -466,106 +468,69 @@ export default function SystemSettingsPage() {
             <div className="pt-6">
               {viewMode === 'list' ? (
                 <>
-              {/* Filter Card */}
-              <Card className="rounded-xl shadow-sm border border-gray-200 mb-4">
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-end">
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">이름</label>
-                        <Input
-                          placeholder="이름을 입력해주세요."
-                          value={nameSearch}
-                          onChange={(e) => setNameSearch(e.target.value)}
-                          allowClear
-                          className="h-11 rounded-xl"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">이메일</label>
-                        <Input
-                          placeholder="이메일을 입력해주세요."
-                          value={emailSearch}
-                          onChange={(e) => setEmailSearch(e.target.value)}
-                          allowClear
-                          className="h-11 rounded-xl"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">역할</label>
-                      <Select
-                        placeholder="전체"
-                        value={roleFilter}
-                        onChange={setRoleFilter}
-                        options={roleOptions}
-                        className="h-11 rounded-xl w-full"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">상태</label>
-                      <Select
-                        placeholder="전체"
-                        value={statusFilter}
-                        onChange={setStatusFilter}
-                        options={statusOptions}
-                        className="h-11 rounded-xl w-full"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-1 justify-end">
-                    <Button
-                      type="primary"
-                      onClick={handleUserSearch}
-                      className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
-                    style={{
-                      backgroundColor: '#1a202c',
-                      borderColor: '#1a202c',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                      color: '#ffffff',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#2d3748'
-                      e.currentTarget.style.borderColor = '#2d3748'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#1a202c'
-                      e.currentTarget.style.borderColor = '#1a202c'
-                    }}
-                    >
-                      검색
-                    </Button>
-                    <Button
-                      icon={<RotateCcw className="w-4 h-4" />}
-                      onClick={handleResetFilters}
-                      className="h-11 px-4 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
-                    >
-                      초기화
-                    </Button>
+              {/* Modern Search Toolbar */}
+              <div className="flex items-center h-16 px-4 py-3 bg-white border border-[#ECECF3] rounded-2xl shadow-[0_8px_24px_rgba(15,15,30,0.06)] mb-4 gap-3 flex-wrap">
+                {/* Search Input - Primary, flex-grow */}
+                <div className="flex-1 min-w-[200px]">
+                  <div className="relative h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
+                    <Input
+                      placeholder="Search by name, email, or user ID..."
+                      value={searchText}
+                      onChange={(e) => setSearchText(e.target.value)}
+                      allowClear
+                      onPressEnter={handleSearch}
+                      prefix={<Search className="w-4 h-4 text-[#9AA0AE]" />}
+                      className="h-11 border-0 bg-transparent rounded-xl text-[#151827] placeholder:text-[#9AA0AE] [&_.ant-input]:!h-11 [&_.ant-input]:!px-4 [&_.ant-input]:!py-0 [&_.ant-input]:!bg-transparent [&_.ant-input]:!border-0 [&_.ant-input]:!outline-none [&_.ant-input]:!shadow-none [&_.ant-input-wrapper]:!border-0 [&_.ant-input-wrapper]:!shadow-none [&_.ant-input-prefix]:!mr-2"
+                    />
                   </div>
                 </div>
-              </Card>
+                
+                {/* Role Filter */}
+                <div className="w-[220px]">
+                  <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
+                    <Select
+                      placeholder="ALL ROLES"
+                      value={roleFilter === 'all' ? undefined : roleFilter}
+                      onChange={(value) => setRoleFilter(value || 'all')}
+                      options={roleOptions.filter((opt) => opt.value !== 'all')}
+                      className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
+                      suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
+                    />
+                  </div>
+                </div>
+                
+                {/* Status Filter */}
+                <div className="w-[220px]">
+                  <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
+                    <Select
+                      placeholder="ALL STATUS"
+                      value={statusFilter === 'all' ? undefined : statusFilter}
+                      onChange={(value) => setStatusFilter(value || 'all')}
+                      options={statusOptions.filter((opt) => opt.value !== 'all')}
+                      className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
+                      suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
+                    />
+                  </div>
+                </div>
+                
+                {/* Refresh Button */}
+                <div className="flex items-center gap-2 ml-auto">
+                  <Button
+                    type="text"
+                    icon={<RotateCcw className="w-4 h-4 text-[#151827]" />}
+                    onClick={handleResetFilters}
+                    className="w-10 h-10 p-0 rounded-full bg-transparent border border-[#EDEDF5] hover:bg-[#FFF3ED] flex items-center justify-center transition-all"
+                  />
+                </div>
+              </div>
 
               {/* Table Card */}
-              <Card className="rounded-xl shadow-sm border border-gray-200">
+              <Card className="rounded-2xl shadow-sm border border-gray-200">
                 <div className="flex items-center justify-between mb-4">
                   <div className="text-sm text-gray-600">
                     총 <span className="font-semibold text-gray-900">{filteredUsers.length}</span>건
                   </div>
                   <Space>
-                    {selectedRowKeys.length > 0 && (
-                      <Button
-                        danger
-                        icon={<Trash2 className="w-4 h-4" />}
-                        onClick={() => {
-                          console.log('Delete users:', selectedRowKeys)
-                          setSelectedRowKeys([])
-                        }}
-                        className="h-11 px-6 rounded-xl font-medium transition-all"
-                      >
-                        삭제 ({selectedRowKeys.length})
-                      </Button>
-                    )}
                     <Button
                       type="primary"
                       icon={<UserPlus className="w-4 h-4" />}
@@ -588,6 +553,19 @@ export default function SystemSettingsPage() {
                     >
                       + 사용자 등록
                     </Button>
+                    {selectedRowKeys.length > 0 && (
+                      <Button
+                        danger
+                        icon={<Trash2 className="w-4 h-4" />}
+                        onClick={() => {
+                          console.log('Delete users:', selectedRowKeys)
+                          setSelectedRowKeys([])
+                        }}
+                        className="h-11 px-6 rounded-xl font-medium transition-all"
+                      >
+                        삭제 ({selectedRowKeys.length})
+                      </Button>
+                    )}
                   </Space>
                 </div>
                 <Table
@@ -638,7 +616,7 @@ export default function SystemSettingsPage() {
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight">{selectedUser.name}</h2>
+                        <h2 className="text-2xl md:text-3xl font-bold text-[#3a2e2a] leading-tight">{selectedUser.name}</h2>
                         <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
                           <div className="flex items-center gap-1">
                             <span className="text-gray-500">이메일</span>
@@ -714,7 +692,7 @@ export default function SystemSettingsPage() {
                       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-blue-500" />
-                          <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">기본 정보</h3>
+                          <h3 className="text-lg font-semibold text-[#3a2e2a]">기본 정보</h3>
                         </div>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 px-6 py-6">
@@ -761,7 +739,7 @@ export default function SystemSettingsPage() {
                       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                          <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">권한 정보</h3>
+                          <h3 className="text-lg font-semibold text-[#3a2e2a]">권한 정보</h3>
                         </div>
                       </div>
                       <div className="px-6 py-6">

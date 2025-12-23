@@ -89,7 +89,7 @@ export function RegionDetailPanel({ selectedRegionId, onRegionChange }: RegionDe
       {/* Title and Progress Bar */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{region.name} 교육 진행 현황</h3>
+          <h3 className="text-xl font-bold text-[#3a2e2a]">{region.name} 교육 진행 현황</h3>
           <span className="text-2xl font-semibold" style={{ color: region.color }}>
             {region.educationPercent}%
           </span>
@@ -129,7 +129,7 @@ export function RegionDetailPanel({ selectedRegionId, onRegionChange }: RegionDe
 
       {/* 자치단체 Table */}
       <div className="mb-6">
-        <h4 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">자치단체별 현황</h4>
+        <h4 className="text-lg font-semibold text-[#3a2e2a] mb-4">자치단체별 현황</h4>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
@@ -158,7 +158,7 @@ export function RegionDetailPanel({ selectedRegionId, onRegionChange }: RegionDe
 
       {/* Summary Table */}
       <div>
-        <h4 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">요약</h4>
+        <h4 className="text-lg font-semibold text-[#3a2e2a] mb-4">요약</h4>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">

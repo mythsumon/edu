@@ -1,7 +1,8 @@
 'use client'
 
-import { RotateCcw } from 'lucide-react'
+import { RotateCcw, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
+import { Select, Button } from 'antd'
 import { useLanguage } from '@/components/localization/LanguageContext'
 
 export function PageHeader() {
@@ -9,21 +10,26 @@ export function PageHeader() {
   const [selectedYear, setSelectedYear] = useState('2025')
   const [selectedMonth, setSelectedMonth] = useState('all')
 
-  const years = ['2025', '2024', '2023']
-  const months = [
-    { value: 'all', label: t('pageHeader.months.all') },
-    { value: 'jan', label: t('pageHeader.months.jan') },
-    { value: 'feb', label: t('pageHeader.months.feb') },
-    { value: 'mar', label: t('pageHeader.months.mar') },
-    { value: 'apr', label: t('pageHeader.months.apr') },
-    { value: 'may', label: t('pageHeader.months.may') },
-    { value: 'jun', label: t('pageHeader.months.jun') },
-    { value: 'jul', label: t('pageHeader.months.jul') },
-    { value: 'aug', label: t('pageHeader.months.aug') },
-    { value: 'sep', label: t('pageHeader.months.sep') },
-    { value: 'oct', label: t('pageHeader.months.oct') },
-    { value: 'nov', label: t('pageHeader.months.nov') },
-    { value: 'dec', label: t('pageHeader.months.dec') },
+  const yearOptions = [
+    { value: '2025', label: `2025${locale === 'ko' ? t('pageHeader.yearLabel') : ''}` },
+    { value: '2024', label: `2024${locale === 'ko' ? t('pageHeader.yearLabel') : ''}` },
+    { value: '2023', label: `2023${locale === 'ko' ? t('pageHeader.yearLabel') : ''}` },
+  ]
+  
+  const monthOptions = [
+    { value: 'all', label: `${t('pageHeader.months.all')}${locale === 'ko' ? t('pageHeader.monthLabel') : ''}` },
+    { value: 'jan', label: `${t('pageHeader.months.jan')}${locale === 'ko' ? t('pageHeader.monthLabel') : ''}` },
+    { value: 'feb', label: `${t('pageHeader.months.feb')}${locale === 'ko' ? t('pageHeader.monthLabel') : ''}` },
+    { value: 'mar', label: `${t('pageHeader.months.mar')}${locale === 'ko' ? t('pageHeader.monthLabel') : ''}` },
+    { value: 'apr', label: `${t('pageHeader.months.apr')}${locale === 'ko' ? t('pageHeader.monthLabel') : ''}` },
+    { value: 'may', label: `${t('pageHeader.months.may')}${locale === 'ko' ? t('pageHeader.monthLabel') : ''}` },
+    { value: 'jun', label: `${t('pageHeader.months.jun')}${locale === 'ko' ? t('pageHeader.monthLabel') : ''}` },
+    { value: 'jul', label: `${t('pageHeader.months.jul')}${locale === 'ko' ? t('pageHeader.monthLabel') : ''}` },
+    { value: 'aug', label: `${t('pageHeader.months.aug')}${locale === 'ko' ? t('pageHeader.monthLabel') : ''}` },
+    { value: 'sep', label: `${t('pageHeader.months.sep')}${locale === 'ko' ? t('pageHeader.monthLabel') : ''}` },
+    { value: 'oct', label: `${t('pageHeader.months.oct')}${locale === 'ko' ? t('pageHeader.monthLabel') : ''}` },
+    { value: 'nov', label: `${t('pageHeader.months.nov')}${locale === 'ko' ? t('pageHeader.monthLabel') : ''}` },
+    { value: 'dec', label: `${t('pageHeader.months.dec')}${locale === 'ko' ? t('pageHeader.monthLabel') : ''}` },
   ]
 
   const handleReset = () => {
@@ -41,37 +47,37 @@ export function PageHeader() {
 
         {/* Filter Group */}
         <div className="flex items-center gap-3">
-          <select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(e.target.value)}
-            className="h-11 px-3 text-sm border border-gray-300 rounded-xl bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-          >
-            {years.map((year) => (
-              <option key={year} value={year}>
-                {year}{locale === 'ko' ? t('pageHeader.yearLabel') : ''}
-              </option>
-            ))}
-          </select>
+          <div className="w-[220px]">
+            <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
+              <Select
+                value={selectedYear}
+                onChange={setSelectedYear}
+                options={yearOptions}
+                className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
+                suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
+              />
+            </div>
+          </div>
 
-          <select
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            className="h-11 px-3 text-sm border border-gray-300 rounded-xl bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-          >
-            {months.map((month) => (
-              <option key={month.value} value={month.value}>
-                {month.label}{locale === 'ko' ? t('pageHeader.monthLabel') : ''}
-              </option>
-            ))}
-          </select>
+          <div className="w-[220px]">
+            <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
+              <Select
+                value={selectedMonth}
+                onChange={setSelectedMonth}
+                options={monthOptions}
+                className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
+                suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
+              />
+            </div>
+          </div>
 
-          <button
+          <Button
+            icon={<RotateCcw className="w-4 h-4" />}
             onClick={handleReset}
-            className="flex items-center gap-2 h-11 px-4 text-sm text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors font-medium"
+            className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
           >
-            <RotateCcw className="w-4 h-4" />
             {t('pageHeader.resetFilter')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
