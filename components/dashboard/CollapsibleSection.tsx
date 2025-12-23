@@ -27,7 +27,7 @@ export function CollapsibleSection({
           onClick={() => setIsExpanded(!isExpanded)}
           className="flex-1 flex items-center justify-between hover:opacity-80 transition-opacity"
         >
-          <h2 className="text-[20px] font-bold text-gray-900">{title}</h2>
+          <h2 className={`text-[20px] font-bold ${typeof title === 'string' ? 'text-gray-900' : ''}`}>{title}</h2>
           <div className={`flex items-center gap-2 transition-transform duration-200 ${isExpanded ? 'rotate-0' : ''}`}>
             {isExpanded ? (
               <ChevronUp className="w-5 h-5 text-gray-600" />

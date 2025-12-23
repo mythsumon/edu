@@ -58,7 +58,6 @@ const mockPrograms: ProgramListItem[] = [
 export function ProgramList({ selectedRegion }: { selectedRegion?: number }) {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
-  const [showAll, setShowAll] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
 
@@ -198,28 +197,6 @@ export function ProgramList({ selectedRegion }: { selectedRegion?: number }) {
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-gray-900">전체 프로그램 리스트</h2>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowAll(true)}
-              className={`px-4 py-2 text-sm rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                showAll
-                  ? 'bg-[#ff8a65] text-white shadow-sm'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              전체
-            </button>
-            <button
-              onClick={() => setShowAll(false)}
-              className={`px-4 py-2 text-sm rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                !showAll
-                  ? 'bg-[#ff8a65] text-white shadow-sm'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              선택한 권역만
-            </button>
-          </div>
         </div>
 
         {/* Search Bar */}

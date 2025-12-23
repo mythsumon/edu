@@ -56,7 +56,14 @@ export default function DashboardPage() {
         <PageHeader />
 
         <CollapsibleSection 
-          title="주요 지표"
+          title={
+            <>
+              <span className="text-[#3a2e2a]">주요 지표</span>{' '}
+              <span style={{ color: '#FF8A65' }}>
+                (경기 미래채움 권역별 데이터를 한 눈에 보기)
+              </span>
+            </>
+          }
           defaultExpanded={false}
         >
           <div className="space-y-6">
