@@ -230,6 +230,16 @@ export default function InstitutionManagementPage() {
     })
   }
 
+  const filteredData = dummyData.filter((item) => {
+    const matchesRegion = regionFilter === 'all' || item.region === regionFilter
+    const searchLower = searchText.toLowerCase()
+    const matchesSearch = !searchText || 
+      item.name.toLowerCase().includes(searchLower) ||
+      item.institutionId.toLowerCase().includes(searchLower) ||
+      item.manager.toLowerCase().includes(searchLower)
+    return matchesRegion && matchesSearch
+  })
+
   const columns: ColumnsType<InstitutionItem> = [
     {
       title: (
@@ -343,16 +353,6 @@ export default function InstitutionManagementPage() {
       ),
     },
   ]
-
-  const filteredData = dummyData.filter((item) => {
-    const matchesRegion = regionFilter === 'all' || item.region === regionFilter
-    const searchLower = searchText.toLowerCase()
-    const matchesSearch = !searchText || 
-      item.name.toLowerCase().includes(searchLower) ||
-      item.manager.toLowerCase().includes(searchLower) ||
-      item.institutionId.toLowerCase().includes(searchLower)
-    return matchesRegion && matchesSearch
-  })
 
   const sections = [
     { key: 'institution', label: '교육기관 정보' },
