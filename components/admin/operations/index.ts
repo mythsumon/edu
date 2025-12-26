@@ -20,5 +20,6 @@ export { SessionsListCard } from './SessionsListCard'
 export { LessonsListCard } from './LessonsListCard'
 export { AttendanceSummaryCard } from './AttendanceSummaryCard'
 export { ActivitySummaryCard } from './ActivitySummaryCard'
+export { EquipmentSummaryCard } from './EquipmentSummaryCard'
 export type { ExcelRowData, ValidationError } from './ExcelPreviewTable'
 

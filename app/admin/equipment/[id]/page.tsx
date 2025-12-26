@@ -2,13 +2,19 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Button, Card, Input, Select, DatePicker, TimePicker, Switch, Space, Spin, Alert } from 'antd'
+import { Button, Card, Input, Select, DatePicker, TimePicker, Switch, Space, Spin, Alert, Table } from 'antd'
 import { ArrowLeft, Save, Trash2, X, Plus } from 'lucide-react'
 import dayjs, { Dayjs } from 'dayjs'
 import 'dayjs/locale/ko'
 import { programService } from '@/services/programService'
 import { EquipmentData, RentalItem } from '@/types/program'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import {
+  DetailPageHeaderSticky,
+  EquipmentSummaryCard,
+  DetailSectionCard,
+  DefinitionListGrid,
+} from '@/components/admin/operations'
 
 const { TextArea } = Input
 dayjs.locale('ko')
@@ -21,15 +27,6 @@ export default function EquipmentDetailPage() {
   const [rentalItems, setRentalItems] = useState<RentalItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeSection, setActiveSection] = useState<string>('basic')
-  const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
-
-  const scrollToSection = (sectionKey: string) => {
-    setActiveSection(sectionKey)
-    if (sectionRefs.current[sectionKey]) {
-      sectionRefs.current[sectionKey]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }
 
   // Fetch data when component mounts
   useEffect(() => {
@@ -110,6 +107,10 @@ export default function EquipmentDetailPage() {
     router.back();
   }
 
+  const handleEditFromDetail = () => {
+    setIsEditMode(true)
+  }
+
   if (loading) {
     return (
       <ProtectedRoute requiredRole="admin">
@@ -140,190 +141,191 @@ export default function EquipmentDetailPage() {
     )
   }
 
+  if (!isEditMode) {
+    return (
+      <ProtectedRoute requiredRole="admin">
+        <div className="bg-slate-50 min-h-screen px-6 pt-0">
+          {/* Sticky Header */}
+          <DetailPageHeaderSticky
+            onBack={handleBack}
+            onEdit={handleEditFromDetail}
+            onDelete={handleDelete}
+          />
+
+          {/* Main Content Container */}
+          <div className="max-w-5xl mx-auto pt-6 pb-12 space-y-4">
+            {/* Summary Card */}
+            <EquipmentSummaryCard
+              assignmentNumber={data.assignmentNumber}
+              courseName={data.courseName}
+              institution={data.institution}
+              educationDate={data.educationDate}
+              instructorName={data.instructorName}
+              currentSession={data.currentSession}
+              totalSessions={data.totalSessions}
+            />
+
+            {/* Basic Info Section */}
+            <DetailSectionCard title="기본 정보">
+              <DefinitionListGrid
+                items={[
+                  { label: '과제번호', value: data.assignmentNumber },
+                  { label: '교육과정명', value: data.courseName },
+                  { label: '교육기관', value: data.institution },
+                  { label: '교육일자', value: data.educationDate },
+                  { label: '담당차시 / 총차시', value: `${data.currentSession} / ${data.totalSessions}` },
+                  { label: '당일 참여 강사', value: data.instructorName },
+                  { label: '예상 참가 인원', value: `${data.expectedParticipants}명` },
+                ]}
+                columns={2}
+              />
+            </DetailSectionCard>
+
+            {/* Rental Info Section */}
+            <DetailSectionCard title="대여 정보">
+              <DefinitionListGrid
+                items={[
+                  { label: '대여일자', value: data.rentalDate },
+                  { label: '대여시간', value: data.rentalTime },
+                  { label: '대여자', value: data.renterName },
+                  { label: '비고', value: data.notes || '-', span: 2 },
+                ]}
+                columns={2}
+              />
+              <div className="mt-6">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">대여 교구 목록</h4>
+                <Table
+                  columns={[
+                    {
+                      title: '교구명',
+                      dataIndex: 'itemName',
+                      key: 'itemName',
+                    },
+                    {
+                      title: '수량',
+                      dataIndex: 'quantity',
+                      key: 'quantity',
+                      render: (text) => `${text}개`,
+                    },
+                  ]}
+                  dataSource={rentalItems}
+                  pagination={false}
+                  className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:text-gray-700 [&_.ant-table]:text-sm"
+                />
+              </div>
+            </DetailSectionCard>
+
+            {/* Return Info Section */}
+            <DetailSectionCard title="반납 정보">
+              <DefinitionListGrid
+                items={[
+                  { label: '반납자', value: data.returnerName },
+                  { label: '반납일자', value: data.returnDate },
+                  { label: '반납시간', value: data.returnTime },
+                  { label: '반납자 확인', value: data.returnerNameConfirm },
+                  { label: '반납일자 확인', value: data.returnDateConfirm },
+                  { label: '반납시간 확인', value: data.returnTimeConfirm },
+                  { label: '반납 상태', value: data.returnStatus },
+                  { label: '반납 수량', value: `${data.returnQuantity}개` },
+                  { label: '대상 적합 여부', value: data.targetEligible ? '적합' : '부적합' },
+                  { label: '비고', value: data.remarks || '-', span: 2 },
+                  { label: '서명 생략', value: data.signatureOmitted ? '생략' : '필요' },
+                  { label: '서명자', value: data.signatureName || '-' },
+                  { label: '서명일', value: data.signatureDate },
+                ]}
+                columns={2}
+              />
+            </DetailSectionCard>
+          </div>
+        </div>
+      </ProtectedRoute>
+    )
+  }
+
+  // Edit Mode
   return (
     <ProtectedRoute requiredRole="admin">
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <Button
-            type="text"
-            icon={<ArrowLeft className="w-4 h-4" />}
-            onClick={handleBack}
-            className="text-gray-600 hover:text-gray-900 px-0"
-          >
-            목록으로
-          </Button>
-          <Space>
-            {!isEditMode ? (
-              <>
-                <Button
-                  type="primary"
-                  onClick={handleEdit}
-                  className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
-                  style={{
-                    background: '#0f172a',
-                    borderColor: 'transparent',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                    color: '#ffffff',
-                  }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = '#1e293b'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = '#0f172a'
-                    }}
-                >
-                  수정하기
-                </Button>
-                <Button
-                  danger
-                  icon={<Trash2 className="w-4 h-4" />}
-                  onClick={handleDelete}
-                  className="h-11 px-6 rounded-xl font-medium transition-all"
-                >
-                  삭제
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  type="primary"
-                  icon={<Save className="w-4 h-4" />}
-                  onClick={handleSave}
-                  className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
-                  style={{
-                    background: '#0f172a',
-                    borderColor: 'transparent',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                    color: '#ffffff',
-                  }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = '#1e293b'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = '#0f172a'
-                    }}
-                >
-                  저장
-                </Button>
-                <Button
-                  icon={<X className="w-4 h-4" />}
-                  onClick={handleCancel}
-                  className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
-                >
-                  취소
-                </Button>
-              </>
-            )}
-          </Space>
-        </div>
-
-      <div className="space-y-6">
-        <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-5 md:p-6 flex flex-col gap-4">
-          <div className="flex flex-col gap-2 items-center">
-            <h2 className="text-2xl md:text-3xl font-bold text-[#3a2e2a] leading-tight text-center">교구 확인서</h2>
+      <div className="bg-slate-50 min-h-screen px-6 pt-0">
+        {/* Sticky Header */}
+        <div className="sticky top-0 z-10 bg-white border-b border-slate-200 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Button
+              icon={<X className="w-4 h-4" />}
+              onClick={handleCancel}
+              className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
+            >
+              취소
+            </Button>
+            <Space>
+              <Button
+                type="primary"
+                icon={<Save className="w-4 h-4" />}
+                onClick={handleSave}
+                className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                저장
+              </Button>
+            </Space>
           </div>
         </div>
 
-      <div className="flex gap-6">
-        {/* Sticky Section Navigation */}
-        <div className="w-64 flex-shrink-0">
-          <Card className="rounded-2xl shadow-sm border border-gray-200 sticky top-6">
-            <div className="space-y-2">
-              {[
-                { key: 'basic', label: '기본 정보' },
-                { key: 'rental', label: '대여 정보' },
-                { key: 'return', label: '반납 정보' },
-              ].map((section) => (
-                <button
-                  key={section.key}
-                  onClick={() => scrollToSection(section.key)}
-                  className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                    activeSection === section.key
-                      ? 'bg-blue-50 text-blue-700 font-medium'
-                      : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  {section.label}
-                </button>
-              ))}
-            </div>
-          </Card>
-        </div>
+        {/* Main Content Container */}
+        <div className="max-w-5xl mx-auto pt-6 pb-12 space-y-4">
+          {/* Summary Card */}
+          <EquipmentSummaryCard
+            assignmentNumber={data.assignmentNumber}
+            courseName={data.courseName}
+            institution={data.institution}
+            educationDate={data.educationDate}
+            instructorName={data.instructorName}
+            currentSession={data.currentSession}
+            totalSessions={data.totalSessions}
+          />
 
-        {/* Content */}
-        <div className="flex-1 space-y-6">
-        <div ref={(el) => { sectionRefs.current['basic'] = el }}>
-        <Card className="rounded-xl shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">기본 정보</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                과제번호
-              </label>
-              {isEditMode ? (
+          {/* Basic Info Section */}
+          <DetailSectionCard title="기본 정보">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">과제번호</label>
                 <Input
                   value={data.assignmentNumber}
                   onChange={(e) => setData({ ...data, assignmentNumber: e.target.value })}
-                  className="h-10 rounded-lg"
+                  className="h-11 rounded-xl"
                 />
-              ) : (
-                <p className="text-base text-gray-900">{data.assignmentNumber}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                교육과정명
-              </label>
-              {isEditMode ? (
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">교육과정명</label>
                 <Input
                   value={data.courseName}
                   onChange={(e) => setData({ ...data, courseName: e.target.value })}
-                  className="h-10 rounded-lg"
+                  className="h-11 rounded-xl"
                 />
-              ) : (
-                <p className="text-base text-gray-900">{data.courseName}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                교육기관
-              </label>
-              {isEditMode ? (
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">교육기관</label>
                 <Input
                   value={data.institution}
                   onChange={(e) => setData({ ...data, institution: e.target.value })}
-                  className="h-10 rounded-lg"
+                  className="h-11 rounded-xl"
                 />
-              ) : (
-                <p className="text-base text-gray-900">{data.institution}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                교육일자
-              </label>
-              {isEditMode ? (
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">교육일자</label>
                 <DatePicker
                   value={dayjs(data.educationDate)}
                   onChange={(date) => setData({ ...data, educationDate: date ? date.format('YYYY-MM-DD') : '' })}
-                  className="w-full h-10 rounded-lg"
+                  className="w-full h-11 rounded-xl"
                 />
-              ) : (
-                <p className="text-base text-gray-900">{data.educationDate}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                담당차시 / 총차시
-              </label>
-              {isEditMode ? (
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">담당차시 / 총차시</label>
                 <div className="flex items-center gap-2">
                   <Input
                     type="number"
                     value={data.currentSession}
                     onChange={(e) => setData({ ...data, currentSession: parseInt(e.target.value) || 0 })}
                     placeholder="담당차시"
-                    className="h-10 rounded-lg flex-1"
+                    className="h-11 rounded-xl flex-1"
                   />
                   <span className="text-gray-500">/</span>
                   <Input
@@ -331,388 +333,255 @@ export default function EquipmentDetailPage() {
                     value={data.totalSessions}
                     onChange={(e) => setData({ ...data, totalSessions: parseInt(e.target.value) || 0 })}
                     placeholder="총차시"
-                    className="h-10 rounded-lg flex-1"
+                    className="h-11 rounded-xl flex-1"
                   />
                 </div>
-              ) : (
-                <p className="text-base text-gray-900">{data.currentSession} / {data.totalSessions}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                당일 참여 강사
-              </label>
-              {isEditMode ? (
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">당일 참여 강사</label>
                 <Input
                   value={data.instructorName}
                   onChange={(e) => setData({ ...data, instructorName: e.target.value })}
-                  className="h-10 rounded-lg"
+                  className="h-11 rounded-xl"
                 />
-              ) : (
-                <p className="text-base text-gray-900">{data.instructorName}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                예상 참가 인원
-              </label>
-              {isEditMode ? (
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">예상 참가 인원</label>
                 <Input
                   type="number"
                   value={data.expectedParticipants}
                   onChange={(e) => setData({ ...data, expectedParticipants: parseInt(e.target.value) || 0 })}
-                  className="h-10 rounded-lg"
+                  className="h-11 rounded-xl"
                 />
-              ) : (
-                <p className="text-base text-gray-900">{data.expectedParticipants}명</p>
-              )}
+              </div>
             </div>
-          </div>
-        </Card>
-        </div>
+          </DetailSectionCard>
 
-        <div ref={(el) => { sectionRefs.current['rental'] = el }}>
-        <Card className="rounded-xl shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">대여 정보</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                대여일자
-              </label>
-              {isEditMode ? (
+          {/* Rental Info Section */}
+          <DetailSectionCard title="대여 정보">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">대여일자</label>
                 <DatePicker
                   value={dayjs(data.rentalDate)}
                   onChange={(date) => setData({ ...data, rentalDate: date ? date.format('YYYY-MM-DD') : '' })}
-                  className="w-full h-10 rounded-lg"
+                  className="w-full h-11 rounded-xl"
                 />
-              ) : (
-                <p className="text-base text-gray-900">{data.rentalDate}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                대여시간
-              </label>
-              {isEditMode ? (
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">대여시간</label>
                 <TimePicker
                   value={dayjs(data.rentalTime, 'HH:mm')}
                   onChange={(time) => setData({ ...data, rentalTime: time ? time.format('HH:mm') : '' })}
                   format="HH:mm"
-                  className="w-full h-10 rounded-lg"
+                  className="w-full h-11 rounded-xl"
                 />
-              ) : (
-                <p className="text-base text-gray-900">{data.rentalTime}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                대여자
-              </label>
-              {isEditMode ? (
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">대여자</label>
                 <Input
                   value={data.renterName}
                   onChange={(e) => setData({ ...data, renterName: e.target.value })}
-                  className="h-10 rounded-lg"
+                  className="h-11 rounded-xl"
                 />
-              ) : (
-                <p className="text-base text-gray-900">{data.renterName}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                비고
-              </label>
-              {isEditMode ? (
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">비고</label>
                 <TextArea
                   value={data.notes}
                   onChange={(e) => setData({ ...data, notes: e.target.value })}
                   rows={1}
-                  className="rounded-lg"
+                  className="rounded-xl"
                 />
-              ) : (
-                <p className="text-base text-gray-900">{data.notes || '-'}</p>
-              )}
+              </div>
             </div>
-          </div>
 
-          {/* Rental Items Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">교구명</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">수량</th>
-                  {isEditMode && (
-                    <th className="text-center py-3 px-4 text-sm font-medium text-gray-700">삭제</th>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {rentalItems.map((item) => (
-                  <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 text-sm text-gray-900">
-                      {isEditMode ? (
-                        <Input
-                          value={item.itemName}
-                          onChange={(e) => handleRentalItemChange(item.id, 'itemName', e.target.value)}
-                          className="h-10 rounded-lg"
-                        />
-                      ) : (
-                        item.itemName
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-900">
-                      {isEditMode ? (
-                        <Input
-                          type="number"
-                          value={item.quantity}
-                          onChange={(e) => handleRentalItemChange(item.id, 'quantity', parseInt(e.target.value) || 0)}
-                          className="h-10 rounded-lg w-24"
-                        />
-                      ) : (
-                        `${item.quantity}개`
-                      )}
-                    </td>
-                    {isEditMode && (
-                      <td className="py-3 px-4 text-center">
-                        <Button
-                          type="text"
-                          icon={<Trash2 className="w-4 h-4 text-red-500" />}
-                          onClick={() => handleDeleteRentalItem(item.id)}
-                          className="h-8 w-8 p-0 flex items-center justify-center"
-                        />
-                      </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {isEditMode && (
-              <div className="mt-4">
+            {/* Rental Items Table */}
+            <div className="space-y-4">
+              <div className="flex justify-end">
                 <Button
-                  type="dashed"
+                  type="primary"
                   icon={<Plus className="w-4 h-4" />}
                   onClick={handleAddRentalItem}
-                  className="h-10 px-4 rounded-lg border-dashed"
+                  className="h-9 px-4 rounded-lg border-0 text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   교구 추가
                 </Button>
               </div>
-            )}
-          </div>
-        </Card>
-        </div>
+              <div className="overflow-x-auto">
+                <Table
+                  columns={[
+                    {
+                      title: '교구명',
+                      dataIndex: 'itemName',
+                      key: 'itemName',
+                      render: (text, record) => (
+                        <Input
+                          value={text}
+                          onChange={(e) => handleRentalItemChange(record.id, 'itemName', e.target.value)}
+                          className="h-8 rounded-lg"
+                        />
+                      ),
+                    },
+                    {
+                      title: '수량',
+                      dataIndex: 'quantity',
+                      key: 'quantity',
+                      render: (text, record) => (
+                        <Input
+                          type="number"
+                          value={text}
+                          onChange={(e) => handleRentalItemChange(record.id, 'quantity', parseInt(e.target.value) || 0)}
+                          className="h-8 rounded-lg w-24"
+                        />
+                      ),
+                    },
+                    {
+                      title: '삭제',
+                      key: 'action',
+                      width: 80,
+                      render: (_, record) => (
+                        <Button
+                          type="text"
+                          icon={<Trash2 className="w-4 h-4 text-red-500" />}
+                          onClick={() => handleDeleteRentalItem(record.id)}
+                          className="h-8 w-8 p-0 flex items-center justify-center"
+                        />
+                      ),
+                    },
+                  ]}
+                  dataSource={rentalItems}
+                  pagination={false}
+                  className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:text-gray-700 [&_.ant-table]:text-sm"
+                />
+              </div>
+            </div>
+          </DetailSectionCard>
 
-        <div ref={(el) => { sectionRefs.current['return'] = el }}>
-        <Card className="rounded-xl shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">반납 정보</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                반납자
-              </label>
-              {isEditMode ? (
+          {/* Return Info Section */}
+          <DetailSectionCard title="반납 정보">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">반납자</label>
                 <Input
                   value={data.returnerName}
                   onChange={(e) => setData({ ...data, returnerName: e.target.value })}
-                  className="h-10 rounded-lg"
+                  className="h-11 rounded-xl"
                 />
-              ) : (
-                <p className="text-base text-gray-900">{data.returnerName}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                반납일자
-              </label>
-              {isEditMode ? (
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">반납일자</label>
                 <DatePicker
                   value={dayjs(data.returnDate)}
                   onChange={(date) => setData({ ...data, returnDate: date ? date.format('YYYY-MM-DD') : '' })}
-                  className="w-full h-10 rounded-lg"
+                  className="w-full h-11 rounded-xl"
                 />
-              ) : (
-                <p className="text-base text-gray-900">{data.returnDate}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                반납시간
-              </label>
-              {isEditMode ? (
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">반납시간</label>
                 <TimePicker
                   value={dayjs(data.returnTime, 'HH:mm')}
                   onChange={(time) => setData({ ...data, returnTime: time ? time.format('HH:mm') : '' })}
                   format="HH:mm"
-                  className="w-full h-10 rounded-lg"
+                  className="w-full h-11 rounded-xl"
                 />
-              ) : (
-                <p className="text-base text-gray-900">{data.returnTime}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                반납자 확인
-              </label>
-              {isEditMode ? (
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">반납자 확인</label>
                 <Input
                   value={data.returnerNameConfirm}
                   onChange={(e) => setData({ ...data, returnerNameConfirm: e.target.value })}
-                  className="h-10 rounded-lg"
+                  className="h-11 rounded-xl"
                 />
-              ) : (
-                <p className="text-base text-gray-900">{data.returnerNameConfirm}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                반납일자 확인
-              </label>
-              {isEditMode ? (
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">반납일자 확인</label>
                 <DatePicker
                   value={dayjs(data.returnDateConfirm)}
                   onChange={(date) => setData({ ...data, returnDateConfirm: date ? date.format('YYYY-MM-DD') : '' })}
-                  className="w-full h-10 rounded-lg"
+                  className="w-full h-11 rounded-xl"
                 />
-              ) : (
-                <p className="text-base text-gray-900">{data.returnDateConfirm}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                반납시간 확인
-              </label>
-              {isEditMode ? (
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">반납시간 확인</label>
                 <TimePicker
                   value={dayjs(data.returnTimeConfirm, 'HH:mm')}
                   onChange={(time) => setData({ ...data, returnTimeConfirm: time ? time.format('HH:mm') : '' })}
                   format="HH:mm"
-                  className="w-full h-10 rounded-lg"
+                  className="w-full h-11 rounded-xl"
                 />
-              ) : (
-                <p className="text-base text-gray-900">{data.returnTimeConfirm}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                반납 상태
-              </label>
-              {isEditMode ? (
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">반납 상태</label>
                 <Select
                   value={data.returnStatus}
                   onChange={(value) => setData({ ...data, returnStatus: value })}
-                  className="w-full h-10 rounded-lg"
+                  className="w-full h-11 rounded-xl"
                   options={[
                     { value: '정상 반납', label: '정상 반납' },
                     { value: '불량 반납', label: '불량 반납' },
                     { value: '분실', label: '분실' },
                   ]}
                 />
-              ) : (
-                <p className="text-base text-gray-900">{data.returnStatus}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                반납 수량
-              </label>
-              {isEditMode ? (
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">반납 수량</label>
                 <Input
                   type="number"
                   value={data.returnQuantity}
                   onChange={(e) => setData({ ...data, returnQuantity: parseInt(e.target.value) || 0 })}
-                  className="h-10 rounded-lg"
+                  className="h-11 rounded-xl"
                 />
-              ) : (
-                <p className="text-base text-gray-900">{data.returnQuantity}개</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                대상 적합 여부
-              </label>
-              {isEditMode ? (
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">대상 적합 여부</label>
                 <Switch
                   checked={data.targetEligible}
                   onChange={(checked) => setData({ ...data, targetEligible: checked })}
                 />
-              ) : (
-                <p className="text-base text-gray-900">
-                  {data.targetEligible ? '적합' : '부적합'}
-                </p>
-              )}
+              </div>
             </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                비고
-              </label>
-              {isEditMode ? (
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">비고</label>
                 <TextArea
                   value={data.remarks}
                   onChange={(e) => setData({ ...data, remarks: e.target.value })}
                   rows={3}
-                  className="rounded-lg"
+                  className="rounded-xl"
                 />
-              ) : (
-                <p className="text-base text-gray-900">{data.remarks || '-'}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">
-                서명 생략
-              </label>
-              <div className="flex items-center gap-4">
-                {isEditMode ? (
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">서명 생략</label>
+                <div className="flex items-center gap-4">
                   <Switch
                     checked={data.signatureOmitted}
                     onChange={(checked) => setData({ ...data, signatureOmitted: checked })}
                   />
-                ) : (
-                  <p className="text-base text-gray-900">
-                    {data.signatureOmitted ? '생략' : '필요'}
-                  </p>
-                )}
-                {data.signatureOmitted && (
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-500 mb-1">
-                      서명자
-                    </label>
-                    {isEditMode ? (
+                  {data.signatureOmitted && (
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-500 mb-2">서명자</label>
                       <Input
                         value={data.signatureName}
                         onChange={(e) => setData({ ...data, signatureName: e.target.value })}
-                        className="h-10 rounded-lg"
+                        className="h-11 rounded-xl"
                       />
-                    ) : (
-                      <p className="text-base text-gray-900">{data.signatureName}</p>
-                    )}
-                  </div>
-                )}
-              </div>
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-500 mb-1">
-                  서명일
-                </label>
-                {isEditMode ? (
+                    </div>
+                  )}
+                </div>
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-500 mb-2">서명일</label>
                   <DatePicker
                     value={dayjs(data.signatureDate)}
                     onChange={(date) => setData({ ...data, signatureDate: date ? date.format('YYYY-MM-DD') : '' })}
-                    className="w-full h-10 rounded-lg"
+                    className="w-full h-11 rounded-xl"
                   />
-                ) : (
-                  <p className="text-base text-gray-900">{data.signatureDate}</p>
-                )}
+                </div>
               </div>
             </div>
-          </div>
-        </Card>
+          </DetailSectionCard>
         </div>
-        </div>
-      </div>
-      </div>
       </div>
     </ProtectedRoute>
   )

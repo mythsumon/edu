@@ -216,19 +216,16 @@ export default function ActivityDetailPage() {
                       title: '차시',
                       dataIndex: 'sessionNumber',
                       key: 'sessionNumber',
-                      width: 80,
                       render: (text) => `${text}차시`,
                     },
                     {
                       title: '활동일자',
                       dataIndex: 'date',
                       key: 'date',
-                      width: 120,
                     },
                     {
                       title: '활동시간',
                       key: 'time',
-                      width: 150,
                       render: (_, record: Session) => `${record.startTime} ~ ${record.endTime}`,
                     },
                     {
@@ -239,7 +236,7 @@ export default function ActivityDetailPage() {
                   ]}
                   dataSource={sessions}
                   pagination={false}
-                  className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:text-gray-700 [&_.ant-table]:text-sm"
+                  className="w-full [&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:text-gray-700 [&_.ant-table]:text-sm [&_.ant-table]:table-fixed"
                 />
               </div>
             </DetailSectionCard>
@@ -444,7 +441,6 @@ export default function ActivityDetailPage() {
                       title: '차시',
                       dataIndex: 'sessionNumber',
                       key: 'sessionNumber',
-                      width: 80,
                       render: (text, record) => (
                         <Input
                           type="number"
@@ -458,7 +454,6 @@ export default function ActivityDetailPage() {
                       title: '활동일자',
                       dataIndex: 'date',
                       key: 'date',
-                      width: 120,
                       render: (text, record) => (
                         <DatePicker
                           value={dayjs(text)}
@@ -470,7 +465,6 @@ export default function ActivityDetailPage() {
                     {
                       title: '활동시간',
                       key: 'time',
-                      width: 150,
                       render: (_, record: Session) => (
                         <div className="flex items-center gap-1">
                           <Input
@@ -502,7 +496,6 @@ export default function ActivityDetailPage() {
                     {
                       title: '삭제',
                       key: 'action',
-                      width: 80,
                       render: (_, record) => (
                         <Button
                           type="text"
@@ -515,7 +508,7 @@ export default function ActivityDetailPage() {
                   ]}
                   dataSource={sessions}
                   pagination={false}
-                  className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:text-gray-700 [&_.ant-table]:text-sm"
+                  className="w-full [&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:text-gray-700 [&_.ant-table]:text-sm [&_.ant-table]:table-fixed"
                 />
               </div>
             </div>

@@ -214,28 +214,24 @@ export default function AttendanceDetailPage() {
                   title: '번호',
                   dataIndex: 'number',
                   key: 'number',
-                  width: 80,
                   render: (_, __, index) => index + 1,
                 },
                 {
                   title: '이름',
                   dataIndex: 'name',
                   key: 'name',
-                  width: 120,
                   render: (text) => text,
                 },
                 {
                   title: '성별',
                   dataIndex: 'gender',
                   key: 'gender',
-                  width: 80,
                   render: (text) => text,
                 },
                 {
                   title: '3월 5일 출석',
                   dataIndex: 'attendance3_5',
                   key: 'attendance3_5',
-                  width: 100,
                   render: (text) =>
                     text === 'O' ? (
                       <span className="text-green-600 font-medium">출석</span>
@@ -249,7 +245,6 @@ export default function AttendanceDetailPage() {
                   title: '3월 6일 출석',
                   dataIndex: 'attendance3_6',
                   key: 'attendance3_6',
-                  width: 100,
                   render: (text) =>
                     text === 'O' ? (
                       <span className="text-green-600 font-medium">출석</span>
@@ -271,8 +266,7 @@ export default function AttendanceDetailPage() {
                 pageSize: 10,
                 showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} results`,
               }}
-              scroll={{ x: 'max-content' }}
-              className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:text-gray-700 [&_.ant-table]:text-sm"
+              className="w-full [&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:text-gray-700 [&_.ant-table]:text-sm [&_.ant-table]:table-fixed"
             />
           </DetailSectionCard>
         </div>
@@ -433,14 +427,12 @@ export default function AttendanceDetailPage() {
                   title: '번호',
                   dataIndex: 'number',
                   key: 'number',
-                  width: 80,
                   render: (_, __, index) => index + 1,
                 },
                 {
                   title: '이름',
                   dataIndex: 'name',
                   key: 'name',
-                  width: 120,
                   render: (text, record) => (
                     <Input
                       value={text}
@@ -453,7 +445,6 @@ export default function AttendanceDetailPage() {
                   title: '성별',
                   dataIndex: 'gender',
                   key: 'gender',
-                  width: 80,
                   render: (text, record) => (
                     <Select
                       value={text}
@@ -470,7 +461,6 @@ export default function AttendanceDetailPage() {
                   title: '3월 5일 출석',
                   dataIndex: 'attendance3_5',
                   key: 'attendance3_5',
-                  width: 100,
                   render: (text, record) => (
                     <Select
                       value={text}
@@ -488,7 +478,6 @@ export default function AttendanceDetailPage() {
                   title: '3월 6일 출석',
                   dataIndex: 'attendance3_6',
                   key: 'attendance3_6',
-                  width: 100,
                   render: (text, record) => (
                     <Select
                       value={text}
@@ -517,7 +506,6 @@ export default function AttendanceDetailPage() {
                 {
                   title: '작업',
                   key: 'action',
-                  width: 80,
                   render: (_, record) => (
                     <Button
                       danger
@@ -533,8 +521,7 @@ export default function AttendanceDetailPage() {
                 pageSize: 10,
                 showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} results`,
               }}
-              scroll={{ x: 'max-content' }}
-              className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:text-gray-700 [&_.ant-table]:text-sm"
+              className="w-full [&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:text-gray-700 [&_.ant-table]:text-sm [&_.ant-table]:table-fixed"
             />
           </div>
         </DetailSectionCard>
