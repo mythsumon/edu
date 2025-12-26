@@ -261,7 +261,7 @@ export default function InstructorManagementPage() {
         <Button
           size="small"
           icon={<Eye className="w-3 h-3" />}
-          className="h-8 px-3 rounded-lg border border-gray-300 hover:bg-gray-50"
+          className="h-8 px-3 rounded-lg border border-gray-300 hover:bg-blue-600 hover:text-white text-slate-700"
           onClick={(e) => {
             e.stopPropagation()
             handleViewDetail(record)
@@ -296,19 +296,17 @@ export default function InstructorManagementPage() {
               onClick={handleRegisterClick}
               className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
               style={{
-                backgroundColor: '#1a202c',
-                borderColor: '#1a202c',
+                background: '#0f172a',
+                borderColor: 'transparent',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                 color: '#ffffff',
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#2d3748'
-                e.currentTarget.style.borderColor = '#2d3748'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#1a202c'
-                e.currentTarget.style.borderColor = '#1a202c'
-              }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#1e293b'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#0f172a'
+                }}
             >
               강사 등록
             </Button>
@@ -318,7 +316,7 @@ export default function InstructorManagementPage() {
             <Button
               icon={<ArrowLeft className="w-4 h-4" />}
               onClick={handleBackToList}
-              className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+              className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
             >
               뒤로
             </Button>
@@ -328,19 +326,17 @@ export default function InstructorManagementPage() {
               onClick={() => form.submit()}
               className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
               style={{
-                backgroundColor: '#1a202c',
-                borderColor: '#1a202c',
+                background: '#0f172a',
+                borderColor: 'transparent',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                 color: '#ffffff',
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#2d3748'
-                e.currentTarget.style.borderColor = '#2d3748'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#1a202c'
-                e.currentTarget.style.borderColor = '#1a202c'
-              }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#1e293b'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#0f172a'
+                }}
             >
               등록하기
             </Button>
@@ -350,7 +346,7 @@ export default function InstructorManagementPage() {
             <Button
               icon={<ArrowLeft className="w-4 h-4" />}
               onClick={handleBackToList}
-              className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+              className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
             >
               목록으로
             </Button>
@@ -400,26 +396,24 @@ export default function InstructorManagementPage() {
                   onClick={handleSearch}
                   className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
               style={{
-                backgroundColor: '#1a202c',
-                borderColor: '#1a202c',
+                background: '#0f172a',
+                borderColor: 'transparent',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                 color: '#ffffff',
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#2d3748'
-                e.currentTarget.style.borderColor = '#2d3748'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#1a202c'
-                e.currentTarget.style.borderColor = '#1a202c'
-              }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#1e293b'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#0f172a'
+                }}
                 >
                   검색
                 </Button>
                 <Button
                   icon={<RotateCcw className="w-4 h-4" />}
                   onClick={handleResetFilters}
-                  className="h-11 px-4 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+                  className="h-11 px-4 rounded-xl border border-gray-300 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
                 >
                   초기화
                 </Button>

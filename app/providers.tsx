@@ -15,69 +15,74 @@ export function AppProviders({ children }: AppProvidersProps) {
     <ConfigProvider
       theme={{
         token: {
-          colorPrimary: '#1a202c', // Dark slate (matching login button)
+          colorPrimary: '#0f172a', // Dark slate (matching login button)
           colorInfo: '#3b82f6', // Bright Blue
-          colorSuccess: '#4ade80', // Mint Green
-          colorWarning: '#f97316', // Orange
-          colorError: '#EF4444',
-          borderRadius: 8, // Rounded corners
+          colorSuccess: '#10b981', // Emerald Green
+          colorWarning: '#f59e0b', // Amber
+          colorError: '#ef4444',
+          borderRadius: 12, // Rounded-xl
         },
         components: {
           Button: {
             controlHeight: 44,
             controlHeightLG: 52,
             controlHeightSM: 36,
-            borderRadius: 8,
-            borderRadiusLG: 8,
-            borderRadiusSM: 8,
+            borderRadius: 12,
+            borderRadiusLG: 12,
+            borderRadiusSM: 12,
             primaryShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-            primaryColor: '#1a202c',
-            colorPrimaryHover: '#2d3748',
-            colorPrimaryActive: '#1a202c',
+            primaryColor: '#0f172a',
+            colorPrimaryHover: '#1e293b',
+            colorPrimaryActive: '#0f172a',
           },
           Input: {
             controlHeight: 44,
             controlHeightLG: 52,
             controlHeightSM: 36,
-            borderRadius: 8,
-            borderRadiusLG: 8,
-            borderRadiusSM: 8,
-            colorBgContainer: '#ffffff', // White background
-            colorBorder: '#ffeae0', // Pastel Peach border
-            colorText: '#3a2e2a', // Deep Cocoa text
-            colorTextPlaceholder: '#8d7c77', // Muted Brown placeholder
-            hoverBorderColor: '#ffeae0',
-            activeBorderColor: '#ffeae0',
-            activeShadow: 'none',
+            borderRadius: 12,
+            borderRadiusLG: 12,
+            borderRadiusSM: 12,
+            colorBgContainer: '#f8fafc', // Slate-50 background
+            colorBorder: '#e2e8f0', // Slate-200 border
+            colorText: '#0f172a', // Slate-900 text
+            colorTextPlaceholder: '#94a3b8', // Slate-400 placeholder
+            hoverBorderColor: '#cbd5e1',
+            activeBorderColor: '#60a5fa', // Blue-400
+            activeShadow: '0 0 0 2px rgba(96, 165, 250, 0.2)',
           },
           Select: {
             controlHeight: 44,
             controlHeightLG: 52,
             controlHeightSM: 36,
-            borderRadius: 8,
-            borderRadiusLG: 8,
-            borderRadiusSM: 8,
+            borderRadius: 12,
+            borderRadiusLG: 12,
+            borderRadiusSM: 12,
             colorBgContainer: '#ffffff',
-            colorBorder: '#ffeae0',
-            hoverBorderColor: '#ffeae0',
-            activeBorderColor: '#FF8A65',
+            colorBorder: '#e2e8f0',
+            hoverBorderColor: '#cbd5e1',
+            activeBorderColor: '#60a5fa',
+            optionSelectedBg: '#dbeafe', // Blue-100
+            optionActiveBg: '#eff6ff', // Blue-50
+            optionSelectedColor: '#1e40af', // Blue-800
           },
           DatePicker: {
             controlHeight: 44,
             controlHeightLG: 52,
             controlHeightSM: 36,
-            borderRadius: 8,
-            borderRadiusLG: 8,
-            borderRadiusSM: 8,
+            borderRadius: 12,
+            borderRadiusLG: 12,
+            borderRadiusSM: 12,
             colorBgContainer: '#ffffff',
-            colorBorder: '#ffeae0',
+            colorBorder: '#e2e8f0',
+            hoverBorderColor: '#cbd5e1',
+            activeBorderColor: '#60a5fa',
           },
           Card: {
-            borderRadiusLG: 8,
-            boxShadow: '0 2px 8px rgba(255, 138, 101, 0.08), 0 1px 3px rgba(255, 138, 101, 0.12)',
+            borderRadiusLG: 16,
+            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
           },
           Table: {
-            borderRadiusLG: 8,
+            borderRadiusLG: 16,
           },
         },
       }}

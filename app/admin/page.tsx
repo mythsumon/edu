@@ -6,7 +6,6 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Button } from 'antd'
 import { ArrowLeft } from 'lucide-react'
-import { PageHeader } from '@/components/dashboard/PageHeader'
 import { KPIStrip } from '@/components/dashboard/KPIStrip'
 import { ProgramList } from '@/components/dashboard/ProgramList'
 import { ErrorToast } from '@/components/dashboard/ErrorToast'
@@ -53,13 +52,11 @@ export default function DashboardPage() {
           />
         )}
         
-        <PageHeader />
-
         <CollapsibleSection 
           title={
             <>
-              <span className="text-[#3a2e2a]">주요 지표</span>{' '}
-              <span style={{ color: '#FF8A65' }}>
+              <span className="text-slate-900">주요 지표</span>{' '}
+              <span className="text-blue-600">
                 (경기 미래채움 권역별 데이터를 한 눈에 보기)
               </span>
             </>
@@ -75,10 +72,10 @@ export default function DashboardPage() {
             {/* Divider with label */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200"></div>
+                <div className="w-full border-t border-slate-200"></div>
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-white px-4 text-sm text-[#3a2e2a]">권역별 교육 진행 현황</span>
+                <span className="bg-white px-4 text-sm text-slate-900">권역별 교육 진행 현황</span>
               </div>
             </div>
 
@@ -90,7 +87,7 @@ export default function DashboardPage() {
                   <div className="space-y-6">
                     {/* Region Cards */}
                     <div>
-                      <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">권역별 교육 진행 현황</h3>
+                      <h3 className="text-lg font-semibold text-slate-900 mb-4">권역별 교육 진행 현황</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {[1, 2, 3, 4, 5, 6].map((regionNumber) => {
                           const regionData = [
@@ -119,35 +116,35 @@ export default function DashboardPage() {
                                 }
                               }}
                               className={`bg-white rounded-2xl shadow-md border-2 p-6 cursor-pointer transition-all hover:shadow-lg ${
-                                selectedRegion === regionNumber ? 'border-primary bg-blue-50' : 'border-slate-100 hover:border-gray-300'
+                                selectedRegion === regionNumber ? 'border-blue-500 bg-blue-100 hover:bg-blue-600 hover:text-white' : 'border-slate-200 hover:border-slate-300'
                               }`}
                             >
                               <div className="flex items-center justify-between mb-3">
                                 <span className={`text-lg font-bold ${
-                                  regionNumber === 1 ? 'text-blue-600' :
-                                  regionNumber === 2 ? 'text-orange-600' :
-                                  regionNumber === 3 ? 'text-yellow-600' :
-                                  regionNumber === 4 ? 'text-green-600' :
-                                  regionNumber === 5 ? 'text-purple-600' :
-                                  'text-teal-600'
+                                  regionNumber === 1 ? 'text-blue-700' :
+                                  regionNumber === 2 ? 'text-amber-700' :
+                                  regionNumber === 3 ? 'text-amber-700' :
+                                  regionNumber === 4 ? 'text-emerald-700' :
+                                  regionNumber === 5 ? 'text-blue-700' :
+                                  'text-blue-700'
                                 }`}>
                                   {regionNumber}권역
                                 </span>
                               </div>
-                              <div className="text-sm text-gray-500 mb-4">교육: {region.educationProgress}%</div>
+                              <div className="text-sm text-slate-500 mb-4">교육: {region.educationProgress}%</div>
                               <div className="flex justify-center mb-4">
                                 <div className="text-2xl font-bold" style={{
-                                  color: regionNumber === 1 ? '#2563EB' :
-                                         regionNumber === 2 ? '#F97316' :
-                                         regionNumber === 3 ? '#EAB308' :
-                                         regionNumber === 4 ? '#22C55E' :
-                                         regionNumber === 5 ? '#A855F7' :
-                                         '#14B8A6'
+                                  color: regionNumber === 1 ? '#1e40af' :
+                                         regionNumber === 2 ? '#d97706' :
+                                         regionNumber === 3 ? '#d97706' :
+                                         regionNumber === 4 ? '#059669' :
+                                         regionNumber === 5 ? '#1e40af' :
+                                         '#1e40af'
                                 }}>
                                   {region.progress}%
                                 </div>
                               </div>
-                              <div className="space-y-1 text-sm text-gray-600">
+                              <div className="space-y-1 text-sm text-slate-600">
                                 <div>도서·벽지: {region.items.도서벽지}</div>
                                 <div>50차시: {region.items['50차시']}</div>
                                 <div>특수학급: {region.items.특수학급}</div>
@@ -160,12 +157,12 @@ export default function DashboardPage() {
                     
                     {/* Special Items Cards */}
                     <div>
-                      <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">특수 항목별 세부조회</h3>
+                      <h3 className="text-lg font-semibold text-slate-900 mb-4">특수 항목별 세부조회</h3>
                       <div className="grid grid-cols-1 gap-4">
                         {[
-                          { label: '도서·벽지 진행률', category: '도서·벽지' as SpecialCategory, progress: 50, completed: 10, target: 20, color: '#F97316' },
-                          { label: '50차시 진행률', category: '50차시' as SpecialCategory, progress: 75, completed: 15, target: 20, color: '#22C55E' },
-                          { label: '특수학급 진행률', category: '특수학급' as SpecialCategory, progress: 60, completed: 12, target: 20, color: '#EC4899' },
+                          { label: '도서·벽지 진행률', category: '도서·벽지' as SpecialCategory, progress: 50, completed: 10, target: 20, color: '#d97706' },
+                          { label: '50차시 진행률', category: '50차시' as SpecialCategory, progress: 75, completed: 15, target: 20, color: '#059669' },
+                          { label: '특수학급 진행률', category: '특수학급' as SpecialCategory, progress: 60, completed: 12, target: 20, color: '#3b82f6' },
                         ].map((item) => (
                           <div
                             key={item.label}
@@ -181,15 +178,15 @@ export default function DashboardPage() {
                               }
                             }}
                             className={`bg-white rounded-2xl shadow-md border-2 p-6 cursor-pointer transition-all hover:shadow-lg ${
-                              selectedSpecialCategory === item.category ? 'border-primary bg-blue-50' : 'border-slate-100 hover:border-gray-300'
+                              selectedSpecialCategory === item.category ? 'border-blue-500 bg-blue-100 hover:bg-blue-600 hover:text-white' : 'border-slate-200 hover:border-slate-300'
                             }`}
                           >
                             <div className="mb-3">
-                              <div className="text-sm text-gray-500 mb-1">{item.label}</div>
-                              <div className="text-2xl font-semibold text-gray-900 mb-1">{item.progress}%</div>
-                              <div className="text-xs text-gray-600">목표 {item.target}개 중 {item.completed}개 완료</div>
+                              <div className="text-sm text-slate-500 mb-1">{item.label}</div>
+                              <div className="text-2xl font-semibold text-slate-900 mb-1">{item.progress}%</div>
+                              <div className="text-xs text-slate-600">목표 {item.target}개 중 {item.completed}개 완료</div>
                             </div>
-                            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
                               <div
                                 className="h-full rounded-full transition-all duration-300"
                                 style={{
@@ -205,7 +202,7 @@ export default function DashboardPage() {
                   </div>
                   {/* Right Side - Region Map */}
                   <div>
-                    <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">권역 지도</h3>
+                    <h3 className="text-lg font-semibold text-slate-900 mb-4">권역 지도</h3>
                     <RegionMap 
                       selectedRegion={selectedRegion} 
                       onRegionSelect={(id) => {
@@ -227,7 +224,7 @@ export default function DashboardPage() {
                     <Button
                       icon={<ArrowLeft className="w-4 h-4" />}
                       onClick={handleBackClick}
-                      className="w-full h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+                      className="w-full h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
                     >
                       뒤로
                     </Button>

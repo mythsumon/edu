@@ -1,6 +1,6 @@
 'use client'
 
-import { Bell, User, Languages, LogOut, Settings, ChevronDown, Circle, Globe, Sun, Moon } from 'lucide-react'
+import { Bell, Circle, Globe, Sun, Moon } from 'lucide-react'
 import { useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { Modal, Form, Input, Select } from 'antd'
@@ -70,10 +70,6 @@ export function Header() {
   const { locale, setLocale, t } = useLanguage()
   const { theme, toggleTheme } = useTheme()
   const [isNotificationOpen, setIsNotificationOpen] = useState(false)
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
-  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false)
-  const [accountForm] = Form.useForm()
 
   // Get current page title based on pathname
   const getPageTitle = () => {
@@ -168,7 +164,6 @@ export function Header() {
             className="relative flex items-center justify-center w-9 h-9 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700"
             onClick={() => {
               setIsNotificationOpen((prev) => !prev)
-              setIsProfileOpen(false)
             }}
           >
             <Bell className="w-5 h-5" />
@@ -255,217 +250,8 @@ export function Header() {
           )}
         </div>
 
-        {/* Profile dropdown */}
-        <div className="relative">
-          <button
-            className="flex items-center gap-2 px-3 py-2 text-slate-700 hover:bg-slate-100 rounded-full transition-colors border border-transparent hover:border-slate-200 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:border-gray-600"
-            onClick={() => {
-              setIsProfileOpen((prev) => !prev)
-              setIsNotificationOpen(false)
-            }}
-          >
-            <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-semibold">
-              KJ
-            </div>
-            <div className="hidden md:flex flex-col items-start">
-              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                {locale === 'ko' ? '관리자' : 'Administrator'}
-              </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                {locale === 'ko' ? '경기미래채움 운영팀' : 'Gyeonggi Future Chimae Operations Team'}
-              </span>
-            </div>
-            <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-          </button>
-
-          {isProfileOpen && (
-            <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white shadow-lg ring-1 ring-black/5 overflow-hidden dark:bg-gray-800 dark:ring-gray-700">
-              <div className="px-4 py-3 border-b border-slate-100 dark:border-gray-700">
-                <div className="text-sm font-semibold text-slate-900 dark:text-gray-100">
-                  {locale === 'ko' ? '관리자' : 'Administrator'}
-                </div>
-                <div className="text-xs text-slate-500 mt-0.5 dark:text-gray-400">admin@example.com</div>
-              </div>
-              <div className="py-1">
-                <button
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-700/50"
-                  onClick={() => {
-                    setIsProfileModalOpen(true)
-                    setIsProfileOpen(false)
-                  }}
-                >
-                  <User className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                  <span>{t('header.profile')}</span>
-                </button>
-                <button
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-700/50"
-                  onClick={() => {
-                    accountForm.setFieldsValue({
-                      name: locale === 'ko' ? '관리자' : 'Administrator',
-                      email: 'admin@example.com',
-                      phone: '010-1234-5678',
-                      language: locale,
-                    })
-                    setIsAccountModalOpen(true)
-                    setIsProfileOpen(false)
-                  }}
-                >
-                  <Settings className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                  <span>{locale === 'ko' ? '계정 설정' : 'Account Settings'}</span>
-                </button>
-              </div>
-              <div className="border-t border-slate-100 dark:border-gray-700">
-                <button
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
-                  onClick={() => {
-                    // TODO: 실제 로그아웃 로직 연동 (토큰/세션 삭제 등)
-                    router.push('/login')
-                  }}
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>{locale === 'ko' ? '로그아웃' : 'Logout'}</span>
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
 
-      {/* Profile Modal */}
-      <Modal
-        title={locale === 'ko' ? '프로필 정보' : 'Profile Information'}
-        open={isProfileModalOpen}
-        onCancel={() => setIsProfileModalOpen(false)}
-        footer={null}
-        centered
-      >
-        <div className="flex items-center gap-4 mb-4">
-          <div className="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center text-lg font-semibold">
-            KJ
-          </div>
-          <div className="flex flex-col">
-            <span className="text-base font-semibold text-slate-900">
-              {locale === 'ko' ? '관리자' : 'Administrator'}
-            </span>
-            <span className="text-sm text-slate-500">admin@example.com</span>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <div className="text-xs font-semibold text-slate-500">
-              {locale === 'ko' ? '역할' : 'Role'}
-            </div>
-            <div className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300">
-              {locale === 'ko' ? '시스템 관리자' : 'System Administrator'}
-            </div>
-          </div>
-          <div className="space-y-1">
-            <div className="text-xs font-semibold text-slate-500">
-              {locale === 'ko' ? '소속' : 'Affiliation'}
-            </div>
-            <div className="text-sm font-medium text-slate-900">
-              {locale === 'ko' ? '경기미래채움 운영팀' : 'Gyeonggi Future Chimae Operations Team'}
-            </div>
-          </div>
-          <div className="space-y-1">
-            <div className="text-xs font-semibold text-slate-500">
-              {locale === 'ko' ? '연락처' : 'Contact'}
-            </div>
-            <div className="text-sm font-medium text-slate-900">010-1234-5678</div>
-          </div>
-          <div className="space-y-1">
-            <div className="text-xs font-semibold text-slate-500">
-              {locale === 'ko' ? '언어' : 'Language'}
-            </div>
-            <div className="text-sm font-medium text-slate-900">
-              {locale === 'ko' ? '한국어' : 'English'}
-            </div>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Account Settings Modal */}
-      <Modal
-        title={locale === 'ko' ? '계정 설정' : 'Account Settings'}
-        open={isAccountModalOpen}
-        onCancel={() => setIsAccountModalOpen(false)}
-        okText={locale === 'ko' ? '저장' : 'Save'}
-        cancelText={locale === 'ko' ? '취소' : 'Cancel'}
-        onOk={() => {
-          accountForm
-            .validateFields()
-            .then((values) => {
-              console.log('Account settings:', values)
-              setIsAccountModalOpen(false)
-            })
-            .catch(() => {})
-        }}
-        centered
-      >
-        <Form
-          form={accountForm}
-          layout="vertical"
-          requiredMark={false}
-          className="pt-2"
-        >
-          <Form.Item
-            label={locale === 'ko' ? '이름' : 'Name'}
-            name="name"
-            rules={[{ required: true, message: locale === 'ko' ? '이름을 입력해주세요' : 'Please enter your name' }]}
-          >
-            <Input className="h-10 rounded-lg" />
-          </Form.Item>
-          <Form.Item
-            label="Email"
-            name="email"
-            rules={[{ required: true, message: locale === 'ko' ? '이메일을 입력해주세요' : 'Please enter your email' }]}
-          >
-            <Input className="h-10 rounded-lg" disabled />
-          </Form.Item>
-          <Form.Item
-            label={locale === 'ko' ? '전화번호' : 'Phone Number'}
-            name="phone"
-          >
-            <Input className="h-10 rounded-lg" />
-          </Form.Item>
-          <Form.Item
-            label={locale === 'ko' ? '인터페이스 언어' : 'Interface Language'}
-            name="language"
-          >
-            <Select
-              className="h-10 rounded-lg"
-              options={[
-                { value: 'ko', label: '한국어' },
-                { value: 'en', label: 'English' },
-              ]}
-              onChange={(value) => setLocale(value as 'ko' | 'en')}
-            />
-          </Form.Item>
-          <Form.Item
-            label={locale === 'ko' ? '새 비밀번호' : 'New Password'}
-            name="password"
-          >
-            <Input.Password className="h-10 rounded-lg" placeholder={locale === 'ko' ? '변경 시에만 입력하세요' : 'Enter only when changing'} />
-          </Form.Item>
-          <Form.Item
-            label={locale === 'ko' ? '새 비밀번호 확인' : 'Confirm New Password'}
-            name="passwordConfirm"
-            dependencies={['password']}
-            rules={[
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  if (!value || getFieldValue('password') === value) {
-                    return Promise.resolve()
-                  }
-                  return Promise.reject(new Error(locale === 'ko' ? '비밀번호가 일치하지 않습니다' : 'Passwords do not match'))
-                },
-              }),
-            ]}
-          >
-            <Input.Password className="h-10 rounded-lg" />
-          </Form.Item>
-        </Form>
-      </Modal>
     </header>
   )
 }

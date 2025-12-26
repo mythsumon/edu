@@ -4,22 +4,22 @@
 
 @layer base {
   :root {
-    /* Luminous Peach Academy Palette */
-    --background: #fffbf9; /* Cream White - primary canvas */
-    --background-surface: #fff5f0; /* Soft Peach - input fields, sidebars */
-    --foreground: #3a2e2a; /* Deep Cocoa - primary text */
-    --foreground-secondary: #8d7c77; /* Muted Brown - labels, descriptions */
-    --peach-primary: #ff8a65; /* Vibrant Peach - primary buttons, active icons */
-    --peach-primary-dark: #ff7043; /* Deep Sunset - hover states */
-    --peach-primary-light: #ffeae0; /* Pastel Peach - borders & dividers */
-    --peach-gradient-start: #ff8a65;
-    --peach-gradient-end: #ff9e7d;
-    --success: #4ade80;
-    --success-bg: #f0fdf4;
+    /* EduMatrix Blue Palette */
+    --background: #f8fafc; /* Slate-50 - primary canvas */
+    --background-surface: #ffffff; /* White - cards, surfaces */
+    --foreground: #0f172a; /* Slate-900 - primary text */
+    --foreground-secondary: #64748b; /* Slate-500 - secondary text */
+    --foreground-muted: #94a3b8; /* Slate-400 - muted/helper text */
+    --primary: #1E3A8A; /* Deep blue - primary brand */
+    --primary-end: #2563EB; /* Indigo/blue - gradient end */
+    --secondary: #3B82F6; /* Soft blue - hover, links */
+    --success: #10b981;
+    --success-bg: #d1fae5;
     --info: #3b82f6;
-    --info-bg: #eff6ff;
-    --warning: #f97316;
-    --warning-bg: #fff7ed;
+    --info-bg: #dbeafe;
+    --warning: #f59e0b;
+    --warning-bg: #fef3c7;
+    --error: #ef4444;
   }
   
   .dark {
@@ -27,18 +27,15 @@
     --background-surface: #2D1B0E;
     --foreground: #F9FAFB;
     --foreground-secondary: #D1D5DB;
-    --peach-primary: #ff9e7d;
-    --peach-primary-dark: #ff8a65;
-    --peach-primary-light: #2D1B0E;
   }
   
   * {
-    @apply border-gray-200 dark:border-gray-700;
+    @apply border-slate-200 dark:border-gray-700;
   }
   
   body {
-    background-color: #fffbf9; /* Cream White */
-    color: #3a2e2a; /* Deep Cocoa */
+    background-color: #f8fafc; /* Slate-50 */
+    color: #0f172a; /* Slate-900 */
     font-family: Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -110,103 +107,222 @@
   
   /* Custom utility classes for the admin dashboard */
   .card {
-    @apply bg-white rounded-lg shadow-peach border border-[#ffeae0] dark:bg-gray-800 dark:border-gray-700;
+    @apply bg-white rounded-2xl shadow-sm border border-slate-200 dark:bg-gray-800 dark:border-gray-700;
   }
   
   .card-hover {
-    @apply hover:shadow-peach-lg transition-shadow duration-200;
+    @apply hover:shadow-md transition-shadow duration-200;
   }
   
   .btn-primary {
-    @apply text-white font-medium rounded-lg px-6 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#1a202c] focus:ring-offset-2;
-    background-color: #1a202c;
-    border-color: #1a202c;
+    @apply text-white font-medium rounded-xl px-6 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2;
+    background: #0f172a;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
   
   .btn-primary:hover {
-    background-color: #2d3748;
-    border-color: #2d3748;
+    background: #1e293b;
+    color: #ffffff !important;
+  }
+  
+  .btn-primary:active {
+    background: #0f172a;
+    color: #ffffff !important;
+  }
+  
+  .btn-primary:disabled {
+    background: #64748b;
+    color: rgba(255, 255, 255, 0.7) !important;
   }
   
   .btn-secondary {
-    @apply bg-[#3b82f6] hover:bg-[#2563eb] text-white font-medium rounded-lg px-6 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:ring-offset-2;
+    @apply bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium rounded-xl px-6 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2;
   }
   
   .btn-outline {
-    @apply border-2 border-[#ff8a65] text-[#ff8a65] hover:bg-[#ff8a65] hover:text-white font-medium rounded-lg px-6 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#ff8a65] focus:ring-offset-2;
+    @apply border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-medium rounded-xl px-6 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2;
   }
   
   .btn-danger {
-    @apply bg-[#EF4444] hover:bg-[#dc2626] text-white font-medium rounded-lg px-6 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#EF4444] focus:ring-offset-2;
+    @apply bg-[#EF4444] hover:bg-[#dc2626] text-white font-medium rounded-xl px-6 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2;
   }
   
   .input-base {
-    @apply w-full px-4 py-2.5 border border-[#ffeae0] rounded-lg bg-white text-[#3a2e2a] placeholder-[#8d7c77] transition-all duration-200 focus:outline-none;
-  }
-  
-  /* Peach gradient button */
-  .btn-peach-gradient {
-    background: linear-gradient(135deg, #ff8a65 0%, #ff9e7d 100%);
-    box-shadow: 0 4px 12px rgba(255, 138, 101, 0.25);
-  }
-  
-  .btn-peach-gradient:hover {
-    background: linear-gradient(135deg, #ff7043 0%, #ff8a65 100%);
-    box-shadow: 0 6px 16px rgba(255, 138, 101, 0.35);
-  }
-  
-  /* Soft peach-tinted shadow */
-  .shadow-peach {
-    box-shadow: 0 4px 20px rgba(255, 138, 101, 0.12);
-  }
-  
-  .shadow-peach-lg {
-    box-shadow: 0 8px 32px rgba(255, 138, 101, 0.15);
+    @apply w-full px-4 py-2.5 h-11 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400;
   }
   
   /* Table header background color */
   .ant-table-thead > tr > th {
-    background-color: #f3f4f6 !important;
+    background-color: #f8fafc !important;
     font-weight: 600;
-    color: #1f2937;
+    color: #475569;
+    font-size: 0.75rem;
   }
   
   /* Select box hover styles to match other form elements */
   .ant-select:not(.ant-select-disabled):hover .ant-select-selector {
-    border-color: #ffeae0 !important;
+    border-color: #cbd5e1 !important;
   }
   
   .ant-select-focused:not(.ant-select-disabled) .ant-select-selector {
-    border-color: #FF8A65 !important;
-    box-shadow: none !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
   }
   
   .ant-select-open:not(.ant-select-disabled) .ant-select-selector {
-    border-color: #FF8A65 !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
   }
   
   /* Select dropdown option hover styles */
-  .ant-select-item-option:hover {
+  .ant-select-dropdown .ant-select-item-option:hover {
     background-color: #f5f5f5 !important;
   }
   
-  .ant-select-item-option-selected {
-    background-color: #FF8A65 !important;
+  .ant-select-dropdown .ant-select-item-option-selected {
+    background-color: #e0f2fe !important;
+    color: #0369a1 !important;
+    font-weight: 500 !important;
+  }
+  
+  .ant-select-dropdown .ant-select-item-option-selected:hover {
+    background-color: #bae6fd !important;
+    color: #0369a1 !important;
+  }
+  
+  .ant-select-dropdown .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+    background-color: #f0f9ff !important;
+  }
+  
+  .ant-select-dropdown .ant-select-item-option-active.ant-select-item-option-selected {
+    background-color: #e0f2fe !important;
+    color: #0369a1 !important;
+  }
+  
+  /* Additional specific selectors for Ant Design 5.x */
+  .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+    background-color: #e0f2fe !important;
+    color: #0369a1 !important;
+  }
+  
+  .ant-select-item-option-selected:not(.ant-select-item-option-disabled):hover {
+    background-color: #bae6fd !important;
+    color: #0369a1 !important;
+  }
+  
+  .rc-select-item-option-selected {
+    background-color: #e0f2fe !important;
+    color: #0369a1 !important;
+  }
+  
+  .rc-select-item-option-active {
+    background-color: #f0f9ff !important;
+  }
+  
+  /* Pagination active item styles */
+  .ant-pagination-item-active {
+    border-color: #3b82f6 !important;
+    background-color: #3b82f6 !important;
+  }
+  
+  .ant-pagination-item-active a {
     color: #ffffff !important;
   }
   
-  .ant-select-item-option-selected:hover {
-    background-color: #FF8A65 !important;
+  .ant-pagination-item-active:hover {
+    border-color: #2563eb !important;
+    background-color: #2563eb !important;
+  }
+  
+  .ant-pagination-item-active:hover a {
+    color: #ffffff !important;
+  }
+
+  /* Admin button hover - white text on dark background */
+  .ant-btn:not(.ant-btn-primary):not(.ant-btn-text):not(.ant-btn-link):not(.ant-btn-danger):hover {
     color: #ffffff !important;
   }
   
-  .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
-    background-color: #f5f5f5 !important;
+  /* Secondary buttons with border - hover to blue background with white text */
+  .ant-btn.border-slate-200:hover,
+  .ant-btn.border-gray-200:hover,
+  .ant-btn.border-gray-300:hover,
+  button.border-slate-200:hover,
+  button.border-gray-200:hover,
+  button.border-gray-300:hover {
+    background-color: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+    color: #ffffff !important;
   }
-  
-  .ant-select-item-option-active.ant-select-item-option-selected {
-    background-color: #FF8A65 !important;
+
+  /* All buttons with hover:bg-slate-50 or hover:bg-gray-50 classes */
+  button.hover\:bg-slate-50:hover,
+  button.hover\:bg-gray-50:hover,
+  .ant-btn.hover\:bg-slate-50:hover,
+  .ant-btn.hover\:bg-gray-50:hover {
+    background-color: #3b82f6 !important;
+    color: #ffffff !important;
+  }
+
+  /* All buttons with hover:bg-slate-700 or hover:bg-gray-700 classes - change to blue */
+  button.hover\:bg-slate-700:hover,
+  button.hover\:bg-gray-700:hover,
+  .ant-btn.hover\:bg-slate-700:hover,
+  .ant-btn.hover\:bg-gray-700:hover {
+    background-color: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+    color: #ffffff !important;
+  }
+
+  /* Active buttons with background color - hover to white text */
+  button.bg-blue-50:hover,
+  button.bg-blue-100:hover,
+  button.bg-slate-50:hover,
+  button.bg-slate-100:hover,
+  a.bg-blue-50:hover,
+  a.bg-blue-100:hover,
+  a.bg-slate-50:hover,
+  a.bg-slate-100:hover,
+  div.bg-blue-50:hover,
+  div.bg-blue-100:hover,
+  div.bg-slate-50:hover,
+  div.bg-slate-100:hover {
+    color: #ffffff !important;
+  }
+
+  /* Active tabs with background color - hover to white text */
+  .ant-tabs-tab.bg-blue-50:hover,
+  .ant-tabs-tab.bg-blue-100:hover,
+  .ant-tabs-tab-active:hover {
+    color: #ffffff !important;
+  }
+
+  /* Primary buttons - ensure text stays white on all states */
+  .ant-btn-primary,
+  .ant-btn-primary:hover,
+  .ant-btn-primary:active,
+  .ant-btn-primary:focus {
+    color: #ffffff !important;
+  }
+
+  /* Primary buttons with slate-900 background - ensure contrast */
+  button.bg-slate-900,
+  .ant-btn.bg-slate-900 {
+    color: #ffffff !important;
+  }
+
+  button.bg-slate-900:hover,
+  .ant-btn.bg-slate-900:hover {
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+  }
+
+  button.bg-slate-900:active,
+  .ant-btn.bg-slate-900:active {
+    background-color: #0f172a !important;
     color: #ffffff !important;
   }
 }
+
+
+

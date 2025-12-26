@@ -444,20 +444,7 @@ export default function EducationManagementPage() {
               <Button
                 type="primary"
                 onClick={handleRegisterClick}
-                className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md"
-                style={{
-                  backgroundColor: '#1a202c',
-                  borderColor: '#1a202c',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#2d3748'
-                  e.currentTarget.style.borderColor = '#2d3748'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#1a202c'
-                  e.currentTarget.style.borderColor = '#1a202c'
-                }}
+                className="h-11 px-6 rounded-xl border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
                 + 교육 등록
               </Button>

@@ -1,12 +1,13 @@
-'use client'
+﻿'use client'
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useMemo } from 'react'
-import { Table, Button, Card, Form, Select, Space, Switch, Tabs } from 'antd'
+import { useState, useMemo, useEffect, useRef } from 'react'
+import { Table, Button, Card, Form, Select, Space, Switch, Tabs, Modal } from 'antd'
 import { Input } from '@/components/shared/common'
 import type { ColumnsType } from 'antd/es/table'
-import { ChevronRight, Save, Trash2, RotateCcw, Eye, UserPlus, ArrowLeft, Search } from 'lucide-react'
+import { ChevronRight, Save, Trash2, RotateCcw, Eye, UserPlus, ArrowLeft, Search, Filter, X } from 'lucide-react'
+import { CommonCodePage } from '@/components/admin/common-code'
 
 const { TextArea } = Input
 
@@ -80,22 +81,23 @@ const statusOptions = [
 ]
 
 const roleStyle: Record<string, { bg: string; text: string }> = {
-  관리자: { bg: 'bg-red-50', text: 'text-red-700' },
-  운영자: { bg: 'bg-blue-50', text: 'text-blue-700' },
-  사용자: { bg: 'bg-gray-50', text: 'text-gray-700' },
+  관리자: { bg: 'bg-blue-100', text: 'text-blue-700' },
+  운영자: { bg: 'bg-blue-100', text: 'text-blue-700' },
+  사용자: { bg: 'bg-slate-100', text: 'text-slate-600' },
 }
 
 const statusStyle: Record<string, { bg: string; text: string }> = {
-  활성: { bg: 'bg-green-50', text: 'text-green-700' },
-  비활성: { bg: 'bg-gray-50', text: 'text-gray-700' },
+  활성: { bg: 'bg-emerald-100', text: 'text-emerald-700' },
+  비활성: { bg: 'bg-slate-100', text: 'text-slate-600' },
 }
 
 export default function SystemSettingsPage() {
-  const [activeTab, setActiveTab] = useState<'settings' | 'users'>('settings')
+  const [activeTab, setActiveTab] = useState<'settings' | 'users' | 'common-code'>('settings')
   const [viewMode, setViewMode] = useState<'list' | 'register' | 'detail'>('list')
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create')
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null)
   const [detailTab, setDetailTab] = useState<'basic' | 'permissions'>('basic')
+  const [userModalOpen, setUserModalOpen] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
@@ -106,6 +108,25 @@ export default function SystemSettingsPage() {
   const [searchText, setSearchText] = useState<string>('')
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState<boolean>(false)
+  const filterDropdownRef = useRef<HTMLDivElement>(null)
+
+  // Close filter dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
+        setFilterDropdownOpen(false)
+      }
+    }
+
+    if (filterDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [filterDropdownOpen])
 
   // Settings state
   const [emailNotifications, setEmailNotifications] = useState(true)
@@ -142,9 +163,10 @@ export default function SystemSettingsPage() {
 
 
   const handleRegisterClick = () => {
-    setViewMode('register')
     setFormMode('create')
+    setSelectedUser(null)
     form.resetFields()
+    setUserModalOpen(true)
   }
 
   const handleViewDetail = (record: UserItem) => {
@@ -157,6 +179,7 @@ export default function SystemSettingsPage() {
     setViewMode('list')
     form.resetFields()
     setSelectedUser(null)
+    setUserModalOpen(false)
   }
 
   const handleFormSubmit = (values: any) => {
@@ -167,7 +190,6 @@ export default function SystemSettingsPage() {
 
   const handleEditFromDetail = () => {
     if (!selectedUser) return
-    setViewMode('register')
     setFormMode('edit')
     form.setFieldsValue({
       name: selectedUser.name,
@@ -177,6 +199,21 @@ export default function SystemSettingsPage() {
       department: selectedUser.department,
       status: selectedUser.status,
     })
+    setUserModalOpen(true)
+  }
+
+  const handleEditUser = (record: UserItem) => {
+    setSelectedUser(record)
+    setFormMode('edit')
+    form.setFieldsValue({
+      name: record.name,
+      email: record.email,
+      phone: record.phone,
+      role: record.role,
+      department: record.department,
+      status: record.status,
+    })
+    setUserModalOpen(true)
   }
 
   const columns: ColumnsType<UserItem> = [
@@ -207,7 +244,7 @@ export default function SystemSettingsPage() {
       key: 'role',
       width: 120,
       render: (role: string) => {
-        const config = roleStyle[role] || { bg: 'bg-gray-50', text: 'text-gray-700' }
+        const config = roleStyle[role] || { bg: 'bg-slate-100', text: 'text-slate-600' }
         return (
           <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
             {role}
@@ -228,7 +265,7 @@ export default function SystemSettingsPage() {
       key: 'status',
       width: 100,
       render: (status: string) => {
-        const config = statusStyle[status] || { bg: 'bg-gray-50', text: 'text-gray-700' }
+        const config = statusStyle[status] || { bg: 'bg-slate-100', text: 'text-slate-600' }
         return (
           <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
             {status}
@@ -251,22 +288,35 @@ export default function SystemSettingsPage() {
       render: (text: string) => <span className="text-base font-medium text-gray-900">{text}</span>,
     },
     {
-      title: '상세',
-      key: 'action',
-      width: 90,
+      title: 'Actions',
+      key: 'actions',
+      width: 150,
       fixed: 'right' as const,
       render: (_, record) => (
-        <Button
-          size="small"
-          icon={<Eye className="w-3 h-3" />}
-          className="h-8 px-3 rounded-lg border border-gray-300 hover:bg-gray-50"
-          onClick={(e) => {
-            e.stopPropagation()
-            handleViewDetail(record)
-          }}
-        >
-          상세
-        </Button>
+        <Space>
+          <Button
+            size="small"
+            icon={<Eye className="w-3 h-3" />}
+            className="h-8 px-3 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white text-slate-700 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation()
+              handleViewDetail(record)
+            }}
+          >
+            상세
+          </Button>
+          <Button
+            size="small"
+            icon={<Save className="w-3 h-3" />}
+            className="h-8 px-3 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white text-slate-700 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation()
+              handleEditUser(record)
+            }}
+          >
+            수정
+          </Button>
+        </Space>
       ),
     },
   ]
@@ -304,7 +354,17 @@ export default function SystemSettingsPage() {
               >
                 {/* 일반 설정 */}
                 <div className="mb-8">
-                  <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">일반 설정</h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-slate-900">일반 설정</h3>
+                    <Button
+                      type="primary"
+                      icon={<Save className="w-4 h-4" />}
+                      onClick={() => settingsForm.submit()}
+                      className="h-9 px-4 rounded-xl border-0 font-medium text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    >
+                      저장
+                    </Button>
+                  </div>
                   <div className="space-y-4">
                     <Form.Item label="시스템 언어" className="mb-0">
                       <Select
@@ -342,7 +402,17 @@ export default function SystemSettingsPage() {
 
                 {/* 알림 설정 */}
                 <div className="mb-8">
-                  <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">알림 설정</h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-slate-900">알림 설정</h3>
+                    <Button
+                      type="primary"
+                      icon={<Save className="w-4 h-4" />}
+                      onClick={() => settingsForm.submit()}
+                      className="h-9 px-4 rounded-xl border-0 font-medium text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    >
+                      저장
+                    </Button>
+                  </div>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                       <div>
@@ -371,7 +441,17 @@ export default function SystemSettingsPage() {
 
                 {/* 백업 설정 */}
                 <div className="mb-8">
-                  <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">백업 설정</h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-slate-900">백업 설정</h3>
+                    <Button
+                      type="primary"
+                      icon={<Save className="w-4 h-4" />}
+                      onClick={() => settingsForm.submit()}
+                      className="h-9 px-4 rounded-xl border-0 font-medium text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    >
+                      저장
+                    </Button>
+                  </div>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                       <div>
@@ -400,7 +480,17 @@ export default function SystemSettingsPage() {
 
                 {/* 보안 설정 */}
                 <div className="mb-8">
-                  <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">보안 설정</h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-slate-900">보안 설정</h3>
+                    <Button
+                      type="primary"
+                      icon={<Save className="w-4 h-4" />}
+                      onClick={() => settingsForm.submit()}
+                      className="h-9 px-4 rounded-xl border-0 font-medium text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    >
+                      저장
+                    </Button>
+                  </div>
                   <div className="space-y-4">
                     <Form.Item label="세션 타임아웃 (분)" className="mb-0">
                       <Input
@@ -430,7 +520,7 @@ export default function SystemSettingsPage() {
                 <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
                   <Button
                     onClick={() => settingsForm.resetFields()}
-                    className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+                    className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
                   >
                     초기화
                   </Button>
@@ -438,21 +528,7 @@ export default function SystemSettingsPage() {
                     type="primary"
                     icon={<Save className="w-4 h-4" />}
                     onClick={() => settingsForm.submit()}
-                    className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
-                    style={{
-                      backgroundColor: '#1a202c',
-                      borderColor: '#1a202c',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                      color: '#ffffff',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#2d3748'
-                      e.currentTarget.style.borderColor = '#2d3748'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#1a202c'
-                      e.currentTarget.style.borderColor = '#1a202c'
-                    }}
+                    className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   >
                     저장
                   </Button>
@@ -466,107 +542,108 @@ export default function SystemSettingsPage() {
               label: '사용자 관리',
               children: (
             <div className="pt-6">
-              {viewMode === 'list' ? (
+              {viewMode === 'list' && (
                 <>
-              {/* Modern Search Toolbar */}
-              <div className="flex items-center h-16 px-4 py-3 bg-white border border-[#ECECF3] rounded-2xl shadow-[0_8px_24px_rgba(15,15,30,0.06)] mb-4 gap-3 flex-wrap">
-                {/* Search Input - Primary, flex-grow */}
-                <div className="flex-1 min-w-[200px]">
-                  <div className="relative h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
+              {/* Search and Table Card */}
+              <Card className="rounded-xl shadow-sm border border-gray-200">
+                {/* Search Toolbar */}
+                <div className="flex items-center h-16 px-4 py-3 border-b border-gray-200 gap-3">
+                  {/* Add User Button */}
+                  <Button
+                    type="primary"
+                    icon={<UserPlus className="w-4 h-4" />}
+                    onClick={handleRegisterClick}
+                    className="h-11 px-6 rounded-xl border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  >
+                    사용자 추가
+                  </Button>
+                  
+                  {/* Search Input - Left Side */}
+                  <div className="relative w-full max-w-[420px]">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 z-10" />
                     <Input
-                      placeholder="Search by name, email, or user ID..."
+                      placeholder="검색어를 입력하세요..."
                       value={searchText}
                       onChange={(e) => setSearchText(e.target.value)}
                       allowClear
                       onPressEnter={handleSearch}
-                      prefix={<Search className="w-4 h-4 text-[#9AA0AE]" />}
-                      className="h-11 border-0 bg-transparent rounded-xl text-[#151827] placeholder:text-[#9AA0AE] [&_.ant-input]:!h-11 [&_.ant-input]:!px-4 [&_.ant-input]:!py-0 [&_.ant-input]:!bg-transparent [&_.ant-input]:!border-0 [&_.ant-input]:!outline-none [&_.ant-input]:!shadow-none [&_.ant-input-wrapper]:!border-0 [&_.ant-input-wrapper]:!shadow-none [&_.ant-input-prefix]:!mr-2"
+                      className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition hover:border-slate-300 focus:border-slate-300 focus:ring-2 focus:ring-slate-300 [&_.ant-input]:!h-11 [&_.ant-input]:!px-0 [&_.ant-input]:!py-0 [&_.ant-input]:!bg-transparent [&_.ant-input]:!border-0 [&_.ant-input]:!outline-none [&_.ant-input]:!shadow-none [&_.ant-input]:!text-sm [&_.ant-input-wrapper]:!border-0 [&_.ant-input-wrapper]:!shadow-none [&_.ant-input-wrapper]:!bg-transparent [&_.ant-input-clear-icon]:!text-slate-400"
                     />
                   </div>
-                </div>
-                
-                {/* Role Filter */}
-                <div className="w-[220px]">
-                  <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
-                    <Select
-                      placeholder="ALL ROLES"
-                      value={roleFilter === 'all' ? undefined : roleFilter}
-                      onChange={(value) => setRoleFilter(value || 'all')}
-                      options={roleOptions.filter((opt) => opt.value !== 'all')}
-                      className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
-                      suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
-                    />
-                  </div>
-                </div>
-                
-                {/* Status Filter */}
-                <div className="w-[220px]">
-                  <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
-                    <Select
-                      placeholder="ALL STATUS"
-                      value={statusFilter === 'all' ? undefined : statusFilter}
-                      onChange={(value) => setStatusFilter(value || 'all')}
-                      options={statusOptions.filter((opt) => opt.value !== 'all')}
-                      className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
-                      suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
-                    />
-                  </div>
-                </div>
-                
-                {/* Refresh Button */}
-                <div className="flex items-center gap-2 ml-auto">
-                  <Button
-                    type="text"
-                    icon={<RotateCcw className="w-4 h-4 text-[#151827]" />}
-                    onClick={handleResetFilters}
-                    className="w-10 h-10 p-0 rounded-full bg-transparent border border-[#EDEDF5] hover:bg-[#FFF3ED] flex items-center justify-center transition-all"
-                  />
-                </div>
-              </div>
-
-              {/* Table Card */}
-              <Card className="rounded-2xl shadow-sm border border-gray-200">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-sm text-gray-600">
-                    총 <span className="font-semibold text-gray-900">{filteredUsers.length}</span>건
-                  </div>
-                  <Space>
+                  
+                  {/* Filter Button with Dropdown - Right Side */}
+                  <div className="relative ml-auto" ref={filterDropdownRef}>
                     <Button
-                      type="primary"
-                      icon={<UserPlus className="w-4 h-4" />}
-                      onClick={handleRegisterClick}
-                      className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
-                    style={{
-                      backgroundColor: '#1a202c',
-                      borderColor: '#1a202c',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                      color: '#ffffff',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#2d3748'
-                      e.currentTarget.style.borderColor = '#2d3748'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#1a202c'
-                      e.currentTarget.style.borderColor = '#1a202c'
-                    }}
+                      icon={<Filter className="w-4 h-4" />}
+                      onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
+                      className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-blue-600 hover:text-white font-medium transition-all flex items-center gap-2 text-slate-700"
                     >
-                      + 사용자 등록
+                      필터
+                      <ChevronRight className={`w-4 h-4 transition-transform ${filterDropdownOpen ? 'rotate-90' : ''}`} />
                     </Button>
-                    {selectedRowKeys.length > 0 && (
-                      <Button
-                        danger
-                        icon={<Trash2 className="w-4 h-4" />}
-                        onClick={() => {
-                          console.log('Delete users:', selectedRowKeys)
-                          setSelectedRowKeys([])
-                        }}
-                        className="h-11 px-6 rounded-xl font-medium transition-all"
-                      >
-                        삭제 ({selectedRowKeys.length})
-                      </Button>
+                    
+                    {/* Filter Dropdown */}
+                    {filterDropdownOpen && (
+                      <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50 p-4">
+                        <div className="space-y-4">
+                          {/* Role Filter */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">역할</label>
+                            <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
+                              <Select
+                                placeholder="ALL ROLES"
+                                value={roleFilter === 'all' ? undefined : roleFilter}
+                                onChange={(value) => setRoleFilter(value || 'all')}
+                                options={roleOptions.filter((opt) => opt.value !== 'all')}
+                                className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
+                                suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
+                              />
+                            </div>
+                          </div>
+                          
+                          {/* Status Filter */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">상태</label>
+                            <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
+                              <Select
+                                placeholder="ALL STATUS"
+                                value={statusFilter === 'all' ? undefined : statusFilter}
+                                onChange={(value) => setStatusFilter(value || 'all')}
+                                options={statusOptions.filter((opt) => opt.value !== 'all')}
+                                className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
+                                suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
+                              />
+                            </div>
+                          </div>
+                          
+                          {/* Action Buttons */}
+                          <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-200">
+                            <Button
+                              type="text"
+                              icon={<RotateCcw className="w-4 h-4" />}
+                              onClick={() => {
+                                handleResetFilters()
+                                setFilterDropdownOpen(false)
+                              }}
+                              className="h-9 px-4 text-sm"
+                            >
+                              초기화
+                            </Button>
+                            <Button
+                              type="primary"
+                              onClick={() => {
+                                setCurrentPage(1)
+                                setFilterDropdownOpen(false)
+                              }}
+                              className="h-9 px-4 text-sm bg-slate-900 hover:bg-slate-800 active:bg-slate-900 border-0 text-white hover:text-white active:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            >
+                              적용
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
                     )}
-                  </Space>
+                  </div>
                 </div>
                 <Table
                   columns={columns}
@@ -589,11 +666,13 @@ export default function SystemSettingsPage() {
                   }}
                   rowKey="key"
                   scroll={{ x: 'max-content' }}
-                  className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:sticky [&_.ant-table-thead>tr>th]:top-0 [&_.ant-table-thead>tr>th]:z-10 [&_.ant-pagination]:!mt-4 [&_.ant-pagination]:!mb-0 [&_.ant-pagination-item]:!rounded-lg [&_.ant-pagination-item]:!border-[#E6E6EF] [&_.ant-pagination-item]:!h-9 [&_.ant-pagination-item]:!min-w-[36px] [&_.ant-pagination-item-active]:!border-[#ff8a65] [&_.ant-pagination-item-active]:!bg-[#ff8a65] [&_.ant-pagination-item-active>a]:!text-white [&_.ant-pagination-prev]:!rounded-lg [&_.ant-pagination-prev]:!border-[#E6E6EF] [&_.ant-pagination-next]:!rounded-lg [&_.ant-pagination-next]:!border-[#E6E6EF] [&_.ant-pagination-options]:!ml-4 [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-[#E6E6EF] [&_.ant-pagination-total-text]:!text-[#151827] [&_.ant-pagination-total-text]:!mr-4"
+                  className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:sticky [&_.ant-table-thead>tr>th]:top-0 [&_.ant-table-thead>tr>th]:z-10 [&_.ant-table-tbody>tr]:border-b [&_.ant-table-tbody>tr]:border-gray-100 [&_.ant-pagination]:!mt-4 [&_.ant-pagination]:!mb-0 [&_.ant-pagination-item]:!rounded-lg [&_.ant-pagination-item]:!border-[#E6E6EF] [&_.ant-pagination-item]:!h-9 [&_.ant-pagination-item]:!min-w-[36px] [&_.ant-pagination-item-active]:!border-[#3b82f6] [&_.ant-pagination-item-active]:!bg-[#3b82f6] [&_.ant-pagination-item-active>a]:!text-white [&_.ant-pagination-prev]:!rounded-lg [&_.ant-pagination-prev]:!border-[#E6E6EF] [&_.ant-pagination-next]:!rounded-lg [&_.ant-pagination-next]:!border-[#E6E6EF] [&_.ant-pagination-options]:!ml-4 [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-[#E6E6EF] [&_.ant-pagination-total-text]:!text-[#151827] [&_.ant-pagination-total-text]:!mr-4"
                 />
               </Card>
                 </>
-              ) : viewMode === 'detail' && selectedUser ? (
+              )}
+              
+              {viewMode === 'detail' && selectedUser && (
                 /* Detail View */
                 <div className="space-y-6">
                   {/* Top actions */}
@@ -616,7 +695,7 @@ export default function SystemSettingsPage() {
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <h2 className="text-2xl md:text-3xl font-bold text-[#3a2e2a] leading-tight">{selectedUser.name}</h2>
+                        <h2 className="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">{selectedUser.name}</h2>
                         <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
                           <div className="flex items-center gap-1">
                             <span className="text-gray-500">이메일</span>
@@ -645,7 +724,7 @@ export default function SystemSettingsPage() {
                             className={`inline-flex items-center rounded-full px-4 h-9 border cursor-pointer transition-colors ${
                               detailTab === 'basic'
                                 ? 'bg-slate-900 border-slate-900 text-white shadow-sm'
-                                : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-50'
+                                : 'bg-white border-gray-200 text-gray-800 hover:bg-blue-600 hover:text-white'
                             }`}
                             onClick={() => setDetailTab('basic')}
                           >
@@ -655,7 +734,7 @@ export default function SystemSettingsPage() {
                             className={`inline-flex items-center rounded-full px-4 h-9 border cursor-pointer transition-colors ${
                               detailTab === 'permissions'
                                 ? 'bg-slate-900 border-slate-900 text-white shadow-sm'
-                                : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-50'
+                                : 'bg-white border-gray-200 text-gray-800 hover:bg-blue-600 hover:text-white'
                             }`}
                             onClick={() => setDetailTab('permissions')}
                           >
@@ -667,18 +746,16 @@ export default function SystemSettingsPage() {
                           onClick={handleEditFromDetail}
                           className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
                     style={{
-                      backgroundColor: '#1a202c',
-                      borderColor: '#1a202c',
+                      background: '#0f172a',
+                      borderColor: 'transparent',
                       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                       color: '#ffffff',
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#2d3748'
-                      e.currentTarget.style.borderColor = '#2d3748'
+                      e.currentTarget.style.background = '#1e293b'
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#1a202c'
-                      e.currentTarget.style.borderColor = '#1a202c'
+                      e.currentTarget.style.background = '#0f172a'
                     }}
                         >
                           수정하기
@@ -692,7 +769,7 @@ export default function SystemSettingsPage() {
                       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-blue-500" />
-                          <h3 className="text-lg font-semibold text-[#3a2e2a]">기본 정보</h3>
+                          <h3 className="text-lg font-semibold text-slate-900">기본 정보</h3>
                         </div>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 px-6 py-6">
@@ -739,7 +816,7 @@ export default function SystemSettingsPage() {
                       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                          <h3 className="text-lg font-semibold text-[#3a2e2a]">권한 정보</h3>
+                          <h3 className="text-lg font-semibold text-slate-900">권한 정보</h3>
                         </div>
                       </div>
                       <div className="px-6 py-6">
@@ -748,7 +825,7 @@ export default function SystemSettingsPage() {
                             selectedUser.permissions.map((permission, index) => (
                               <span
                                 key={index}
-                                className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-200"
+                                className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-700 border border-blue-200"
                               >
                                 {permission}
                               </span>
@@ -761,119 +838,130 @@ export default function SystemSettingsPage() {
                     </div>
                   )}
                 </div>
-              ) : (
-                /* Register/Edit View */
-                <div className="space-y-6">
-                  {/* Form Card */}
-                  <Card className="rounded-2xl shadow-sm border border-gray-200">
-                    <Form
-                      form={form}
-                      layout="vertical"
-                      onFinish={handleFormSubmit}
-                      className="max-w-2xl"
-                    >
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Form.Item
-                          label="이름"
-                          name="name"
-                          rules={[{ required: true, message: '이름을 입력해주세요' }]}
-                          className="mb-0"
-                        >
-                          <Input placeholder="이름을 입력하세요" className="h-11 rounded-xl" />
-                        </Form.Item>
-
-                        <Form.Item
-                          label="이메일"
-                          name="email"
-                          rules={[
-                            { required: true, message: '이메일을 입력해주세요' },
-                            { type: 'email', message: '올바른 이메일 형식이 아닙니다' },
-                          ]}
-                          className="mb-0"
-                        >
-                          <Input placeholder="이메일을 입력하세요" className="h-11 rounded-xl" />
-                        </Form.Item>
-
-                        <Form.Item
-                          label="전화번호"
-                          name="phone"
-                          className="mb-0"
-                        >
-                          <Input placeholder="전화번호를 입력하세요" className="h-11 rounded-xl" />
-                        </Form.Item>
-
-                        <Form.Item
-                          label="역할"
-                          name="role"
-                          rules={[{ required: true, message: '역할을 선택해주세요' }]}
-                          className="mb-0"
-                        >
-                          <Select
-                            placeholder="역할을 선택하세요"
-                            options={roleOptions.filter(opt => opt.value !== 'all')}
-                            className="h-11 rounded-xl"
-                          />
-                        </Form.Item>
-
-                        <Form.Item
-                          label="부서"
-                          name="department"
-                          rules={[{ required: true, message: '부서를 입력해주세요' }]}
-                          className="mb-0"
-                        >
-                          <Input placeholder="부서를 입력하세요" className="h-11 rounded-xl" />
-                        </Form.Item>
-
-                        <Form.Item
-                          label="상태"
-                          name="status"
-                          rules={[{ required: true, message: '상태를 선택해주세요' }]}
-                          className="mb-0"
-                        >
-                          <Select
-                            placeholder="상태를 선택하세요"
-                            options={statusOptions.filter(opt => opt.value !== 'all')}
-                            className="h-11 rounded-xl"
-                          />
-                        </Form.Item>
-                      </div>
-
-                      <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 mt-6">
-                        <Button
-                          icon={<ArrowLeft className="w-4 h-4" />}
-                          onClick={handleBackToList}
-                          className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
-                        >
-                          취소
-                        </Button>
-                        <Button
-                          type="primary"
-                          icon={<Save className="w-4 h-4" />}
-                          onClick={() => form.submit()}
-                          className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
-                    style={{
-                      backgroundColor: '#1a202c',
-                      borderColor: '#1a202c',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                      color: '#ffffff',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#2d3748'
-                      e.currentTarget.style.borderColor = '#2d3748'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#1a202c'
-                      e.currentTarget.style.borderColor = '#1a202c'
-                    }}
-                        >
-                          {formMode === 'create' ? '등록하기' : '저장하기'}
-                        </Button>
-                      </div>
-                    </Form>
-                  </Card>
-                </div>
               )}
+              
+              {/* User Registration/Edit Modal */}
+              <Modal
+                open={userModalOpen}
+                onCancel={handleBackToList}
+                footer={null}
+                width={800}
+                className="[&_.ant-modal-content]:rounded-2xl [&_.ant-modal-header]:border-b [&_.ant-modal-header]:border-slate-200"
+                title={
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-slate-900">
+                      {formMode === 'create' ? '사용자 등록' : '사용자 수정'}
+                    </h3>
+                    <Button
+                      type="text"
+                      icon={<X className="w-4 h-4" />}
+                      onClick={handleBackToList}
+                      className="h-8 w-8 p-0"
+                    />
+                  </div>
+                }
+              >
+                <Form
+                  form={form}
+                  layout="vertical"
+                  onFinish={handleFormSubmit}
+                  className="mt-4"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Form.Item
+                      label="이름"
+                      name="name"
+                      rules={[{ required: true, message: '이름을 입력해주세요' }]}
+                      className="mb-0"
+                    >
+                      <Input placeholder="이름을 입력하세요" className="h-11 rounded-xl" />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="이메일"
+                      name="email"
+                      rules={[
+                        { required: true, message: '이메일을 입력해주세요' },
+                        { type: 'email', message: '올바른 이메일 형식이 아닙니다' },
+                      ]}
+                      className="mb-0"
+                    >
+                      <Input placeholder="이메일을 입력하세요" className="h-11 rounded-xl" />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="전화번호"
+                      name="phone"
+                      className="mb-0"
+                    >
+                      <Input placeholder="전화번호를 입력하세요" className="h-11 rounded-xl" />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="역할"
+                      name="role"
+                      rules={[{ required: true, message: '역할을 선택해주세요' }]}
+                      className="mb-0"
+                    >
+                      <Select
+                        placeholder="역할을 선택하세요"
+                        options={roleOptions.filter(opt => opt.value !== 'all')}
+                        className="h-11 rounded-xl"
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="부서"
+                      name="department"
+                      rules={[{ required: true, message: '부서를 입력해주세요' }]}
+                      className="mb-0"
+                    >
+                      <Input placeholder="부서를 입력하세요" className="h-11 rounded-xl" />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="상태"
+                      name="status"
+                      rules={[{ required: true, message: '상태를 선택해주세요' }]}
+                      className="mb-0"
+                    >
+                      <Select
+                        placeholder="상태를 선택하세요"
+                        options={statusOptions.filter(opt => opt.value !== 'all')}
+                        className="h-11 rounded-xl"
+                      />
+                    </Form.Item>
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-6 border-t border-slate-200 mt-6">
+                    <Button
+                      icon={<X className="w-4 h-4" />}
+                      onClick={handleBackToList}
+                      className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
+                    >
+                      취소
+                    </Button>
+                    <Button
+                      type="primary"
+                      icon={<Save className="w-4 h-4" />}
+                      onClick={() => form.submit()}
+                      className="h-11 px-6 rounded-xl border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    >
+                      {formMode === 'create' ? '등록하기' : '저장하기'}
+                    </Button>
+                  </div>
+                </Form>
+              </Modal>
             </div>
+              ),
+            },
+            {
+              key: 'common-code',
+              label: 'Common Code',
+              children: (
+                <div className="pt-6">
+                  <CommonCodePage />
+                </div>
               ),
             },
           ]}

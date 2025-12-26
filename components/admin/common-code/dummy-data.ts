@@ -1,0 +1,137 @@
+import { Title, Group, GroupKey } from './types'
+
+// Dummy data for development
+export const dummyTitles: Title[] = [
+  {
+    id: '1',
+    name: '교육 유형',
+    status: 'Active',
+    groupCount: 3,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: '2',
+    name: '지역',
+    status: 'Active',
+    groupCount: 2,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: '3',
+    name: '상태',
+    status: 'Inactive',
+    groupCount: 1,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+]
+
+export const dummyGroups: Group[] = [
+  {
+    id: '1',
+    titleId: '1',
+    name: '도서벽지',
+    code: 'BOOK_REMOTE',
+    status: 'Active',
+    valueCount: 5,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: '2',
+    titleId: '1',
+    name: '50차시',
+    code: '50_SESSION',
+    status: 'Active',
+    valueCount: 3,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: '3',
+    titleId: '1',
+    name: '특수학급',
+    code: 'SPECIAL_CLASS',
+    status: 'Active',
+    valueCount: 4,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: '4',
+    titleId: '2',
+    name: '수원시',
+    code: 'SUWON',
+    status: 'Active',
+    valueCount: 2,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: '5',
+    titleId: '2',
+    name: '성남시',
+    code: 'SEONGNAM',
+    status: 'Active',
+    valueCount: 2,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+]
+
+export const dummyGroupKeys: GroupKey[] = [
+  {
+    id: '1',
+    groupId: '1',
+    label: '초등학교',
+    value: 'ELEMENTARY',
+    sortOrder: 1,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: '2',
+    groupId: '1',
+    label: '중학교',
+    value: 'MIDDLE',
+    sortOrder: 2,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: '3',
+    groupId: '1',
+    label: '고등학교',
+    value: 'HIGH',
+    sortOrder: 3,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: '4',
+    groupId: '2',
+    label: '1차시',
+    value: 'SESSION_1',
+    sortOrder: 1,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: '5',
+    groupId: '2',
+    label: '2차시',
+    value: 'SESSION_2',
+    sortOrder: 2,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+]
+
+

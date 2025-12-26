@@ -2,11 +2,18 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Table, Button, Card, Form, Input, Select, DatePicker, InputNumber, TimePicker, Checkbox, Space, Upload } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { ChevronRight, Download, ArrowLeft, Save, FileText, Trash2, RotateCcw, School, BookOpen, Book, Filter, Search, Eye, Upload as UploadIcon, Tag, X } from 'lucide-react'
+import { 
+  DetailPageHeaderSticky,
+  EducationSummaryCard,
+  DetailSectionCard,
+  DefinitionListGrid,
+  SessionsListCard
+} from '@/components/admin/operations'
 import dayjs, { Dayjs } from 'dayjs'
 import 'dayjs/locale/ko'
 
@@ -152,10 +159,10 @@ const statusOptions = [
 ]
 
 const statusStyle: Record<string, { bg: string; text: string }> = {
-  '신청 중': { bg: 'bg-green-50', text: 'text-green-700' },
-  '신청 마감': { bg: 'bg-gray-50', text: 'text-gray-700' },
-  진행중: { bg: 'bg-blue-50', text: 'text-blue-700' },
-  완료: { bg: 'bg-purple-50', text: 'text-purple-700' },
+  '신청 중': { bg: 'bg-emerald-100', text: 'text-emerald-700' },
+  '신청 마감': { bg: 'bg-slate-100', text: 'text-slate-600' },
+  진행중: { bg: 'bg-blue-100', text: 'text-blue-700' },
+  완료: { bg: 'bg-emerald-100', text: 'text-emerald-700' },
 }
 
 const programOptions = [
@@ -192,7 +199,6 @@ export default function EducationManagementPage() {
   const [viewMode, setViewMode] = useState<'list' | 'register' | 'detail'>('list')
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create')
   const [selectedEducation, setSelectedEducation] = useState<EducationItem | null>(null)
-  const [detailTab, setDetailTab] = useState<'basic' | 'lessons'>('basic')
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
@@ -201,6 +207,25 @@ export default function EducationManagementPage() {
   const [activeSection, setActiveSection] = useState<string>('basic')
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
   const [searchText, setSearchText] = useState<string>('')
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState<boolean>(false)
+  const filterDropdownRef = useRef<HTMLDivElement>(null)
+
+  // Close filter dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
+        setFilterDropdownOpen(false)
+      }
+    }
+
+    if (filterDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [filterDropdownOpen])
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null)
   const [tags, setTags] = useState<string[]>([])
@@ -213,11 +238,10 @@ export default function EducationManagementPage() {
     setActiveSection('basic')
   }
 
-  const handleViewDetail = (record: EducationItem) => {
+  const handleViewDetail = useCallback((record: EducationItem) => {
     setSelectedEducation(record)
     setViewMode('detail')
-    setDetailTab('basic')
-  }
+  }, [])
 
   const handleBackToList = () => {
     setViewMode('list')
@@ -295,14 +319,14 @@ export default function EducationManagementPage() {
     })
   }, [searchText, statusFilter, dateRange])
 
-  const columns: ColumnsType<EducationItem> = [
+  const columns: ColumnsType<EducationItem> = useMemo(() => [
     {
       title: '상태',
       dataIndex: 'status',
       key: 'status',
       width: 120,
       render: (status: string) => {
-        const config = statusStyle[status] || { bg: 'bg-gray-50', text: 'text-gray-700' }
+        const config = statusStyle[status] || { bg: 'bg-slate-100', text: 'text-slate-600' }
         return (
           <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
             {status}
@@ -371,7 +395,7 @@ export default function EducationManagementPage() {
         </Button>
       ),
     },
-  ]
+  ], [handleViewDetail])
 
   const rowSelection = {
     selectedRowKeys,
@@ -446,20 +470,7 @@ export default function EducationManagementPage() {
               <Button
                 type="primary"
                 onClick={handleRegisterClick}
-                className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md"
-                style={{
-                  backgroundColor: '#1a202c',
-                  borderColor: '#1a202c',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#2d3748'
-                  e.currentTarget.style.borderColor = '#2d3748'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#1a202c'
-                  e.currentTarget.style.borderColor = '#1a202c'
-                }}
+                className="h-11 px-6 rounded-xl border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
                 + 교육 등록
               </Button>
@@ -467,7 +478,7 @@ export default function EducationManagementPage() {
             <Button
               icon={<Download className="w-4 h-4" />}
               onClick={() => console.log('Export to Excel')}
-              className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+              className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
             >
               엑셀 추출
             </Button>
@@ -478,7 +489,7 @@ export default function EducationManagementPage() {
             <Button
               icon={<FileText className="w-4 h-4" />}
               onClick={handleTempSave}
-              className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+              className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
             >
               임시저장
             </Button>
@@ -487,124 +498,114 @@ export default function EducationManagementPage() {
               icon={<Save className="w-4 h-4" />}
               onClick={() => form.submit()}
               className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
-              style={{
-                backgroundColor: '#1a202c',
-                borderColor: '#1a202c',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                color: '#ffffff',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#2d3748'
-                e.currentTarget.style.borderColor = '#2d3748'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#1a202c'
-                e.currentTarget.style.borderColor = '#1a202c'
-              }}
+                style={{
+                  background: '#0f172a',
+                  borderColor: 'transparent',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                  color: '#ffffff',
+                }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#1e293b'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#0f172a'
+                  }}
             >
               저장
             </Button>
             <Button
               icon={<ArrowLeft className="w-4 h-4" />}
               onClick={handleBackToList}
-              className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+              className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
             >
               취소
             </Button>
           </Space>
-        )}
-        {viewMode === 'detail' && (
-          <>
-            <Button
-              icon={<ArrowLeft className="w-4 h-4" />}
-              onClick={handleBackToList}
-              className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
-            >
-              목록으로
-            </Button>
-            <Space>
-              <Button
-                icon={<FileText className="w-4 h-4" />}
-                onClick={() => console.log('Print detail')}
-                className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
-              >
-                인쇄
-              </Button>
-              <Button
-                type="primary"
-                onClick={handleEditFromDetail}
-                className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
-                style={{
-                  backgroundColor: '#1a202c',
-                  borderColor: '#1a202c',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                  color: '#ffffff',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#2d3748'
-                  e.currentTarget.style.borderColor = '#2d3748'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#1a202c'
-                  e.currentTarget.style.borderColor = '#1a202c'
-                }}
-              >
-                수정하기
-              </Button>
-            </Space>
-          </>
         )}
       </div>
 
       {viewMode === 'list' ? (
         /* List View */
         <div className="space-y-4">
-          {/* Modern Search Toolbar */}
-          <div className="flex items-center h-16 px-4 py-3 bg-white border border-[#ECECF3] rounded-2xl shadow-[0_8px_24px_rgba(15,15,30,0.06)] mb-4 gap-3 flex-wrap">
-            {/* Search Input - Primary, flex-grow */}
-            <div className="flex-1 min-w-[200px]">
-              <div className="relative h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
+          {/* Search and Table Card */}
+          <Card className="rounded-xl shadow-sm border border-gray-200">
+            {/* Search Toolbar */}
+            <div className="flex items-center h-16 px-4 py-3 border-b border-gray-200 gap-3">
+              {/* Search Input - Left Side */}
+              <div className="relative w-full max-w-[420px]">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 z-10" />
                 <Input
-                  placeholder="Search by name, ID, or email..."
+                  placeholder="검색어를 입력하세요..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   allowClear
-                  prefix={<Search className="w-4 h-4 text-[#9AA0AE]" />}
-                  className="h-11 border-0 bg-transparent rounded-xl text-[#151827] placeholder:text-[#9AA0AE] [&_.ant-input]:!h-11 [&_.ant-input]:!px-4 [&_.ant-input]:!py-0 [&_.ant-input]:!bg-transparent [&_.ant-input]:!border-0 [&_.ant-input]:!outline-none [&_.ant-input]:!shadow-none [&_.ant-input-wrapper]:!border-0 [&_.ant-input-wrapper]:!shadow-none [&_.ant-input-prefix]:!mr-2"
+                  onPressEnter={handleSearch}
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition hover:border-slate-300 focus:border-slate-300 focus:ring-2 focus:ring-slate-300 [&_.ant-input]:!h-11 [&_.ant-input]:!px-0 [&_.ant-input]:!py-0 [&_.ant-input]:!bg-transparent [&_.ant-input]:!border-0 [&_.ant-input]:!outline-none [&_.ant-input]:!shadow-none [&_.ant-input]:!text-sm [&_.ant-input-wrapper]:!border-0 [&_.ant-input-wrapper]:!shadow-none [&_.ant-input-wrapper]:!bg-transparent [&_.ant-input-clear-icon]:!text-slate-400"
                 />
               </div>
-            </div>
-            
-            {/* Status Filter */}
-            <div className="w-[220px]">
-              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
-                <Select
-                  placeholder="ALL STATUS"
-                  value={statusFilter}
-                  onChange={setStatusFilter}
-                  options={[
-                    { value: 'all', label: '전체' },
-                    ...statusOptions.filter((opt) => opt.value !== 'all'),
-                  ]}
-                  className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
-                  suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
-                />
+              
+              {/* Filter Button with Dropdown - Right Side */}
+              <div className="relative ml-auto" ref={filterDropdownRef}>
+                <Button
+                  icon={<Filter className="w-4 h-4" />}
+                  onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
+                  className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all flex items-center gap-2"
+                >
+                  필터
+                  <ChevronRight className={`w-4 h-4 transition-transform ${filterDropdownOpen ? 'rotate-90' : ''}`} />
+                </Button>
+                
+                {/* Filter Dropdown */}
+                {filterDropdownOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50 p-4">
+                    <div className="space-y-4">
+                      {/* Status Filter */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">상태</label>
+                        <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
+                          <Select
+                            placeholder="ALL STATUS"
+                            value={statusFilter}
+                            onChange={setStatusFilter}
+                            options={[
+                              { value: 'all', label: '전체' },
+                              ...statusOptions.filter((opt) => opt.value !== 'all'),
+                            ]}
+                            className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
+                            suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Action Buttons */}
+                      <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-200">
+                        <Button
+                          type="text"
+                          icon={<RotateCcw className="w-4 h-4" />}
+                          onClick={() => {
+                            handleResetFilters()
+                            setFilterDropdownOpen(false)
+                          }}
+                          className="h-9 px-4 text-sm"
+                        >
+                          초기화
+                        </Button>
+                        <Button
+                          type="primary"
+                          onClick={() => {
+                            handleApplyFilters()
+                            setFilterDropdownOpen(false)
+                          }}
+                          className="h-9 px-4 text-sm bg-slate-900 hover:bg-slate-800 active:bg-slate-900 border-0 text-white hover:text-white active:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        >
+                          적용
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-            
-            {/* Refresh Button */}
-            <div className="flex items-center gap-2 ml-auto">
-              <Button
-                type="text"
-                icon={<RotateCcw className="w-4 h-4 text-[#151827]" />}
-                onClick={handleResetFilters}
-                className="w-10 h-10 p-0 rounded-full bg-transparent border border-[#EDEDF5] hover:bg-[#FFF3ED] flex items-center justify-center transition-all"
-              />
-            </div>
-          </div>
-
-          {/* Table Card */}
-          <Card className="rounded-xl shadow-sm border border-gray-200">
             <Table
               columns={columns}
               dataSource={filteredData}
@@ -631,72 +632,86 @@ export default function EducationManagementPage() {
           </Card>
         </div>
       ) : viewMode === 'detail' && selectedEducation ? (
-        /* Detail View */
-        <div className="space-y-6">
-          {/* Top actions */}
-          <div className="flex flex-col gap-3">
+        /* Detail View - Redesigned to match Create/Edit page */
+        <div className="bg-slate-50 min-h-screen -mx-6 -mt-6 px-6 pt-0">
+          {/* Sticky Header */}
+          <DetailPageHeaderSticky
+            onBack={handleBackToList}
+            onEdit={() => {
+              // Handle edit - navigate to edit mode
+              console.log('Edit education:', selectedEducation)
+            }}
+          />
 
-            <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-5 md:p-6 flex flex-col gap-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center px-3 py-1 text-xs font-semibold text-gray-700 bg-gray-100 rounded-full">
-                    No. {selectedEducation.educationId.replace('EDU-', '')}
-                  </span>
-                  <span className="inline-flex items-center px-3 py-1 text-xs font-semibold text-amber-700 bg-amber-50 rounded-full">
-                    미승인
-                  </span>
-                  <span className="inline-flex items-center px-3 py-1 text-xs font-semibold text-gray-700 bg-gray-100 rounded-full">
-                    {selectedEducation.status}
-                  </span>
-                </div>
-              </div>
+          {/* Main Content Container */}
+          <div className="max-w-5xl mx-auto pt-6 pb-12 space-y-4">
+            {/* Summary Card */}
+            <EducationSummaryCard
+              educationId={selectedEducation.educationId}
+              name={selectedEducation.name}
+              schoolName={selectedEducation.schoolName}
+              institution={selectedEducation.institution}
+              period={selectedEducation.period}
+              status={selectedEducation.status}
+              badges={[
+                { label: '미승인', variant: 'warning' },
+              ]}
+            />
 
-              <div className="flex flex-col gap-2">
-                <h2 className="text-2xl md:text-3xl font-bold text-[#3a2e2a] leading-tight">{selectedEducation.name}</h2>
-                <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-500">학교</span>
-                    <span className="text-gray-900 font-medium">{selectedEducation.schoolName || '한마음초등학교'}</span>
-                  </div>
-                  <div className="h-4 w-px bg-gray-200" />
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-500">기관</span>
-                    <span className="text-gray-900 font-medium">{selectedEducation.institution}</span>
-                  </div>
-                  <div className="h-4 w-px bg-gray-200" />
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-500">기간</span>
-                    <span className="text-gray-900 font-medium">{selectedEducation.period}</span>
-                  </div>
-                </div>
-              </div>
+            {/* Education Basic Info Section */}
+            <DetailSectionCard title="교육 기본 정보">
+              <DefinitionListGrid
+                items={[
+                  { label: '교육 ID', value: selectedEducation.educationId },
+                  { label: '교육명', value: selectedEducation.name },
+                  { label: '신청자', value: selectedEducation.requestOrg || '경기미래채움' },
+                  { label: '프로그램명', value: selectedEducation.programTitle || selectedEducation.name },
+                  { label: '교육 기간', value: selectedEducation.period },
+                  {
+                    label: '상태',
+                    value: (
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                          (statusStyle[selectedEducation.status]?.bg || 'bg-slate-100') + ' ' + (statusStyle[selectedEducation.status]?.text || 'text-slate-600')
+                        }`}
+                      >
+                        {selectedEducation.status}
+                      </span>
+                    ),
+                  },
+                  { label: '총 회차', value: selectedEducation.totalSessions?.toString() || '12' },
+                  { label: '비고', value: selectedEducation.note || '-', span: 2 },
+                ]}
+              />
+            </DetailSectionCard>
 
-              <div className="flex flex-wrap gap-2 text-sm">
-                <span
-                  className={`inline-flex items-center rounded-full px-4 h-9 border cursor-pointer transition-colors ${
-                    detailTab === 'basic'
-                      ? 'bg-slate-900 border-slate-900 text-white shadow-sm'
-                      : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setDetailTab('basic')}
-                >
-                  기본 정보
-                </span>
-                <span
-                  className={`inline-flex items-center rounded-full px-4 h-9 border cursor-pointer transition-colors ${
-                    detailTab === 'lessons'
-                      ? 'bg-slate-900 border-slate-900 text-white shadow-sm'
-                      : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setDetailTab('lessons')}
-                >
-                  수업 일정 ({selectedEducation.lessons?.length || 0})
-                </span>
-              </div>
-            </div>
+            {/* School Info Section */}
+            <DetailSectionCard title="학교 정보">
+              <DefinitionListGrid
+                items={[
+                  { label: '기관명', value: selectedEducation.schoolName || selectedEducation.institution },
+                  { label: '권역', value: selectedEducation.region || '-' },
+                  { label: '학년·학급', value: selectedEducation.gradeClass || '-' },
+                ]}
+              />
+            </DetailSectionCard>
+
+            {/* Sessions Info Section */}
+            {selectedEducation.lessons && selectedEducation.lessons.length > 0 ? (
+              <SessionsListCard sessions={selectedEducation.lessons} />
+            ) : (
+              <DetailSectionCard title="수업 정보">
+                <div className="text-center py-8 text-slate-500 text-sm">수업 정보가 없습니다.</div>
+              </DetailSectionCard>
+            )}
           </div>
-
-          {detailTab === 'basic' && (
+        </div>
+      ) : viewMode === 'register' ? (
+        /* Register View - Keep existing */
+        <div>
+          {/* This section should remain as is for now */}
+        </div>
+      ) : (
             <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <div className="flex items-center gap-2">
@@ -718,7 +733,7 @@ export default function EducationManagementPage() {
                     value: (
                       <span
                         className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                          (statusStyle[selectedEducation.status]?.bg || 'bg-gray-50') + ' ' + (statusStyle[selectedEducation.status]?.text || 'text-gray-700')
+                          (statusStyle[selectedEducation.status]?.bg || 'bg-slate-100') + ' ' + (statusStyle[selectedEducation.status]?.text || 'text-slate-600')
                         }`}
                       >
                         {selectedEducation.status}
@@ -762,7 +777,7 @@ export default function EducationManagementPage() {
                     date: lesson.date,
                     time: `${lesson.startTime} ~ ${lesson.endTime}`,
                     mainStatus: (
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
                         매칭완료
                       </span>
                     ),
@@ -781,7 +796,7 @@ export default function EducationManagementPage() {
                     position: ['bottomRight'],
                   }}
                   scroll={{ x: 'max-content' }}
-                  className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:text-gray-700 [&_.ant-table]:text-sm [&_.ant-pagination]:!mt-4 [&_.ant-pagination]:!mb-0 [&_.ant-pagination-item]:!rounded-lg [&_.ant-pagination-item]:!border-[#E6E6EF] [&_.ant-pagination-item]:!h-9 [&_.ant-pagination-item]:!min-w-[36px] [&_.ant-pagination-item-active]:!border-[#ff8a65] [&_.ant-pagination-item-active]:!bg-[#ff8a65] [&_.ant-pagination-item-active>a]:!text-white [&_.ant-pagination-prev]:!rounded-lg [&_.ant-pagination-prev]:!border-[#E6E6EF] [&_.ant-pagination-next]:!rounded-lg [&_.ant-pagination-next]:!border-[#E6E6EF] [&_.ant-pagination-options]:!ml-4 [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-[#E6E6EF] [&_.ant-pagination-total-text]:!text-[#151827] [&_.ant-pagination-total-text]:!mr-4"
+                  className="[&_.ant-table-thead>tr>th]:bg-slate-50 [&_.ant-table-thead>tr>th]:text-slate-600 [&_.ant-table-thead>tr>th]:text-xs [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table]:text-sm [&_.ant-table-tbody>tr]:border-b [&_.ant-table-tbody>tr]:border-gray-100 [&_.ant-pagination]:!mt-4 [&_.ant-pagination]:!mb-0 [&_.ant-pagination-item]:!rounded-lg [&_.ant-pagination-item]:!border-[#E6E6EF] [&_.ant-pagination-item]:!h-9 [&_.ant-pagination-item]:!min-w-[36px] [&_.ant-pagination-item-active]:!border-[#3b82f6] [&_.ant-pagination-item-active]:!bg-[#3b82f6] [&_.ant-pagination-item-active>a]:!text-white [&_.ant-pagination-prev]:!rounded-lg [&_.ant-pagination-prev]:!border-[#E6E6EF] [&_.ant-pagination-next]:!rounded-lg [&_.ant-pagination-next]:!border-[#E6E6EF] [&_.ant-pagination-options]:!ml-4 [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-[#E6E6EF] [&_.ant-pagination-total-text]:!text-slate-900 [&_.ant-pagination-total-text]:!mr-4"
                 />
               </div>
             </div>
@@ -877,17 +892,15 @@ export default function EducationManagementPage() {
                     onClick={handleAddTag}
                     className="h-11 px-4 rounded-lg border-0 font-medium text-white transition-all shadow-sm hover:shadow-md"
                     style={{
-                      backgroundColor: '#1a202c',
-                      borderColor: '#1a202c',
+                      background: 'linear-gradient(to right, #1E3A8A, #2563EB)',
+                      borderColor: 'transparent',
                       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#2d3748'
-                      e.currentTarget.style.borderColor = '#2d3748'
+                      e.currentTarget.style.background = 'linear-gradient(to right, #1E40AF, #3B82F6)'
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#1a202c'
-                      e.currentTarget.style.borderColor = '#1a202c'
+                      e.currentTarget.style.background = 'linear-gradient(to right, #1E3A8A, #2563EB)'
                     }}
                   >
                     추가
@@ -909,7 +922,7 @@ export default function EducationManagementPage() {
                       onClick={() => setActiveSection(section.key)}
                       className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
                         activeSection === section.key
-                          ? 'bg-blue-50 text-blue-700 font-medium'
+                          ? 'bg-blue-100 text-blue-700 font-medium'
                           : 'text-gray-600 hover:bg-gray-50'
                       }`}
                     >

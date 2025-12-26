@@ -2,12 +2,20 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Table, Button, Card, Form, Select, Checkbox, Space } from 'antd'
 import { Input } from '@/components/shared/common'
 import type { ColumnsType } from 'antd/es/table'
-import { ChevronRight, Download, ArrowLeft, Save, Trash2, RotateCcw, Eye, Search } from 'lucide-react'
+import { ChevronRight, Download, ArrowLeft, Save, Trash2, RotateCcw, Eye, Search, Filter } from 'lucide-react'
+import { 
+  DetailPageHeaderSticky,
+  PageHeaderSticky,
+  DetailSectionCard,
+  DefinitionListGrid,
+  SectionAccordion,
+  InstitutionSummaryCard
+} from '@/components/admin/operations'
 
 const { TextArea } = Input
 
@@ -157,12 +165,30 @@ export default function InstitutionManagementPage() {
   const [form] = Form.useForm()
   const [regionFilter, setRegionFilter] = useState<string>('all')
   const [searchText, setSearchText] = useState<string>('')
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState<boolean>(false)
+  const filterDropdownRef = useRef<HTMLDivElement>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
+
+  // Close filter dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
+        setFilterDropdownOpen(false)
+      }
+    }
+
+    if (filterDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [filterDropdownOpen])
   const [emailLocal, setEmailLocal] = useState<string>('')
   const [emailDomain, setEmailDomain] = useState<string>('')
   const [activeSection, setActiveSection] = useState<string>('institution')
   const [selectedInstitution, setSelectedInstitution] = useState<InstitutionItem | null>(null)
-  const [detailTab, setDetailTab] = useState<'basic' | 'manager'>('basic')
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
 
   const handleRegisterClick = () => {
@@ -175,7 +201,6 @@ export default function InstitutionManagementPage() {
   const handleViewDetail = (record: InstitutionItem) => {
     setSelectedInstitution(record)
     setViewMode('detail')
-    setDetailTab('basic')
   }
 
   const handleBackToList = () => {
@@ -277,14 +302,14 @@ export default function InstitutionManagementPage() {
       width: 100,
       render: (region: string) => {
         const regionColors: Record<string, { bg: string; text: string }> = {
-          '1권역': { bg: 'bg-blue-50', text: 'text-blue-700' },
-          '2권역': { bg: 'bg-orange-50', text: 'text-orange-700' },
-          '3권역': { bg: 'bg-yellow-50', text: 'text-yellow-700' },
-          '4권역': { bg: 'bg-green-50', text: 'text-green-700' },
-          '5권역': { bg: 'bg-purple-50', text: 'text-purple-700' },
-          '6권역': { bg: 'bg-teal-50', text: 'text-teal-700' },
+          '1권역': { bg: 'bg-blue-100', text: 'text-blue-700' },
+          '2권역': { bg: 'bg-amber-100', text: 'text-amber-700' },
+          '3권역': { bg: 'bg-amber-100', text: 'text-amber-700' },
+          '4권역': { bg: 'bg-emerald-100', text: 'text-emerald-700' },
+          '5권역': { bg: 'bg-blue-100', text: 'text-blue-700' },
+          '6권역': { bg: 'bg-blue-100', text: 'text-blue-700' },
         }
-        const config = regionColors[region] || { bg: 'bg-gray-50', text: 'text-gray-700' }
+        const config = regionColors[region] || { bg: 'bg-slate-100', text: 'text-slate-600' }
         return (
           <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
             {region}
@@ -369,6 +394,199 @@ export default function InstitutionManagementPage() {
 
   return (
     <ProtectedRoute requiredRole="admin">
+      {viewMode === 'detail' && selectedInstitution ? (
+        /* Detail View - Redesigned to match Create/Edit page */
+        <div className="bg-slate-50 min-h-screen px-6 pt-0">
+          {/* Sticky Header */}
+          <DetailPageHeaderSticky
+            onBack={handleBackToList}
+            onEdit={handleEditFromDetail}
+          />
+
+          {/* Main Content Container */}
+          <div className="max-w-5xl mx-auto pt-6 pb-12 space-y-4">
+            {/* Summary Card */}
+            <InstitutionSummaryCard
+              institutionId={selectedInstitution.institutionId}
+              name={selectedInstitution.name}
+              region={selectedInstitution.region}
+              address={selectedInstitution.address}
+              phone={selectedInstitution.phone}
+              manager={selectedInstitution.manager}
+            />
+
+            {/* Institution Basic Info Section */}
+            <DetailSectionCard title="교육기관 정보">
+              <DefinitionListGrid
+                items={[
+                  { label: '기관ID', value: selectedInstitution.institutionId },
+                  { label: '기관명', value: selectedInstitution.name },
+                  {
+                    label: '권역',
+                    value: (
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                        {selectedInstitution.region}
+                      </span>
+                    ),
+                  },
+                  { label: '주소', value: selectedInstitution.address },
+                  { label: '상세 주소', value: selectedInstitution.detailAddress },
+                  { label: '전화번호', value: selectedInstitution.phone },
+                ]}
+              />
+            </DetailSectionCard>
+
+            {/* Manager Info Section */}
+            <DetailSectionCard title="담당자 정보">
+              <DefinitionListGrid
+                items={[
+                  { label: '담당자명', value: selectedInstitution.manager },
+                  { label: '담당자 이메일', value: selectedInstitution.email || '미등록' },
+                  { label: '담당자 전화', value: selectedInstitution.phone },
+                ]}
+              />
+            </DetailSectionCard>
+          </div>
+        </div>
+      ) : (viewMode === 'register' || viewMode === 'edit') ? (
+        /* Register/Edit View - Redesigned to match Create/Edit page */
+        <div className="bg-slate-50 min-h-screen px-6 pt-0">
+          {/* Sticky Header */}
+          <PageHeaderSticky
+            mode={viewMode === 'edit' ? 'edit' : 'create'}
+            onCancel={handleBackToList}
+            onTempSave={() => {
+              const values = form.getFieldsValue()
+              console.log('Temp save:', values)
+            }}
+            onSave={() => form.submit()}
+          />
+
+          {/* Main Content Container */}
+          <div className="max-w-5xl mx-auto pt-6">
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={handleFormSubmit}
+            >
+              <SectionAccordion
+                sections={[
+                  {
+                    key: 'institution',
+                    title: '교육기관 정보',
+                    helperText: '교육기관의 기본 정보를 입력하세요',
+                    defaultOpen: true,
+                    children: (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                        <Form.Item
+                          label={
+                            <span>
+                              권역 <span className="text-red-500">*</span>
+                            </span>
+                          }
+                          name="region"
+                          rules={[{ required: true, message: '권역을 선택해주세요' }]}
+                          className="mb-0"
+                          help="교육기관이 속한 권역을 선택하세요"
+                        >
+                          <Select
+                            placeholder="권역을 선택하세요"
+                            options={regionOptions.filter(opt => opt.value !== 'all')}
+                            className="h-11 rounded-xl"
+                          />
+                        </Form.Item>
+
+                        <Form.Item
+                          label={
+                            <span>
+                              기관명 <span className="text-red-500">*</span>
+                            </span>
+                          }
+                          name="name"
+                          rules={[{ required: true, message: '기관명을 입력해주세요' }]}
+                          className="mb-0"
+                          help="교육기관의 이름을 입력하세요"
+                        >
+                          <Input placeholder="기관명을 입력하세요" className="h-11 rounded-xl" />
+                        </Form.Item>
+
+                        <Form.Item
+                          label={
+                            <span>
+                              주소 <span className="text-red-500">*</span>
+                            </span>
+                          }
+                          name="address"
+                          rules={[{ required: true, message: '주소를 입력해주세요' }]}
+                          className="mb-0 md:col-span-2"
+                          help="교육기관의 주소를 입력하세요"
+                        >
+                          <Input placeholder="주소를 입력하세요" className="h-11 rounded-xl" />
+                        </Form.Item>
+
+                        <Form.Item
+                          label="상세 주소"
+                          name="detailAddress"
+                          className="mb-0 md:col-span-2"
+                          help="상세 주소를 입력하세요 (선택사항)"
+                        >
+                          <Input placeholder="상세 주소를 입력하세요" className="h-11 rounded-xl" />
+                        </Form.Item>
+
+                        <Form.Item
+                          label={
+                            <span>
+                              전화번호 <span className="text-red-500">*</span>
+                            </span>
+                          }
+                          name="phone"
+                          rules={[{ required: true, message: '전화번호를 입력해주세요' }]}
+                          className="mb-0"
+                          help="교육기관의 전화번호를 입력하세요"
+                        >
+                          <Input placeholder="전화번호를 입력하세요" className="h-11 rounded-xl" />
+                        </Form.Item>
+                      </div>
+                    ),
+                  },
+                  {
+                    key: 'manager',
+                    title: '담당자 정보',
+                    helperText: '교육기관 담당자의 정보를 입력하세요',
+                    defaultOpen: true,
+                    children: (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                        <Form.Item
+                          label={
+                            <span>
+                              담당자명 <span className="text-red-500">*</span>
+                            </span>
+                          }
+                          name="manager"
+                          rules={[{ required: true, message: '담당자명을 입력해주세요' }]}
+                          className="mb-0"
+                          help="담당자의 이름을 입력하세요"
+                        >
+                          <Input placeholder="담당자명을 입력하세요" className="h-11 rounded-xl" />
+                        </Form.Item>
+
+                        <Form.Item
+                          label="담당자 이메일"
+                          name="email"
+                          className="mb-0"
+                          help="담당자의 이메일 주소를 입력하세요 (선택사항)"
+                        >
+                          <Input placeholder="이메일을 입력하세요" className="h-11 rounded-xl" type="email" />
+                        </Form.Item>
+                      </div>
+                    ),
+                  },
+                ]}
+              />
+            </Form>
+          </div>
+        </div>
+      ) : (
       <div className="p-6">
 
       {/* Page Header */}
@@ -391,160 +609,111 @@ export default function InstitutionManagementPage() {
                 onClick={handleRegisterClick}
               className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
               style={{
-                backgroundColor: '#1a202c',
-                borderColor: '#1a202c',
+                background: '#0f172a',
+                borderColor: 'transparent',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                 color: '#ffffff',
               }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#2d3748'
-                  e.currentTarget.style.borderColor = '#2d3748'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#1a202c'
-                  e.currentTarget.style.borderColor = '#1a202c'
-                }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#1e293b'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#0f172a'
+                  }}
               >
                 + 기관 등록
               </Button>
             </Space>
-            <Button
-              icon={<Download className="w-4 h-4" />}
-              onClick={() => console.log('Export to Excel')}
-              className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
-            >
-              엑셀 추출
-            </Button>
           </>
-        ) : viewMode === 'edit' ? (
-          <Space>
-            <Button
-              danger
-              icon={<Trash2 className="w-4 h-4" />}
-              onClick={handleDelete}
-              className="h-11 px-6 rounded-xl font-medium transition-all"
-            >
-              삭제
-            </Button>
-          </Space>
-        ) : viewMode === 'detail' ? (
-          <Space>
-            <Button
-              type="primary"
-              onClick={handleEditFromDetail}
-              className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
-              style={{
-                backgroundColor: '#1a202c',
-                borderColor: '#1a202c',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                color: '#ffffff',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#2d3748'
-                e.currentTarget.style.borderColor = '#2d3748'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#1a202c'
-                e.currentTarget.style.borderColor = '#1a202c'
-              }}
-            >
-              수정하기
-            </Button>
-            <Button
-              icon={<ArrowLeft className="w-4 h-4" />}
-              onClick={handleBackToList}
-              className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
-            >
-              목록으로
-            </Button>
-          </Space>
-        ) : (
-          <div className="flex items-center justify-between w-full">
-            <Button
-              icon={<ArrowLeft className="w-4 h-4" />}
-              onClick={handleBackToList}
-              className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
-            >
-              취소
-            </Button>
-            <Button
-              type="primary"
-              icon={<Save className="w-4 h-4" />}
-              onClick={() => form.submit()}
-              className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
-              style={{
-                backgroundColor: '#1a202c',
-                borderColor: '#1a202c',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                color: '#ffffff',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#2d3748'
-                e.currentTarget.style.borderColor = '#2d3748'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#1a202c'
-                e.currentTarget.style.borderColor = '#1a202c'
-              }}
-            >
-              저장
-            </Button>
-          </div>
-        )}
+        ) : null}
       </div>
 
       {viewMode === 'list' ? (
         /* List View */
         <div className="space-y-4">
           {/* Modern Search Toolbar */}
-          <div className="flex items-center h-16 px-4 py-3 bg-white border border-[#ECECF3] rounded-2xl shadow-[0_8px_24px_rgba(15,15,30,0.06)] mb-4 gap-3 flex-wrap">
-            {/* Search Input - Primary, flex-grow */}
-            <div className="flex-1 min-w-[200px]">
-              <div className="relative h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200">
+          {/* Search and Table Card */}
+          <Card className="rounded-xl shadow-sm border border-gray-200">
+            {/* Search Toolbar */}
+            <div className="flex items-center h-16 px-4 py-3 border-b border-gray-200 gap-3">
+              {/* Search Input - Left Side */}
+              <div className="relative w-full max-w-[420px]">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 z-10" />
                 <Input
-                  placeholder="Search by name, ID, or email..."
+                  placeholder="검색어를 입력하세요..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   allowClear
-                  prefix={<Search className="w-4 h-4 text-[#9AA0AE]" />}
-                  className="h-11 border-0 bg-transparent rounded-xl text-[#151827] placeholder:text-[#9AA0AE] [&_.ant-input]:!h-11 [&_.ant-input]:!px-4 [&_.ant-input]:!py-0 [&_.ant-input]:!bg-transparent [&_.ant-input]:!border-0 [&_.ant-input]:!outline-none [&_.ant-input]:!shadow-none [&_.ant-input-wrapper]:!border-0 [&_.ant-input-wrapper]:!shadow-none [&_.ant-input-prefix]:!mr-2"
+                  onPressEnter={handleSearch}
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition hover:border-slate-300 focus:border-slate-300 focus:ring-2 focus:ring-slate-300 [&_.ant-input]:!h-11 [&_.ant-input]:!px-0 [&_.ant-input]:!py-0 [&_.ant-input]:!bg-transparent [&_.ant-input]:!border-0 [&_.ant-input]:!outline-none [&_.ant-input]:!shadow-none [&_.ant-input]:!text-sm [&_.ant-input-wrapper]:!border-0 [&_.ant-input-wrapper]:!shadow-none [&_.ant-input-wrapper]:!bg-transparent [&_.ant-input-clear-icon]:!text-slate-400"
                 />
               </div>
-            </div>
-            
-            {/* Region Filter */}
-            <div className="w-[220px]">
-              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
-                <Select
-                  placeholder="ALL REGIONS"
-                  value={regionFilter}
-                  onChange={setRegionFilter}
-                  options={regionOptions}
-                  className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
-                  suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
-                />
+              
+              {/* Filter Button with Dropdown - Right Side */}
+              <div className="relative ml-auto" ref={filterDropdownRef}>
+                <Button
+                  icon={<Filter className="w-4 h-4" />}
+                  onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
+                  className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all flex items-center gap-2"
+                >
+                  필터
+                  <ChevronRight className={`w-4 h-4 transition-transform ${filterDropdownOpen ? 'rotate-90' : ''}`} />
+                </Button>
+                
+                {/* Filter Dropdown */}
+                {filterDropdownOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50 p-4">
+                    <div className="space-y-4">
+                      {/* Region Filter */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">권역</label>
+                        <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
+                          <Select
+                            placeholder="ALL REGIONS"
+                            value={regionFilter}
+                            onChange={setRegionFilter}
+                            options={regionOptions}
+                            className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
+                            suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Action Buttons */}
+                      <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-200">
+                        <Button
+                          type="text"
+                          icon={<RotateCcw className="w-4 h-4" />}
+                          onClick={() => {
+                            handleResetFilters()
+                            setFilterDropdownOpen(false)
+                          }}
+                          className="h-9 px-4 text-sm"
+                        >
+                          초기화
+                        </Button>
+                        <Button
+                          type="primary"
+                          onClick={() => {
+                            setCurrentPage(1)
+                            setFilterDropdownOpen(false)
+                          }}
+                          className="h-9 px-4 text-sm bg-slate-900 hover:bg-slate-800 active:bg-slate-900 border-0 text-white hover:text-white active:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        >
+                          적용
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-            
-            {/* Refresh Button */}
-            <div className="flex items-center gap-2 ml-auto">
-              <Button
-                type="text"
-                icon={<RotateCcw className="w-4 h-4 text-[#151827]" />}
-                onClick={handleResetFilters}
-                className="w-10 h-10 p-0 rounded-full bg-transparent border border-[#EDEDF5] hover:bg-[#FFF3ED] flex items-center justify-center transition-all"
-              />
-            </div>
-          </div>
-
-          {/* Table */}
-          <Card className="rounded-2xl shadow-sm border border-gray-200">
             <Table
               columns={columns}
               dataSource={filteredData}
               onRow={(record) => ({
                 onClick: () => handleViewDetail(record),
-                className: 'cursor-pointer hover:bg-gray-50',
+                className: 'cursor-pointer',
               })}
               pagination={{
                 current: currentPage,
@@ -559,355 +728,13 @@ export default function InstitutionManagementPage() {
               }}
               rowKey="key"
               scroll={{ x: 'max-content' }}
-              className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:sticky [&_.ant-table-thead>tr>th]:top-0 [&_.ant-table-thead>tr>th]:z-10 [&_.ant-pagination]:!mt-4 [&_.ant-pagination]:!mb-0 [&_.ant-pagination-item]:!rounded-lg [&_.ant-pagination-item]:!border-[#E6E6EF] [&_.ant-pagination-item]:!h-9 [&_.ant-pagination-item]:!min-w-[36px] [&_.ant-pagination-item-active]:!border-[#ff8a65] [&_.ant-pagination-item-active]:!bg-[#ff8a65] [&_.ant-pagination-item-active>a]:!text-white [&_.ant-pagination-prev]:!rounded-lg [&_.ant-pagination-prev]:!border-[#E6E6EF] [&_.ant-pagination-next]:!rounded-lg [&_.ant-pagination-next]:!border-[#E6E6EF] [&_.ant-pagination-options]:!ml-4 [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-[#E6E6EF] [&_.ant-pagination-total-text]:!text-[#151827] [&_.ant-pagination-total-text]:!mr-4"
+              className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:sticky [&_.ant-table-thead>tr>th]:top-0 [&_.ant-table-thead>tr>th]:z-10 [&_.ant-table-tbody>tr]:border-b [&_.ant-table-tbody>tr]:border-gray-100 [&_.ant-pagination]:!mt-4 [&_.ant-pagination]:!mb-0 [&_.ant-pagination-item]:!rounded-lg [&_.ant-pagination-item]:!border-[#E6E6EF] [&_.ant-pagination-item]:!h-9 [&_.ant-pagination-item]:!min-w-[36px] [&_.ant-pagination-item-active]:!border-[#3b82f6] [&_.ant-pagination-item-active]:!bg-[#3b82f6] [&_.ant-pagination-item-active>a]:!text-white [&_.ant-pagination-prev]:!rounded-lg [&_.ant-pagination-prev]:!border-[#E6E6EF] [&_.ant-pagination-next]:!rounded-lg [&_.ant-pagination-next]:!border-[#E6E6EF] [&_.ant-pagination-options]:!ml-4 [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-[#E6E6EF] [&_.ant-pagination-total-text]:!text-[#151827] [&_.ant-pagination-total-text]:!mr-4"
             />
           </Card>
         </div>
-      ) : viewMode === 'detail' && selectedInstitution ? (
-        /* Detail View */
-        <div className="space-y-6">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-3 text-sm text-gray-500">
-              <Button
-                type="text"
-                icon={<ArrowLeft className="w-4 h-4" />}
-                onClick={handleBackToList}
-                className="text-gray-600 hover:text-gray-900 px-0"
-              >
-                교육기관 관리
-              </Button>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
-              <span className="text-gray-900 font-medium">상세 정보</span>
-            </div>
-
-            <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-5 md:p-6 flex flex-col gap-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center px-3 py-1 text-xs font-semibold bg-gray-100 text-gray-700 rounded-full">
-                  {selectedInstitution.institutionId}
-                </span>
-                <span className="inline-flex items-center px-3 py-1 text-xs font-semibold bg-blue-50 text-blue-700 rounded-full">
-                  {selectedInstitution.region}
-                </span>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <h2 className="text-2xl md:text-3xl font-bold text-[#3a2e2a] leading-tight">{selectedInstitution.name}</h2>
-                <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-500">주소</span>
-                    <span className="text-gray-900 font-medium">{selectedInstitution.address}</span>
-                  </div>
-                  <div className="h-4 w-px bg-gray-200" />
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-500">전화번호</span>
-                    <span className="text-gray-900 font-medium">{selectedInstitution.phone}</span>
-                  </div>
-                  <div className="h-4 w-px bg-gray-200" />
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-500">담당자</span>
-                    <span className="text-gray-900 font-medium">{selectedInstitution.manager}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2 text-sm">
-                <span
-                  className={`inline-flex items-center rounded-full px-4 h-9 border cursor-pointer transition-colors ${
-                    detailTab === 'basic'
-                      ? 'bg-slate-900 border-slate-900 text-white shadow-sm'
-                      : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setDetailTab('basic')}
-                >
-                  기본 정보
-                </span>
-                <span
-                  className={`inline-flex items-center rounded-full px-4 h-9 border cursor-pointer transition-colors ${
-                    detailTab === 'manager'
-                      ? 'bg-slate-900 border-slate-900 text-white shadow-sm'
-                      : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setDetailTab('manager')}
-                >
-                  담당자 정보
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {detailTab === 'basic' && (
-            <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-blue-500" />
-                  <h3 className="text-lg font-semibold text-[#3a2e2a]">교육기관 정보</h3>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 px-6 py-6">
-                {[
-                  { label: '기관ID', value: selectedInstitution.institutionId },
-                  { label: '기관명', value: selectedInstitution.name },
-                  {
-                    label: '권역',
-                    value: (
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-                        {selectedInstitution.region}
-                      </span>
-                    ),
-                  },
-                  { label: '주소', value: selectedInstitution.address },
-                  { label: '상세 주소', value: selectedInstitution.detailAddress },
-                  { label: '전화번호', value: selectedInstitution.phone },
-                ].map((item) => (
-                  <div key={item.label} className="space-y-1">
-                    <div className="text-sm font-semibold text-gray-500">{item.label}</div>
-                    <div className="text-base font-medium text-gray-900">{item.value}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {detailTab === 'manager' && (
-            <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <h3 className="text-lg font-semibold text-[#3a2e2a]">담당자 정보</h3>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 px-6 py-6">
-                {[
-                  { label: '담당자명', value: selectedInstitution.manager },
-                  { label: '담당자 이메일', value: selectedInstitution.email || '미등록' },
-                  { label: '담당자 전화', value: selectedInstitution.phone },
-                ].map((item) => (
-                  <div key={item.label} className="space-y-1">
-                    <div className="text-sm font-semibold text-gray-500">{item.label}</div>
-                    <div className="text-base font-medium text-gray-900">{item.value}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        /* Register/Edit View */
-        <div className="flex gap-6">
-          {/* Sticky Section Navigation */}
-          <div className="w-64 flex-shrink-0">
-            <Card className="rounded-xl shadow-sm border border-gray-200 sticky top-6">
-              <div className="space-y-2">
-                {sections.map((section) => (
-                  <button
-                    key={section.key}
-                    onClick={() => scrollToSection(section.key)}
-                    className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                      activeSection === section.key
-                        ? 'bg-blue-50 text-blue-700 font-medium'
-                        : 'text-gray-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    {section.label}
-                  </button>
-                ))}
-              </div>
-            </Card>
-          </div>
-
-          {/* Form Content */}
-          <div className="flex-1">
-            <Form
-              form={form}
-              layout="vertical"
-              onFinish={handleFormSubmit}
-              className="space-y-6"
-            >
-              {/* 교육기관 정보 */}
-              <Card
-                ref={(el) => {
-                  sectionRefs.current['institution'] = el
-                }}
-                id="institution"
-                className="rounded-xl shadow-sm border border-gray-200"
-                title={<span className="text-lg font-semibold">교육기관 정보</span>}
-              >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Form.Item
-                  label="교육기관명"
-                  name="name"
-                  rules={[{ required: true, message: '교육기관명을 입력해주세요' }]}
-                  className="mb-0"
-                >
-                  <Input placeholder="교육기관명을 입력하세요" className="h-11 rounded-xl" />
-                </Form.Item>
-
-                <Form.Item
-                  label="교육기관 유형"
-                  name="institutionType"
-                  rules={[{ required: true, message: '교육기관 유형을 선택해주세요' }]}
-                  className="mb-0"
-                >
-                  <Select
-                    placeholder="교육기관 유형을 선택하세요"
-                    options={institutionTypeOptions}
-                    className="h-11 rounded-xl"
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  label="전화번호"
-                  name="phone"
-                  rules={[{ required: true, message: '전화번호를 입력해주세요' }]}
-                  className="mb-0"
-                >
-                  <Input placeholder="전화번호를 입력하세요" className="h-11 rounded-xl" />
-                </Form.Item>
-
-                <div className="md:col-span-2">
-                  <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-4">
-                    <div className="hidden md:flex md:items-center">
-                      <span className="text-sm text-gray-600 font-medium">지역(시/군)</span>
-                    </div>
-                    <div className="flex gap-4 items-end">
-                      <div className="flex-shrink-0">
-                        <div className="mb-2">
-                          <span className="text-sm text-gray-600 font-medium">도시</span>
-                        </div>
-                        <Form.Item
-                          name="province"
-                          className="mb-0"
-                          initialValue="경기도"
-                        >
-                          <Input
-                            value="경기도"
-                            disabled
-                            className="bg-gray-50 h-11 rounded-xl w-32"
-                          />
-                        </Form.Item>
-                      </div>
-                      <div className="flex-1">
-                        <div className="mb-2">
-                          <span className="text-sm text-gray-600 font-medium">지역(시/군)</span>
-                        </div>
-                        <Form.Item
-                          name="city"
-                          rules={[{ required: true, message: '지역(시/군)을 선택해주세요' }]}
-                          className="mb-0"
-                        >
-                          <Select
-                            placeholder="지역(시/군)을 선택하세요"
-                            options={cityOptions}
-                            className="h-11 rounded-xl"
-                          />
-                        </Form.Item>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <Form.Item
-                  label="도로명"
-                  name="address"
-                  rules={[{ required: true, message: '도로명을 입력해주세요' }]}
-                  className="mb-0"
-                >
-                  <Input placeholder="도로명을 입력하세요" className="h-11 rounded-xl" />
-                </Form.Item>
-
-                <Form.Item
-                  label="상세주소"
-                  name="detailAddress"
-                  className="mb-0"
-                >
-                  <Input placeholder="상세주소를 입력하세요" className="h-11 rounded-xl" />
-                </Form.Item>
-
-                <Form.Item
-                  label="비고"
-                  name="note"
-                  className="mb-0 md:col-span-2"
-                >
-                  <TextArea
-                    rows={4}
-                    placeholder="비고를 입력하세요"
-                    className="rounded-xl"
-                  />
-                </Form.Item>
-              </div>
-            </Card>
-
-              {/* 담당자 정보 */}
-              <Card
-                ref={(el) => {
-                  sectionRefs.current['manager'] = el
-                }}
-                id="manager"
-                className="rounded-xl shadow-sm border border-gray-200"
-                title={<span className="text-lg font-semibold">담당자 정보</span>}
-              >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Form.Item
-                  label="담당자명"
-                  name="manager"
-                  rules={[{ required: true, message: '담당자명을 입력해주세요' }]}
-                  className="mb-0"
-                >
-                  <Input placeholder="담당자명을 입력하세요" className="h-11 rounded-xl" />
-                </Form.Item>
-
-                <Form.Item
-                  label="담당자 전화"
-                  name="managerPhone"
-                  rules={[{ required: true, message: '담당자 전화를 입력해주세요' }]}
-                  className="mb-0"
-                >
-                  <Input placeholder="담당자 전화를 입력하세요" className="h-11 rounded-xl" />
-                </Form.Item>
-
-                <Form.Item
-                  label="담당자 이메일"
-                  name="managerEmail"
-                  rules={[
-                    { required: true, message: '담당자 이메일을 입력해주세요' },
-                    { type: 'email', message: '올바른 이메일 형식이 아닙니다' },
-                  ]}
-                  className="mb-0 md:col-span-2"
-                >
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="이메일"
-                      value={emailLocal}
-                      onChange={(e) => {
-                        setEmailLocal(e.target.value)
-                        form.setFieldsValue({
-                          managerEmail: `${e.target.value}@${emailDomain}`,
-                        })
-                      }}
-                      className="flex-1 h-11 rounded-xl"
-                    />
-                    <span className="flex items-center text-gray-500">@</span>
-                    <Select
-                      placeholder="도메인"
-                      value={emailDomain}
-                      onChange={(value) => {
-                        setEmailDomain(value)
-                        form.setFieldsValue({
-                          managerEmail: `${emailLocal}@${value}`,
-                        })
-                      }}
-                      options={emailDomainOptions}
-                      className="flex-1 h-11 rounded-xl"
-                    />
-                  </div>
-                </Form.Item>
-              </div>
-              </Card>
-            </Form>
-          </div>
-        </div>
-      )}
+      ) : null}
       </div>
+    )}
     </ProtectedRoute>
   )
 }

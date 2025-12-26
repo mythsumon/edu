@@ -163,19 +163,17 @@ export default function ActivityDetailPage() {
                   onClick={handleEdit}
                   className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
                   style={{
-                    backgroundColor: '#1a202c',
-                    borderColor: '#1a202c',
+                    background: '#0f172a',
+                    borderColor: 'transparent',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                     color: '#ffffff',
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#2d3748'
-                    e.currentTarget.style.borderColor = '#2d3748'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#1a202c'
-                    e.currentTarget.style.borderColor = '#1a202c'
-                  }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#1e293b'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = '#0f172a'
+                    }}
                 >
                   수정하기
                 </Button>
@@ -196,26 +194,24 @@ export default function ActivityDetailPage() {
                   onClick={handleSave}
                   className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
                   style={{
-                    backgroundColor: '#1a202c',
-                    borderColor: '#1a202c',
+                    background: '#0f172a',
+                    borderColor: 'transparent',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                     color: '#ffffff',
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#2d3748'
-                    e.currentTarget.style.borderColor = '#2d3748'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#1a202c'
-                    e.currentTarget.style.borderColor = '#1a202c'
-                  }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#1e293b'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = '#0f172a'
+                    }}
                 >
                   저장
                 </Button>
                 <Button
                   icon={<X className="w-4 h-4" />}
                   onClick={handleCancel}
-                  className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+                  className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
                 >
                   취소
                 </Button>
@@ -441,17 +437,15 @@ export default function ActivityDetailPage() {
                   onClick={handleAddSession}
                   className="h-9 px-4 rounded-lg border-0 text-white"
                   style={{
-                    backgroundColor: '#1a202c',
-                    borderColor: '#1a202c',
+                    background: 'linear-gradient(to right, #1E3A8A, #2563EB)',
+                    borderColor: 'transparent',
                     color: '#ffffff',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#2d3748'
-                    e.currentTarget.style.borderColor = '#2d3748'
+                    e.currentTarget.style.background = 'linear-gradient(to right, #1E40AF, #3B82F6)'
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#1a202c'
-                    e.currentTarget.style.borderColor = '#1a202c'
+                    e.currentTarget.style.background = 'linear-gradient(to right, #1E3A8A, #2563EB)'
                   }}
                 >
                   차시 추가

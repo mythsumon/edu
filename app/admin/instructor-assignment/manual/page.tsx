@@ -1,14 +1,20 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { Table, Button, Card, Select, Space, DatePicker, Badge, Modal, Collapse } from 'antd'
 import { Input } from '@/components/shared/common'
 import type { ColumnsType } from 'antd/es/table'
-import { ChevronRight, ArrowLeft, RotateCcw, RefreshCw, Copy, Trash2, UserPlus, CheckCircle2, Eye, Search } from 'lucide-react'
+import { ChevronRight, ArrowLeft, RotateCcw, RefreshCw, Copy, Trash2, UserPlus, CheckCircle2, Eye, Search, Filter } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useRouter } from 'next/navigation'
 import dayjs, { Dayjs } from 'dayjs'
 import 'dayjs/locale/ko'
+import { 
+  DetailPageHeaderSticky,
+  EducationAssignmentSummaryCard,
+  DetailSectionCard,
+  DefinitionListGrid,
+} from '@/components/admin/operations'
 
 dayjs.locale('ko')
 const { RangePicker } = DatePicker
@@ -218,17 +224,34 @@ export default function InstructorAssignmentPage() {
   const [regionFilter, setRegionFilter] = useState<string>('all')
   const [gradeClassFilter, setGradeClassFilter] = useState<string>('all')
   const [assignmentStatusFilter, setAssignmentStatusFilter] = useState<string>('all')
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState<boolean>(false)
+  const filterDropdownRef = useRef<HTMLDivElement>(null)
+
+  // Close filter dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
+        setFilterDropdownOpen(false)
+      }
+    }
+
+    if (filterDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [filterDropdownOpen])
   const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null)
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<{ session: number; instructorId: string; type: 'main' | 'assistant' } | null>(null)
   const [selectedMainInstructor, setSelectedMainInstructor] = useState<{ [key: string]: string }>({})
   const [selectedAssistantInstructor, setSelectedAssistantInstructor] = useState<{ [key: string]: string }>({})
-  const [detailTab, setDetailTab] = useState<'info' | 'lessons'>('info')
 
   const handleRowClick = (record: EducationAssignmentItem) => {
     setSelectedEducation(record)
     setViewMode('detail')
-    setDetailTab('info')
   }
 
   const handleBackToList = () => {
@@ -447,7 +470,7 @@ export default function InstructorAssignmentPage() {
               e.stopPropagation()
               handleRowClick(record)
             }}
-            className="h-8 px-3 rounded-lg border border-gray-300 hover:bg-gray-50"
+            className="h-8 px-3 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white text-slate-700 transition-colors"
           >
             상세
           </Button>
@@ -468,97 +491,132 @@ export default function InstructorAssignmentPage() {
               <Button
                 icon={<RefreshCw className="w-4 h-4" />}
                 onClick={() => console.log('Refresh')}
-                className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+                className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
               >
                 새로고침
               </Button>
             </Space>
           </div>
 
-          {/* Modern Search Toolbar */}
-          <div className="flex items-center h-16 px-4 py-3 bg-white border border-[#ECECF3] rounded-2xl shadow-[0_8px_24px_rgba(15,15,30,0.06)] mb-4 gap-3 flex-wrap">
-            {/* Search Input - Primary, flex-grow */}
-            <div className="flex-1 min-w-[200px]">
-              <div className="relative h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 focus-within:border-[#ff8a65] focus-within:shadow-[0_0_0_4px_rgba(255,122,89,0.18)] hover:border-[#D3D3E0]">
+          {/* Search and Table Card */}
+          <Card className="rounded-xl shadow-sm border border-gray-200">
+            {/* Search Toolbar */}
+            <div className="flex items-center h-16 px-4 py-3 border-b border-gray-200 gap-3">
+              {/* Search Input - Left Side */}
+              <div className="relative w-full max-w-[420px]">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 z-10" />
                 <Input
-                  placeholder="교육명/교육기관/지역/교육ID 검색"
+                  placeholder="검색어를 입력하세요..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   allowClear
                   onPressEnter={handleSearch}
-                  prefix={<Search className="w-4 h-4 text-[#9AA0AE]" />}
-                  className="h-11 border-0 bg-transparent rounded-xl text-[#151827] placeholder:text-[#9AA0AE] [&_.ant-input]:!h-11 [&_.ant-input]:!px-4 [&_.ant-input]:!py-0 [&_.ant-input]:!bg-transparent [&_.ant-input]:!border-0 [&_.ant-input]:!outline-none [&_.ant-input]:!shadow-none [&_.ant-input-wrapper]:!border-0 [&_.ant-input-wrapper]:!shadow-none [&_.ant-input-prefix]:!mr-2"
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition hover:border-slate-300 focus:border-slate-300 focus:ring-2 focus:ring-slate-300 [&_.ant-input]:!h-11 [&_.ant-input]:!px-0 [&_.ant-input]:!py-0 [&_.ant-input]:!bg-transparent [&_.ant-input]:!border-0 [&_.ant-input]:!outline-none [&_.ant-input]:!shadow-none [&_.ant-input]:!text-sm [&_.ant-input-wrapper]:!border-0 [&_.ant-input-wrapper]:!shadow-none [&_.ant-input-wrapper]:!bg-transparent [&_.ant-input-clear-icon]:!text-slate-400"
                 />
               </div>
-            </div>
-            
-            {/* Region Filter */}
-            <div className="w-[220px]">
-              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 focus-within:border-[#ff8a65] focus-within:shadow-[0_0_0_4px_rgba(255,122,89,0.18)] hover:border-[#D3D3E0]">
-                <Select
-                  placeholder="지역"
-                  value={regionFilter}
-                  onChange={setRegionFilter}
-                  options={regionOptions}
-                  className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
-                  suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
-                />
+              
+              {/* Filter Button with Dropdown - Right Side */}
+              <div className="relative ml-auto" ref={filterDropdownRef}>
+                <Button
+                  icon={<Filter className="w-4 h-4" />}
+                  onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
+                  className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-blue-600 hover:text-white font-medium transition-all flex items-center gap-2 text-slate-700"
+                >
+                  필터
+                  <ChevronRight className={`w-4 h-4 transition-transform ${filterDropdownOpen ? 'rotate-90' : ''}`} />
+                </Button>
+                
+                {/* Filter Dropdown */}
+                {filterDropdownOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50 p-4">
+                    <div className="space-y-4">
+                      {/* Region Filter */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">지역</label>
+                        <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
+                          <Select
+                            placeholder="지역"
+                            value={regionFilter}
+                            onChange={setRegionFilter}
+                            options={regionOptions}
+                            className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
+                            suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Grade Class Filter */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">학년·학급</label>
+                        <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
+                          <Select
+                            placeholder="학년·학급"
+                            value={gradeClassFilter}
+                            onChange={setGradeClassFilter}
+                            options={gradeClassOptions}
+                            className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
+                            suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Assignment Status Filter */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">배정상태</label>
+                        <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
+                          <Select
+                            placeholder="배정상태"
+                            value={assignmentStatusFilter}
+                            onChange={setAssignmentStatusFilter}
+                            options={assignmentStatusOptions}
+                            className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
+                            suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Date Range Picker */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">기간</label>
+                        <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
+                          <RangePicker
+                            value={dateRange}
+                            onChange={(dates) => setDateRange(dates as [Dayjs | null, Dayjs | null] | null)}
+                            placeholder={['시작일', '종료일']}
+                            className="w-full h-11 border-0 [&_.ant-picker-input]:!h-11 [&_.ant-picker-input>input]:!h-11 [&_.ant-picker-input>input]:!border-0 [&_.ant-picker-input>input]:!bg-transparent [&_.ant-picker-input>input]:!text-[#151827] [&_.ant-picker-input>input]:!placeholder:text-[#9AA0AE] [&_.ant-picker]:!border-0 [&_.ant-picker]:!shadow-none"
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Action Buttons */}
+                      <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-200">
+                        <Button
+                          type="text"
+                          icon={<RotateCcw className="w-4 h-4" />}
+                          onClick={() => {
+                            handleResetFilters()
+                            setFilterDropdownOpen(false)
+                          }}
+                          className="h-9 px-4 text-sm"
+                        >
+                          초기화
+                        </Button>
+                        <Button
+                          type="primary"
+                          onClick={() => {
+                            setCurrentPage(1)
+                            setFilterDropdownOpen(false)
+                          }}
+                          className="h-9 px-4 text-sm bg-slate-900 hover:bg-slate-800 active:bg-slate-900 border-0 text-white hover:text-white active:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        >
+                          적용
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-            
-            {/* Grade Class Filter */}
-            <div className="w-[220px]">
-              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 focus-within:border-[#ff8a65] focus-within:shadow-[0_0_0_4px_rgba(255,122,89,0.18)] hover:border-[#D3D3E0]">
-                <Select
-                  placeholder="학년·학급"
-                  value={gradeClassFilter}
-                  onChange={setGradeClassFilter}
-                  options={gradeClassOptions}
-                  className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
-                  suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
-                />
-              </div>
-            </div>
-            
-            {/* Assignment Status Filter */}
-            <div className="w-[220px]">
-              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 focus-within:border-[#ff8a65] focus-within:shadow-[0_0_0_4px_rgba(255,122,89,0.18)] hover:border-[#D3D3E0]">
-                <Select
-                  placeholder="배정상태"
-                  value={assignmentStatusFilter}
-                  onChange={setAssignmentStatusFilter}
-                  options={assignmentStatusOptions}
-                  className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
-                  suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
-                />
-              </div>
-            </div>
-            
-            {/* Date Range Picker */}
-            <div className="w-[280px]">
-              <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 focus-within:border-[#ff8a65] focus-within:shadow-[0_0_0_4px_rgba(255,122,89,0.18)] hover:border-[#D3D3E0]">
-                <RangePicker
-                  value={dateRange}
-                  onChange={(dates) => setDateRange(dates as [Dayjs | null, Dayjs | null] | null)}
-                  placeholder={['시작일', '종료일']}
-                  className="w-full h-11 border-0 [&_.ant-picker-input]:!h-11 [&_.ant-picker-input>input]:!h-11 [&_.ant-picker-input>input]:!border-0 [&_.ant-picker-input>input]:!bg-transparent [&_.ant-picker-input>input]:!text-[#151827] [&_.ant-picker-input>input]:!placeholder:text-[#9AA0AE] [&_.ant-picker]:!border-0 [&_.ant-picker]:!shadow-none"
-                />
-              </div>
-            </div>
-            
-            {/* Refresh Button */}
-            <div className="flex items-center gap-2 ml-auto">
-              <Button
-                type="text"
-                icon={<RotateCcw className="w-4 h-4 text-[#151827]" />}
-                onClick={handleResetFilters}
-                className="w-10 h-10 p-0 rounded-full bg-transparent border border-[#EDEDF5] hover:bg-[#FFF3ED] flex items-center justify-center transition-all"
-              />
-            </div>
-          </div>
-
-          {/* Table Card */}
-          <Card className="rounded-xl shadow-sm border border-gray-200">
             <Table
               columns={columns}
               dataSource={filteredData}
@@ -577,137 +635,38 @@ export default function InstructorAssignmentPage() {
               scroll={{ x: 'max-content' }}
               onRow={(record) => ({
                 onClick: () => handleRowClick(record),
-                className: 'cursor-pointer hover:bg-gray-50',
+                className: 'cursor-pointer',
               })}
-              className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:sticky [&_.ant-table-thead>tr>th]:top-0 [&_.ant-table-thead>tr>th]:z-10 [&_.ant-pagination]:!mt-4 [&_.ant-pagination]:!mb-0 [&_.ant-pagination-item]:!rounded-lg [&_.ant-pagination-item]:!border-[#E6E6EF] [&_.ant-pagination-item]:!h-9 [&_.ant-pagination-item]:!min-w-[36px] [&_.ant-pagination-item-active]:!border-[#ff8a65] [&_.ant-pagination-item-active]:!bg-[#ff8a65] [&_.ant-pagination-item-active>a]:!text-white [&_.ant-pagination-prev]:!rounded-lg [&_.ant-pagination-prev]:!border-[#E6E6EF] [&_.ant-pagination-next]:!rounded-lg [&_.ant-pagination-next]:!border-[#E6E6EF] [&_.ant-pagination-options]:!ml-4 [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-[#E6E6EF] [&_.ant-pagination-total-text]:!text-[#151827] [&_.ant-pagination-total-text]:!mr-4"
+              className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:sticky [&_.ant-table-thead>tr>th]:top-0 [&_.ant-table-thead>tr>th]:z-10 [&_.ant-table-tbody>tr]:border-b [&_.ant-table-tbody>tr]:border-gray-100 [&_.ant-pagination]:!mt-4 [&_.ant-pagination]:!mb-0 [&_.ant-pagination-item]:!rounded-lg [&_.ant-pagination-item]:!border-[#E6E6EF] [&_.ant-pagination-item]:!h-9 [&_.ant-pagination-item]:!min-w-[36px] [&_.ant-pagination-item-active]:!border-[#3b82f6] [&_.ant-pagination-item-active]:!bg-[#3b82f6] [&_.ant-pagination-item-active>a]:!text-white [&_.ant-pagination-prev]:!rounded-lg [&_.ant-pagination-prev]:!border-[#E6E6EF] [&_.ant-pagination-next]:!rounded-lg [&_.ant-pagination-next]:!border-[#E6E6EF] [&_.ant-pagination-options]:!ml-4 [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-[#E6E6EF] [&_.ant-pagination-total-text]:!text-[#151827] [&_.ant-pagination-total-text]:!mr-4"
             />
           </Card>
           </>
         ) : (
-          /* Detail View */
+          /* Detail View - Redesigned to match Create/Edit page */
           selectedEducation && (
-            <div className="space-y-6">
-              {/* Top breadcrumb + actions */}
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center gap-3 text-sm text-gray-500">
-                  <Button
-                    type="text"
-                    icon={<ArrowLeft className="w-4 h-4" />}
-                    onClick={handleBackToList}
-                    className="text-gray-600 hover:text-gray-900 px-0"
-                  >
-                    강사 수업배정
-                  </Button>
-                  <ChevronRight className="w-4 h-4 text-gray-400" />
-                  <span className="text-gray-900 font-medium">상세 정보</span>
-                </div>
+            <div className="bg-slate-50 min-h-screen -mx-6 -mt-6 px-6 pt-0">
+              {/* Sticky Header */}
+              <DetailPageHeaderSticky
+                onBack={handleBackToList}
+              />
 
-                <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-5 md:p-6 flex flex-col gap-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center px-3 py-1 text-xs font-semibold text-gray-700 bg-gray-100 rounded-full">
-                      {selectedEducation.educationId}
-                    </span>
-                    <span
-                      className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full ${
-                        selectedEducation.assignmentStatus === 'confirmed'
-                          ? 'bg-green-50 text-green-700'
-                          : 'bg-amber-50 text-amber-700'
-                      }`}
-                    >
-                      {selectedEducation.assignmentStatus === 'confirmed' ? '배정 확정' : '배정 미확정'}
-                    </span>
-                    {selectedEducation.region && (
-                      <span className="inline-flex items-center px-3 py-1 text-xs font-semibold bg-blue-50 text-blue-700 rounded-full">
-                        {selectedEducation.region}
-                      </span>
-                    )}
-                  </div>
+              {/* Main Content Container */}
+              <div className="max-w-5xl mx-auto pt-6 pb-12 space-y-4">
+                {/* Summary Card */}
+                <EducationAssignmentSummaryCard
+                  educationId={selectedEducation.educationId}
+                  educationName={selectedEducation.educationName}
+                  institution={selectedEducation.institution}
+                  region={selectedEducation.region}
+                  gradeClass={selectedEducation.gradeClass}
+                  period={selectedEducation.period}
+                  assignmentStatus={selectedEducation.assignmentStatus}
+                />
 
-                  <div className="flex flex-col gap-2">
-                    <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight">
-                      {selectedEducation.educationName}
-                    </h2>
-                    <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
-                      <div className="flex items-center gap-1">
-                        <span className="text-gray-500">교육기관</span>
-                        <span className="text-gray-900 font-medium">{selectedEducation.institution}</span>
-                      </div>
-                      <div className="h-4 w-px bg-gray-200" />
-                      <div className="flex items-center gap-1">
-                        <span className="text-gray-500">구역</span>
-                        <span className="text-gray-900 font-medium">{selectedEducation.region}</span>
-                      </div>
-                      <div className="h-4 w-px bg-gray-200" />
-                      <div className="flex items-center gap-1">
-                        <span className="text-gray-500">학년·반</span>
-                        <span className="text-gray-900 font-medium">{selectedEducation.gradeClass}</span>
-                      </div>
-                      <div className="h-4 w-px bg-gray-200" />
-                      <div className="flex items-center gap-1">
-                        <span className="text-gray-500">기간</span>
-                        <span className="text-gray-900 font-medium">{selectedEducation.period}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-wrap gap-2 text-sm">
-                      <span
-                        className={`inline-flex items-center rounded-full px-4 h-9 border cursor-pointer transition-colors ${
-                          detailTab === 'info'
-                            ? 'bg-slate-900 border-slate-900 text-white shadow-sm'
-                            : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-50'
-                        }`}
-                        onClick={() => setDetailTab('info')}
-                      >
-                        교육 정보
-                      </span>
-                      {selectedEducation.lessons && selectedEducation.lessons.length > 0 && (
-                        <span
-                          className={`inline-flex items-center rounded-full px-4 h-9 border cursor-pointer transition-colors ${
-                            detailTab === 'lessons'
-                              ? 'bg-slate-900 border-slate-900 text-white shadow-sm'
-                              : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-50'
-                          }`}
-                          onClick={() => setDetailTab('lessons')}
-                        >
-                          수업 정보 ({selectedEducation.lessons.length})
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      {selectedEducation.assignmentStatus === 'unconfirmed' ? (
-                        <Button
-                          type="primary"
-                          icon={<CheckCircle2 className="w-4 h-4" />}
-                          onClick={() => console.log('Confirm assignment')}
-                          className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 border-0 font-medium transition-all shadow-sm hover:shadow-md"
-                        >
-                          배정 확정
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={() => console.log('Unconfirm assignment')}
-                          className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
-                        >
-                          미확정
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {detailTab === 'info' && (
-                <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-blue-500" />
-                      <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">교육 정보</h3>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 px-6 py-6">
-                    {[
+                {/* Education Info Section */}
+                <DetailSectionCard title="교육 정보">
+                  <DefinitionListGrid
+                    items={[
                       { label: '교육ID', value: selectedEducation.educationId },
                       { label: '교육과정명', value: selectedEducation.educationName },
                       ...(selectedEducation.program ? [{ label: '프로그램', value: selectedEducation.program }] : []),
@@ -719,255 +678,241 @@ export default function InstructorAssignmentPage() {
                       ...(selectedEducation.approvalStatus ? [{ label: '승인여부', value: selectedEducation.approvalStatus }] : []),
                       ...(selectedEducation.status ? [{ label: '상태', value: selectedEducation.status }] : []),
                       ...(selectedEducation.note ? [{ label: '비고', value: selectedEducation.note }] : []),
-                    ].map((item) => (
-                      <div key={item.label} className="space-y-1">
-                        <div className="text-sm font-semibold text-gray-500">{item.label}</div>
-                        <div className="text-base font-medium text-gray-900">{item.value}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                    ]}
+                  />
+                </DetailSectionCard>
 
-              {detailTab === 'lessons' && (
-
-                <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                      <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">수업 정보</h3>
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      총 {selectedEducation.lessons?.length || 0}건
-                    </div>
-                  </div>
-                  <div className="p-6">
-                  <Collapse
-                    ghost
-                    className="[&_.ant-collapse-item]:border-b [&_.ant-collapse-item]:border-gray-100 [&_.ant-collapse-header]:px-0 [&_.ant-collapse-content]:px-0"
-                  >
-                    {(selectedEducation.lessons || []).map((lesson) => (
-                      <Panel
-                        key={lesson.session}
-                        header={
-                          <div className="flex items-center justify-between w-full pr-4">
-                            <div className="flex items-center gap-3">
-                              <span className="text-base font-semibold text-gray-900">
-                                {lesson.session}차 수업 · {lesson.date} ({lesson.startTime} ~ {lesson.endTime})
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
-                                주강사 {lesson.mainInstructors.length}/{lesson.mainInstructorRequired}
-                              </span>
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                                보조강사 {lesson.assistantInstructors.length}/{lesson.assistantInstructorRequired}
-                              </span>
-                            </div>
-                          </div>
-                        }
+                {/* Lessons Info Section */}
+                {selectedEducation.lessons && selectedEducation.lessons.length > 0 && (
+                  <DetailSectionCard title="수업 정보" helperText={`총 ${selectedEducation.lessons.length}건`}>
+                    <div className="pt-4">
+                      <Collapse
+                        ghost
+                        className="[&_.ant-collapse-item]:border-b [&_.ant-collapse-item]:border-gray-100 [&_.ant-collapse-header]:px-0 [&_.ant-collapse-content]:px-0"
                       >
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                          {/* Main Instructors */}
-                          <Card className="rounded-lg border border-gray-200 bg-gray-50">
-                            <h4 className="text-sm font-semibold text-gray-700 mb-3">주강사</h4>
-                            {lesson.mainInstructors.length > 0 ? (
-                              <div className="space-y-2">
-                                {lesson.mainInstructors.map((instructor) => (
-                                  <div
-                                    key={instructor.id}
-                                    className="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-200"
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-semibold text-blue-700">
-                                        {instructor.name.charAt(0)}
+                        {(selectedEducation.lessons || []).map((lesson) => (
+                          <Panel
+                            key={lesson.session}
+                            header={
+                              <div className="flex items-center justify-between w-full pr-4">
+                                <div className="flex items-center gap-3">
+                                  <span className="text-base font-semibold text-gray-900">
+                                    {lesson.session}차 수업 · {lesson.date} ({lesson.startTime} ~ {lesson.endTime})
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                                    주강사 {lesson.mainInstructors.length}/{lesson.mainInstructorRequired}
+                                  </span>
+                                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                    보조강사 {lesson.assistantInstructors.length}/{lesson.assistantInstructorRequired}
+                                  </span>
+                                </div>
+                              </div>
+                            }
+                          >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                              {/* Main Instructors */}
+                              <Card className="rounded-lg border border-gray-200 bg-gray-50">
+                                <h4 className="text-sm font-semibold text-gray-700 mb-3">주강사</h4>
+                                {lesson.mainInstructors.length > 0 ? (
+                                  <div className="space-y-2">
+                                    {lesson.mainInstructors.map((instructor) => (
+                                      <div
+                                        key={instructor.id}
+                                        className="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-200"
+                                      >
+                                        <div className="flex items-center gap-2">
+                                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-semibold text-blue-700">
+                                            {instructor.name.charAt(0)}
+                                          </div>
+                                          <span className="text-sm font-medium text-gray-900">{instructor.name}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <Badge
+                                            status={instructor.status === 'confirmed' ? 'success' : 'default'}
+                                            text={
+                                              <span className="text-xs">
+                                                {instructor.status === 'confirmed' ? '확정됨' : '대기중'}
+                                              </span>
+                                            }
+                                          />
+                                          <Button
+                                            type="text"
+                                            danger
+                                            size="small"
+                                            icon={<Trash2 className="w-3 h-3" />}
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              handleDeleteInstructor(lesson.session, instructor.id, 'main')
+                                            }}
+                                            className="h-7 w-7 p-0 hover:bg-red-50"
+                                          />
+                                        </div>
                                       </div>
-                                      <span className="text-sm font-medium text-gray-900">{instructor.name}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <Badge
-                                        status={instructor.status === 'confirmed' ? 'success' : 'default'}
-                                        text={
-                                          <span className="text-xs">
-                                            {instructor.status === 'confirmed' ? '확정됨' : '대기중'}
-                                          </span>
-                                        }
-                                      />
-                                      <Button
-                                        type="text"
-                                        danger
-                                        size="small"
-                                        icon={<Trash2 className="w-3 h-3" />}
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          handleDeleteInstructor(lesson.session, instructor.id, 'main')
-                                        }}
-                                        className="h-7 w-7 p-0 hover:bg-red-50"
-                                      />
-                                    </div>
+                                    ))}
                                   </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <div className="space-y-3 py-2">
-                                <div className="text-sm text-gray-500 mb-2">배정된 강사가 없습니다.</div>
-                                <Select
-                                  placeholder="주강사 선택"
-                                  value={selectedMainInstructor[`${lesson.session}`]}
-                                  onChange={(value) => {
-                                    setSelectedMainInstructor({ ...selectedMainInstructor, [`${lesson.session}`]: value })
-                                    if (value) {
-                                      handleAddMainInstructor(lesson.session, value)
-                                    }
-                                  }}
-                                  options={availableInstructors
-                                    .filter((inst) => inst.type === 'main')
-                                    .map((inst) => ({
-                                      value: inst.id,
-                                      label: inst.name,
-                                    }))}
-                                  className="w-full h-9 rounded-lg"
-                                  showSearch
-                                  filterOption={(input, option) =>
-                                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                                  }
-                                />
-                              </div>
-                            )}
-                            {lesson.mainInstructors.length > 0 && lesson.mainInstructors.length < lesson.mainInstructorRequired && (
-                              <div className="mt-2">
-                                <Select
-                                  placeholder="추가 주강사 선택"
-                                  value={selectedMainInstructor[`${lesson.session}_add`]}
-                                  onChange={(value) => {
-                                    setSelectedMainInstructor({ ...selectedMainInstructor, [`${lesson.session}_add`]: value })
-                                    if (value) {
-                                      handleAddMainInstructor(lesson.session, value)
-                                    }
-                                  }}
-                                  options={availableInstructors
-                                    .filter(
-                                      (inst) =>
-                                        inst.type === 'main' &&
-                                        !lesson.mainInstructors.some((assigned) => assigned.id === inst.id)
-                                    )
-                                    .map((inst) => ({
-                                      value: inst.id,
-                                      label: inst.name,
-                                    }))}
-                                  className="w-full h-9 rounded-lg"
-                                  showSearch
-                                  filterOption={(input, option) =>
-                                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                                  }
-                                />
-                              </div>
-                            )}
-                          </Card>
+                                ) : (
+                                  <div className="space-y-3 py-2">
+                                    <div className="text-sm text-gray-500 mb-2">배정된 강사가 없습니다.</div>
+                                    <Select
+                                      placeholder="주강사 선택"
+                                      value={selectedMainInstructor[`${lesson.session}`]}
+                                      onChange={(value) => {
+                                        setSelectedMainInstructor({ ...selectedMainInstructor, [`${lesson.session}`]: value })
+                                        if (value) {
+                                          handleAddMainInstructor(lesson.session, value)
+                                        }
+                                      }}
+                                      options={availableInstructors
+                                        .filter((inst) => inst.type === 'main')
+                                        .map((inst) => ({
+                                          value: inst.id,
+                                          label: inst.name,
+                                        }))}
+                                      className="w-full h-9 rounded-lg"
+                                      showSearch
+                                      filterOption={(input, option) =>
+                                        (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                      }
+                                    />
+                                  </div>
+                                )}
+                                {lesson.mainInstructors.length > 0 && lesson.mainInstructors.length < lesson.mainInstructorRequired && (
+                                  <div className="mt-2">
+                                    <Select
+                                      placeholder="추가 주강사 선택"
+                                      value={selectedMainInstructor[`${lesson.session}_add`]}
+                                      onChange={(value) => {
+                                        setSelectedMainInstructor({ ...selectedMainInstructor, [`${lesson.session}_add`]: value })
+                                        if (value) {
+                                          handleAddMainInstructor(lesson.session, value)
+                                        }
+                                      }}
+                                      options={availableInstructors
+                                        .filter(
+                                          (inst) =>
+                                            inst.type === 'main' &&
+                                            !lesson.mainInstructors.some((assigned) => assigned.id === inst.id)
+                                        )
+                                        .map((inst) => ({
+                                          value: inst.id,
+                                          label: inst.name,
+                                        }))}
+                                      className="w-full h-9 rounded-lg"
+                                      showSearch
+                                      filterOption={(input, option) =>
+                                        (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                      }
+                                    />
+                                  </div>
+                                )}
+                              </Card>
 
-                          {/* Assistant Instructors */}
-                          <Card className="rounded-lg border border-gray-200 bg-gray-50">
-                            <h4 className="text-sm font-semibold text-gray-700 mb-3">보조강사</h4>
-                            {lesson.assistantInstructors.length > 0 ? (
-                              <div className="space-y-2">
-                                {lesson.assistantInstructors.map((instructor) => (
-                                  <div
-                                    key={instructor.id}
-                                    className="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-200"
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-xs font-semibold text-purple-700">
-                                        {instructor.name.charAt(0)}
+                              {/* Assistant Instructors */}
+                              <Card className="rounded-lg border border-gray-200 bg-gray-50">
+                                <h4 className="text-sm font-semibold text-gray-700 mb-3">보조강사</h4>
+                                {lesson.assistantInstructors.length > 0 ? (
+                                  <div className="space-y-2">
+                                    {lesson.assistantInstructors.map((instructor) => (
+                                      <div
+                                        key={instructor.id}
+                                        className="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-200"
+                                      >
+                                        <div className="flex items-center gap-2">
+                                          <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-xs font-semibold text-purple-700">
+                                            {instructor.name.charAt(0)}
+                                          </div>
+                                          <span className="text-sm font-medium text-gray-900">{instructor.name}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <Badge
+                                            status={instructor.status === 'confirmed' ? 'success' : 'default'}
+                                            text={
+                                              <span className="text-xs">
+                                                {instructor.status === 'confirmed' ? '확정됨' : '대기중'}
+                                              </span>
+                                            }
+                                          />
+                                          <Button
+                                            type="text"
+                                            danger
+                                            size="small"
+                                            icon={<Trash2 className="w-3 h-3" />}
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              handleDeleteInstructor(lesson.session, instructor.id, 'assistant')
+                                            }}
+                                            className="h-7 w-7 p-0 hover:bg-red-50"
+                                          />
+                                        </div>
                                       </div>
-                                      <span className="text-sm font-medium text-gray-900">{instructor.name}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <Badge
-                                        status={instructor.status === 'confirmed' ? 'success' : 'default'}
-                                        text={
-                                          <span className="text-xs">
-                                            {instructor.status === 'confirmed' ? '확정됨' : '대기중'}
-                                          </span>
-                                        }
-                                      />
-                                      <Button
-                                        type="text"
-                                        danger
-                                        size="small"
-                                        icon={<Trash2 className="w-3 h-3" />}
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          handleDeleteInstructor(lesson.session, instructor.id, 'assistant')
-                                        }}
-                                        className="h-7 w-7 p-0 hover:bg-red-50"
-                                      />
-                                    </div>
+                                    ))}
                                   </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <div className="space-y-3 py-2">
-                                <div className="text-sm text-gray-500 mb-2">배정된 강사가 없습니다.</div>
-                                <Select
-                                  placeholder="보조강사 선택"
-                                  value={selectedAssistantInstructor[`${lesson.session}`]}
-                                  onChange={(value) => {
-                                    setSelectedAssistantInstructor({ ...selectedAssistantInstructor, [`${lesson.session}`]: value })
-                                    if (value) {
-                                      handleAddAssistantInstructor(lesson.session, value)
-                                    }
-                                  }}
-                                  options={availableInstructors
-                                    .filter((inst) => inst.type === 'assistant')
-                                    .map((inst) => ({
-                                      value: inst.id,
-                                      label: inst.name,
-                                    }))}
-                                  className="w-full h-9 rounded-lg"
-                                  showSearch
-                                  filterOption={(input, option) =>
-                                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                                  }
-                                />
-                              </div>
-                            )}
-                            {lesson.assistantInstructors.length > 0 && lesson.assistantInstructors.length < lesson.assistantInstructorRequired && (
-                              <div className="mt-2">
-                                <Select
-                                  placeholder="추가 보조강사 선택"
-                                  value={selectedAssistantInstructor[`${lesson.session}_add`]}
-                                  onChange={(value) => {
-                                    setSelectedAssistantInstructor({ ...selectedAssistantInstructor, [`${lesson.session}_add`]: value })
-                                    if (value) {
-                                      handleAddAssistantInstructor(lesson.session, value)
-                                    }
-                                  }}
-                                  options={availableInstructors
-                                    .filter(
-                                      (inst) =>
-                                        inst.type === 'assistant' &&
-                                        !lesson.assistantInstructors.some((assigned) => assigned.id === inst.id)
-                                    )
-                                    .map((inst) => ({
-                                      value: inst.id,
-                                      label: inst.name,
-                                    }))}
-                                  className="w-full h-9 rounded-lg"
-                                  showSearch
-                                  filterOption={(input, option) =>
-                                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                                  }
-                                />
-                              </div>
-                            )}
-                    </Card>
-      </div>
-                      </Panel>
-                    ))}
-                  </Collapse>
-                  </div>
-                </div>
-              )}
+                                ) : (
+                                  <div className="space-y-3 py-2">
+                                    <div className="text-sm text-gray-500 mb-2">배정된 강사가 없습니다.</div>
+                                    <Select
+                                      placeholder="보조강사 선택"
+                                      value={selectedAssistantInstructor[`${lesson.session}`]}
+                                      onChange={(value) => {
+                                        setSelectedAssistantInstructor({ ...selectedAssistantInstructor, [`${lesson.session}`]: value })
+                                        if (value) {
+                                          handleAddAssistantInstructor(lesson.session, value)
+                                        }
+                                      }}
+                                      options={availableInstructors
+                                        .filter((inst) => inst.type === 'assistant')
+                                        .map((inst) => ({
+                                          value: inst.id,
+                                          label: inst.name,
+                                        }))}
+                                      className="w-full h-9 rounded-lg"
+                                      showSearch
+                                      filterOption={(input, option) =>
+                                        (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                      }
+                                    />
+                                  </div>
+                                )}
+                                {lesson.assistantInstructors.length > 0 && lesson.assistantInstructors.length < lesson.assistantInstructorRequired && (
+                                  <div className="mt-2">
+                                    <Select
+                                      placeholder="추가 보조강사 선택"
+                                      value={selectedAssistantInstructor[`${lesson.session}_add`]}
+                                      onChange={(value) => {
+                                        setSelectedAssistantInstructor({ ...selectedAssistantInstructor, [`${lesson.session}_add`]: value })
+                                        if (value) {
+                                          handleAddAssistantInstructor(lesson.session, value)
+                                        }
+                                      }}
+                                      options={availableInstructors
+                                        .filter(
+                                          (inst) =>
+                                            inst.type === 'assistant' &&
+                                            !lesson.assistantInstructors.some((assigned) => assigned.id === inst.id)
+                                        )
+                                        .map((inst) => ({
+                                          value: inst.id,
+                                          label: inst.name,
+                                        }))}
+                                      className="w-full h-9 rounded-lg"
+                                      showSearch
+                                      filterOption={(input, option) =>
+                                        (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                      }
+                                    />
+                                  </div>
+                                )}
+                              </Card>
+                            </div>
+                          </Panel>
+                        ))}
+                      </Collapse>
+                    </div>
+                  </DetailSectionCard>
+                )}
+              </div>
             </div>
           )
         )}

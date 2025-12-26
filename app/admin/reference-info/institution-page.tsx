@@ -356,21 +356,7 @@ export default function InstitutionManagementPage() {
               <Button
                 type="primary"
                 onClick={handleRegisterClick}
-              className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
-              style={{
-                backgroundColor: '#1a202c',
-                borderColor: '#1a202c',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                color: '#ffffff',
-              }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#2d3748'
-                  e.currentTarget.style.borderColor = '#2d3748'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#1a202c'
-                  e.currentTarget.style.borderColor = '#1a202c'
-                }}
+                className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
                 + 기관 등록
               </Button>
@@ -378,7 +364,7 @@ export default function InstitutionManagementPage() {
             <Button
               icon={<Download className="w-4 h-4" />}
               onClick={() => console.log('Export to Excel')}
-              className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+              className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
             >
               엑셀 추출
             </Button>
@@ -400,28 +386,14 @@ export default function InstitutionManagementPage() {
                 <Button
                   type="primary"
                   onClick={handleEditFromDetail}
-              className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
-              style={{
-                backgroundColor: '#1a202c',
-                borderColor: '#1a202c',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                color: '#ffffff',
-              }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#2d3748'
-                  e.currentTarget.style.borderColor = '#2d3748'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#1a202c'
-                  e.currentTarget.style.borderColor = '#1a202c'
-                }}
+                  className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   수정하기
                 </Button>
                 <Button
                   icon={<ArrowLeft className="w-4 h-4" />}
                   onClick={handleBackToList}
-                  className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+                  className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
                 >
                   목록으로
                 </Button>
@@ -432,28 +404,14 @@ export default function InstitutionManagementPage() {
                   type="primary"
                   icon={<Save className="w-4 h-4" />}
                   onClick={() => form.submit()}
-              className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
-              style={{
-                backgroundColor: '#1a202c',
-                borderColor: '#1a202c',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                color: '#ffffff',
-              }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#2d3748'
-                  e.currentTarget.style.borderColor = '#2d3748'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#1a202c'
-                  e.currentTarget.style.borderColor = '#1a202c'
-                }}
+                  className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   저장
                 </Button>
                 <Button
                   icon={<ArrowLeft className="w-4 h-4" />}
                   onClick={handleBackToList}
-                  className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+                  className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
                 >
                   취소
                 </Button>
@@ -498,28 +456,14 @@ export default function InstitutionManagementPage() {
                 <Button
                   type="primary"
                   onClick={handleSearch}
-              className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
-              style={{
-                backgroundColor: '#1a202c',
-                borderColor: '#1a202c',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                color: '#ffffff',
-              }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#2d3748'
-                  e.currentTarget.style.borderColor = '#2d3748'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#1a202c'
-                  e.currentTarget.style.borderColor = '#1a202c'
-                }}
+                  className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   검색
                 </Button>
                 <Button
                   icon={<RotateCcw className="w-4 h-4" />}
                   onClick={handleResetFilters}
-                  className="h-11 px-4 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+                  className="h-11 px-4 rounded-xl border border-gray-300 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
                 >
                   초기화
                 </Button>
