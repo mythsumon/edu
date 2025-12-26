@@ -91,13 +91,13 @@ export const programService = {
       const tardinessValues: ('O' | 'X' | '')[] = ['O', 'O', 'X', 'O', 'O', 'X', 'O', 'O', 'X', 'O', 'O', 'X', 'O', 'O', 'X', 'O', 'O', 'O']
       const absenceValues: ('O' | 'X' | '')[] = ['X', 'O', 'O', 'X', 'O', 'O', 'X', 'O', 'O', 'X', 'O', 'O', 'X', 'O', 'O', 'X', 'O', 'O']
       
-      const students = studentNames.map((name, index) => ({
+      const students: Student[] = studentNames.map((name, index) => ({
         id: String(index + 1),
         number: index + 1,
         name,
         gender: genders[index] || '남',
-        tardiness: tardinessValues[index] || '',
-        absence: absenceValues[index] || '',
+        tardiness: (tardinessValues[index] || '') as 'O' | 'X' | '',
+        absence: (absenceValues[index] || '') as 'O' | 'X' | '',
         note: index < 8 ? '우등생' : '',
       }))
 
