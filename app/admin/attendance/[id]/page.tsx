@@ -34,10 +34,10 @@ export default function AttendanceDetailPage() {
           const attendanceData = await programService.getAttendanceData(id)
           setData(attendanceData)
           // Convert legacy attendance fields to new structure if needed
-          const convertedStudents = attendanceData.students.map((student) => ({
+          const convertedStudents: Student[] = attendanceData.students.map((student) => ({
             ...student,
-            tardiness: student.tardiness || student.attendance3_5 || '',
-            absence: student.absence || student.attendance3_6 || '',
+            tardiness: (student.tardiness || student.attendance3_5 || '') as 'O' | 'X' | '',
+            absence: (student.absence || student.attendance3_6 || '') as 'O' | 'X' | '',
           }))
           setStudents(convertedStudents)
         }
