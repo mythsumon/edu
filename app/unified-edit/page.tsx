@@ -55,8 +55,8 @@ export default function UnifiedEditPage() {
           maleGraduates: 15,
           femaleGraduates: 13,
           students: [
-            { id: '1', number: 1, name: '홍길동', gender: '남', attendance3_5: 'O', attendance3_6: 'O', note: '' },
-            { id: '2', number: 2, name: '김철수', gender: '남', attendance3_5: 'O', attendance3_6: 'X', note: '' },
+            { id: '1', number: 1, name: '홍길동', gender: '남', tardiness: 'O', absence: 'O', note: '' },
+            { id: '2', number: 2, name: '김철수', gender: '남', tardiness: 'O', absence: 'X', note: '' },
           ],
           instructors: [
             { role: '주강사', name: '박선생님' },
@@ -402,8 +402,8 @@ export default function UnifiedEditPage() {
                       number: students.length + 1,
                       name: '',
                       gender: '남',
-                      attendance3_5: '',
-                      attendance3_6: '',
+                      tardiness: '',
+                      absence: '',
                       note: ''
                     }
                     setStudents([...students, newStudent])
@@ -472,16 +472,16 @@ export default function UnifiedEditPage() {
                     ),
                   },
                   {
-                    title: '3월 5일',
-                    dataIndex: 'attendance3_5',
-                    key: 'attendance3_5',
+                    title: '지각(회)',
+                    dataIndex: 'tardiness',
+                    key: 'tardiness',
                     width: 100,
                     render: (text, record, index) => (
                       <Select
                         value={text}
                         onChange={(value) => {
                           const updatedStudents = [...students]
-                          updatedStudents[index].attendance3_5 = value
+                          updatedStudents[index].tardiness = value as 'O' | 'X' | ''
                           setStudents(updatedStudents)
                         }}
                         className="h-8 rounded-lg w-full"
@@ -494,16 +494,16 @@ export default function UnifiedEditPage() {
                     ),
                   },
                   {
-                    title: '3월 6일',
-                    dataIndex: 'attendance3_6',
-                    key: 'attendance3_6',
+                    title: '결석(수)',
+                    dataIndex: 'absence',
+                    key: 'absence',
                     width: 100,
                     render: (text, record, index) => (
                       <Select
                         value={text}
                         onChange={(value) => {
                           const updatedStudents = [...students]
-                          updatedStudents[index].attendance3_6 = value
+                          updatedStudents[index].absence = value as 'O' | 'X' | ''
                           setStudents(updatedStudents)
                         }}
                         className="h-8 rounded-lg w-full"
