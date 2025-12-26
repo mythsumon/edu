@@ -1,7 +1,5 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Table, Button, Card, Form, Input, Select, DatePicker, InputNumber, TimePicker, Checkbox, Space, Upload } from 'antd'
@@ -283,6 +281,11 @@ export default function EducationManagementPage() {
         assistantInstructorCount: lesson.assistantInstructors,
       })),
     })
+  }
+
+  const handleSearch = () => {
+    // Search is handled by filteredData useMemo, but we can reset to first page
+    setCurrentPage(1)
   }
 
   const handleResetFilters = () => {
@@ -707,102 +710,6 @@ export default function EducationManagementPage() {
           </div>
         </div>
       ) : viewMode === 'register' ? (
-        /* Register View - Keep existing */
-        <div>
-          {/* This section should remain as is for now */}
-        </div>
-      ) : (
-            <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-blue-500" />
-                  <h3 className="text-lg font-semibold text-[#3a2e2a]">기본 정보</h3>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 px-6 py-6">
-                {[
-                  { label: '교육 ID', value: selectedEducation.educationId },
-                  { label: '교육명', value: selectedEducation.name },
-                  { label: '신청자', value: selectedEducation.requestOrg || '경기미래채움' },
-                  { label: '기관명', value: selectedEducation.schoolName || selectedEducation.institution },
-                  { label: '프로그램명', value: selectedEducation.programTitle || selectedEducation.name },
-                  { label: '과정명', value: selectedEducation.courseName || selectedEducation.name },
-                  { label: '교육 기간', value: selectedEducation.period },
-                  {
-                    label: '상태',
-                    value: (
-                      <span
-                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                          (statusStyle[selectedEducation.status]?.bg || 'bg-slate-100') + ' ' + (statusStyle[selectedEducation.status]?.text || 'text-slate-600')
-                        }`}
-                      >
-                        {selectedEducation.status}
-                      </span>
-                    ),
-                  },
-                  { label: '총 회시', value: selectedEducation.totalSessions ?? '12' },
-                  { label: '비고', value: selectedEducation.note ?? '-' },
-                ].map((item) => (
-                  <div key={item.label} className="space-y-1">
-                    <div className="text-sm font-semibold text-gray-500">{item.label}</div>
-                    <div className="text-base font-medium text-gray-900">{item.value}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {detailTab === 'lessons' && (
-            <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <h3 className="text-lg font-semibold text-[#3a2e2a]">수업 일정</h3>
-                </div>
-                <div className="text-sm text-gray-500">총 {selectedEducation.lessons?.length || 0}건</div>
-              </div>
-              <div className="p-4">
-                <Table
-                  columns={[
-                    { title: '일자', dataIndex: 'date', key: 'date', width: 130 },
-                    { title: '시간', dataIndex: 'time', key: 'time', width: 140 },
-                    { title: '주강사 상태', dataIndex: 'mainStatus', key: 'mainStatus', width: 140 },
-                    { title: '주강사', dataIndex: 'mainInstructorName', key: 'mainInstructorName', width: 130 },
-                    { title: '보조강사 상태', dataIndex: 'assistantStatus', key: 'assistantStatus', width: 150 },
-                    { title: '보조강사', dataIndex: 'assistantInstructorName', key: 'assistantInstructorName', width: 130 },
-                    { title: '비고', dataIndex: 'note', key: 'note', width: 100 },
-                  ]}
-                  dataSource={(selectedEducation.lessons || []).map((lesson, idx) => ({
-                    key: `${selectedEducation.key}-lesson-${idx}`,
-                    date: lesson.date,
-                    time: `${lesson.startTime} ~ ${lesson.endTime}`,
-                    mainStatus: (
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
-                        매칭완료
-                      </span>
-                    ),
-                    assistantStatus: (
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
-                        신청 중 ({lesson.assistantInstructors}/{lesson.assistantInstructors})
-                      </span>
-                    ),
-                    mainInstructorName: lesson.mainInstructorName || '우수현',
-                    assistantInstructorName: lesson.assistantInstructorName || '-',
-                    note: '-',
-                  }))}
-                  pagination={{
-                    pageSize: 10,
-                    showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} results`,
-                    position: ['bottomRight'],
-                  }}
-                  scroll={{ x: 'max-content' }}
-                  className="[&_.ant-table-thead>tr>th]:bg-slate-50 [&_.ant-table-thead>tr>th]:text-slate-600 [&_.ant-table-thead>tr>th]:text-xs [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table]:text-sm [&_.ant-table-tbody>tr]:border-b [&_.ant-table-tbody>tr]:border-gray-100 [&_.ant-pagination]:!mt-4 [&_.ant-pagination]:!mb-0 [&_.ant-pagination-item]:!rounded-lg [&_.ant-pagination-item]:!border-[#E6E6EF] [&_.ant-pagination-item]:!h-9 [&_.ant-pagination-item]:!min-w-[36px] [&_.ant-pagination-item-active]:!border-[#3b82f6] [&_.ant-pagination-item-active]:!bg-[#3b82f6] [&_.ant-pagination-item-active>a]:!text-white [&_.ant-pagination-prev]:!rounded-lg [&_.ant-pagination-prev]:!border-[#E6E6EF] [&_.ant-pagination-next]:!rounded-lg [&_.ant-pagination-next]:!border-[#E6E6EF] [&_.ant-pagination-options]:!ml-4 [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-[#E6E6EF] [&_.ant-pagination-total-text]:!text-slate-900 [&_.ant-pagination-total-text]:!mr-4"
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
         /* Register View */
         <div className="space-y-6">
           {/* Image Attachment and Tags Section - Moved to top */}
@@ -1213,7 +1120,7 @@ export default function EducationManagementPage() {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
       </div>
     </ProtectedRoute>
   )
