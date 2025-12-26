@@ -19,5 +19,6 @@ export { DefinitionListGrid } from './DefinitionListGrid'
 export { SessionsListCard } from './SessionsListCard'
 export { LessonsListCard } from './LessonsListCard'
 export { AttendanceSummaryCard } from './AttendanceSummaryCard'
+export { ActivitySummaryCard } from './ActivitySummaryCard'
 export type { ExcelRowData, ValidationError } from './ExcelPreviewTable'
 
