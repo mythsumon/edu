@@ -1,7 +1,5 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
 import { useState, useRef, useEffect } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Table, Button, Card, Form, Select, Checkbox, Space } from 'antd'
@@ -243,7 +241,7 @@ export default function InstitutionManagementPage() {
     if (!selectedInstitution) return
     setViewMode('edit')
     setEditingId(selectedInstitution.key)
-    setDetailTab('basic')
+    setActiveSection('institution')
     setEmailLocal(selectedInstitution.email?.split('@')[0] || '')
     setEmailDomain(selectedInstitution.email?.split('@')[1] || '')
     form.setFieldsValue({
