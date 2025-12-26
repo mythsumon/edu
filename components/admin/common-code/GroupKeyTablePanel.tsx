@@ -65,12 +65,13 @@ export function GroupKeyTablePanel({
       width: 100,
       align: 'center' as const,
       render: (enabled: boolean, record) => (
-        <Switch
-          checked={enabled}
-          onChange={(checked) => onToggleEnabled(record.id, checked)}
-          className="[&_.ant-switch-checked]:bg-blue-600"
-          onClick={(e) => e.stopPropagation()}
-        />
+        <div onClick={(e) => e.stopPropagation()}>
+          <Switch
+            checked={enabled}
+            onChange={(checked) => onToggleEnabled(record.id, checked)}
+            className="[&_.ant-switch-checked]:bg-blue-600"
+          />
+        </div>
       ),
     },
     {
