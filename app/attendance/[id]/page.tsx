@@ -28,7 +28,13 @@ export default function AttendanceDetailPage() {
           const id = parseInt(params.id as string)
           const attendanceData = await programService.getAttendanceData(id)
           setData(attendanceData)
-          setStudents(attendanceData.students)
+          // Convert legacy attendance fields to new structure if needed
+          const convertedStudents: Student[] = attendanceData.students.map((student) => ({
+            ...student,
+            tardiness: (student.tardiness || student.attendance3_5 || '') as 'O' | 'X' | '',
+            absence: (student.absence || student.attendance3_6 || '') as 'O' | 'X' | '',
+          }))
+          setStudents(convertedStudents)
         }
       } catch (err) {
         setError('데이터를 불러오는 중 오류가 발생했습니다.')
@@ -79,8 +85,8 @@ export default function AttendanceDetailPage() {
       number: students.length + 1,
       name: '',
       gender: '남',
-      attendance3_5: '',
-      attendance3_6: '',
+      tardiness: '',
+      absence: '',
       note: '',
     }
     setStudents([...students, newStudent])
