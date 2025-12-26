@@ -20,6 +20,7 @@ const adminMenuConfig = [
     labelKey: 'sidebar.educationOperations',
     items: [
       { labelKey: 'sidebar.educationManagement', href: '/admin/operations' },
+      { labelKey: 'sidebar.educationStatusChange', href: '/admin/education-status' },
     ],
   },
   {

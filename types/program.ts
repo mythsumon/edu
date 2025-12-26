@@ -15,9 +15,12 @@ export interface Student {
   number: number
   name: string
   gender: '남' | '여'
-  attendance3_5: 'O' | 'X' | ''
-  attendance3_6: 'O' | 'X' | ''
+  tardiness: 'O' | 'X' | '' // 지각(회)
+  absence: 'O' | 'X' | '' // 결석(수)
   note: string
+  // Legacy fields for backward compatibility
+  attendance3_5?: 'O' | 'X' | ''
+  attendance3_6?: 'O' | 'X' | ''
 }
 
 export interface Instructor {

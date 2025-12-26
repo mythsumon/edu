@@ -33,7 +33,13 @@ export default function AttendanceDetailPage() {
           const id = parseInt(params.id as string)
           const attendanceData = await programService.getAttendanceData(id)
           setData(attendanceData)
-          setStudents(attendanceData.students)
+          // Convert legacy attendance fields to new structure if needed
+          const convertedStudents = attendanceData.students.map((student) => ({
+            ...student,
+            tardiness: student.tardiness || student.attendance3_5 || '',
+            absence: student.absence || student.attendance3_6 || '',
+          }))
+          setStudents(convertedStudents)
         }
       } catch (err) {
         setError('데이터를 불러오는 중 오류가 발생했습니다.')
@@ -84,8 +90,8 @@ export default function AttendanceDetailPage() {
       number: students.length + 1,
       name: '',
       gender: '남',
-      attendance3_5: '',
-      attendance3_6: '',
+      tardiness: '',
+      absence: '',
       note: '',
     }
     setStudents([...students, newStudent])
@@ -141,6 +147,7 @@ export default function AttendanceDetailPage() {
           onBack={handleBack}
           onEdit={handleEditFromDetail}
           onDelete={handleDelete}
+          title="2025 소프트웨어(SW) 미래채움 교육 출석부"
         />
 
         {/* Main Content Container */}
@@ -154,6 +161,7 @@ export default function AttendanceDetailPage() {
             class={data.class}
             totalApplicants={data.totalApplicants}
             totalGraduates={data.totalGraduates}
+            programId={data.id}
           />
 
           {/* Basic Info Section */}
@@ -192,17 +200,21 @@ export default function AttendanceDetailPage() {
 
           {/* Instructor Info Section */}
           <DetailSectionCard title="강사 정보">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {data.instructors.map((instructor, index) => (
-                <div key={index} className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {instructor.role}
-                    </span>
-                  </div>
-                  <p className="text-base font-medium text-gray-900">{instructor.name}</p>
-                </div>
-              ))}
+            <div className="border border-gray-200 rounded-xl overflow-hidden">
+              <table className="w-full">
+                <tbody>
+                  {data.instructors.map((instructor, index) => (
+                    <tr key={index} className="border-b border-gray-200 last:border-b-0">
+                      <td className="py-3 px-4 bg-gray-50 text-sm font-medium text-gray-700 w-1/4">
+                        {instructor.role}
+                      </td>
+                      <td className="py-3 px-4 text-base font-medium text-gray-900">
+                        {instructor.name} (인)
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </DetailSectionCard>
 
@@ -214,59 +226,51 @@ export default function AttendanceDetailPage() {
                   title: '번호',
                   dataIndex: 'number',
                   key: 'number',
+                  width: 80,
                   render: (_, __, index) => index + 1,
                 },
                 {
                   title: '이름',
                   dataIndex: 'name',
                   key: 'name',
-                  render: (text) => text,
+                  width: 120,
+                  render: (text) => <span className="text-base font-medium text-gray-900">{text}</span>,
                 },
                 {
                   title: '성별',
                   dataIndex: 'gender',
                   key: 'gender',
-                  render: (text) => text,
+                  width: 80,
+                  render: (text) => <span className="text-base font-medium text-gray-900">{text}</span>,
                 },
                 {
-                  title: '3월 5일 출석',
-                  dataIndex: 'attendance3_5',
-                  key: 'attendance3_5',
-                  render: (text) =>
-                    text === 'O' ? (
-                      <span className="text-green-600 font-medium">출석</span>
-                    ) : text === 'X' ? (
-                      <span className="text-red-600 font-medium">결석</span>
-                    ) : (
-                      <span className="text-gray-400 font-medium">-</span>
-                    ),
+                  title: '지각(회)',
+                  dataIndex: 'tardiness',
+                  key: 'tardiness',
+                  width: 100,
+                  render: (text) => (
+                    <span className="text-base font-medium text-gray-900">{text || '-'}</span>
+                  ),
                 },
                 {
-                  title: '3월 6일 출석',
-                  dataIndex: 'attendance3_6',
-                  key: 'attendance3_6',
-                  render: (text) =>
-                    text === 'O' ? (
-                      <span className="text-green-600 font-medium">출석</span>
-                    ) : text === 'X' ? (
-                      <span className="text-red-600 font-medium">결석</span>
-                    ) : (
-                      <span className="text-gray-400 font-medium">-</span>
-                    ),
+                  title: '결석(수)',
+                  dataIndex: 'absence',
+                  key: 'absence',
+                  width: 100,
+                  render: (text) => (
+                    <span className="text-base font-medium text-gray-900">{text || '-'}</span>
+                  ),
                 },
                 {
                   title: '비고',
                   dataIndex: 'note',
                   key: 'note',
-                  render: (text) => text || '-',
+                  render: (text) => <span className="text-base font-medium text-gray-900">{text || '-'}</span>,
                 },
               ]}
               dataSource={students}
-              pagination={{
-                pageSize: 10,
-                showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} results`,
-              }}
-              className="w-full [&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:text-gray-700 [&_.ant-table]:text-sm [&_.ant-table]:table-fixed"
+              pagination={false}
+              className="w-full [&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:text-gray-700 [&_.ant-table-thead>tr>th]:text-xs [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table]:text-sm [&_.ant-table]:table-fixed"
             />
           </DetailSectionCard>
         </div>
@@ -311,6 +315,10 @@ export default function AttendanceDetailPage() {
           class={data.class}
           totalApplicants={data.totalApplicants}
           totalGraduates={data.totalGraduates}
+          programId={data.id}
+          isEditMode={true}
+          onAttendanceCodeChange={(value) => setData({ ...data, attendanceCode: value })}
+          onProgramNameChange={(value) => setData({ ...data, programName: value })}
         />
 
         {/* Basic Info Section */}
@@ -386,25 +394,30 @@ export default function AttendanceDetailPage() {
 
         {/* Instructor Info Section */}
         <DetailSectionCard title="강사 정보">
-          <div className="space-y-4">
-            {data.instructors.map((instructor, index) => (
-              <div key={index} className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {instructor.role}
-                  </span>
-                </div>
-                <Input
-                  value={instructor.name}
-                  onChange={(e) => {
-                    const updatedInstructors = [...data.instructors];
-                    updatedInstructors[index].name = e.target.value;
-                    setData({ ...data, instructors: updatedInstructors });
-                  }}
-                  className="h-11 rounded-xl"
-                />
-              </div>
-            ))}
+          <div className="border border-gray-200 rounded-xl overflow-hidden">
+            <table className="w-full">
+              <tbody>
+                {data.instructors.map((instructor, index) => (
+                  <tr key={index} className="border-b border-gray-200 last:border-b-0">
+                    <td className="py-3 px-4 bg-gray-50 text-sm font-medium text-gray-700 w-1/4">
+                      {instructor.role}
+                    </td>
+                    <td className="py-3 px-4">
+                      <Input
+                        value={instructor.name}
+                        onChange={(e) => {
+                          const updatedInstructors = [...data.instructors];
+                          updatedInstructors[index].name = e.target.value;
+                          setData({ ...data, instructors: updatedInstructors });
+                        }}
+                        className="h-11 rounded-xl"
+                        suffix=" (인)"
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </DetailSectionCard>
 
@@ -458,35 +471,35 @@ export default function AttendanceDetailPage() {
                   ),
                 },
                 {
-                  title: '3월 5일 출석',
-                  dataIndex: 'attendance3_5',
-                  key: 'attendance3_5',
+                  title: '지각(회)',
+                  dataIndex: 'tardiness',
+                  key: 'tardiness',
                   render: (text, record) => (
                     <Select
                       value={text}
-                      onChange={(value) => handleStudentChange(record.id, 'attendance3_5', value)}
+                      onChange={(value) => handleStudentChange(record.id, 'tardiness', value)}
                       className="h-8 rounded-lg w-full"
                       options={[
-                        { value: 'O', label: '출석' },
-                        { value: 'X', label: '결석' },
-                        { value: '', label: '미정' },
+                        { value: 'O', label: 'O' },
+                        { value: 'X', label: 'X' },
+                        { value: '', label: '-' },
                       ]}
                     />
                   ),
                 },
                 {
-                  title: '3월 6일 출석',
-                  dataIndex: 'attendance3_6',
-                  key: 'attendance3_6',
+                  title: '결석(수)',
+                  dataIndex: 'absence',
+                  key: 'absence',
                   render: (text, record) => (
                     <Select
                       value={text}
-                      onChange={(value) => handleStudentChange(record.id, 'attendance3_6', value)}
+                      onChange={(value) => handleStudentChange(record.id, 'absence', value)}
                       className="h-8 rounded-lg w-full"
                       options={[
-                        { value: 'O', label: '출석' },
-                        { value: 'X', label: '결석' },
-                        { value: '', label: '미정' },
+                        { value: 'O', label: 'O' },
+                        { value: 'X', label: 'X' },
+                        { value: '', label: '-' },
                       ]}
                     />
                   ),

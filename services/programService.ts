@@ -81,25 +81,43 @@ export const programService = {
     } catch (error) {
       console.error('Error fetching attendance data:', error)
       // Fallback to mock data if API fails
+      // Generate student data matching the image
+      const studentNames = [
+        '남궁민수', '김민수', '이수면', '홍길동', '김민수', '이수면', '홍길동', '김민수',
+        '이수면', '홍길동', '김민수', '이수면', '홍길동', '김민수', '이수면', '홍길동',
+        '김민수', '김민수'
+      ]
+      const genders: ('남' | '여')[] = ['남', '남', '여', '남', '남', '여', '남', '남', '여', '남', '남', '여', '남', '남', '여', '남', '남', '남']
+      const tardinessValues: ('O' | 'X' | '')[] = ['O', 'O', 'X', 'O', 'O', 'X', 'O', 'O', 'X', 'O', 'O', 'X', 'O', 'O', 'X', 'O', 'O', 'O']
+      const absenceValues: ('O' | 'X' | '')[] = ['X', 'O', 'O', 'X', 'O', 'O', 'X', 'O', 'O', 'X', 'O', 'O', 'X', 'O', 'O', 'X', 'O', 'O']
+      
+      const students = studentNames.map((name, index) => ({
+        id: String(index + 1),
+        number: index + 1,
+        name,
+        gender: genders[index] || '남',
+        tardiness: tardinessValues[index] || '',
+        absence: absenceValues[index] || '',
+        note: index < 8 ? '우등생' : '',
+      }))
+
       return {
         id: String(id),
-        title: `프로그램 ${id} 출석부`,
-        attendanceCode: `ATT-2025-${String(id).padStart(3, '0')}`,
-        programName: `프로그램 ${id}`,
-        institutionName: '서울초등학교',
-        grade: '5',
-        class: '3',
-        totalApplicants: 25,
-        totalGraduates: 23,
-        maleGraduates: 12,
-        femaleGraduates: 11,
-        students: [
-          { id: '1', number: 1, name: '김학생', gender: '남', attendance3_5: 'O', attendance3_6: 'O', note: '' },
-          { id: '2', number: 2, name: '이학생', gender: '여', attendance3_5: 'O', attendance3_6: 'X', note: '지각' },
-        ],
+        title: `2025 소프트웨어(SW) 미래채움 교육 출석부`,
+        attendanceCode: '',
+        programName: '4차시 파이함과 함께하는 파이번 코딩',
+        institutionName: '수원조등학교',
+        grade: '3',
+        class: '2',
+        totalApplicants: 18,
+        totalGraduates: 8,
+        maleGraduates: 4,
+        femaleGraduates: 4,
+        students,
         instructors: [
-          { role: '주강사', name: '김교사' },
-          { role: '보조강사', name: '이교사' },
+          { role: '주강사', name: '홍길동' },
+          { role: '보조강사', name: '이상해' },
+          { role: '보조강사2', name: '손흥민' },
         ],
       }
     }

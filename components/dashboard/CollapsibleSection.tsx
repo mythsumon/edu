@@ -25,7 +25,7 @@ export function CollapsibleSection({
       }`}>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex-1 flex items-center justify-between hover:opacity-80 transition-opacity"
+          className="flex-1 flex items-center justify-between"
         >
           <h2 className={`text-[20px] font-bold ${typeof title === 'string' ? 'text-gray-900' : ''}`}>{title}</h2>
           <div className={`flex items-center gap-2 transition-transform duration-200 ${isExpanded ? 'rotate-0' : ''}`}>
