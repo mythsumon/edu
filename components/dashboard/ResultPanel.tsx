@@ -10,6 +10,7 @@ interface ResultPanelProps {
   selectedSpecialCategory?: SpecialCategory
   onRegionChange: (regionId: number | undefined) => void
   onCategoryClose: () => void
+  onCategorySelect?: (category: SpecialCategory) => void
 }
 
 export function ResultPanel({
@@ -17,6 +18,7 @@ export function ResultPanel({
   selectedSpecialCategory,
   onRegionChange,
   onCategoryClose,
+  onCategorySelect,
 }: ResultPanelProps) {
   return (
     <div className="bg-white rounded-2xl shadow-md border border-slate-200 flex flex-col h-full min-h-[600px]">
@@ -34,6 +36,7 @@ export function ResultPanel({
             <RegionDetailPanel
               selectedRegionId={selectedRegion}
               onRegionChange={(id) => onRegionChange(id)}
+              onCategorySelect={onCategorySelect}
             />
           </div>
         ) : selectedSpecialCategory ? (

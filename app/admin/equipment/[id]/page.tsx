@@ -375,6 +375,7 @@ export default function EquipmentDetailPage() {
                   onChange={(time) => setData({ ...data, rentalTime: time ? time.format('HH:mm') : '' })}
                   format="HH:mm"
                   className="w-full h-11 rounded-xl"
+                  popupClassName="tp-popup-primary-ok"
                 />
               </div>
               <div>
@@ -484,6 +485,7 @@ export default function EquipmentDetailPage() {
                   onChange={(time) => setData({ ...data, returnTime: time ? time.format('HH:mm') : '' })}
                   format="HH:mm"
                   className="w-full h-11 rounded-xl"
+                  popupClassName="tp-popup-primary-ok"
                 />
               </div>
               <div>
@@ -509,6 +511,7 @@ export default function EquipmentDetailPage() {
                   onChange={(time) => setData({ ...data, returnTimeConfirm: time ? time.format('HH:mm') : '' })}
                   format="HH:mm"
                   className="w-full h-11 rounded-xl"
+                  popupClassName="tp-popup-primary-ok"
                 />
               </div>
               <div>

@@ -130,17 +130,21 @@ export function Header() {
     setLocale(locale === 'ko' ? 'en' : 'ko')
   }
 
+  const isInstructor = pathname?.startsWith('/instructor')
+  
   return (
-    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 relative z-20 dark:bg-gray-800 dark:border-gray-700">
+    <header className={`h-16 flex items-center justify-between px-6 relative z-20 bg-white border-b border-slate-200`}>
       <div className="flex items-center gap-4">
-        <h1 className="text-xl font-bold text-slate-900">{getPageTitle()}</h1>
-        <Breadcrumb className="mb-0" />
+        <h1 className="text-xl font-bold text-slate-900">
+          {getPageTitle()}
+        </h1>
+        {!isInstructor && <Breadcrumb className="mb-0" />}
       </div>
       <div className="flex items-center gap-4">
         {/* Theme toggle */}
         <button 
           onClick={toggleTheme}
-          className="flex items-center justify-center w-9 h-9 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700"
+          className="flex items-center justify-center w-9 h-9 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors"
           aria-label={theme === 'light' ? '다크 모드로 전환' : '라이트 모드로 전환'}
         >
           {theme === 'light' ? (
@@ -153,7 +157,7 @@ export function Header() {
         {/* Language toggle */}
         <button 
           onClick={toggleLanguage}
-          className="flex items-center gap-2 h-8 px-3 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
+          className="flex items-center gap-2 h-8 px-3 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
         >
           {locale === 'ko' ? 'KO' : 'EN'}
           <Globe className="w-4 h-4" />
@@ -162,7 +166,7 @@ export function Header() {
         {/* Notification dropdown */}
         <div className="relative">
           <button
-            className="relative flex items-center justify-center w-9 h-9 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700"
+            className="relative flex items-center justify-center w-9 h-9 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors"
             onClick={() => {
               setIsNotificationOpen((prev) => !prev)
             }}
@@ -176,30 +180,30 @@ export function Header() {
           </button>
 
           {isNotificationOpen && (
-            <div className="absolute right-0 mt-2 w-80 rounded-2xl bg-white shadow-lg ring-1 ring-black/5 overflow-hidden dark:bg-gray-800 dark:ring-gray-700">
-              <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between dark:border-gray-700">
+            <div className="absolute right-0 mt-2 w-80 rounded-2xl bg-white shadow-lg ring-1 ring-black/5 overflow-hidden">
+              <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-semibold text-slate-900 dark:text-gray-100">{t('header.notifications')}</div>
-                  <div className="text-xs text-slate-500 dark:text-gray-400">
+                  <div className="text-sm font-semibold text-slate-900">{t('header.notifications')}</div>
+                  <div className="text-xs text-slate-500">
                     {locale === 'ko' 
                       ? '최근 시스템 및 신청 관련 알림입니다.' 
                       : 'Recent system and application related notifications.'}
                   </div>
                 </div>
                 {unreadCount > 0 && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-50 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-50 text-xs font-medium text-blue-700">
                     {locale === 'ko' 
                       ? `새 알림 ${unreadCount}건` 
                       : `${unreadCount} new notifications`}
                   </span>
                 )}
               </div>
-              <div className="max-h-80 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
+              <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
                 {notifications.map((item) => (
                   <button
                     key={item.id}
-                    className={`w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-slate-50 transition-colors dark:hover:bg-gray-700/50 ${
-                      !item.read ? 'bg-red-50/40 dark:bg-red-900/20' : ''
+                    className={`w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-slate-50 transition-colors ${
+                      !item.read ? 'bg-red-50/40' : ''
                     }`}
                     onClick={() => {
                       setNotifications(notifications.map(n => 
@@ -209,40 +213,40 @@ export function Header() {
                   >
                     <div className="mt-0.5 flex-shrink-0">
                       {item.read ? (
-                        <Circle className="w-3 h-3 text-gray-300 dark:text-gray-600" />
+                        <Circle className="w-3 h-3 text-slate-300" />
                       ) : (
                         <div className="w-3 h-3 rounded-full bg-red-500" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className={`text-sm font-medium line-clamp-1 ${
-                        !item.read ? 'text-slate-900 dark:text-gray-100' : 'text-slate-600 dark:text-gray-400'
+                        !item.read ? 'text-slate-900' : 'text-slate-600'
                       }`}>{item.title}</div>
-                      <div className="mt-0.5 text-xs text-slate-500 line-clamp-2 dark:text-gray-400">{item.description}</div>
-                      <div className="mt-1 text-[11px] text-slate-400 dark:text-gray-500">{item.time}</div>
+                      <div className="mt-0.5 text-xs text-slate-500 line-clamp-2">{item.description}</div>
+                      <div className="mt-1 text-[11px] text-slate-400">{item.time}</div>
                     </div>
                   </button>
                 ))}
                 {notifications.length === 0 && (
-                  <div className="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                  <div className="px-4 py-6 text-center text-sm text-slate-500">
                     {locale === 'ko' ? '새로운 알림이 없습니다.' : 'No new notifications.'}
                   </div>
                 )}
               </div>
-                <div className="px-4 py-2 border-t border-slate-100 bg-slate-50 flex items-center justify-between dark:border-gray-700 dark:bg-gray-800/50">
-                <button className="text-xs text-slate-500 hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-300">
+                <div className="px-4 py-2 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+                <button className="text-xs text-slate-500 hover:text-slate-700">
                   {locale === 'ko' ? '알림 설정' : 'Notification Settings'}
                 </button>
                 <div className="flex items-center gap-3">
                   {unreadCount > 0 && (
                     <button 
                       onClick={handleMarkAllAsRead}
-                      className="text-xs font-medium text-indigo-600 hover:text-indigo-700 dark:text-blue-400 dark:hover:text-blue-300"
+                      className="text-xs font-medium text-indigo-600 hover:text-indigo-700"
                     >
                       {locale === 'ko' ? '모두 읽음' : 'Mark all as read'}
                     </button>
                   )}
-                  <button className="text-xs font-medium text-indigo-600 hover:text-indigo-700 dark:text-blue-400 dark:hover:text-blue-300">
+                  <button className="text-xs font-medium text-indigo-600 hover:text-indigo-700">
                     {locale === 'ko' ? '전체 알림 보기' : 'View all notifications'}
                   </button>
                 </div>

@@ -2,9 +2,9 @@
 
 import { useState, useMemo } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Table, Button, Card, Input, Select, Space, Descriptions } from 'antd'
+import { Table, Button } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { ChevronRight, Download, RotateCcw, Check, X, ArrowLeft, Eye } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface ApplierInfo {
@@ -32,16 +32,16 @@ interface InstructorApplicationItem {
   educationId: string
   educationName: string
   institution: string
-  region: string
-  gradeClass: string
-  role: string
-  instructorName: string
-  applicationDate: string
-  status: '수락됨' | '거절됨' | '대기'
+  startDate: string
+  endDate: string
+  note?: string
+  status?: '수락됨' | '거절됨' | '대기'
   applier?: ApplierInfo
   lessons?: LessonInfo[]
 }
 
+// Empty data for "내가 신청한 교육들" page
+// Note: This page is deprecated. Use /instructor/apply/mine instead which uses dataStore
 const dummyData: InstructorApplicationItem[] = [
   {
     key: '1',
@@ -52,7 +52,8 @@ const dummyData: InstructorApplicationItem[] = [
     gradeClass: '3학년 1반',
     role: '주강사',
     instructorName: '김철수',
-    applicationDate: '2025.01.15',
+    startDate: '2025.01.15',
+    endDate: '2025.02.28',
     status: '대기',
     applier: {
       name: '홍길동',
@@ -248,24 +249,6 @@ const dummyData: InstructorApplicationItem[] = [
   },
 ]
 
-const statusOptions = [
-  { value: 'all', label: '전체' },
-  { value: '수락됨', label: '수락됨' },
-  { value: '거절됨', label: '거절됨' },
-  { value: '대기', label: '대기' },
-]
-
-const roleOptions = [
-  { value: 'all', label: '전체' },
-  { value: '주강사', label: '주강사' },
-  { value: '보조강사', label: '보조강사' },
-]
-
-const statusStyle: Record<string, { bg: string; text: string }> = {
-  수락됨: { bg: 'bg-green-50', text: 'text-green-700' },
-  거절됨: { bg: 'bg-red-50', text: 'text-red-700' },
-  대기: { bg: 'bg-yellow-50', text: 'text-yellow-700' },
-}
 
 export default function InstructorApplicationPage() {
   const router = useRouter()
@@ -275,8 +258,6 @@ export default function InstructorApplicationPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [searchText, setSearchText] = useState<string>('')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [roleFilter, setRoleFilter] = useState<string>('all')
 
   const handleAccept = (key: string) => {
     console.log('Accept application:', key)
@@ -362,293 +343,112 @@ export default function InstructorApplicationPage() {
 
   const handleResetFilters = () => {
     setSearchText('')
-    setStatusFilter('all')
-    setRoleFilter('all')
   }
 
   const filteredData = useMemo(() => {
     return dummyData.filter((item) => {
       const matchesSearch =
         !searchText ||
-        item.instructorName.toLowerCase().includes(searchText.toLowerCase()) ||
-        item.educationName.toLowerCase().includes(searchText.toLowerCase())
-      const matchesStatus = statusFilter === 'all' || item.status === statusFilter
-      const matchesRole = roleFilter === 'all' || item.role === roleFilter
-      return matchesSearch && matchesStatus && matchesRole
+        item.educationName.toLowerCase().includes(searchText.toLowerCase()) ||
+        item.institution.toLowerCase().includes(searchText.toLowerCase()) ||
+        item.educationId.toLowerCase().includes(searchText.toLowerCase())
+      return matchesSearch
     })
-  }, [searchText, statusFilter, roleFilter])
+  }, [searchText])
 
   const columns: ColumnsType<InstructorApplicationItem> = useMemo(
     () => [
-      {
-        title: '수락/거절',
-        key: 'action',
-        width: 120,
-        fixed: 'left' as const,
-        render: (_, record) => {
-          if (record.status === '수락됨') {
-            return (
-              <div className="flex justify-start">
-                <Button
-                  disabled
-                  icon={<Check className="w-4 h-4" />}
-                  className="h-8 px-3 rounded-lg bg-green-50 border border-green-200 text-green-700 font-medium"
-                  size="small"
-                >
-                  수락됨
-                </Button>
-              </div>
-            )
-          } else if (record.status === '거절됨') {
-            return (
-              <div className="flex justify-start">
-                <Button
-                  disabled
-                  icon={<X className="w-4 h-4" />}
-                  className="h-8 px-3 rounded-lg bg-red-50 border border-red-200 text-red-700 font-medium"
-                  size="small"
-                >
-                  거절됨
-                </Button>
-              </div>
-            )
-          } else {
-            return (
-              <div className="flex gap-2 flex-wrap">
-                <Button
-                  type="primary"
-                  icon={<Check className="w-4 h-4" />}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleAccept(record.key)
-                  }}
-                  className="h-8 px-3 rounded-lg bg-green-600 hover:bg-green-700 border-0 text-white font-medium transition-all shadow-sm hover:shadow-md"
-                  size="small"
-                >
-                  수락
-                </Button>
-                <Button
-                  danger
-                  type="default"
-                  icon={<X className="w-4 h-4" />}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleReject(record.key)
-                  }}
-                  className="h-8 px-3 rounded-lg font-medium transition-all shadow-sm hover:shadow-md"
-                  size="small"
-                >
-                  거절
-                </Button>
-              </div>
-            )
-          }
-        },
-      },
       {
         title: '교육ID',
         dataIndex: 'educationId',
         key: 'educationId',
         width: 150,
-        render: (text: string) => <span className="text-base font-medium text-gray-900">{text}</span>,
+        render: (text: string) => <span className="text-sm font-medium text-white">{text}</span>,
       },
       {
         title: '교육명',
         dataIndex: 'educationName',
         key: 'educationName',
         width: 200,
-        render: (text: string) => <span className="text-base font-medium text-gray-900">{text}</span>,
+        render: (text: string) => <span className="text-sm font-medium text-white">{text}</span>,
       },
       {
-        title: '교육기관',
+        title: '교육기관명',
         dataIndex: 'institution',
         key: 'institution',
         width: 150,
-        render: (text: string) => <span className="text-base font-medium text-gray-900">{text}</span>,
+        render: (text: string) => <span className="text-sm font-medium text-white">{text}</span>,
       },
       {
-        title: '구역',
-        dataIndex: 'region',
-        key: 'region',
+        title: '시작일',
+        dataIndex: 'startDate',
+        key: 'startDate',
         width: 120,
-        render: (text: string) => <span className="text-base font-medium text-gray-900">{text}</span>,
+        render: (text: string) => <span className="text-sm font-medium text-white">{text}</span>,
       },
       {
-        title: '학년·반',
-        dataIndex: 'gradeClass',
-        key: 'gradeClass',
+        title: '종료일',
+        dataIndex: 'endDate',
+        key: 'endDate',
         width: 120,
-        render: (text: string) => <span className="text-base font-medium text-gray-900">{text}</span>,
+        render: (text: string) => <span className="text-sm font-medium text-white">{text}</span>,
       },
       {
-        title: '신청 역할',
-        dataIndex: 'role',
-        key: 'role',
-        width: 120,
+        title: '비고',
+        dataIndex: 'note',
+        key: 'note',
+        width: 150,
+        render: (text: string) => <span className="text-sm font-medium text-white">{text || '-'}</span>,
+      },
+      {
+        title: '삭제',
+        key: 'delete',
+        width: 80,
         align: 'center' as const,
-        render: (text: string) => <span className="text-base font-medium text-gray-900">{text}</span>,
-      },
-      {
-        title: '강사명',
-        dataIndex: 'instructorName',
-        key: 'instructorName',
-        width: 120,
-        render: (text: string) => <span className="text-base font-medium text-gray-900">{text}</span>,
-      },
-      {
-        title: '신청일',
-        dataIndex: 'applicationDate',
-        key: 'applicationDate',
-        width: 120,
-        render: (text: string) => <span className="text-base font-medium text-gray-900">{text}</span>,
-      },
-      {
-        title: '상태',
-        dataIndex: 'status',
-        key: 'status',
-        width: 100,
-        align: 'right' as const,
-        render: (status: string) => {
-          const config = statusStyle[status] || { bg: 'bg-gray-50', text: 'text-gray-700' }
-          return (
-            <span
-              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
-            >
-              {status}
-            </span>
-          )
-        },
-      },
-      {
-        title: '상세',
-        key: 'detail',
-        width: 90,
-        fixed: 'right' as const,
         render: (_, record) => (
           <Button
             size="small"
-            icon={<Eye className="w-3 h-3" />}
-            className="h-8 px-3 rounded-lg border border-gray-300 hover:bg-gray-50"
+            danger
+            icon={<Trash2 className="w-4 h-4" />}
             onClick={(e) => {
               e.stopPropagation()
-              handleRowClick(record)
+              // Handle delete
+              console.log('Delete:', record.key)
             }}
+            className="h-8 px-3 rounded-lg"
           >
-            상세
+            삭제
           </Button>
         ),
       },
     ],
-    [filteredData]
+    []
   )
 
   return (
-    <ProtectedRoute requiredRole="admin">
-      <div className="p-6">
+    <ProtectedRoute requiredRole="instructor">
+      <div className="p-6 bg-gray-900 min-h-screen">
 
       {viewMode === 'list' ? (
         <>
           {/* Page Header */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-            <h1 className="text-2xl font-bold text-[#3a2e2a]">강사 신청 관리</h1>
-            <div className="flex items-center gap-3 w-full md:w-auto">
-              <Button
-                type="primary"
-                onClick={() => router.push('/instructor?view=register')}
-                className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md w-full md:w-auto text-white"
-                style={{
-                  backgroundColor: '#1a202c',
-                  borderColor: '#1a202c',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                  color: '#ffffff',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#2d3748'
-                  e.currentTarget.style.borderColor = '#2d3748'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#1a202c'
-                  e.currentTarget.style.borderColor = '#1a202c'
-                }}
-              >
-                + 강사 등록
-              </Button>
-              <Button
-                icon={<Download className="w-4 h-4" />}
-                onClick={() => console.log('Export to Excel')}
-                className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all w-full md:w-auto"
-              >
-                엑셀 추출
-              </Button>
-            </div>
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-white mb-2">내가 신청한 교육들</h1>
           </div>
 
-          {/* Filter Bar */}
-          <Card className="rounded-xl shadow-sm border border-gray-200 mb-4">
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-end">
-              <div className="space-y-3">
-                <Input
-                  placeholder="강사명, 교육명 검색"
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  allowClear
-                  className="h-11 rounded-xl"
-                />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Select
-                    placeholder="상태 선택"
-                    value={statusFilter}
-                    onChange={setStatusFilter}
-                    options={statusOptions}
-                    className="h-11 rounded-xl w-full"
-                  />
-                  <Select
-                    placeholder="신청 역할 선택"
-                    value={roleFilter}
-                    onChange={setRoleFilter}
-                    options={roleOptions}
-                    className="h-11 rounded-xl w-full"
-                  />
-                </div>
-              </div>
-              <div className="flex gap-1 justify-end">
-                <Button
-                  type="primary"
-                  onClick={handleSearch}
-                  className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md"
-              style={{
-                backgroundColor: '#1a202c',
-                borderColor: '#1a202c',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#2d3748'
-                e.currentTarget.style.borderColor = '#2d3748'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#1a202c'
-                e.currentTarget.style.borderColor = '#1a202c'
-              }}
-                >
-                  검색
-                </Button>
-                <Button
-                  icon={<RotateCcw className="w-4 h-4" />}
-                  onClick={handleResetFilters}
-                  className="h-11 px-4 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
-                >
-                  초기화
-                </Button>
-              </div>
-            </div>
-          </Card>
-
           {/* Table */}
-          <Card className="rounded-xl shadow-sm border border-gray-200">
+          <div className="bg-gray-800 rounded-lg border border-gray-700">
             <div className="overflow-x-auto">
               <Table
                 columns={columns}
                 dataSource={filteredData}
+                locale={{
+                  emptyText: (
+                    <div className="py-12 text-center">
+                      <div className="text-gray-400 text-base">데이터가 없습니다.</div>
+                    </div>
+                  ),
+                }}
                 pagination={{
                   current: currentPage,
                   pageSize: pageSize,
@@ -663,14 +463,10 @@ export default function InstructorApplicationPage() {
                 }}
                 rowKey="key"
                 scroll={{ x: 'max-content' }}
-                onRow={(record) => ({
-                  onClick: () => handleRowClick(record),
-                  className: 'cursor-pointer',
-                })}
-                className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:sticky [&_.ant-table-thead>tr>th]:top-0 [&_.ant-table-thead>tr>th]:z-10 [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-thead>tr>th]:text-gray-700 [&_.ant-table-tbody>tr]:border-b [&_.ant-table-tbody>tr]:border-gray-100 [&_.ant-table-tbody>tr:hover]:bg-blue-50 [&_.ant-table-tbody>tr]:transition-colors"
+                className="[&_.ant-table]:bg-gray-800 [&_.ant-table-thead>tr>th]:bg-gray-800 [&_.ant-table-thead>tr>th]:border-gray-700 [&_.ant-table-thead>tr>th]:text-white [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-tbody>tr]:bg-gray-800 [&_.ant-table-tbody>tr]:border-gray-700 [&_.ant-table-tbody>tr:hover]:bg-gray-700 [&_.ant-table-tbody>tr]:transition-colors [&_.ant-pagination]:text-white [&_.ant-pagination-item]:bg-gray-700 [&_.ant-pagination-item]:border-gray-600 [&_.ant-pagination-item>a]:text-white [&_.ant-pagination-item-active]:bg-blue-600 [&_.ant-pagination-item-active]:border-blue-600"
               />
             </div>
-          </Card>
+          </div>
         </>
       ) : (
         /* Detail View */
@@ -688,7 +484,7 @@ export default function InstructorApplicationPage() {
                       type="primary"
                       icon={<Check className="w-4 h-4" />}
                       onClick={() => handleAccept(selectedApplication.key)}
-                      className="h-10 px-4 rounded-xl bg-green-600 hover:bg-green-700 border-0 text-white font-medium transition-all shadow-sm hover:shadow-md"
+                      className="h-10 px-4 rounded-xl bg-green-600 hover:bg-green-500 hover:brightness-110 hover:ring-2 hover:ring-green-400/40 active:bg-green-600 border-0 text-white font-medium transition-all shadow-sm hover:shadow-md"
                     >
                       수락
                     </Button>
@@ -871,7 +667,7 @@ export default function InstructorApplicationPage() {
                       type="primary"
                       icon={<Check className="w-4 h-4" />}
                       onClick={() => handleAccept(selectedApplication.key)}
-                      className="h-11 px-6 rounded-xl bg-green-600 hover:bg-green-700 border-0 text-white font-medium transition-all shadow-sm hover:shadow-md w-full sm:w-auto"
+                      className="h-11 px-6 rounded-xl bg-green-600 hover:bg-green-500 hover:brightness-110 hover:ring-2 hover:ring-green-400/40 active:bg-green-600 border-0 text-white font-medium transition-all shadow-sm hover:shadow-md w-full sm:w-auto"
                     >
                       수락하기
                     </Button>

@@ -1067,6 +1067,7 @@ export default function UnifiedEditPage() {
                     onChange={(time) => equipmentData && setEquipmentData({...equipmentData, returnTime: time ? time.format('HH:mm') : ''})}
                     format="HH:mm"
                     className="w-full h-10 rounded-lg"
+                    popupClassName="tp-popup-primary-ok"
                   />
                 </div>
                 <div>

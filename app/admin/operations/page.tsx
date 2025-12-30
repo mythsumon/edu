@@ -193,10 +193,9 @@ const regionOptions = [
 ]
 
 const educationStatusOptions = [
-  { value: '신청 중', label: '신청 중' },
-  { value: '신청 마감', label: '신청 마감' },
-  { value: '진행중', label: '진행중' },
-  { value: '완료', label: '완료' },
+  { value: 'OPEN', label: 'OPEN' },
+  { value: 'INIT', label: 'INIT' },
+  { value: 'CANCEL', label: 'CANCEL' },
 ]
 
 export default function EducationManagementPage() {
@@ -880,15 +879,15 @@ export default function EducationManagementPage() {
             {/* Search Toolbar */}
             <div className="flex items-center h-16 px-4 py-3 border-b border-gray-200 gap-3">
             {/* Search Input - Left Side */}
-            <div className="relative w-full max-w-[420px]">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 z-10" />
+            <div className="w-full max-w-[420px]">
               <Input
                 placeholder="검색어를 입력하세요..."
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 allowClear
                 onPressEnter={handleSearch}
-                className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition hover:border-slate-300 focus:border-slate-300 focus:ring-2 focus:ring-slate-300 [&_.ant-input]:!h-11 [&_.ant-input]:!px-0 [&_.ant-input]:!py-0 [&_.ant-input]:!bg-transparent [&_.ant-input]:!border-0 [&_.ant-input]:!outline-none [&_.ant-input]:!shadow-none [&_.ant-input]:!text-sm [&_.ant-input-wrapper]:!border-0 [&_.ant-input-wrapper]:!shadow-none [&_.ant-input-wrapper]:!bg-transparent [&_.ant-input-clear-icon]:!text-slate-400"
+                prefix={<Search className="h-5 w-5 text-slate-400" />}
+                className="admin-search-input h-11 w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 transition hover:border-slate-300 focus:border-slate-300 focus:ring-2 focus:ring-slate-300"
               />
             </div>
               

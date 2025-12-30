@@ -6,9 +6,10 @@ import { REGIONS, type RegionData, type SpecialCategory, type LocalStat } from '
 interface RegionDetailPanelProps {
   selectedRegionId: number | undefined
   onRegionChange: (regionId: number) => void
+  onCategorySelect?: (category: SpecialCategory) => void
 }
 
-export function RegionDetailPanel({ selectedRegionId, onRegionChange }: RegionDetailPanelProps) {
+export function RegionDetailPanel({ selectedRegionId, onRegionChange, onCategorySelect }: RegionDetailPanelProps) {
   const [selectedSpecialCategory, setSelectedSpecialCategory] = useState<SpecialCategory>('도서·벽지')
 
   // Reset special category when region changes
@@ -65,7 +66,7 @@ export function RegionDetailPanel({ selectedRegionId, onRegionChange }: RegionDe
   return (
     <div className="p-4 lg:p-6">
       {/* Region Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-gray-200 pb-4">
+      <div className="flex gap-2 mb-4 border-b border-gray-200 pb-4">
         {REGIONS.map((r) => (
           <button
             key={r.id}
@@ -82,6 +83,36 @@ export function RegionDetailPanel({ selectedRegionId, onRegionChange }: RegionDe
             }
           >
             {r.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Special Category Tabs - Moved right below Region Tabs */}
+      <div className="flex gap-2 mb-6 border-b border-gray-200 pb-4">
+        {(['도서·벽지', '50차시', '특수학급'] as SpecialCategory[]).map((category) => (
+          <button
+            key={category}
+            onClick={() => {
+              if (onCategorySelect) {
+                // Navigate to special item detail panel
+                onCategorySelect(category)
+              } else {
+                // Fallback to local filtering
+                setSelectedSpecialCategory(category)
+              }
+            }}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              selectedSpecialCategory === category
+                ? 'text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+            style={
+              selectedSpecialCategory === category
+                ? { backgroundColor: categoryColors[category] }
+                : undefined
+            }
+          >
+            {category}
           </button>
         ))}
       </div>
@@ -103,28 +134,6 @@ export function RegionDetailPanel({ selectedRegionId, onRegionChange }: RegionDe
             }}
           />
         </div>
-      </div>
-
-      {/* Special Category Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-gray-200 pb-4">
-        {(['도서·벽지', '50차시', '특수학급'] as SpecialCategory[]).map((category) => (
-          <button
-            key={category}
-            onClick={() => setSelectedSpecialCategory(category)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              selectedSpecialCategory === category
-                ? 'text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-            style={
-              selectedSpecialCategory === category
-                ? { backgroundColor: categoryColors[category] }
-                : undefined
-            }
-          >
-            {category}
-          </button>
-        ))}
       </div>
 
       {/* 자치단체 Table */}

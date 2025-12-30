@@ -6,6 +6,7 @@ export interface InstructorCourse {
   startDate: string; // YYYY-MM-DD
   endDate: string;   // YYYY-MM-DD
   status: '예정' | '진행중' | '완료';
+  educationStatus?: string; // 교육 상태: 'OPEN' | '신청 중' | '신청 마감' | etc.
   region?: string;
   classInfo: string;
   timeRange: string; // e.g. "09:00~12:10"
@@ -15,6 +16,10 @@ export interface InstructorCalendarEvent {
   date: string; // YYYY-MM-DD
   title: string;
   status: '예정' | '진행중' | '완료';
+  timeRange?: string; // e.g. "09:00~12:10"
+  institutionName?: string;
+  classInfo?: string;
+  educationId?: string;
 }
 
 // Mock data for "내 출강 리스트" (at least 8 rows)
@@ -26,6 +31,7 @@ export const instructorCourses: InstructorCourse[] = [
     startDate: '2025-03-01',
     endDate: '2025-06-30',
     status: '진행중',
+    educationStatus: 'OPEN',
     region: '서울',
     classInfo: '3학년 2반',
     timeRange: '09:00~12:10'
@@ -37,6 +43,7 @@ export const instructorCourses: InstructorCourse[] = [
     startDate: '2025-03-15',
     endDate: '2025-05-30',
     status: '진행중',
+    educationStatus: '신청 중',
     region: '경기',
     classInfo: '2학년 1반',
     timeRange: '14:00~16:00'
@@ -48,6 +55,7 @@ export const instructorCourses: InstructorCourse[] = [
     startDate: '2025-04-01',
     endDate: '2025-07-31',
     status: '예정',
+    educationStatus: 'OPEN',
     region: '인천',
     classInfo: '1학년 3반',
     timeRange: '10:00~12:00'
@@ -59,6 +67,7 @@ export const instructorCourses: InstructorCourse[] = [
     startDate: '2025-03-20',
     endDate: '2025-06-20',
     status: '진행중',
+    educationStatus: '신청 중',
     region: '부산',
     classInfo: '4학년 1반',
     timeRange: '13:00~15:00'
@@ -70,6 +79,7 @@ export const instructorCourses: InstructorCourse[] = [
     startDate: '2025-04-05',
     endDate: '2025-07-05',
     status: '예정',
+    educationStatus: 'OPEN',
     region: '대구',
     classInfo: '1학년 2반',
     timeRange: '09:30~11:30'
@@ -81,6 +91,7 @@ export const instructorCourses: InstructorCourse[] = [
     startDate: '2025-03-10',
     endDate: '2025-06-10',
     status: '진행중',
+    educationStatus: '신청 중',
     region: '광주',
     classInfo: '2학년 3반',
     timeRange: '15:00~17:00'
@@ -92,6 +103,7 @@ export const instructorCourses: InstructorCourse[] = [
     startDate: '2025-04-15',
     endDate: '2025-07-15',
     status: '예정',
+    educationStatus: 'OPEN',
     region: '울산',
     classInfo: '5학년 1반',
     timeRange: '11:00~13:00'
@@ -103,6 +115,7 @@ export const instructorCourses: InstructorCourse[] = [
     startDate: '2025-02-01',
     endDate: '2025-02-28',
     status: '완료',
+    educationStatus: '신청 마감',
     region: '수원',
     classInfo: '6학년 2반',
     timeRange: '10:00~12:00'
@@ -114,6 +127,7 @@ export const instructorCourses: InstructorCourse[] = [
     startDate: '2025-01-15',
     endDate: '2025-02-15',
     status: '완료',
+    educationStatus: '신청 마감',
     region: '대전',
     classInfo: '3학년 3반',
     timeRange: '14:00~16:00'
@@ -125,6 +139,7 @@ export const instructorCourses: InstructorCourse[] = [
     startDate: '2025-03-25',
     endDate: '2025-06-25',
     status: '예정',
+    educationStatus: 'OPEN',
     region: '세종',
     classInfo: '1학년 1반',
     timeRange: '09:00~11:00'
@@ -136,61 +151,109 @@ export const instructorCalendarEvents: InstructorCalendarEvent[] = [
   {
     date: '2025-03-01',
     title: '블록코딩 기초',
-    status: '진행중'
+    status: '진행중',
+    timeRange: '09:00~12:10',
+    institutionName: '서울초등학교',
+    classInfo: '3학년 2반',
+    educationId: '1'
   },
   {
     date: '2025-03-05',
     title: 'AI 체험 워크숍',
-    status: '진행중'
+    status: '진행중',
+    timeRange: '14:00~16:00',
+    institutionName: '경기중학교',
+    classInfo: '2학년 1반',
+    educationId: '2'
   },
   {
     date: '2025-03-10',
     title: '로봇 공학 입문',
-    status: '예정'
+    status: '예정',
+    timeRange: '10:00~12:00',
+    institutionName: '인천고등학교',
+    classInfo: '1학년 3반',
+    educationId: '3'
   },
   {
     date: '2025-03-12',
     title: '창의적 문제 해결',
-    status: '진행중'
+    status: '진행중',
+    timeRange: '13:00~15:00',
+    institutionName: '부산초등학교',
+    classInfo: '4학년 1반',
+    educationId: '4'
   },
   {
     date: '2025-03-15',
     title: '디지털 리터러시',
-    status: '예정'
+    status: '예정',
+    timeRange: '09:30~11:30',
+    institutionName: '대구중학교',
+    classInfo: '1학년 2반',
+    educationId: '5'
   },
   {
     date: '2025-03-17',
     title: '미디어 아트 창작',
-    status: '진행중'
+    status: '진행중',
+    timeRange: '15:00~17:00',
+    institutionName: '광주고등학교',
+    classInfo: '2학년 3반',
+    educationId: '6'
   },
   {
     date: '2025-03-20',
     title: '게임 디자인',
-    status: '예정'
+    status: '예정',
+    timeRange: '11:00~13:00',
+    institutionName: '울산초등학교',
+    classInfo: '5학년 1반',
+    educationId: '7'
   },
   {
     date: '2025-03-22',
     title: '웹 개발 기초',
-    status: '완료'
+    status: '완료',
+    timeRange: '10:00~12:00',
+    institutionName: '수원초등학교',
+    classInfo: '6학년 2반',
+    educationId: '8'
   },
   {
     date: '2025-03-25',
     title: '3D 프린팅 기초',
-    status: '예정'
+    status: '예정',
+    timeRange: '09:00~11:00',
+    institutionName: '세종고등학교',
+    classInfo: '1학년 1반',
+    educationId: '10'
   },
   {
     date: '2025-03-28',
     title: '모바일 앱 만들기',
-    status: '완료'
+    status: '완료',
+    timeRange: '14:00~16:00',
+    institutionName: '대전중학교',
+    classInfo: '3학년 3반',
+    educationId: '9'
   },
   {
     date: '2025-03-30',
     title: '블록코딩 기초',
-    status: '진행중'
+    status: '진행중',
+    timeRange: '09:00~12:10',
+    institutionName: '서울초등학교',
+    classInfo: '3학년 2반',
+    educationId: '1'
   },
   {
     date: '2025-03-31',
     title: 'AI 체험 워크숍',
-    status: '진행중'
+    status: '진행중',
+    timeRange: '14:00~16:00',
+    institutionName: '경기중학교',
+    classInfo: '2학년 1반',
+    educationId: '2'
   }
 ];

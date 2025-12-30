@@ -322,6 +322,135 @@
     background-color: #0f172a !important;
     color: #ffffff !important;
   }
+
+  /* Approve button (green) hover state - keep bright and readable */
+  /* Override any dark hover states for green approve buttons */
+  .ant-btn.bg-green-600:hover:not(:disabled):not([disabled]),
+  button.bg-green-600:hover:not(:disabled):not([disabled]),
+  .ant-btn-primary.bg-green-600:hover:not(:disabled):not([disabled]) {
+    background-color: #22c55e !important; /* green-500 */
+    filter: brightness(1.1) !important;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.4) !important; /* ring effect */
+    color: #ffffff !important;
+  }
+
+  .ant-btn.bg-green-600:hover:not(:disabled):not([disabled]) svg,
+  button.bg-green-600:hover:not(:disabled):not([disabled]) svg,
+  .ant-btn-primary.bg-green-600:hover:not(:disabled):not([disabled]) svg {
+    color: #ffffff !important;
+  }
+
+  /* Disabled approve buttons - no hover effects */
+  .ant-btn.bg-green-600:disabled:hover,
+  button.bg-green-600:disabled:hover,
+  .ant-btn-primary.bg-green-600:disabled:hover,
+  .ant-btn.bg-green-600[disabled]:hover,
+  button.bg-green-600[disabled]:hover,
+  .ant-btn-primary.bg-green-600[disabled]:hover {
+    background-color: #16a34a !important; /* green-600 */
+    filter: none !important;
+    box-shadow: none !important;
+  }
+
+  /* TimePicker OK button - match primary action button style */
+  /* Only affects TimePicker popups with tp-popup-primary-ok class */
+  .tp-popup-primary-ok .ant-picker-ok .ant-btn {
+    height: 40px !important;
+    padding: 0 16px !important;
+    border-radius: 12px !important;
+    background: #0B1220 !important; /* dark navy - same as primary button */
+    border-color: #0B1220 !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    min-width: 96px !important;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18) !important;
+    transition: all 0.2s ease !important;
+  }
+
+  /* Hover state - slightly brighter */
+  .tp-popup-primary-ok .ant-picker-ok .ant-btn:hover:not(:disabled):not([disabled]) {
+    filter: brightness(1.08) !important;
+    background: #0B1220 !important;
+    border-color: #0B1220 !important;
+  }
+
+  /* Focus state - focus ring */
+  .tp-popup-primary-ok .ant-picker-ok .ant-btn:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(93, 69, 220, 0.35), 0 8px 18px rgba(0, 0, 0, 0.18) !important;
+  }
+
+  /* Active state */
+  .tp-popup-primary-ok .ant-picker-ok .ant-btn:active:not(:disabled):not([disabled]) {
+    background: #0B1220 !important;
+    border-color: #0B1220 !important;
+    filter: brightness(0.95) !important;
+  }
+
+  /* Keep label visible */
+  .tp-popup-primary-ok .ant-picker-ok .ant-btn span {
+    color: #ffffff !important;
+  }
+
+  /* Icon color if present */
+  .tp-popup-primary-ok .ant-picker-ok .ant-btn svg,
+  .tp-popup-primary-ok .ant-picker-ok .ant-btn .anticon {
+    color: #ffffff !important;
+  }
+
+  /* Disabled state */
+  .tp-popup-primary-ok .ant-picker-ok .ant-btn:disabled,
+  .tp-popup-primary-ok .ant-picker-ok .ant-btn[disabled] {
+    background-color: #64748b !important; /* slate-500 */
+    border-color: #64748b !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    cursor: not-allowed !important;
+    filter: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Footer layout - ensure clean spacing */
+  .tp-popup-primary-ok .ant-picker-footer {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 8px 12px !important;
+  }
+
+  /* Now button styling - keep readable */
+  .tp-popup-primary-ok .ant-picker-now-btn {
+    color: #151827 !important;
+    font-weight: 500 !important;
+    padding: 4px 8px !important;
+  }
+
+  .tp-popup-primary-ok .ant-picker-now-btn:hover {
+    color: #3b82f6 !important;
+  }
+
+  /* Dark mode support */
+  .dark .tp-popup-primary-ok .ant-picker-ok .ant-btn {
+    background: #0B1220 !important;
+    border-color: #0B1220 !important;
+    color: #ffffff !important;
+  }
+
+  .dark .tp-popup-primary-ok .ant-picker-ok .ant-btn:hover:not(:disabled):not([disabled]) {
+    filter: brightness(1.08) !important;
+  }
+
+  .dark .tp-popup-primary-ok .ant-picker-now-btn {
+    color: #e5e7eb !important;
+  }
+
+  .dark .tp-popup-primary-ok .ant-picker-now-btn:hover {
+    color: #60a5fa !important;
+  }
 }
 
 

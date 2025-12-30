@@ -34,11 +34,11 @@ export function AppShell({ children }: AppShellProps) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden dark:bg-gray-900">
+    <div className="flex h-screen overflow-hidden bg-white">
       {renderSidebar()}
       <div className={`flex flex-col flex-1 overflow-hidden ${isSidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
         <Header />
-        <main className="flex-1 overflow-y-auto bg-slate-50 dark:bg-gray-900">
+        <main className="flex-1 overflow-y-auto bg-white">
           {children}
           <ScrollToTop />
         </main>

@@ -105,16 +105,14 @@ export function TitleTablePanel({
       </div>
 
       <div className="mb-4">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 z-10" />
-          <Input
-            placeholder="Search title..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            allowClear
-            className="h-9 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition hover:border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-400 [&_.ant-input]:!h-9 [&_.ant-input]:!px-0 [&_.ant-input]:!py-0 [&_.ant-input]:!bg-transparent [&_.ant-input]:!border-0 [&_.ant-input]:!outline-none [&_.ant-input]:!shadow-none [&_.ant-input]:!text-sm [&_.ant-input-wrapper]:!border-0 [&_.ant-input-wrapper]:!shadow-none [&_.ant-input-wrapper]:!bg-transparent [&_.ant-input-clear-icon]:!text-slate-400"
-          />
-        </div>
+        <Input
+          placeholder="Search title..."
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          allowClear
+          prefix={<Search className="h-4 w-4 text-slate-400" />}
+          className="cc-search-input h-9 w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 transition hover:border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-400"
+        />
       </div>
 
       <div className="flex-1 overflow-hidden">

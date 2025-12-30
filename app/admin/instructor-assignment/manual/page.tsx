@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect, useRef } from 'react'
-import { Table, Button, Card, Select, Space, DatePicker, Badge, Modal, Collapse } from 'antd'
-import { Input } from '@/components/shared/common'
+import { Table, Button, Card, Select, Space, DatePicker, Badge, Modal, Collapse, Input, message, Tooltip } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { ChevronRight, ArrowLeft, RotateCcw, RefreshCw, Copy, Trash2, UserPlus, CheckCircle2, Eye, Search, Filter } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
@@ -117,9 +116,13 @@ const dummyData: EducationAssignmentItem[] = [
         date: '2025-11-24',
         startTime: '10:30',
         endTime: '11:10',
-        mainInstructors: [],
+        mainInstructors: [
+          { id: '9', name: '신청자1', status: 'pending' },
+        ],
         mainInstructorRequired: 1,
-        assistantInstructors: [],
+        assistantInstructors: [
+          { id: '10', name: '신청자2', status: 'pending' },
+        ],
         assistantInstructorRequired: 3,
       },
     ],
@@ -152,9 +155,12 @@ const dummyData: EducationAssignmentItem[] = [
         endTime: '09:40',
         mainInstructors: [
           { id: '5', name: '최주강', status: 'confirmed' },
+          { id: '11', name: '신청자3', status: 'pending' },
         ],
         mainInstructorRequired: 2,
-        assistantInstructors: [],
+        assistantInstructors: [
+          { id: '12', name: '신청자4', status: 'pending' },
+        ],
         assistantInstructorRequired: 3,
       },
     ],
@@ -322,12 +328,113 @@ export default function InstructorAssignmentPage() {
     }
   }
 
+  // Final confirm handler for pending instructors
+  const handleFinalConfirm = async (session: number, instructorId: string, type: 'main' | 'assistant') => {
+    if (!selectedEducation) return
+
+    const lesson = selectedEducation.lessons?.find((l) => l.session === session)
+    if (!lesson) return
+
+    // Check if main instructor already confirmed (only 1 main instructor allowed)
+    if (type === 'main') {
+      const hasConfirmedMain = lesson.mainInstructors.some(
+        (inst) => inst.id !== instructorId && inst.status === 'confirmed'
+      )
+      if (hasConfirmedMain) {
+        message.warning('이미 주강사가 확정되어 있습니다.')
+        return
+      }
+    }
+
+    Modal.confirm({
+      title: '최종 확정',
+      content: '이 강사를 최종 확정하시겠습니까?',
+      onOk: async () => {
+        try {
+          // TODO: Replace with actual API call when available
+          // await assignmentService.finalConfirm(selectedEducation.educationId, session, instructorId, type)
+
+          // Update local state
+          if (type === 'main') {
+            const instructor = lesson.mainInstructors.find((inst) => inst.id === instructorId)
+            if (instructor) {
+              instructor.status = 'confirmed'
+            }
+          } else {
+            const instructor = lesson.assistantInstructors.find((inst) => inst.id === instructorId)
+            if (instructor) {
+              instructor.status = 'confirmed'
+            }
+          }
+
+          setSelectedEducation({ ...selectedEducation })
+
+          // Sync to application page via dataStore
+          dataStore.confirmInstructorInAssignment(selectedEducation.educationId, session, instructorId, type)
+
+          message.success('강사가 최종 확정되었습니다.')
+        } catch (error) {
+          console.error('Failed to confirm instructor:', error)
+          message.error('최종 확정 처리 중 오류가 발생했습니다.')
+        }
+      },
+    })
+  }
+
+  // Delete handler for instructors (both confirmed and pending)
+  const handleDeleteInstructorFromCard = async (session: number, instructorId: string, type: 'main' | 'assistant') => {
+    if (!selectedEducation) return
+
+    const lesson = selectedEducation.lessons?.find((l) => l.session === session)
+    if (!lesson) return
+
+    const instructor = type === 'main'
+      ? lesson.mainInstructors.find((inst) => inst.id === instructorId)
+      : lesson.assistantInstructors.find((inst) => inst.id === instructorId)
+
+    const isPending = instructor?.status === 'pending'
+
+    Modal.confirm({
+      title: '강사 삭제',
+      content: isPending
+        ? '이 강사 신청을 삭제하시겠습니까? 삭제된 신청은 거절 상태로 변경됩니다.'
+        : '이 강사를 삭제하시겠습니까?',
+      okText: '삭제',
+      cancelText: '취소',
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        try {
+          // TODO: Replace with actual API call when available
+          // await assignmentService.deleteInstructor(selectedEducation.educationId, session, instructorId, type)
+
+          // Update local state
+          if (type === 'main') {
+            lesson.mainInstructors = lesson.mainInstructors.filter((inst) => inst.id !== instructorId)
+          } else {
+            lesson.assistantInstructors = lesson.assistantInstructors.filter((inst) => inst.id !== instructorId)
+          }
+
+          setSelectedEducation({ ...selectedEducation })
+
+          // Sync to application page via dataStore
+          dataStore.deleteInstructorFromAssignment(selectedEducation.educationId, session, instructorId, type)
+
+          message.success(isPending ? '강사 신청이 삭제되었습니다.' : '강사가 삭제되었습니다.')
+        } catch (error) {
+          console.error('Failed to delete instructor:', error)
+          message.error('삭제 처리 중 오류가 발생했습니다.')
+        }
+      },
+    })
+  }
+
   const handleCopyEducationId = () => {
     if (selectedEducation) {
       navigator.clipboard.writeText(selectedEducation.educationId)
       // Could add toast notification here
     }
   }
+
 
   const filteredData = useMemo(() => {
     return dummyData.filter((item) => {
@@ -503,15 +610,15 @@ export default function InstructorAssignmentPage() {
             {/* Search Toolbar */}
             <div className="flex items-center h-16 px-4 py-3 border-b border-gray-200 gap-3">
               {/* Search Input - Left Side */}
-              <div className="relative w-full max-w-[420px]">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 z-10" />
+              <div className="w-full max-w-[420px]">
                 <Input
                   placeholder="검색어를 입력하세요..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   allowClear
                   onPressEnter={handleSearch}
-                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition hover:border-slate-300 focus:border-slate-300 focus:ring-2 focus:ring-slate-300 [&_.ant-input]:!h-11 [&_.ant-input]:!px-0 [&_.ant-input]:!py-0 [&_.ant-input]:!bg-transparent [&_.ant-input]:!border-0 [&_.ant-input]:!outline-none [&_.ant-input]:!shadow-none [&_.ant-input]:!text-sm [&_.ant-input-wrapper]:!border-0 [&_.ant-input-wrapper]:!shadow-none [&_.ant-input-wrapper]:!bg-transparent [&_.ant-input-clear-icon]:!text-slate-400"
+                  prefix={<Search className="h-5 w-5 text-slate-400" />}
+                  className="admin-search-input h-11 w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 transition hover:border-slate-300 focus:border-slate-300 focus:ring-2 focus:ring-slate-300"
                 />
               </div>
               
@@ -717,40 +824,87 @@ export default function InstructorAssignmentPage() {
                                 <h4 className="text-sm font-semibold text-gray-700 mb-3">주강사</h4>
                                 {lesson.mainInstructors.length > 0 ? (
                                   <div className="space-y-2">
-                                    {lesson.mainInstructors.map((instructor) => (
-                                      <div
-                                        key={instructor.id}
-                                        className="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-200"
-                                      >
-                                        <div className="flex items-center gap-2">
-                                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-semibold text-blue-700">
-                                            {instructor.name.charAt(0)}
+                                    {/* Sort: confirmed first, then pending */}
+                                    {[...lesson.mainInstructors]
+                                      .sort((a, b) => {
+                                        if (a.status === 'confirmed' && b.status === 'pending') return -1
+                                        if (a.status === 'pending' && b.status === 'confirmed') return 1
+                                        return 0
+                                      })
+                                      .map((instructor) => {
+                                        const hasConfirmedMain = lesson.mainInstructors.some(
+                                          (inst) => inst.id !== instructor.id && inst.status === 'confirmed'
+                                        )
+                                        const canConfirm = instructor.status === 'pending' && !hasConfirmedMain
+
+                                        return (
+                                          <div
+                                            key={instructor.id}
+                                            className="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-200"
+                                          >
+                                            <div className="flex items-center gap-2">
+                                              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-semibold text-blue-700">
+                                                {instructor.name.charAt(0)}
+                                              </div>
+                                              <span className="text-sm font-medium text-gray-900">{instructor.name}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              <Badge
+                                                status={instructor.status === 'confirmed' ? 'success' : 'default'}
+                                                text={
+                                                  <span className="text-xs">
+                                                    {instructor.status === 'confirmed' ? '확정됨' : '대기'}
+                                                  </span>
+                                                }
+                                              />
+                                              {instructor.status === 'pending' ? (
+                                                <>
+                                                  <Tooltip title={hasConfirmedMain ? '이미 주강사가 확정되어 있습니다.' : ''}>
+                                                    <Button
+                                                      type="primary"
+                                                      size="small"
+                                                      icon={<CheckCircle2 className="w-3 h-3" />}
+                                                      onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        if (canConfirm) {
+                                                          handleFinalConfirm(lesson.session, instructor.id, 'main')
+                                                        }
+                                                      }}
+                                                      disabled={!canConfirm}
+                                                      className="h-7 px-3 bg-green-600 hover:bg-green-500 hover:brightness-110 hover:ring-2 hover:ring-green-400/40 active:bg-green-600 border-0 text-white text-xs disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600 disabled:hover:brightness-100 disabled:hover:ring-0"
+                                                    >
+                                                      최종확정
+                                                    </Button>
+                                                  </Tooltip>
+                                                  <Button
+                                                    type="text"
+                                                    danger
+                                                    size="small"
+                                                    icon={<Trash2 className="w-3 h-3" />}
+                                                    onClick={(e) => {
+                                                      e.stopPropagation()
+                                                      handleDeleteInstructorFromCard(lesson.session, instructor.id, 'main')
+                                                    }}
+                                                    className="h-7 w-7 p-0 hover:bg-red-50"
+                                                  />
+                                                </>
+                                              ) : (
+                                                <Button
+                                                  type="text"
+                                                  danger
+                                                  size="small"
+                                                  icon={<Trash2 className="w-3 h-3" />}
+                                                  onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleDeleteInstructorFromCard(lesson.session, instructor.id, 'main')
+                                                  }}
+                                                  className="h-7 w-7 p-0 hover:bg-red-50"
+                                                />
+                                              )}
+                                            </div>
                                           </div>
-                                          <span className="text-sm font-medium text-gray-900">{instructor.name}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                          <Badge
-                                            status={instructor.status === 'confirmed' ? 'success' : 'default'}
-                                            text={
-                                              <span className="text-xs">
-                                                {instructor.status === 'confirmed' ? '확정됨' : '대기중'}
-                                              </span>
-                                            }
-                                          />
-                                          <Button
-                                            type="text"
-                                            danger
-                                            size="small"
-                                            icon={<Trash2 className="w-3 h-3" />}
-                                            onClick={(e) => {
-                                              e.stopPropagation()
-                                              handleDeleteInstructor(lesson.session, instructor.id, 'main')
-                                            }}
-                                            className="h-7 w-7 p-0 hover:bg-red-50"
-                                          />
-                                        </div>
-                                      </div>
-                                    ))}
+                                        )
+                                      })}
                                   </div>
                                 ) : (
                                   <div className="space-y-3 py-2">
@@ -814,40 +968,75 @@ export default function InstructorAssignmentPage() {
                                 <h4 className="text-sm font-semibold text-gray-700 mb-3">보조강사</h4>
                                 {lesson.assistantInstructors.length > 0 ? (
                                   <div className="space-y-2">
-                                    {lesson.assistantInstructors.map((instructor) => (
-                                      <div
-                                        key={instructor.id}
-                                        className="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-200"
-                                      >
-                                        <div className="flex items-center gap-2">
-                                          <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-xs font-semibold text-purple-700">
-                                            {instructor.name.charAt(0)}
+                                    {/* Sort: confirmed first, then pending */}
+                                    {[...lesson.assistantInstructors]
+                                      .sort((a, b) => {
+                                        if (a.status === 'confirmed' && b.status === 'pending') return -1
+                                        if (a.status === 'pending' && b.status === 'confirmed') return 1
+                                        return 0
+                                      })
+                                      .map((instructor) => (
+                                        <div
+                                          key={instructor.id}
+                                          className="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-200"
+                                        >
+                                          <div className="flex items-center gap-2">
+                                            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-xs font-semibold text-purple-700">
+                                              {instructor.name.charAt(0)}
+                                            </div>
+                                            <span className="text-sm font-medium text-gray-900">{instructor.name}</span>
                                           </div>
-                                          <span className="text-sm font-medium text-gray-900">{instructor.name}</span>
+                                          <div className="flex items-center gap-2">
+                                            <Badge
+                                              status={instructor.status === 'confirmed' ? 'success' : 'default'}
+                                              text={
+                                                <span className="text-xs">
+                                                  {instructor.status === 'confirmed' ? '확정됨' : '대기'}
+                                                </span>
+                                              }
+                                            />
+                                            {instructor.status === 'pending' ? (
+                                              <>
+                                                <Button
+                                                  type="primary"
+                                                  size="small"
+                                                  icon={<CheckCircle2 className="w-3 h-3" />}
+                                                  onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleFinalConfirm(lesson.session, instructor.id, 'assistant')
+                                                  }}
+                                                  className="h-7 px-3 bg-green-600 hover:bg-green-500 hover:brightness-110 hover:ring-2 hover:ring-green-400/40 active:bg-green-600 border-0 text-white text-xs"
+                                                >
+                                                  최종확정
+                                                </Button>
+                                                <Button
+                                                  type="text"
+                                                  danger
+                                                  size="small"
+                                                  icon={<Trash2 className="w-3 h-3" />}
+                                                  onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleDeleteInstructorFromCard(lesson.session, instructor.id, 'assistant')
+                                                  }}
+                                                  className="h-7 w-7 p-0 hover:bg-red-50"
+                                                />
+                                              </>
+                                            ) : (
+                                              <Button
+                                                type="text"
+                                                danger
+                                                size="small"
+                                                icon={<Trash2 className="w-3 h-3" />}
+                                                onClick={(e) => {
+                                                  e.stopPropagation()
+                                                  handleDeleteInstructorFromCard(lesson.session, instructor.id, 'assistant')
+                                                }}
+                                                className="h-7 w-7 p-0 hover:bg-red-50"
+                                              />
+                                            )}
+                                          </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                          <Badge
-                                            status={instructor.status === 'confirmed' ? 'success' : 'default'}
-                                            text={
-                                              <span className="text-xs">
-                                                {instructor.status === 'confirmed' ? '확정됨' : '대기중'}
-                                              </span>
-                                            }
-                                          />
-                                          <Button
-                                            type="text"
-                                            danger
-                                            size="small"
-                                            icon={<Trash2 className="w-3 h-3" />}
-                                            onClick={(e) => {
-                                              e.stopPropagation()
-                                              handleDeleteInstructor(lesson.session, instructor.id, 'assistant')
-                                            }}
-                                            className="h-7 w-7 p-0 hover:bg-red-50"
-                                          />
-                                        </div>
-                                      </div>
-                                    ))}
+                                      ))}
                                   </div>
                                 ) : (
                                   <div className="space-y-3 py-2">
@@ -912,6 +1101,7 @@ export default function InstructorAssignmentPage() {
                     </div>
                   </DetailSectionCard>
                 )}
+
               </div>
             </div>
           )

@@ -10,11 +10,26 @@ interface ModalFormProps {
   type: CommonCodeFormType
   mode: CommonCodeFormMode
   data?: Title | Group | GroupKey
+  selectedTitleId?: string | null
+  selectedGroupId?: string | null
+  titles?: Title[]
+  groups?: Group[]
   onClose: () => void
   onSubmit: (values: any) => void
 }
 
-export function ModalForm({ open, type, mode, data, onClose, onSubmit }: ModalFormProps) {
+export function ModalForm({ 
+  open, 
+  type, 
+  mode, 
+  data, 
+  selectedTitleId,
+  selectedGroupId,
+  titles = [],
+  groups = [],
+  onClose, 
+  onSubmit 
+}: ModalFormProps) {
   const [form] = Form.useForm()
 
   const handleSubmit = () => {
@@ -63,18 +78,33 @@ export function ModalForm({ open, type, mode, data, onClose, onSubmit }: ModalFo
     return `${typeNames[type]} ${modeNames[mode]}`
   }
 
+  // Get related title/group info for display
+  const getRelatedInfo = () => {
+    if (type === 'group') {
+      // In edit mode, get titleId from data; in create mode, use selectedTitleId
+      const titleId = mode === 'edit' && data ? (data as Group).titleId : selectedTitleId
+      if (titleId) {
+        const title = titles.find(t => t.id === titleId)
+        return title ? { label: 'Title', value: title.name } : null
+      }
+    }
+    if (type === 'key') {
+      // In edit mode, get groupId from data; in create mode, use selectedGroupId
+      const groupId = mode === 'edit' && data ? (data as GroupKey).groupId : selectedGroupId
+      if (groupId) {
+        const group = groups.find(g => g.id === groupId)
+        return group ? { label: 'Group', value: group.name } : null
+      }
+    }
+    return null
+  }
+
+  const relatedInfo = getRelatedInfo()
+
   return (
     <Modal
       title={
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-slate-900">{getTitle()}</h3>
-          <Button
-            type="text"
-            icon={<X className="w-4 h-4" />}
-            onClick={handleClose}
-            className="h-8 w-8 p-0"
-          />
-        </div>
+        <h3 className="text-lg font-semibold text-slate-900">{getTitle()}</h3>
       }
       open={open}
       onCancel={handleClose}
@@ -83,6 +113,16 @@ export function ModalForm({ open, type, mode, data, onClose, onSubmit }: ModalFo
       className="[&_.ant-modal-content]:rounded-2xl [&_.ant-modal-header]:border-b [&_.ant-modal-header]:border-slate-200 [&_.ant-modal-body]:p-6"
     >
       <Form form={form} layout="vertical" onFinish={handleSubmit} className="space-y-4 mt-4">
+        {/* Display related Title/Group info */}
+        {relatedInfo && (
+          <div className="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-slate-600">{relatedInfo.label}:</span>
+              <span className="text-sm font-semibold text-slate-900">{relatedInfo.value}</span>
+            </div>
+          </div>
+        )}
+
         {type === 'title' && (
           <>
             <Form.Item

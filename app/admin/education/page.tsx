@@ -14,6 +14,8 @@ import {
 } from '@/components/admin/operations'
 import dayjs, { Dayjs } from 'dayjs'
 import 'dayjs/locale/ko'
+import { dataStore, type Education } from '@/lib/dataStore'
+import { message } from 'antd'
 
 dayjs.locale('ko')
 
@@ -187,10 +189,9 @@ const regionOptions = [
 ]
 
 const educationStatusOptions = [
-  { value: '신청 중', label: '신청 중' },
-  { value: '신청 마감', label: '신청 마감' },
-  { value: '진행중', label: '진행중' },
-  { value: '완료', label: '완료' },
+  { value: 'OPEN', label: 'OPEN' },
+  { value: 'INIT', label: 'INIT' },
+  { value: 'CANCEL', label: 'CANCEL' },
 ]
 
 export default function EducationManagementPage() {
@@ -233,6 +234,10 @@ export default function EducationManagementPage() {
   const handleRegisterClick = () => {
     setViewMode('register')
     setFormMode('create')
+    setLessonCount(1)
+    form.resetFields()
+    form.setFieldsValue({ lessonCount: 1 })
+    setFormMode('create')
     setActiveSection('basic')
   }
 
@@ -249,14 +254,131 @@ export default function EducationManagementPage() {
   }
 
   const handleFormSubmit = (values: any) => {
-    console.log('Form values:', values)
-    // Handle form submission
+    try {
+      // Generate education ID if creating new
+      const educationId = formMode === 'create' 
+        ? `EDU-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`
+        : selectedEducation?.educationId || `EDU-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`
+
+      // Format period
+      const periodStart = values.periodStart ? dayjs(values.periodStart).format('YYYY-MM-DD') : undefined
+      const periodEnd = values.periodEnd ? dayjs(values.periodEnd).format('YYYY-MM-DD') : undefined
+      const period = periodStart && periodEnd ? `${periodStart} ~ ${periodEnd}` : periodStart || ''
+
+      // Format lessons
+      const lessons = values.lessons?.map((lesson: any, index: number) => ({
+        title: `${index + 1}차시`,
+        date: lesson.date ? dayjs(lesson.date).format('YYYY.MM.DD') : '',
+        startTime: lesson.startTime ? dayjs(lesson.startTime).format('HH:mm') : '',
+        endTime: lesson.endTime ? dayjs(lesson.endTime).format('HH:mm') : '',
+        mainInstructors: 0,
+        assistantInstructors: 0,
+      })) || []
+
+      const educationData: Education = {
+        key: formMode === 'edit' && selectedEducation ? selectedEducation.key : educationId,
+        status: values.status || '신청 중',
+        educationId,
+        name: values.name || '',
+        institution: values.institution || '',
+        region: values.region || '',
+        gradeClass: values.grade ? `${values.grade}학년 ${values.class}반` : '',
+        period,
+        periodStart,
+        periodEnd,
+        requestOrg: values.requestOrg,
+        schoolName: values.schoolName,
+        programTitle: values.program,
+        courseName: values.name,
+        totalSessions: values.lessonCount || lessons.length,
+        note: values.note,
+        educationStatus: values.status === '신청 마감' ? '신청 마감' : (values.status === 'OPEN' ? 'OPEN' : '신청 중'),
+        applicationDeadline: values.applicationDeadline ? dayjs(values.applicationDeadline).format('YYYY-MM-DD') : undefined,
+        lessons,
+      }
+
+      if (formMode === 'create') {
+        // Add new education to dataStore
+        dataStore.addEducation(educationData)
+        message.success('교육이 등록되었습니다.')
+      } else {
+        // Update existing education
+        if (selectedEducation) {
+          dataStore.updateEducation(selectedEducation.educationId, educationData)
+          message.success('교육이 수정되었습니다.')
+        }
+      }
+
+      // Reset form and go back to list
+      form.resetFields()
+      setLessonCount(1)
+      setViewMode('list')
+      setFormMode('create')
+      setSelectedEducation(null)
+    } catch (error) {
+      console.error('Failed to save education:', error)
+      message.error('교육 저장 중 오류가 발생했습니다.')
+    }
   }
 
   const handleTempSave = () => {
     const values = form.getFieldsValue()
-    console.log('Temp save:', values)
-    // Handle temporary save
+    try {
+      // Generate education ID if creating new
+      const educationId = formMode === 'create' 
+        ? `EDU-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`
+        : selectedEducation?.educationId || `EDU-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`
+
+      // Format period
+      const periodStart = values.periodStart ? dayjs(values.periodStart).format('YYYY-MM-DD') : undefined
+      const periodEnd = values.periodEnd ? dayjs(values.periodEnd).format('YYYY-MM-DD') : undefined
+      const period = periodStart && periodEnd ? `${periodStart} ~ ${periodEnd}` : periodStart || ''
+
+      // Format lessons
+      const lessons = values.lessons?.map((lesson: any, index: number) => ({
+        title: `${index + 1}차시`,
+        date: lesson.date ? dayjs(lesson.date).format('YYYY.MM.DD') : '',
+        startTime: lesson.startTime ? dayjs(lesson.startTime).format('HH:mm') : '',
+        endTime: lesson.endTime ? dayjs(lesson.endTime).format('HH:mm') : '',
+        mainInstructors: 0,
+        assistantInstructors: 0,
+      })) || []
+
+      const educationData: Education = {
+        key: formMode === 'edit' && selectedEducation ? selectedEducation.key : educationId,
+        status: values.status || '신청 중',
+        educationId,
+        name: values.name || '',
+        institution: values.institution || '',
+        region: values.region || '',
+        gradeClass: values.grade ? `${values.grade}학년 ${values.class}반` : '',
+        period,
+        periodStart,
+        periodEnd,
+        requestOrg: values.requestOrg,
+        schoolName: values.schoolName,
+        programTitle: values.program,
+        courseName: values.name,
+        totalSessions: values.lessonCount || lessons.length,
+        note: values.note,
+        educationStatus: values.status === '신청 마감' ? '신청 마감' : (values.status === 'OPEN' ? 'OPEN' : '신청 중'),
+        applicationDeadline: values.applicationDeadline ? dayjs(values.applicationDeadline).format('YYYY-MM-DD') : undefined,
+        lessons,
+      }
+
+      if (formMode === 'create') {
+        dataStore.addEducation(educationData)
+        message.success('임시 저장되었습니다.')
+      } else {
+        if (selectedEducation) {
+          dataStore.updateEducation(selectedEducation.educationId, educationData)
+          message.success('임시 저장되었습니다.')
+        }
+      }
+    } catch (error) {
+      console.error('Failed to temp save education:', error)
+      message.error('임시 저장 중 오류가 발생했습니다.')
+    }
   }
 
   const handleEditFromDetail = () => {
@@ -299,8 +421,52 @@ export default function EducationManagementPage() {
     setCurrentPage(1) // Reset to first page when filtering
   }
 
+  // Get educations from dataStore and merge with dummyData
+  const getAllEducations = useCallback((): EducationItem[] => {
+    const storeEducations = dataStore.getEducations()
+    // Convert Education to EducationItem format
+    const convertedEducations: EducationItem[] = storeEducations.map(edu => ({
+      key: edu.key,
+      status: edu.status,
+      educationId: edu.educationId,
+      name: edu.name,
+      institution: edu.institution,
+      region: edu.region,
+      gradeClass: edu.gradeClass,
+      period: edu.period,
+      periodStart: edu.periodStart,
+      periodEnd: edu.periodEnd,
+      requestOrg: edu.requestOrg,
+      schoolName: edu.schoolName,
+      programTitle: edu.programTitle,
+      courseName: edu.courseName,
+      totalSessions: edu.totalSessions,
+      note: edu.note,
+      lessons: edu.lessons?.map(lesson => ({
+        title: lesson.title || '',
+        date: lesson.date,
+        startTime: lesson.startTime,
+        endTime: lesson.endTime,
+        mainInstructors: typeof lesson.mainInstructors === 'number' ? lesson.mainInstructors : (lesson.mainInstructors?.length || 0),
+        assistantInstructors: typeof lesson.assistantInstructors === 'number' ? lesson.assistantInstructors : (lesson.assistantInstructors?.length || 0),
+      })),
+    }))
+    
+    // Merge with dummyData and remove duplicates by educationId
+    const allData = [...dummyData, ...convertedEducations]
+    const seen = new Set<string>()
+    return allData.filter(item => {
+      if (seen.has(item.educationId)) {
+        return false
+      }
+      seen.add(item.educationId)
+      return true
+    })
+  }, [])
+
   const filteredData = useMemo(() => {
-    return dummyData.filter((item) => {
+    const allEducations = getAllEducations()
+    return allEducations.filter((item) => {
       // Unified search - matches institution, program, education name, or ID
       const searchLower = searchText.toLowerCase()
       const matchesSearch = !searchText || 
@@ -320,7 +486,7 @@ export default function EducationManagementPage() {
           dayjs(periodEnd).isBefore(dateRange[1].add(1, 'day')))
       return matchesSearch && matchesStatus && matchesDateRange
     })
-  }, [searchText, statusFilter, dateRange])
+  }, [searchText, statusFilter, dateRange, getAllEducations])
 
   const columns: ColumnsType<EducationItem> = useMemo(() => [
     {
@@ -450,7 +616,7 @@ export default function EducationManagementPage() {
 
   return (
     <ProtectedRoute requiredRole="admin">
-      <div className="p-6">
+      <div className="admin-page p-6">
 
       {/* Page Header */}
       <div className="flex items-center justify-between mb-6">
@@ -535,15 +701,15 @@ export default function EducationManagementPage() {
             {/* Search Toolbar */}
             <div className="flex items-center h-16 px-4 py-3 border-b border-gray-200 gap-3">
               {/* Search Input - Left Side */}
-              <div className="relative w-full max-w-[420px]">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 z-10" />
+              <div className="w-full max-w-[420px]">
                 <Input
                   placeholder="검색어를 입력하세요..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   allowClear
                   onPressEnter={handleSearch}
-                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition hover:border-slate-300 focus:border-slate-300 focus:ring-2 focus:ring-slate-300 [&_.ant-input]:!h-11 [&_.ant-input]:!px-0 [&_.ant-input]:!py-0 [&_.ant-input]:!bg-transparent [&_.ant-input]:!border-0 [&_.ant-input]:!outline-none [&_.ant-input]:!shadow-none [&_.ant-input]:!text-sm [&_.ant-input-wrapper]:!border-0 [&_.ant-input-wrapper]:!shadow-none [&_.ant-input-wrapper]:!bg-transparent [&_.ant-input-clear-icon]:!text-slate-400"
+                  prefix={<Search className="h-5 w-5 text-slate-400" />}
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 transition hover:border-slate-300 focus:border-slate-300 focus:ring-2 focus:ring-slate-300"
                 />
               </div>
               
@@ -613,10 +779,6 @@ export default function EducationManagementPage() {
               columns={columns}
               dataSource={filteredData}
               rowSelection={rowSelection}
-              onRow={(record) => ({
-                onClick: () => handleViewDetail(record),
-                className: 'cursor-pointer',
-              })}
               pagination={{
                 current: currentPage,
                 pageSize: pageSize,
@@ -1060,31 +1222,35 @@ export default function EducationManagementPage() {
                             />
                           </Form.Item>
 
-                          <Form.Item
-                            label="시작시간"
-                            name={['lessons', index, 'startTime']}
-                            rules={[{ required: true, message: '시작시간을 선택해주세요' }]}
-                            className="mb-0"
-                          >
-                            <TimePicker
-                              className="w-full h-11 rounded-xl"
-                              placeholder="시작시간 선택"
-                              format="HH:mm"
-                            />
-                          </Form.Item>
+                          <div className="grid grid-cols-2 gap-4">
+                            <Form.Item
+                              label="시작시간"
+                              name={['lessons', index, 'startTime']}
+                              rules={[{ required: true, message: '시작시간을 선택해주세요' }]}
+                              className="mb-0"
+                            >
+                              <TimePicker
+                                className="w-full h-11 rounded-xl"
+                                placeholder="시작시간 선택"
+                                format="HH:mm"
+                                popupClassName="tp-popup-primary-ok"
+                              />
+                            </Form.Item>
 
-                          <Form.Item
-                            label="종료시간"
-                            name={['lessons', index, 'endTime']}
-                            rules={[{ required: true, message: '종료시간을 선택해주세요' }]}
-                            className="mb-0"
-                          >
-                            <TimePicker
-                              className="w-full h-11 rounded-xl"
-                              placeholder="종료시간 선택"
-                              format="HH:mm"
-                            />
-                          </Form.Item>
+                            <Form.Item
+                              label="종료시간"
+                              name={['lessons', index, 'endTime']}
+                              rules={[{ required: true, message: '종료시간을 선택해주세요' }]}
+                              className="mb-0"
+                            >
+                              <TimePicker
+                                className="w-full h-11 rounded-xl"
+                                placeholder="종료시간 선택"
+                                format="HH:mm"
+                                popupClassName="tp-popup-primary-ok"
+                              />
+                            </Form.Item>
+                          </div>
 
                           <Form.Item
                             label="필요 주강사 수"

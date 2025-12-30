@@ -4,11 +4,12 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Table, Button, Card, Select, Space, Descriptions } from 'antd'
-import { Input } from '@/components/shared/common'
+import { Table, Button, Card, Select, Space, Descriptions, Checkbox, Modal, message, Input } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { ChevronRight, Download, RotateCcw, Check, X, ArrowLeft, Eye, Search, RefreshCw, Filter } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import dayjs from 'dayjs'
+import { dataStore } from '@/lib/dataStore'
 import { 
   DetailPageHeaderSticky,
   ApplicationSummaryCard,
@@ -48,6 +49,8 @@ interface InstructorApplicationItem {
   instructorName: string
   applicationDate: string
   status: '수락됨' | '거절됨' | '대기'
+  educationStatus?: string // 교육 상태: '신청 마감' | '신청 중' | 'OPEN' | etc.
+  applicationDeadline?: string // 신청 마감일: 'YYYY-MM-DD' 형식
   applier?: ApplierInfo
   lessons?: LessonInfo[]
 }
@@ -64,6 +67,8 @@ const dummyData: InstructorApplicationItem[] = [
     instructorName: '김철수',
     applicationDate: '2025.01.15',
     status: '대기',
+    educationStatus: '신청 중',
+    applicationDeadline: '2025-02-28',
     applier: {
       name: '홍길동',
       email: 'hong.gildong@example.com',
@@ -205,6 +210,8 @@ const dummyData: InstructorApplicationItem[] = [
     instructorName: '이영희',
     applicationDate: '2025.01.14',
     status: '수락됨',
+    educationStatus: '신청 중',
+    applicationDeadline: '2025-03-10',
     applier: {
       name: '김영수',
       email: 'kim.youngsu@example.com',
@@ -223,6 +230,8 @@ const dummyData: InstructorApplicationItem[] = [
     instructorName: '박민수',
     applicationDate: '2025.01.13',
     status: '거절됨',
+    educationStatus: '신청 마감',
+    applicationDeadline: '2025-01-31',
     // No applier info for this item
   },
   {
@@ -236,6 +245,8 @@ const dummyData: InstructorApplicationItem[] = [
     instructorName: '최지영',
     applicationDate: '2025.01.12',
     status: '대기',
+    educationStatus: '신청 중',
+    applicationDeadline: '2025-02-15',
     applier: {
       name: '이미영',
       email: 'lee.miyoung@example.com',
@@ -254,7 +265,109 @@ const dummyData: InstructorApplicationItem[] = [
     instructorName: '정현우',
     applicationDate: '2025.01.11',
     status: '수락됨',
+    educationStatus: '신청 중',
+    applicationDeadline: '2025-02-20',
     // No applier info for this item
+  },
+  {
+    key: '6',
+    educationId: 'EDU-2025-006',
+    educationName: '창의융합 교육 프로그램',
+    institution: '안양교육청',
+    region: '안양시',
+    gradeClass: '3학년 2반',
+    role: '주강사',
+    instructorName: '한소희',
+    applicationDate: '2025.01.16',
+    status: '대기',
+    educationStatus: '신청 중',
+    applicationDeadline: '2025-12-31',
+    applier: {
+      name: '박지훈',
+      email: 'park.jihoon@example.com',
+      phone: '010-4567-8901',
+      address: '경기도 안양시 만안구 안양로 321',
+    },
+  },
+  {
+    key: '7',
+    educationId: 'EDU-2025-007',
+    educationName: 'AI 기초 교육 프로그램',
+    institution: '의정부교육청',
+    region: '의정부시',
+    gradeClass: '4학년 1반',
+    role: '보조강사',
+    instructorName: '송민준',
+    applicationDate: '2025.01.17',
+    status: '대기',
+    educationStatus: 'OPEN',
+    applicationDeadline: '2025-12-31',
+    applier: {
+      name: '윤서연',
+      email: 'yoon.seoyeon@example.com',
+      phone: '010-5678-9012',
+      address: '경기도 의정부시 평화로 654',
+    },
+  },
+  {
+    key: '8',
+    educationId: 'EDU-2025-008',
+    educationName: '로봇 코딩 교육 프로그램',
+    institution: '구리교육청',
+    region: '구리시',
+    gradeClass: '5학년 3반',
+    role: '주강사',
+    instructorName: '조수아',
+    applicationDate: '2025.01.18',
+    status: '대기',
+    educationStatus: '신청 중',
+    applicationDeadline: '2025-12-31',
+    applier: {
+      name: '강도현',
+      email: 'kang.dohyun@example.com',
+      phone: '010-6789-0123',
+      address: '경기도 구리시 건원대로 987',
+    },
+  },
+  {
+    key: '9',
+    educationId: 'EDU-2025-009',
+    educationName: '메타버스 체험 교육',
+    institution: '평택교육청',
+    region: '평택시',
+    gradeClass: '1학년 1반',
+    role: '보조강사',
+    instructorName: '윤지호',
+    applicationDate: '2025.01.19',
+    status: '대기',
+    educationStatus: 'OPEN',
+    applicationDeadline: '2025-12-31',
+    applier: {
+      name: '김민지',
+      email: 'kim.minji@example.com',
+      phone: '010-7890-1234',
+      address: '경기도 평택시 평택로 111',
+    },
+  },
+  {
+    key: '10',
+    educationId: 'EDU-2025-010',
+    educationName: '디지털 리터러시 교육',
+    institution: '화성교육청',
+    region: '화성시',
+    gradeClass: '6학년 2반',
+    role: '주강사',
+    instructorName: '임태현',
+    applicationDate: '2025.01.20',
+    status: '대기',
+    educationStatus: '신청 중',
+    applicationDeadline: '2025-12-31',
+    applier: {
+      name: '오수빈',
+      email: 'oh.soobin@example.com',
+      phone: '010-8901-2345',
+      address: '경기도 화성시 봉담읍 봉담로 222',
+    },
   },
 ]
 
@@ -288,6 +401,56 @@ export default function InstructorApplicationPage() {
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [filterDropdownOpen, setFilterDropdownOpen] = useState<boolean>(false)
   const filterDropdownRef = useRef<HTMLDivElement>(null)
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
+  
+  // Remove duplicates from data based on key
+  const removeDuplicateData = (dataArray: InstructorApplicationItem[]): InstructorApplicationItem[] => {
+    const seen = new Set<string>()
+    return dataArray.filter(item => {
+      if (seen.has(item.key)) {
+        return false
+      }
+      seen.add(item.key)
+      return true
+    })
+  }
+
+  // Remove duplicates from array
+  const removeDuplicates = <T,>(array: T[]): T[] => {
+    return Array.from(new Set(array))
+  }
+
+  // Get applications from dataStore and merge with existing dummyData
+  const getApplicationsData = (): InstructorApplicationItem[] => {
+    const educations = dataStore.getEducations()
+    // Create applications from educations that are OPEN or '신청 중'
+    const applicationsFromEducations: InstructorApplicationItem[] = educations
+      .filter(edu => edu.educationStatus === 'OPEN' || edu.educationStatus === '신청 중')
+      .map((edu, index) => ({
+        key: `edu-${edu.educationId}-${index}`,
+        educationId: edu.educationId,
+        educationName: edu.name,
+        institution: edu.institution,
+        region: edu.region,
+        gradeClass: edu.gradeClass,
+        role: '주강사', // Default role
+        instructorName: '신청 대기', // Placeholder until actual application
+        applicationDate: dayjs().format('YYYY.MM.DD'),
+        status: '대기' as const,
+        educationStatus: edu.educationStatus === 'OPEN' ? '신청 중' : edu.educationStatus,
+        applicationDeadline: edu.applicationDeadline,
+      }))
+    
+    // Merge with existing dummyData
+    return removeDuplicateData([...dummyData, ...applicationsFromEducations])
+  }
+
+  const [data, setData] = useState<InstructorApplicationItem[]>(() => getApplicationsData())
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false)
+  const [pendingAction, setPendingAction] = useState<'approve' | 'reject' | null>(null)
+  const [singleAcceptModalVisible, setSingleAcceptModalVisible] = useState(false)
+  const [pendingAcceptKey, setPendingAcceptKey] = useState<string | null>(null)
+  const [pendingAcceptRecord, setPendingAcceptRecord] = useState<InstructorApplicationItem | null>(null)
 
   // Close filter dropdown when clicking outside
   useEffect(() => {
@@ -307,13 +470,159 @@ export default function InstructorApplicationPage() {
   }, [filterDropdownOpen])
 
   const handleAccept = (key: string) => {
-    console.log('Accept application:', key)
-    // Handle accept logic
+    // TODO: Replace with actual API call when available
+    // await instructorApplicationService.acceptApplication(key)
+    setData(prevData =>
+      prevData.map(item => (item.key === key ? { ...item, status: '수락됨' as const } : item))
+    )
+    message.success('신청이 수락되었습니다.')
+    // Clear selection if this row was selected
+    setSelectedRowKeys(prev => prev.filter(k => k !== key))
+    // Close modal
+    setSingleAcceptModalVisible(false)
+    setPendingAcceptKey(null)
+    setPendingAcceptRecord(null)
+  }
+
+  const handleAcceptClick = (record: InstructorApplicationItem) => {
+    setPendingAcceptKey(record.key)
+    setPendingAcceptRecord(record)
+    setSingleAcceptModalVisible(true)
+  }
+
+  const cancelSingleAccept = () => {
+    setSingleAcceptModalVisible(false)
+    setPendingAcceptKey(null)
+    setPendingAcceptRecord(null)
+  }
+
+  // Check if application can be approved based on education status and deadline
+  const canApproveApplication = (record: InstructorApplicationItem): boolean => {
+    // Cannot approve if already processed
+    if (record.status !== '대기') return false
+    
+    // Cannot approve if education status is '신청 마감' or 'CLOSED'
+    if (record.educationStatus === '신청 마감' || record.educationStatus === 'CLOSED') return false
+    
+    // Can approve if education status is 'OPEN' or '신청 중'
+    if (record.educationStatus === 'OPEN' || record.educationStatus === '신청 중') {
+      // Check deadline if exists
+      if (record.applicationDeadline) {
+        const deadline = dayjs(record.applicationDeadline)
+        if (dayjs().isAfter(deadline)) return false
+      }
+      return true
+    }
+    
+    // Default: allow approval if status is '대기' and no blocking conditions
+    return true
   }
 
   const handleReject = (key: string) => {
-    console.log('Reject application:', key)
-    // Handle reject logic
+    // TODO: Replace with actual API call when available
+    // await instructorApplicationService.rejectApplication(key)
+    setData(prevData =>
+      prevData.map(item => (item.key === key ? { ...item, status: '거절됨' as const } : item))
+    )
+    message.success('신청이 거절되었습니다.')
+    // Clear selection if this row was selected
+    setSelectedRowKeys(prev => prev.filter(k => k !== key))
+  }
+
+  // Get processable rows for bulk action
+  const getProcessableRows = (actionType: 'approve' | 'reject'): InstructorApplicationItem[] => {
+    const selectedItems = data.filter(item => selectedRowKeys.includes(item.key))
+    const processableStatuses: ('수락됨' | '거절됨' | '대기')[] = ['대기']
+    return selectedItems.filter(item => processableStatuses.includes(item.status))
+  }
+
+  // Handle bulk approve
+  const handleBulkApprove = () => {
+    const processableRows = getProcessableRows('approve')
+    const excludedCount = selectedRowKeys.length - processableRows.length
+
+    if (processableRows.length === 0) {
+      message.warning('처리 가능한 항목이 없습니다.')
+      return
+    }
+
+    if (excludedCount > 0) {
+      message.info(`처리 불가 항목 ${excludedCount}건 제외`)
+    }
+
+    setPendingAction('approve')
+    setConfirmModalVisible(true)
+  }
+
+  // Handle bulk reject
+  const handleBulkReject = () => {
+    const processableRows = getProcessableRows('reject')
+    const excludedCount = selectedRowKeys.length - processableRows.length
+
+    if (processableRows.length === 0) {
+      message.warning('처리 가능한 항목이 없습니다.')
+      return
+    }
+
+    if (excludedCount > 0) {
+      message.info(`처리 불가 항목 ${excludedCount}건 제외`)
+    }
+
+    setPendingAction('reject')
+    setConfirmModalVisible(true)
+  }
+
+  // Confirm and execute bulk action
+  const confirmBulkAction = async () => {
+    if (!pendingAction) return
+
+    const processableRows = getProcessableRows(pendingAction)
+    const processableKeys = processableRows.map(row => row.key)
+
+    try {
+      // TODO: Replace with actual API call when available
+      // if (bulkEndpoint exists) {
+      //   await instructorApplicationService.bulkProcess(processableKeys, pendingAction)
+      // } else {
+      //   await Promise.all(
+      //     processableKeys.map(key =>
+      //       pendingAction === 'approve'
+      //         ? instructorApplicationService.acceptApplication(key)
+      //         : instructorApplicationService.rejectApplication(key)
+      //     )
+      //   )
+      // }
+
+      // Simulate API call with delay
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+      // Update data state
+      const newStatus: '수락됨' | '거절됨' = pendingAction === 'approve' ? '수락됨' : '거절됨'
+      setData(prevData =>
+        prevData.map(item =>
+          processableKeys.includes(item.key)
+            ? { ...item, status: newStatus }
+            : item
+        )
+      )
+
+      message.success(
+        `선택한 ${processableKeys.length}건이 ${pendingAction === 'approve' ? '수락' : '거절'} 처리되었습니다.`
+      )
+
+      // Clear selection
+      setSelectedRowKeys([])
+      setConfirmModalVisible(false)
+      setPendingAction(null)
+    } catch (error) {
+      message.error('처리 중 오류가 발생했습니다.')
+      console.error('Bulk action error:', error)
+    }
+  }
+
+  const cancelBulkAction = () => {
+    setConfirmModalVisible(false)
+    setPendingAction(null)
   }
 
   const handleRowClick = (record: InstructorApplicationItem) => {
@@ -394,7 +703,7 @@ export default function InstructorApplicationPage() {
   }
 
   const filteredData = useMemo(() => {
-    return dummyData.filter((item) => {
+    return data.filter((item) => {
       const matchesSearch =
         !searchText ||
         item.instructorName.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -403,15 +712,76 @@ export default function InstructorApplicationPage() {
       const matchesRole = roleFilter === 'all' || item.role === roleFilter
       return matchesSearch && matchesStatus && matchesRole
     })
-  }, [searchText, statusFilter, roleFilter])
+  }, [data, searchText, statusFilter, roleFilter])
+
+  // Clear selection when filtered data changes significantly (e.g., new search)
+  useEffect(() => {
+    // Only clear if selection contains keys that no longer exist in filtered data
+    const filteredKeys = new Set(filteredData.map(item => item.key))
+    setSelectedRowKeys(prev => {
+      const filtered = prev.filter(key => filteredKeys.has(String(key)))
+      // Remove duplicates
+      return removeDuplicates(filtered)
+    })
+  }, [filteredData])
+
+  // Sync selectedApplication with updated data when in detail view
+  useEffect(() => {
+    if (selectedApplication) {
+      const updated = data.find(item => item.key === selectedApplication.key)
+      if (updated) {
+        setSelectedApplication(updated)
+      }
+    }
+  }, [data, selectedApplication?.key])
+
+  const selectedCount = selectedRowKeys.length
+  const processableForApprove = getProcessableRows('approve').length
+  const processableForReject = getProcessableRows('reject').length
 
   const columns: ColumnsType<InstructorApplicationItem> = useMemo(
     () => [
       {
+        title: (
+          <Checkbox
+            checked={selectedRowKeys.length > 0 && selectedRowKeys.length === filteredData.length}
+            indeterminate={selectedRowKeys.length > 0 && selectedRowKeys.length < filteredData.length}
+            onChange={(e: any) => {
+              if (e.target.checked) {
+                const allKeys = removeDuplicates(filteredData.map(item => item.key))
+                setSelectedRowKeys(allKeys)
+              } else {
+                setSelectedRowKeys([])
+              }
+            }}
+          />
+        ),
+        key: 'selection',
+        width: 50,
+        fixed: 'left' as const,
+        render: (_, record) => (
+          <Checkbox
+            checked={selectedRowKeys.includes(record.key)}
+            onChange={(e: any) => {
+              e.stopPropagation()
+              if (e.target.checked) {
+                // Remove duplicates when adding
+                const newKeys = removeDuplicates([...selectedRowKeys, record.key])
+                setSelectedRowKeys(newKeys)
+              } else {
+                setSelectedRowKeys(selectedRowKeys.filter(key => key !== record.key))
+              }
+            }}
+            onClick={(e: any) => {
+              e.stopPropagation()
+            }}
+          />
+        ),
+      },
+      {
         title: '수락/거절',
         key: 'action',
         width: 120,
-        fixed: 'left' as const,
         render: (_, record) => {
           if (record.status === '수락됨') {
             return (
@@ -440,16 +810,27 @@ export default function InstructorApplicationPage() {
               </div>
             )
           } else {
+            const canApprove = canApproveApplication(record)
             return (
               <div className="flex gap-2 flex-wrap">
                 <Button
                   type="primary"
+                  disabled={!canApprove}
                   icon={<Check className="w-4 h-4" />}
                   onClick={(e) => {
                     e.stopPropagation()
-                    handleAccept(record.key)
+                    if (canApprove) {
+                      handleAcceptClick(record)
+                    } else {
+                      const reason = record.educationStatus === '신청 마감' 
+                        ? '교육이 마감되어 수락할 수 없습니다.'
+                        : record.applicationDeadline && dayjs().isAfter(dayjs(record.applicationDeadline))
+                        ? '신청 마감일이 지나 수락할 수 없습니다.'
+                        : '수락할 수 없습니다.'
+                      message.warning(reason)
+                    }
                   }}
-                  className="h-8 px-3 rounded-lg bg-green-600 hover:bg-green-700 border-0 text-white font-medium transition-all shadow-sm hover:shadow-md"
+                  className="h-8 px-3 rounded-lg bg-green-600 hover:bg-green-500 hover:brightness-110 hover:ring-2 hover:ring-green-400/40 active:bg-green-600 border-0 text-white font-medium transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600 disabled:hover:brightness-100 disabled:hover:ring-0"
                   size="small"
                 >
                   수락
@@ -555,7 +936,7 @@ export default function InstructorApplicationPage() {
           <Button
             size="small"
             icon={<Eye className="w-3 h-3" />}
-            className="h-8 px-3 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white text-slate-700 transition-colors"
+            className="h-8 px-3 rounded-lg border border-gray-300 hover:bg-gray-50"
             onClick={(e) => {
               e.stopPropagation()
               handleRowClick(record)
@@ -566,12 +947,12 @@ export default function InstructorApplicationPage() {
         ),
       },
     ],
-    [filteredData]
+    [filteredData, selectedRowKeys, handleAccept, handleReject, handleRowClick]
   )
 
   return (
     <ProtectedRoute requiredRole="admin">
-      <div className="p-6">
+      <div className="admin-page p-6">
       {viewMode === 'list' ? (
         <>
 
@@ -580,12 +961,42 @@ export default function InstructorApplicationPage() {
             <Space>
               <Button
                 icon={<RefreshCw className="w-4 h-4" />}
-                onClick={() => console.log('Refresh')}
+                onClick={() => {
+                  // Refresh data from dataStore
+                  const refreshedData = getApplicationsData()
+                  setData(refreshedData)
+                  setSelectedRowKeys([])
+                  message.success('새로고침되었습니다.')
+                }}
                 className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
               >
                 새로고침
               </Button>
             </Space>
+            {/* Bulk Action Buttons */}
+            <div className="flex items-center gap-3">
+              {selectedCount > 0 && (
+                <span className="text-sm text-gray-600">선택 {selectedCount}건</span>
+              )}
+                <Button
+                  type="primary"
+                  icon={<Check className="w-4 h-4" />}
+                  onClick={handleBulkApprove}
+                  disabled={selectedCount === 0 || processableForApprove === 0}
+                  className="h-11 px-6 rounded-lg bg-green-600 hover:bg-green-500 hover:brightness-110 hover:ring-2 hover:ring-green-400/40 active:bg-green-600 border-0 text-white font-medium transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600 disabled:hover:brightness-100 disabled:hover:ring-0"
+                >
+                  선택 수락
+                </Button>
+              <Button
+                danger
+                icon={<X className="w-4 h-4" />}
+                onClick={handleBulkReject}
+                disabled={selectedCount === 0 || processableForReject === 0}
+                className="h-11 px-6 rounded-lg font-medium transition-all shadow-sm hover:shadow-md"
+              >
+                선택 거절
+              </Button>
+            </div>
           </div>
 
           {/* Search and Table Card */}
@@ -593,15 +1004,15 @@ export default function InstructorApplicationPage() {
             {/* Search Toolbar */}
             <div className="flex items-center h-16 px-4 py-3 border-b border-gray-200 gap-3">
               {/* Search Input - Left Side */}
-              <div className="relative w-full max-w-[420px]">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 z-10" />
+              <div className="w-full max-w-[420px]">
                 <Input
                   placeholder="검색어를 입력하세요..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   allowClear
                   onPressEnter={handleSearch}
-                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition hover:border-slate-300 focus:border-slate-300 focus:ring-2 focus:ring-slate-300 [&_.ant-input]:!h-11 [&_.ant-input]:!px-0 [&_.ant-input]:!py-0 [&_.ant-input]:!bg-transparent [&_.ant-input]:!border-0 [&_.ant-input]:!outline-none [&_.ant-input]:!shadow-none [&_.ant-input]:!text-sm [&_.ant-input-wrapper]:!border-0 [&_.ant-input-wrapper]:!shadow-none [&_.ant-input-wrapper]:!bg-transparent [&_.ant-input-clear-icon]:!text-slate-400"
+                  prefix={<Search className="h-5 w-5 text-slate-400" />}
+                  className="admin-search-input h-11 w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 transition hover:border-slate-300 focus:border-slate-300 focus:ring-2 focus:ring-slate-300"
                 />
               </div>
               
@@ -695,13 +1106,48 @@ export default function InstructorApplicationPage() {
               }}
               rowKey="key"
               scroll={{ x: 'max-content' }}
-              onRow={(record) => ({
-                onClick: () => handleRowClick(record),
-                className: 'cursor-pointer',
-              })}
               className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:sticky [&_.ant-table-thead>tr>th]:top-0 [&_.ant-table-thead>tr>th]:z-10 [&_.ant-table-tbody>tr]:border-b [&_.ant-table-tbody>tr]:border-gray-100 [&_.ant-pagination]:!mt-4 [&_.ant-pagination]:!mb-0 [&_.ant-pagination-item]:!rounded-lg [&_.ant-pagination-item]:!border-[#E6E6EF] [&_.ant-pagination-item]:!h-9 [&_.ant-pagination-item]:!min-w-[36px] [&_.ant-pagination-item-active]:!border-[#3b82f6] [&_.ant-pagination-item-active]:!bg-[#3b82f6] [&_.ant-pagination-item-active>a]:!text-white [&_.ant-pagination-prev]:!rounded-lg [&_.ant-pagination-prev]:!border-[#E6E6EF] [&_.ant-pagination-next]:!rounded-lg [&_.ant-pagination-next]:!border-[#E6E6EF] [&_.ant-pagination-options]:!ml-4 [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-[#E6E6EF] [&_.ant-pagination-total-text]:!text-[#151827] [&_.ant-pagination-total-text]:!mr-4"
             />
           </Card>
+
+          {/* Bulk Action Confirmation Modal */}
+          <Modal
+            title={pendingAction === 'approve' ? '선택 항목 수락 처리' : '선택 항목 거절 처리'}
+            open={confirmModalVisible}
+            onOk={confirmBulkAction}
+            onCancel={cancelBulkAction}
+            okText="확인"
+            cancelText="취소"
+            okButtonProps={{
+              className: pendingAction === 'approve' 
+                ? 'bg-green-600 hover:bg-green-500 hover:brightness-110 hover:ring-2 hover:ring-green-400/40 active:bg-green-600 border-0 text-white'
+                : 'bg-red-600 hover:bg-red-500 hover:brightness-110 hover:ring-2 hover:ring-red-400/40 active:bg-red-600 border-0 text-white'
+            }}
+          >
+            <p>
+              선택한 {getProcessableRows(pendingAction || 'approve').length}건을{' '}
+              {pendingAction === 'approve' ? '수락' : '거절'} 처리하시겠습니까?
+            </p>
+          </Modal>
+
+          {/* Single Accept Confirmation Modal */}
+          <Modal
+            title="신청 수락 확인"
+            open={singleAcceptModalVisible}
+            onOk={() => pendingAcceptKey && handleAccept(pendingAcceptKey)}
+            onCancel={cancelSingleAccept}
+            okText="확인"
+            cancelText="취소"
+            okButtonProps={{
+              className: 'bg-green-600 hover:bg-green-500 hover:brightness-110 hover:ring-2 hover:ring-green-400/40 active:bg-green-600 border-0 text-white'
+            }}
+          >
+            {pendingAcceptRecord && (
+              <p>
+                신청 역할 <strong>{pendingAcceptRecord.role}</strong> {pendingAcceptRecord.instructorName}을(를) 수락하시겠습니까?
+              </p>
+            )}
+          </Modal>
         </>
       ) : viewMode === 'detail' && selectedApplication ? (
         /* Detail View - Redesigned to match Create/Edit page */
@@ -772,9 +1218,21 @@ export default function InstructorApplicationPage() {
                   <div className="border-t border-gray-100 pt-6 mt-6 flex flex-col sm:flex-row gap-3">
                     <Button
                       type="primary"
+                      disabled={!canApproveApplication(selectedApplication)}
                       icon={<Check className="w-4 h-4" />}
-                      onClick={() => handleAccept(selectedApplication.key)}
-                      className="h-11 px-6 rounded-xl bg-green-600 hover:bg-green-700 border-0 text-white font-medium transition-all shadow-sm hover:shadow-md w-full sm:w-auto"
+                      onClick={() => {
+                        if (canApproveApplication(selectedApplication)) {
+                          handleAcceptClick(selectedApplication)
+                        } else {
+                          const reason = selectedApplication.educationStatus === '신청 마감' 
+                            ? '교육이 마감되어 수락할 수 없습니다.'
+                            : selectedApplication.applicationDeadline && dayjs().isAfter(dayjs(selectedApplication.applicationDeadline))
+                            ? '신청 마감일이 지나 수락할 수 없습니다.'
+                            : '수락할 수 없습니다.'
+                          message.warning(reason)
+                        }
+                      }}
+                      className="h-11 px-6 rounded-xl bg-green-600 hover:bg-green-500 hover:brightness-110 hover:ring-2 hover:ring-green-400/40 active:bg-green-600 border-0 text-white font-medium transition-all shadow-sm hover:shadow-md w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600 disabled:hover:brightness-100 disabled:hover:ring-0"
                     >
                       수락하기
                     </Button>

@@ -16,6 +16,7 @@ import {
   type CommonCodeFormType,
   type CommonCodeFormMode,
 } from './index'
+import './common-code.css'
 
 export function CommonCodePage() {
   const [selectedTitleId, setSelectedTitleId] = useState<string | null>(null)
@@ -248,7 +249,7 @@ export function CommonCodePage() {
   }
 
   return (
-    <div className="bg-slate-50 min-h-[calc(100vh-200px)] p-6">
+    <div className="common-code-page bg-slate-50 min-h-[calc(100vh-200px)] p-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full">
         {/* Left Column: Title Table */}
         <div className="h-full">
@@ -294,6 +295,10 @@ export function CommonCodePage() {
         type={formType}
         mode={formMode}
         data={formData}
+        selectedTitleId={selectedTitleId}
+        selectedGroupId={selectedGroupId}
+        titles={titles}
+        groups={groups}
         onClose={() => setModalOpen(false)}
         onSubmit={handleFormSubmit}
       />

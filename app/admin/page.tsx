@@ -115,9 +115,25 @@ export default function DashboardPage() {
                                   console.error('Error selecting region:', error)
                                 }
                               }}
-                              className={`bg-white rounded-2xl shadow-md border-2 p-6 cursor-pointer transition-all hover:shadow-lg ${
-                                selectedRegion === regionNumber ? 'border-blue-500 bg-blue-100 hover:bg-blue-600 hover:text-white' : 'border-slate-200 hover:border-slate-300'
+                              className={`bg-white rounded-2xl shadow-md border-2 p-6 cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${
+                                selectedRegion === regionNumber 
+                                  ? `border-2 shadow-lg` 
+                                  : 'border-slate-200 hover:border-slate-400'
                               }`}
+                              style={selectedRegion === regionNumber ? {
+                                borderColor: regionNumber === 1 ? '#2563EB' :
+                                             regionNumber === 2 ? '#F97316' :
+                                             regionNumber === 3 ? '#EAB308' :
+                                             regionNumber === 4 ? '#22C55E' :
+                                             regionNumber === 5 ? '#A855F7' :
+                                             '#14B8A6',
+                                backgroundColor: regionNumber === 1 ? '#2563EB15' :
+                                                regionNumber === 2 ? '#F9731615' :
+                                                regionNumber === 3 ? '#EAB30815' :
+                                                regionNumber === 4 ? '#22C55E15' :
+                                                regionNumber === 5 ? '#A855F715' :
+                                                '#14B8A615'
+                              } : {}}
                             >
                               <div className="flex items-center justify-between mb-3">
                                 <span className={`text-lg font-bold ${
@@ -177,9 +193,15 @@ export default function DashboardPage() {
                                 console.error('Error selecting special category:', error)
                               }
                             }}
-                            className={`bg-white rounded-2xl shadow-md border-2 p-6 cursor-pointer transition-all hover:shadow-lg ${
-                              selectedSpecialCategory === item.category ? 'border-blue-500 bg-blue-100 hover:bg-blue-600 hover:text-white' : 'border-slate-200 hover:border-slate-300'
+                            className={`bg-white rounded-2xl shadow-md border-2 p-6 cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${
+                              selectedSpecialCategory === item.category 
+                                ? 'border-2 shadow-lg' 
+                                : 'border-slate-200 hover:border-slate-400'
                             }`}
+                            style={selectedSpecialCategory === item.category ? {
+                              borderColor: item.color,
+                              backgroundColor: `${item.color}15`
+                            } : {}}
                           >
                             <div className="mb-3">
                               <div className="text-sm text-slate-500 mb-1">{item.label}</div>
@@ -279,6 +301,14 @@ export default function DashboardPage() {
                         setSelectedSpecialCategory(undefined)
                       } catch (error) {
                         console.error('Error closing category:', error)
+                      }
+                    }}
+                    onCategorySelect={(category) => {
+                      try {
+                        setSelectedSpecialCategory(category)
+                        setSelectedRegion(undefined)
+                      } catch (error) {
+                        console.error('Error selecting category:', error)
                       }
                     }}
                   />

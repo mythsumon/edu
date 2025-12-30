@@ -204,6 +204,7 @@ export function ClassInfoGeneralForm({
                         className="w-full h-11 rounded-xl"
                         placeholder="시작시간 선택"
                         format="HH:mm"
+                        popupClassName="tp-popup-primary-ok"
                       />
                     </Form.Item>
 
@@ -235,6 +236,7 @@ export function ClassInfoGeneralForm({
                         className="w-full h-11 rounded-xl"
                         placeholder="종료시간 선택"
                         format="HH:mm"
+                        popupClassName="tp-popup-primary-ok"
                       />
                     </Form.Item>
 

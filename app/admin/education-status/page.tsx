@@ -2,15 +2,22 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { StatusChangeToolbar } from '@/components/admin/operations/StatusChangeToolbar'
 import { EducationStatusTable, type EducationStatusItem } from '@/components/admin/operations/EducationStatusTable'
-import { EducationStatusFilter, type FilterValues } from '@/components/admin/operations/EducationStatusFilter'
 import { InstructorAssignmentModal } from '@/components/admin/operations/InstructorAssignmentModal'
-import { Card, Input, Button } from 'antd'
-import { Search, Filter, ChevronRight } from 'lucide-react'
+import { Card, Input, Button, Select, DatePicker } from 'antd'
+import { Search, Filter, ChevronRight, RotateCcw } from 'lucide-react'
 import dayjs, { Dayjs } from 'dayjs'
+import { statusOptions } from '@/components/admin/operations/StatusDropdown'
+
+const { RangePicker } = DatePicker
+
+export interface FilterValues {
+  status?: string
+  dateRange?: [Dayjs | null, Dayjs | null] | null
+}
 
 // Dummy data - in production, this would come from an API
 const dummyData: EducationStatusItem[] = [
@@ -22,7 +29,9 @@ const dummyData: EducationStatusItem[] = [
     institution: '경기미래채움',
     gradeClass: '1학년 3반',
     mainInstructorsCount: 2,
+    mainInstructorsRequired: 2,
     assistantInstructorsCount: 1,
+    assistantInstructorsRequired: 1,
     periodStart: '2025.01.15',
     periodEnd: '2025.02.28',
     period: '2025.01.15 ~ 2025.02.28',
@@ -35,7 +44,9 @@ const dummyData: EducationStatusItem[] = [
     institution: '수원교육청',
     gradeClass: '2학년 1반',
     mainInstructorsCount: 1,
+    mainInstructorsRequired: 2,
     assistantInstructorsCount: 0,
+    assistantInstructorsRequired: 1,
     periodStart: '2025.01.10',
     periodEnd: '2025.03.10',
     period: '2025.01.10 ~ 2025.03.10',
@@ -48,7 +59,9 @@ const dummyData: EducationStatusItem[] = [
     institution: '성남교육청',
     gradeClass: '3학년 2반',
     mainInstructorsCount: 1,
+    mainInstructorsRequired: 1,
     assistantInstructorsCount: 2,
+    assistantInstructorsRequired: 2,
     periodStart: '2024.12.01',
     periodEnd: '2025.01.31',
     period: '2024.12.01 ~ 2025.01.31',
@@ -61,7 +74,9 @@ const dummyData: EducationStatusItem[] = [
     institution: '안양교육청',
     gradeClass: '4학년 4반',
     mainInstructorsCount: 3,
+    mainInstructorsRequired: 3,
     assistantInstructorsCount: 2,
+    assistantInstructorsRequired: 2,
     periodStart: '2025.02.01',
     periodEnd: '2025.04.30',
     period: '2025.02.01 ~ 2025.04.30',
@@ -74,7 +89,9 @@ const dummyData: EducationStatusItem[] = [
     institution: '고양교육청',
     gradeClass: '5학년 1반',
     mainInstructorsCount: 2,
+    mainInstructorsRequired: 2,
     assistantInstructorsCount: 1,
+    assistantInstructorsRequired: 1,
     periodStart: '2025.01.20',
     periodEnd: '2025.02.20',
     period: '2025.01.20 ~ 2025.02.20',
@@ -87,7 +104,9 @@ const dummyData: EducationStatusItem[] = [
     institution: '의정부교육청',
     gradeClass: '6학년 2반',
     mainInstructorsCount: 1,
+    mainInstructorsRequired: 1,
     assistantInstructorsCount: 1,
+    assistantInstructorsRequired: 1,
     periodStart: '2025.03.01',
     periodEnd: '2025.03.31',
     period: '2025.03.01 ~ 2025.03.31',
@@ -100,7 +119,9 @@ const dummyData: EducationStatusItem[] = [
     institution: '부천교육청',
     gradeClass: '4학년 3반',
     mainInstructorsCount: 2,
+    mainInstructorsRequired: 2,
     assistantInstructorsCount: 1,
+    assistantInstructorsRequired: 1,
     periodStart: '2024.11.01',
     periodEnd: '2024.12.15',
     period: '2024.11.01 ~ 2024.12.15',
@@ -113,7 +134,9 @@ const dummyData: EducationStatusItem[] = [
     institution: '구리교육청',
     gradeClass: '2학년 5반',
     mainInstructorsCount: 1,
+    mainInstructorsRequired: 2,
     assistantInstructorsCount: 0,
+    assistantInstructorsRequired: 1,
     periodStart: '2025.01.05',
     periodEnd: '2025.02.05',
     period: '2025.01.05 ~ 2025.02.05',
@@ -125,12 +148,33 @@ export default function EducationStatusPage() {
   const [statusValue, setStatusValue] = useState<string>('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
-  const [filterOpen, setFilterOpen] = useState(false)
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
   const [filters, setFilters] = useState<FilterValues>({})
   const [searchText, setSearchText] = useState<string>('')
   const filterDropdownRef = useRef<HTMLDivElement>(null)
   const [assignmentModalOpen, setAssignmentModalOpen] = useState(false)
   const [assignmentMode, setAssignmentMode] = useState<'partial' | 'full' | null>(null)
+  
+  // Local filter state for dropdown
+  const [tempStatusFilter, setTempStatusFilter] = useState<string>('')
+  const [tempDateRange, setTempDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null)
+
+  // Close filter dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
+        setFilterDropdownOpen(false)
+      }
+    }
+
+    if (filterDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [filterDropdownOpen])
 
   // Filter data based on filters and search
   const filteredData = useMemo(() => {
@@ -180,18 +224,33 @@ export default function EducationStatusPage() {
     setSelectedIds([])
   }
 
-  const handleFilterApply = (newFilters: FilterValues) => {
-    setFilters(newFilters)
+  const handleFilterApply = () => {
+    setFilters({
+      status: tempStatusFilter || undefined,
+      dateRange: tempDateRange,
+    })
     setCurrentPage(1)
     setSelectedIds([])
+    setFilterDropdownOpen(false)
   }
 
   const handleFilterReset = () => {
+    setTempStatusFilter('')
+    setTempDateRange(null)
     setFilters({})
     setSearchText('')
     setCurrentPage(1)
     setSelectedIds([])
+    setFilterDropdownOpen(false)
   }
+  
+  // Initialize temp filters when dropdown opens
+  useEffect(() => {
+    if (filterDropdownOpen) {
+      setTempStatusFilter(filters.status || '')
+      setTempDateRange(filters.dateRange || null)
+    }
+  }, [filterDropdownOpen, filters])
 
   const handleSearch = () => {
     setCurrentPage(1)
@@ -295,15 +354,6 @@ export default function EducationStatusPage() {
             onAssignmentModeChange={setAssignmentMode}
           />
 
-          {/* Filter Modal */}
-          <EducationStatusFilter
-            open={filterOpen}
-            onClose={() => setFilterOpen(false)}
-            onApply={handleFilterApply}
-            onReset={handleFilterReset}
-            initialFilters={filters}
-          />
-
           {/* Instructor Assignment Modal */}
           <InstructorAssignmentModal
             open={assignmentModalOpen}
@@ -321,28 +371,83 @@ export default function EducationStatusPage() {
             {/* Search Toolbar */}
             <div className="flex items-center h-16 px-4 py-3 border-b border-gray-200 gap-3">
               {/* Search Input - Left Side */}
-              <div className="relative w-full max-w-[420px]">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 z-10" />
+              <div className="w-full max-w-[420px]">
                 <Input
                   placeholder="검색어를 입력하세요..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   allowClear
                   onPressEnter={handleSearch}
-                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition hover:border-slate-300 focus:border-slate-300 focus:ring-2 focus:ring-slate-300 [&_.ant-input]:!h-11 [&_.ant-input]:!px-0 [&_.ant-input]:!py-0 [&_.ant-input]:!bg-transparent [&_.ant-input]:!border-0 [&_.ant-input]:!outline-none [&_.ant-input]:!shadow-none [&_.ant-input]:!text-sm [&_.ant-input-wrapper]:!border-0 [&_.ant-input-wrapper]:!shadow-none [&_.ant-input-wrapper]:!bg-transparent [&_.ant-input-clear-icon]:!text-slate-400"
+                  prefix={<Search className="h-5 w-5 text-slate-400" />}
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 transition hover:border-slate-300 focus:border-slate-300 focus:ring-2 focus:ring-slate-300"
                 />
               </div>
               
-              {/* Filter Button - Right Side */}
+              {/* Filter Button with Dropdown - Right Side */}
               <div className="relative ml-auto" ref={filterDropdownRef}>
                 <Button
                   icon={<Filter className="w-4 h-4" />}
-                  onClick={() => setFilterOpen(true)}
-                  className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all flex items-center gap-2"
+                  onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
+                  className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-blue-600 hover:text-white font-medium transition-all flex items-center gap-2 text-slate-700"
                 >
                   필터
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className={`w-4 h-4 transition-transform ${filterDropdownOpen ? 'rotate-90' : ''}`} />
                 </Button>
+                
+                {/* Filter Dropdown */}
+                {filterDropdownOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50 p-4">
+                    <div className="space-y-4">
+                      {/* Status Filter */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">상태</label>
+                        <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
+                          <Select
+                            placeholder="전체"
+                            value={tempStatusFilter || undefined}
+                            onChange={(value) => setTempStatusFilter(value || '')}
+                            options={statusOptions}
+                            className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
+                            suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Date Range Filter */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">날짜</label>
+                        <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
+                          <RangePicker
+                            value={tempDateRange}
+                            onChange={(dates) => setTempDateRange(dates as [Dayjs | null, Dayjs | null] | null)}
+                            format="MM/DD/YYYY"
+                            className="w-full h-11 rounded-xl [&_.ant-picker-input]:!h-11 [&_.ant-picker-input]:!border-0"
+                            placeholder={['시작일', '종료일']}
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Action Buttons */}
+                      <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-200">
+                        <Button
+                          type="text"
+                          icon={<RotateCcw className="w-4 h-4" />}
+                          onClick={handleFilterReset}
+                          className="h-9 px-4 text-sm"
+                        >
+                          초기화
+                        </Button>
+                        <Button
+                          type="primary"
+                          onClick={handleFilterApply}
+                          className="h-9 px-4 text-sm bg-slate-900 hover:bg-slate-800 active:bg-slate-900 border-0 text-white hover:text-white active:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        >
+                          적용
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

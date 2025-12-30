@@ -12,12 +12,14 @@ import {
   DetailSectionCard,
   DefinitionListGrid,
 } from '@/components/admin/operations'
+import { useLanguage } from '@/components/localization/LanguageContext'
 
 const { TextArea } = Input
 
 export default function AttendanceDetailPage() {
   const params = useParams() as { id?: string } | null
   const router = useRouter()
+  const { t } = useLanguage()
   const [isEditMode, setIsEditMode] = useState(false)
   const [data, setData] = useState<AttendanceData | null>(null)
   const [students, setStudents] = useState<Student[]>([])
@@ -42,7 +44,7 @@ export default function AttendanceDetailPage() {
           setStudents(convertedStudents)
         }
       } catch (err) {
-        setError('데이터를 불러오는 중 오류가 발생했습니다.')
+        setError(t('attendance.loadError'))
         // console.error(err)
       } finally {
         setLoading(false)
@@ -74,7 +76,7 @@ export default function AttendanceDetailPage() {
       setData(updatedData)
       setIsEditMode(false)
     } catch (err) {
-      setError('데이터 저장 중 오류가 발생했습니다.')
+      setError(t('attendance.saveError'))
       // console.error(err)
     }
   }
@@ -126,7 +128,7 @@ export default function AttendanceDetailPage() {
   if (error) {
     return (
       <div className="p-6">
-        <Alert message="오류" description={error} type="error" showIcon />
+        <Alert message={t('attendance.error')} description={error} type="error" showIcon />
       </div>
     )
   }
@@ -134,7 +136,7 @@ export default function AttendanceDetailPage() {
   if (!data) {
     return (
       <div className="p-6">
-        <Alert message="데이터 없음" description="출석부 데이터를 찾을 수 없습니다." type="warning" showIcon />
+        <Alert message={t('attendance.noData')} description={t('attendance.noDataDescription')} type="warning" showIcon />
       </div>
     )
   }
@@ -147,7 +149,7 @@ export default function AttendanceDetailPage() {
           onBack={handleBack}
           onEdit={handleEditFromDetail}
           onDelete={handleDelete}
-          title="2025 소프트웨어(SW) 미래채움 교육 출석부"
+          title={t('attendance.title')}
         />
 
         {/* Main Content Container */}
@@ -165,41 +167,41 @@ export default function AttendanceDetailPage() {
           />
 
           {/* Basic Info Section */}
-          <DetailSectionCard title="기본 정보">
+          <DetailSectionCard title={t('attendance.basicInfo')}>
             <DefinitionListGrid
               items={[
-                { label: '출석부 코드', value: data.attendanceCode },
-                { label: '프로그램명', value: data.programName },
-                { label: '교육기관명', value: data.institutionName },
-                { label: '학년/학급', value: `${data.grade}학년 ${data.class}반` },
+                { label: t('attendance.attendanceCode'), value: data.attendanceCode },
+                { label: t('attendance.programName'), value: data.programName },
+                { label: t('attendance.institutionName'), value: data.institutionName },
+                { label: t('attendance.gradeClass'), value: `${data.grade}${t('attendance.grade')} ${data.class}${t('attendance.class')}` },
               ]}
             />
           </DetailSectionCard>
 
           {/* Statistics Section */}
-          <DetailSectionCard title="통계 정보">
+          <DetailSectionCard title={t('attendance.statistics')}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-blue-50 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">총 신청자 수</p>
-                <p className="text-2xl font-bold text-blue-600">{data.totalApplicants}명</p>
+                <p className="text-sm text-gray-600 mb-1">{t('attendance.totalApplicants')}</p>
+                <p className="text-2xl font-bold text-blue-600">{data.totalApplicants}{t('attendance.person')}</p>
               </div>
               <div className="bg-green-50 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">총 수료자 수</p>
-                <p className="text-2xl font-bold text-green-600">{data.totalGraduates}명</p>
+                <p className="text-sm text-gray-600 mb-1">{t('attendance.totalGraduates')}</p>
+                <p className="text-2xl font-bold text-green-600">{data.totalGraduates}{t('attendance.person')}</p>
               </div>
               <div className="bg-indigo-50 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">남자 수료자</p>
-                <p className="text-2xl font-bold text-indigo-600">{data.maleGraduates}명</p>
+                <p className="text-sm text-gray-600 mb-1">{t('attendance.maleGraduates')}</p>
+                <p className="text-2xl font-bold text-indigo-600">{data.maleGraduates}{t('attendance.person')}</p>
               </div>
               <div className="bg-pink-50 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">여자 수료자</p>
-                <p className="text-2xl font-bold text-pink-600">{data.femaleGraduates}명</p>
+                <p className="text-sm text-gray-600 mb-1">{t('attendance.femaleGraduates')}</p>
+                <p className="text-2xl font-bold text-pink-600">{data.femaleGraduates}{t('attendance.person')}</p>
               </div>
             </div>
           </DetailSectionCard>
 
           {/* Instructor Info Section */}
-          <DetailSectionCard title="강사 정보">
+          <DetailSectionCard title={t('attendance.instructorInfo')}>
             <div className="border border-gray-200 rounded-xl overflow-hidden">
               <table className="w-full">
                 <tbody>
@@ -209,7 +211,7 @@ export default function AttendanceDetailPage() {
                         {instructor.role}
                       </td>
                       <td className="py-3 px-4 text-base font-medium text-gray-900">
-                        {instructor.name} (인)
+                        {instructor.name}{t('attendance.instructor')}
                       </td>
                     </tr>
                   ))}
@@ -219,32 +221,32 @@ export default function AttendanceDetailPage() {
           </DetailSectionCard>
 
           {/* Student Attendance Info Section */}
-          <DetailSectionCard title="학생 출석 정보">
+          <DetailSectionCard title={t('attendance.studentAttendance')}>
             <Table
               columns={[
                 {
-                  title: '번호',
+                  title: t('attendance.number'),
                   dataIndex: 'number',
                   key: 'number',
                   width: 80,
                   render: (_, __, index) => index + 1,
                 },
                 {
-                  title: '이름',
+                  title: t('attendance.name'),
                   dataIndex: 'name',
                   key: 'name',
                   width: 120,
                   render: (text) => <span className="text-base font-medium text-gray-900">{text}</span>,
                 },
                 {
-                  title: '성별',
+                  title: t('attendance.gender'),
                   dataIndex: 'gender',
                   key: 'gender',
                   width: 80,
                   render: (text) => <span className="text-base font-medium text-gray-900">{text}</span>,
                 },
                 {
-                  title: '지각(회)',
+                  title: t('attendance.tardiness'),
                   dataIndex: 'tardiness',
                   key: 'tardiness',
                   width: 100,
@@ -253,7 +255,7 @@ export default function AttendanceDetailPage() {
                   ),
                 },
                 {
-                  title: '결석(수)',
+                  title: t('attendance.absence'),
                   dataIndex: 'absence',
                   key: 'absence',
                   width: 100,
@@ -262,7 +264,7 @@ export default function AttendanceDetailPage() {
                   ),
                 },
                 {
-                  title: '비고',
+                  title: t('attendance.note'),
                   dataIndex: 'note',
                   key: 'note',
                   render: (text) => <span className="text-base font-medium text-gray-900">{text || '-'}</span>,
@@ -289,7 +291,7 @@ export default function AttendanceDetailPage() {
             onClick={handleCancel}
             className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
           >
-            취소
+            {t('attendance.cancel')}
           </Button>
           <Space>
             <Button
@@ -298,7 +300,7 @@ export default function AttendanceDetailPage() {
               onClick={handleSave}
               className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
-              저장
+              {t('attendance.save')}
             </Button>
           </Space>
         </div>
@@ -322,10 +324,10 @@ export default function AttendanceDetailPage() {
         />
 
         {/* Basic Info Section */}
-        <DetailSectionCard title="기본 정보">
+        <DetailSectionCard title={t('attendance.basicInfo')}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-2">출석부 코드</label>
+              <label className="block text-sm font-medium text-gray-500 mb-2">{t('attendance.attendanceCode')}</label>
               <Input
                 value={data.attendanceCode}
                 onChange={(e) => setData({ ...data, attendanceCode: e.target.value })}
@@ -333,7 +335,7 @@ export default function AttendanceDetailPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-2">프로그램명</label>
+              <label className="block text-sm font-medium text-gray-500 mb-2">{t('attendance.programName')}</label>
               <Input
                 value={data.programName}
                 onChange={(e) => setData({ ...data, programName: e.target.value })}
@@ -341,7 +343,7 @@ export default function AttendanceDetailPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-2">교육기관명</label>
+              <label className="block text-sm font-medium text-gray-500 mb-2">{t('attendance.institutionName')}</label>
               <Input
                 value={data.institutionName}
                 onChange={(e) => setData({ ...data, institutionName: e.target.value })}
@@ -349,7 +351,7 @@ export default function AttendanceDetailPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-2">학년/학급</label>
+              <label className="block text-sm font-medium text-gray-500 mb-2">{t('attendance.gradeClass')}</label>
               <div className="flex items-center gap-2">
                 <Input
                   type="number"
@@ -357,43 +359,43 @@ export default function AttendanceDetailPage() {
                   onChange={(e) => setData({ ...data, grade: e.target.value })}
                   className="h-11 rounded-xl flex-1"
                 />
-                <span className="text-gray-500">학년</span>
+                <span className="text-gray-500">{t('attendance.grade')}</span>
                 <Input
                   type="number"
                   value={parseInt(data.class)}
                   onChange={(e) => setData({ ...data, class: e.target.value })}
                   className="h-11 rounded-xl flex-1"
                 />
-                <span className="text-gray-500">반</span>
+                <span className="text-gray-500">{t('attendance.class')}</span>
               </div>
             </div>
           </div>
         </DetailSectionCard>
 
         {/* Statistics Section */}
-        <DetailSectionCard title="통계 정보">
+        <DetailSectionCard title={t('attendance.statistics')}>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-blue-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">총 신청자 수</p>
-              <p className="text-2xl font-bold text-blue-600">{data.totalApplicants}명</p>
+              <p className="text-sm text-gray-600 mb-1">{t('attendance.totalApplicants')}</p>
+              <p className="text-2xl font-bold text-blue-600">{data.totalApplicants}{t('attendance.person')}</p>
             </div>
             <div className="bg-green-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">총 수료자 수</p>
-              <p className="text-2xl font-bold text-green-600">{data.totalGraduates}명</p>
+              <p className="text-sm text-gray-600 mb-1">{t('attendance.totalGraduates')}</p>
+              <p className="text-2xl font-bold text-green-600">{data.totalGraduates}{t('attendance.person')}</p>
             </div>
             <div className="bg-indigo-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">남자 수료자</p>
-              <p className="text-2xl font-bold text-indigo-600">{data.maleGraduates}명</p>
+              <p className="text-sm text-gray-600 mb-1">{t('attendance.maleGraduates')}</p>
+              <p className="text-2xl font-bold text-indigo-600">{data.maleGraduates}{t('attendance.person')}</p>
             </div>
             <div className="bg-pink-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">여자 수료자</p>
-              <p className="text-2xl font-bold text-pink-600">{data.femaleGraduates}명</p>
+              <p className="text-sm text-gray-600 mb-1">{t('attendance.femaleGraduates')}</p>
+              <p className="text-2xl font-bold text-pink-600">{data.femaleGraduates}{t('attendance.person')}</p>
             </div>
           </div>
         </DetailSectionCard>
 
         {/* Instructor Info Section */}
-        <DetailSectionCard title="강사 정보">
+        <DetailSectionCard title={t('attendance.instructorInfo')}>
           <div className="border border-gray-200 rounded-xl overflow-hidden">
             <table className="w-full">
               <tbody>
@@ -411,7 +413,7 @@ export default function AttendanceDetailPage() {
                           setData({ ...data, instructors: updatedInstructors });
                         }}
                         className="h-11 rounded-xl"
-                        suffix=" (인)"
+                        suffix={t('attendance.instructor')}
                       />
                     </td>
                   </tr>
@@ -422,7 +424,7 @@ export default function AttendanceDetailPage() {
         </DetailSectionCard>
 
         {/* Student Attendance Info Section */}
-        <DetailSectionCard title="학생 출석 정보">
+        <DetailSectionCard title={t('attendance.studentAttendance')}>
           <div className="space-y-4">
             <div className="flex justify-end">
               <Button
@@ -431,19 +433,19 @@ export default function AttendanceDetailPage() {
                 onClick={handleAddStudent}
                 className="h-9 px-4 rounded-lg border-dashed"
               >
-                학생 추가
+                {t('attendance.addStudent')}
               </Button>
             </div>
             <Table
               columns={[
                 {
-                  title: '번호',
+                  title: t('attendance.number'),
                   dataIndex: 'number',
                   key: 'number',
                   render: (_, __, index) => index + 1,
                 },
                 {
-                  title: '이름',
+                  title: t('attendance.name'),
                   dataIndex: 'name',
                   key: 'name',
                   render: (text, record) => (
@@ -455,7 +457,7 @@ export default function AttendanceDetailPage() {
                   ),
                 },
                 {
-                  title: '성별',
+                  title: t('attendance.gender'),
                   dataIndex: 'gender',
                   key: 'gender',
                   render: (text, record) => (
@@ -471,7 +473,7 @@ export default function AttendanceDetailPage() {
                   ),
                 },
                 {
-                  title: '지각(회)',
+                  title: t('attendance.tardiness'),
                   dataIndex: 'tardiness',
                   key: 'tardiness',
                   render: (text, record) => (
@@ -488,7 +490,7 @@ export default function AttendanceDetailPage() {
                   ),
                 },
                 {
-                  title: '결석(수)',
+                  title: t('attendance.absence'),
                   dataIndex: 'absence',
                   key: 'absence',
                   render: (text, record) => (
@@ -505,7 +507,7 @@ export default function AttendanceDetailPage() {
                   ),
                 },
                 {
-                  title: '비고',
+                  title: t('attendance.note'),
                   dataIndex: 'note',
                   key: 'note',
                   render: (text, record) => (
@@ -517,7 +519,7 @@ export default function AttendanceDetailPage() {
                   ),
                 },
                 {
-                  title: '작업',
+                  title: t('attendance.action'),
                   key: 'action',
                   render: (_, record) => (
                     <Button

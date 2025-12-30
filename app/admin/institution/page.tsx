@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Table, Button, Card, Form, Select, Checkbox, Space } from 'antd'
-import { Input } from '@/components/shared/common'
+import { Table, Button, Card, Form, Select, Checkbox, Space, Input } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { ChevronRight, Download, ArrowLeft, Save, Trash2, RotateCcw, Eye, Search, Filter } from 'lucide-react'
 import { 
@@ -14,6 +13,7 @@ import {
   SectionAccordion,
   InstitutionSummaryCard
 } from '@/components/admin/operations'
+import { getGroupsByTitleId, getKeysByGroupId } from '@/lib/commonCodeStore'
 
 const { TextArea } = Input
 
@@ -188,12 +188,49 @@ export default function InstitutionManagementPage() {
   const [activeSection, setActiveSection] = useState<string>('institution')
   const [selectedInstitution, setSelectedInstitution] = useState<InstitutionItem | null>(null)
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
+  
+  // Common code state for dependent dropdowns
+  const [selectedRegionGroupId, setSelectedRegionGroupId] = useState<string | undefined>(undefined)
+  
+  // Get region groups (권역 1~6) from common code store
+  const regionGroups = useMemo(() => {
+    return getGroupsByTitleId('title-region')
+  }, [])
+  
+  // Get region keys (지역) based on selected group
+  const regionKeys = useMemo(() => {
+    if (!selectedRegionGroupId) return []
+    return getKeysByGroupId(selectedRegionGroupId)
+  }, [selectedRegionGroupId])
+  
+  // Region group options for dropdown
+  const regionGroupOptions = useMemo(() => {
+    return regionGroups.map((group) => ({
+      value: group.id,
+      label: group.name,
+    }))
+  }, [regionGroups])
+  
+  // Region key options for dropdown
+  const regionKeyOptions = useMemo(() => {
+    return regionKeys.map((key) => ({
+      value: key.value,
+      label: key.label,
+    }))
+  }, [regionKeys])
 
   const handleRegisterClick = () => {
     setViewMode('register')
     form.resetFields()
     setEmailLocal('')
     setEmailDomain('')
+    setSelectedRegionGroupId(undefined)
+  }
+  
+  // Handle region group change - reset region key selection
+  const handleRegionGroupChange = (groupId: string | undefined) => {
+    setSelectedRegionGroupId(groupId)
+    form.setFieldsValue({ regionKey: undefined }) // Reset 지역 selection
   }
 
   const handleViewDetail = (record: InstitutionItem) => {
@@ -211,8 +248,22 @@ export default function InstitutionManagementPage() {
   }
 
   const handleFormSubmit = (values: any) => {
-    console.log('Form values:', values)
-    // Handle form submission
+    // Get selected group and key details
+    const selectedGroup = regionGroups.find((g) => g.id === values.regionGroupId)
+    const selectedKey = regionKeys.find((k) => k.value === values.regionKey)
+    
+    const payload = {
+      ...values,
+      regionGroupId: values.regionGroupId,
+      regionGroupCode: selectedGroup?.code || '',
+      regionGroupName: selectedGroup?.name || '',
+      regionKeyValue: values.regionKey,
+      regionKeyLabel: selectedKey?.label || '',
+    }
+    
+    console.log('Form values:', payload)
+    // TODO: Handle form submission with API
+    // For now, store in local state or mock list
     handleBackToList()
   }
 
@@ -392,6 +443,7 @@ export default function InstitutionManagementPage() {
 
   return (
     <ProtectedRoute requiredRole="admin">
+      <div className="admin-page">
       {viewMode === 'detail' && selectedInstitution ? (
         /* Detail View - Redesigned to match Create/Edit page */
         <div className="bg-slate-50 min-h-screen px-6 pt-0">
@@ -482,15 +534,36 @@ export default function InstitutionManagementPage() {
                               권역 <span className="text-red-500">*</span>
                             </span>
                           }
-                          name="region"
+                          name="regionGroupId"
                           rules={[{ required: true, message: '권역을 선택해주세요' }]}
                           className="mb-0"
                           help="교육기관이 속한 권역을 선택하세요"
                         >
                           <Select
                             placeholder="권역을 선택하세요"
-                            options={regionOptions.filter(opt => opt.value !== 'all')}
+                            options={regionGroupOptions}
                             className="h-11 rounded-xl"
+                            onChange={handleRegionGroupChange}
+                            value={selectedRegionGroupId}
+                          />
+                        </Form.Item>
+
+                        <Form.Item
+                          label={
+                            <span>
+                              지역 <span className="text-red-500">*</span>
+                            </span>
+                          }
+                          name="regionKey"
+                          rules={[{ required: true, message: '지역을 선택해주세요' }]}
+                          className="mb-0"
+                          help="해당 권역에 속한 지역을 선택하세요"
+                        >
+                          <Select
+                            placeholder="지역을 선택하세요"
+                            options={regionKeyOptions}
+                            className="h-11 rounded-xl"
+                            disabled={!selectedRegionGroupId}
                           />
                         </Form.Item>
 
@@ -635,15 +708,15 @@ export default function InstitutionManagementPage() {
             {/* Search Toolbar */}
             <div className="flex items-center h-16 px-4 py-3 border-b border-gray-200 gap-3">
               {/* Search Input - Left Side */}
-              <div className="relative w-full max-w-[420px]">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 z-10" />
+              <div className="w-full max-w-[420px]">
                 <Input
                   placeholder="검색어를 입력하세요..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   allowClear
                   onPressEnter={handleSearch}
-                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition hover:border-slate-300 focus:border-slate-300 focus:ring-2 focus:ring-slate-300 [&_.ant-input]:!h-11 [&_.ant-input]:!px-0 [&_.ant-input]:!py-0 [&_.ant-input]:!bg-transparent [&_.ant-input]:!border-0 [&_.ant-input]:!outline-none [&_.ant-input]:!shadow-none [&_.ant-input]:!text-sm [&_.ant-input-wrapper]:!border-0 [&_.ant-input-wrapper]:!shadow-none [&_.ant-input-wrapper]:!bg-transparent [&_.ant-input-clear-icon]:!text-slate-400"
+                  prefix={<Search className="h-5 w-5 text-slate-400" />}
+                  className="admin-search-input h-11 w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 transition hover:border-slate-300 focus:border-slate-300 focus:ring-2 focus:ring-slate-300"
                 />
               </div>
               
@@ -709,10 +782,6 @@ export default function InstitutionManagementPage() {
             <Table
               columns={columns}
               dataSource={filteredData}
-              onRow={(record) => ({
-                onClick: () => handleViewDetail(record),
-                className: 'cursor-pointer',
-              })}
               pagination={{
                 current: currentPage,
                 pageSize: pageSize,
@@ -733,6 +802,7 @@ export default function InstitutionManagementPage() {
       ) : null}
       </div>
     )}
+      </div>
     </ProtectedRoute>
   )
 }

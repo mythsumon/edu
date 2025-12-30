@@ -65,9 +65,15 @@ export function SearchPanel({
                       console.error('Error selecting region:', error)
                     }
                   }}
-                  className={`bg-white rounded-card shadow-sm border-2 p-2.5 cursor-pointer transition-all duration-200 hover:shadow-card-hover ${
-                    selectedRegion === regionNumber ? 'border-primary shadow-card-hover bg-primary-light' : 'border-slate-100 hover:border-gray-300'
+                  className={`bg-white rounded-card shadow-sm border-2 p-2.5 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${
+                    selectedRegion === regionNumber 
+                      ? `border-2 shadow-lg bg-opacity-10` 
+                      : 'border-slate-200 hover:border-slate-400'
                   }`}
+                  style={selectedRegion === regionNumber ? {
+                    borderColor: regionColor,
+                    backgroundColor: `${regionColor}15`
+                  } : {}}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-bold" style={{ color: regionColor }}>
@@ -163,9 +169,15 @@ export function SearchPanel({
                     console.error('Error selecting category:', error)
                   }
                 }}
-                className={`bg-white rounded-card shadow-sm border-2 p-2.5 cursor-pointer transition-all duration-200 hover:shadow-card-hover ${
-                  selectedSpecialCategory === item.category ? 'border-primary shadow-card-hover bg-primary-light' : 'border-slate-100 hover:border-gray-300'
+                className={`bg-white rounded-card shadow-sm border-2 p-2.5 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${
+                  selectedSpecialCategory === item.category 
+                    ? 'border-2 shadow-lg bg-opacity-10' 
+                    : 'border-slate-200 hover:border-slate-400'
                 }`}
+                style={selectedSpecialCategory === item.category ? {
+                  borderColor: item.color,
+                  backgroundColor: `${item.color}15`
+                } : {}}
               >
                 <div className="mb-2">
                   <div className="text-xs text-gray-500 mb-0.5">{item.label}</div>
