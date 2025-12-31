@@ -552,7 +552,6 @@ export default function AdminDashboardPage() {
                                             ? `linear-gradient(135deg, ${color.light} 0%, white 100%)`
                                             : 'white',
                                           border: isSelected ? `3px solid ${color.bg}` : '2px solid #e2e8f0',
-                                          ringColor: color.bg,
                                         }}
                                       >
                                         <div 
@@ -688,7 +687,6 @@ export default function AdminDashboardPage() {
                                             ? `linear-gradient(135deg, ${item.color}15 0%, white 100%)`
                                             : 'white',
                                           border: isSelected ? `3px solid ${item.color}` : '2px solid #e2e8f0',
-                                          ringColor: item.color,
                                         }}
                                       >
                                         <div 
