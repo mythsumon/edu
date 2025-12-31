@@ -28,7 +28,7 @@ export default function MyApplicationsPage() {
       const assignment = allAssignments.find(a => a.educationId === app.educationId)
       
       // Check if instructor is confirmed in assignment
-      let finalStatus = app.status
+      let finalStatus: '수락됨' | '거절됨' | '대기' | '삭제됨' | '확정됨' = app.status
       let isDeleted = false
       
       if (assignment && assignment.lessons) {
