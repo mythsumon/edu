@@ -24,7 +24,7 @@ const cardGradients = [
   'from-emerald-500 via-emerald-600 to-emerald-700',
   'from-purple-500 via-purple-600 to-purple-700',
   'from-orange-500 via-orange-600 to-orange-700',
-  'from-rose-500 via-rose-600 to-rose-700',
+  'from-purple-500 via-purple-600 to-purple-700',
   'from-indigo-500 via-indigo-600 to-indigo-700',
 ]
 

@@ -173,7 +173,7 @@ export default function AdminDashboardPage() {
             delta: { value: '지난 주 대비 +8개', isPositive: false },
             description: '검토가 필요한 증빙 자료',
             icon: <FileCheck className="w-5 h-5" />,
-            gradient: 'from-rose-500 via-rose-600 to-rose-700',
+            gradient: 'from-purple-500 via-purple-600 to-purple-700',
           },
           {
             label: '거절된 증빙',
@@ -267,8 +267,7 @@ export default function AdminDashboardPage() {
 
   return (
     <ProtectedRoute requiredRole="admin">
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 p-4 md:p-6">
-        <div className="max-w-7xl mx-auto">
+      <div className="admin-page p-4 md:p-6">
           {/* Header */}
           <DashboardHeader
             onDateRangeChange={handleDateRangeChange}
@@ -844,7 +843,6 @@ export default function AdminDashboardPage() {
           <div className="mt-6">
             <ProgramList selectedRegion={selectedRegion} />
           </div>
-        </div>
       </div>
     </ProtectedRoute>
   )

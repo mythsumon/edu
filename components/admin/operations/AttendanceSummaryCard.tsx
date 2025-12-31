@@ -81,7 +81,7 @@ export function AttendanceSummaryCard({
                   placeholder="프로그램명을 입력하세요"
                 />
               ) : (
-                <div className="px-4 py-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-100">
+                <div className="px-4 py-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-100">
                   <p className="text-lg font-bold text-slate-900">{programName}</p>
                 </div>
               )}
@@ -209,9 +209,9 @@ export function AttendanceSummaryCard({
                           </div>
                           <span className="text-slate-400">/</span>
                           <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-pink-500"></div>
+                            <div className="w-2 h-2 rounded-full bg-purple-500"></div>
                             <span className="text-sm font-medium text-slate-700">여</span>
-                            <span className="text-lg font-bold text-pink-600">{femaleGraduates || 0}</span>
+                            <span className="text-lg font-bold text-purple-600">{femaleGraduates || 0}</span>
                           </div>
                         </div>
                       </div>
@@ -229,8 +229,8 @@ export function AttendanceSummaryCard({
             <div className="w-full border-t-2 border-gradient-to-r from-transparent via-blue-200 to-transparent"></div>
           </div>
           <div className="relative flex justify-center py-6">
-            <div className="px-8 py-4 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 rounded-2xl border-2 border-blue-100 shadow-sm">
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <div className="px-8 py-4 bg-gradient-to-r from-blue-50 via-purple-50 to-indigo-50 rounded-2xl border-2 border-blue-100 shadow-sm">
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
                 {programName}
               </h2>
             </div>

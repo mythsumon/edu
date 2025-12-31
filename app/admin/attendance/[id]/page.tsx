@@ -199,7 +199,7 @@ export default function AttendanceDetailPage() {
           <div className="max-w-7xl mx-auto px-6 py-6">
             <div className="relative text-center">
               {/* Decorative Background */}
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 rounded-2xl opacity-30"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-purple-50 to-indigo-50 rounded-2xl opacity-30"></div>
               
               {/* Title Content */}
               <div className="relative">
@@ -208,7 +208,7 @@ export default function AttendanceDetailPage() {
                     <span className="text-xs font-semibold text-white uppercase tracking-wider">2025</span>
                   </div>
                 </div>
-                <h1 className="text-2xl md:text-3xl font-bold mb-3 bg-gradient-to-r from-blue-700 via-purple-700 to-pink-700 bg-clip-text text-transparent">
+                <h1 className="text-2xl md:text-3xl font-bold mb-3 bg-gradient-to-r from-blue-700 via-purple-700 to-indigo-700 bg-clip-text text-transparent">
                   2025 소프트웨어(SW) 미래채움 교육 출석부
                 </h1>
                 <div className="flex items-center justify-center gap-4">
@@ -276,12 +276,12 @@ export default function AttendanceDetailPage() {
                   <p className="text-xs text-indigo-100 mt-1">{t('attendance.person')}</p>
                 </div>
               </div>
-              <div className="group relative overflow-hidden bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+              <div className="group relative overflow-hidden bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-bl-full" />
                 <div className="relative">
-                  <p className="text-sm text-pink-100 mb-2 font-medium">{t('attendance.femaleGraduates')}</p>
+                  <p className="text-sm text-purple-100 mb-2 font-medium">{t('attendance.femaleGraduates')}</p>
                   <p className="text-3xl font-bold text-white">{data.femaleGraduates}</p>
-                  <p className="text-xs text-pink-100 mt-1">{t('attendance.person')}</p>
+                  <p className="text-xs text-purple-100 mt-1">{t('attendance.person')}</p>
                 </div>
               </div>
             </div>
@@ -343,7 +343,7 @@ export default function AttendanceDetailPage() {
                     align: 'center',
                     render: (text) => (
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium ${
-                        text === '남' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'
+                        text === '남' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
                       }`}>
                         {text}
                       </span>
@@ -436,7 +436,7 @@ export default function AttendanceDetailPage() {
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-6">
           <div className="relative text-center">
             {/* Decorative Background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 rounded-2xl opacity-30"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-purple-50 to-indigo-50 rounded-2xl opacity-30"></div>
             
             {/* Title Content */}
             <div className="relative">
@@ -445,7 +445,7 @@ export default function AttendanceDetailPage() {
                   <span className="text-xs font-semibold text-white uppercase tracking-wider">2025</span>
                 </div>
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold mb-3 bg-gradient-to-r from-blue-700 via-purple-700 to-pink-700 bg-clip-text text-transparent">
+              <h1 className="text-2xl md:text-3xl font-bold mb-3 bg-gradient-to-r from-blue-700 via-purple-700 to-indigo-700 bg-clip-text text-transparent">
                 2025 소프트웨어(SW) 미래채움 교육 출석부
               </h1>
               <div className="flex items-center justify-center gap-4">
@@ -556,12 +556,12 @@ export default function AttendanceDetailPage() {
                 <p className="text-xs text-indigo-100 mt-1">{t('attendance.person')}</p>
               </div>
             </div>
-            <div className="group relative overflow-hidden bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="group relative overflow-hidden bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
               <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-bl-full" />
               <div className="relative">
-                <p className="text-sm text-pink-100 mb-2 font-medium">{t('attendance.femaleGraduates')}</p>
+                <p className="text-sm text-purple-100 mb-2 font-medium">{t('attendance.femaleGraduates')}</p>
                 <p className="text-3xl font-bold text-white">{data.femaleGraduates}</p>
-                <p className="text-xs text-pink-100 mt-1">{t('attendance.person')}</p>
+                <p className="text-xs text-purple-100 mt-1">{t('attendance.person')}</p>
               </div>
             </div>
           </div>

@@ -145,7 +145,7 @@ export function ProgramList({ selectedRegion }: { selectedRegion?: number }) {
           size="small"
           icon={<Eye className="w-3 h-3" />}
           onClick={(e) => handleDetailClick('attendance', record.id, e)}
-          className="h-8 px-3 rounded-lg border border-gray-300 hover:bg-gray-50"
+          className="h-8 px-3 rounded-lg border border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-gray-700 hover:text-gray-900 [&_.anticon]:text-gray-600 [&_.anticon]:hover:text-gray-900 [&:hover_.anticon]:!text-gray-900"
         >
           상세
         </Button>

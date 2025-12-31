@@ -162,7 +162,7 @@ export default function ActivityDetailPage() {
             <div className="max-w-7xl mx-auto px-6 py-6">
               <div className="relative text-center">
                 {/* Decorative Background */}
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 rounded-2xl opacity-30"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-purple-50 to-indigo-50 rounded-2xl opacity-30"></div>
                 
                 {/* Title Content */}
                 <div className="relative">
@@ -171,10 +171,10 @@ export default function ActivityDetailPage() {
                       <span className="text-xs font-semibold text-white uppercase tracking-wider">2025</span>
                     </div>
                   </div>
-                  <h1 className="text-2xl md:text-3xl font-bold mb-2 bg-gradient-to-r from-blue-700 via-purple-700 to-pink-700 bg-clip-text text-transparent">
+                  <h1 className="text-2xl md:text-3xl font-bold mb-2 bg-gradient-to-r from-blue-700 via-purple-700 to-indigo-700 bg-clip-text text-transparent">
                     2025 소프트웨어(SW) 미래채움
                   </h1>
-                  <h2 className="text-xl md:text-2xl font-bold mb-3 bg-gradient-to-r from-blue-700 via-purple-700 to-pink-700 bg-clip-text text-transparent">
+                  <h2 className="text-xl md:text-2xl font-bold mb-3 bg-gradient-to-r from-blue-700 via-purple-700 to-indigo-700 bg-clip-text text-transparent">
                     교육 활동 일지
                   </h2>
                   <div className="flex items-center justify-center gap-4">
@@ -208,7 +208,7 @@ export default function ActivityDetailPage() {
                   <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1">활동 일지 코드</p>
                   <p className="text-base font-bold text-slate-900">{data.activityCode}</p>
                 </div>
-                <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-100">
+                <div className="p-4 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl border border-purple-100">
                   <p className="text-xs font-semibold text-purple-600 uppercase tracking-wider mb-1">교육 유형</p>
                   <p className="text-base font-bold text-slate-900">{data.educationType}</p>
                 </div>
@@ -224,8 +224,8 @@ export default function ActivityDetailPage() {
                   <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-1">교육기관명</p>
                   <p className="text-base font-bold text-slate-900">{data.institutionName}</p>
                 </div>
-                <div className="p-4 bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl border border-pink-100">
-                  <p className="text-xs font-semibold text-pink-600 uppercase tracking-wider mb-1">학년/학급</p>
+                <div className="p-4 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl border border-purple-100">
+                  <p className="text-xs font-semibold text-purple-600 uppercase tracking-wider mb-1">학년/학급</p>
                   <p className="text-base font-bold text-slate-900">{data.grade}학년 {data.class}반</p>
                 </div>
                 <div className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl border border-orange-100">
@@ -266,12 +266,12 @@ export default function ActivityDetailPage() {
                     <p className="text-xs text-indigo-100 mt-1">명</p>
                   </div>
                 </div>
-                <div className="group relative overflow-hidden bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="group relative overflow-hidden bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-bl-full" />
                   <div className="relative">
-                    <p className="text-sm text-pink-100 mb-2 font-medium">여자 수료자</p>
+                    <p className="text-sm text-purple-100 mb-2 font-medium">여자 수료자</p>
                     <p className="text-3xl font-bold text-white">{data.femaleGraduates}</p>
-                    <p className="text-xs text-pink-100 mt-1">명</p>
+                    <p className="text-xs text-purple-100 mt-1">명</p>
                   </div>
                 </div>
               </div>
@@ -416,7 +416,7 @@ export default function ActivityDetailPage() {
           <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-6">
             <div className="relative text-center">
               {/* Decorative Background */}
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 rounded-2xl opacity-30"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-purple-50 to-indigo-50 rounded-2xl opacity-30"></div>
               
               {/* Title Content */}
               <div className="relative">
@@ -425,10 +425,10 @@ export default function ActivityDetailPage() {
                     <span className="text-xs font-semibold text-white uppercase tracking-wider">2025</span>
                   </div>
                 </div>
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 bg-gradient-to-r from-blue-700 via-purple-700 to-pink-700 bg-clip-text text-transparent">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 bg-gradient-to-r from-blue-700 via-purple-700 to-indigo-700 bg-clip-text text-transparent">
                   2025 소프트웨어(SW) 미래채움
                 </h1>
-                <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 bg-gradient-to-r from-blue-700 via-purple-700 to-pink-700 bg-clip-text text-transparent">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 bg-gradient-to-r from-blue-700 via-purple-700 to-indigo-700 bg-clip-text text-transparent">
                   교육 활동 일지
                 </h2>
                 <div className="flex items-center justify-center gap-4">
@@ -584,12 +584,12 @@ export default function ActivityDetailPage() {
                   <p className="text-xs text-indigo-100 mt-1">명</p>
                 </div>
               </div>
-              <div className="group relative overflow-hidden bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+              <div className="group relative overflow-hidden bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-bl-full" />
                 <div className="relative">
-                  <p className="text-sm text-pink-100 mb-2 font-medium">여자 수료자</p>
+                  <p className="text-sm text-purple-100 mb-2 font-medium">여자 수료자</p>
                   <p className="text-3xl font-bold text-white">{data.femaleGraduates}</p>
-                  <p className="text-xs text-pink-100 mt-1">명</p>
+                  <p className="text-xs text-purple-100 mt-1">명</p>
                 </div>
               </div>
             </div>

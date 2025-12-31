@@ -89,7 +89,7 @@ export function PendingApplicationsPanel() {
           type="link"
           icon={<Eye className="w-4 h-4" />}
           onClick={() => router.push(`/admin/instructor-assignment/applications?key=${record.key}`)}
-          className="text-blue-600 hover:text-blue-700 font-medium"
+          className="text-blue-600 hover:text-blue-700 hover:!text-blue-700 font-medium [&_.anticon]:text-blue-600 [&_.anticon]:hover:text-blue-700 [&:hover_.anticon]:!text-blue-700"
         >
           보기
         </Button>

@@ -159,7 +159,7 @@ export default function EquipmentDetailPage() {
             <div className="max-w-7xl mx-auto px-6 py-6">
               <div className="relative text-center">
                 {/* Decorative Background */}
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 rounded-2xl opacity-30"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-purple-50 to-indigo-50 rounded-2xl opacity-30"></div>
                 
                 {/* Title Content */}
                 <div className="relative">
@@ -168,7 +168,7 @@ export default function EquipmentDetailPage() {
                       <span className="text-xs font-semibold text-white uppercase tracking-wider">2025</span>
                     </div>
                   </div>
-                  <h1 className="text-2xl md:text-3xl font-bold mb-3 bg-gradient-to-r from-blue-700 via-purple-700 to-pink-700 bg-clip-text text-transparent">
+                  <h1 className="text-2xl md:text-3xl font-bold mb-3 bg-gradient-to-r from-blue-700 via-purple-700 to-indigo-700 bg-clip-text text-transparent">
                     교구 확인서
                   </h1>
                   <div className="flex items-center justify-center gap-4">
@@ -201,7 +201,7 @@ export default function EquipmentDetailPage() {
                   <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1">과제번호</p>
                   <p className="text-base font-bold text-slate-900">{data.assignmentNumber}</p>
                 </div>
-                <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-100">
+                <div className="p-4 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl border border-purple-100">
                   <p className="text-xs font-semibold text-purple-600 uppercase tracking-wider mb-1">교육과정명</p>
                   <p className="text-base font-bold text-slate-900">{data.courseName}</p>
                 </div>
@@ -217,8 +217,8 @@ export default function EquipmentDetailPage() {
                   <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-1">담당차시 / 총차시</p>
                   <p className="text-base font-bold text-slate-900">{data.currentSession} / {data.totalSessions}</p>
                 </div>
-                <div className="p-4 bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl border border-pink-100">
-                  <p className="text-xs font-semibold text-pink-600 uppercase tracking-wider mb-1">당일 참여 강사</p>
+                <div className="p-4 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl border border-purple-100">
+                  <p className="text-xs font-semibold text-purple-600 uppercase tracking-wider mb-1">당일 참여 강사</p>
                   <p className="text-base font-bold text-slate-900">{data.instructorName}</p>
                 </div>
                 <div className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl border border-orange-100">
@@ -252,10 +252,10 @@ export default function EquipmentDetailPage() {
                     <p className="text-lg font-bold text-white">{data.renterName}</p>
                   </div>
                 </div>
-                <div className="group relative overflow-hidden bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl p-5 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="group relative overflow-hidden bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-5 shadow-lg hover:shadow-xl transition-all duration-300">
                   <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-bl-full" />
                   <div className="relative">
-                    <p className="text-xs text-pink-100 mb-1 font-medium">총 교구 수</p>
+                    <p className="text-xs text-purple-100 mb-1 font-medium">총 교구 수</p>
                     <p className="text-lg font-bold text-white">{rentalItems.length}종</p>
                   </div>
                 </div>
@@ -354,7 +354,7 @@ export default function EquipmentDetailPage() {
                 <div className={`p-4 rounded-xl border ${
                   data.targetEligible 
                     ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200'
-                    : 'bg-gradient-to-r from-red-50 to-pink-50 border-red-200'
+                    : 'bg-gradient-to-r from-red-50 to-orange-50 border-red-200'
                 }`}>
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">대상 적합 여부</p>
                   <p className={`text-2xl font-bold ${
@@ -442,7 +442,7 @@ export default function EquipmentDetailPage() {
           <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-6">
             <div className="relative text-center">
               {/* Decorative Background */}
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 rounded-2xl opacity-30"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-purple-50 to-indigo-50 rounded-2xl opacity-30"></div>
               
               {/* Title Content */}
               <div className="relative">
@@ -451,7 +451,7 @@ export default function EquipmentDetailPage() {
                     <span className="text-xs font-semibold text-white uppercase tracking-wider">2025</span>
                   </div>
                 </div>
-                <h1 className="text-2xl md:text-3xl font-bold mb-3 bg-gradient-to-r from-blue-700 via-purple-700 to-pink-700 bg-clip-text text-transparent">
+                  <h1 className="text-2xl md:text-3xl font-bold mb-3 bg-gradient-to-r from-blue-700 via-purple-700 to-indigo-700 bg-clip-text text-transparent">
                   교구 확인서
                 </h1>
                 <div className="flex items-center justify-center gap-4">

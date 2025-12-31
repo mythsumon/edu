@@ -96,42 +96,19 @@ export default function LoginPage() {
         }
       `}</style>
       
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden max-w-6xl w-full flex flex-col md:flex-row min-h-[800px]">
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden max-w-md w-full flex flex-col">
         
-        {/* Left Side - Hero / Branding */}
-        <div className="w-full md:w-1/2 p-16 text-white flex flex-col justify-between relative overflow-hidden bg-slate-900">
-          
-          {/* Animated Background Elements */}
-          <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-white opacity-10 rounded-full blur-3xl animate-float"></div>
-          <div className="absolute bottom-[10%] left-[-10%] w-48 h-48 bg-white opacity-10 rounded-full blur-2xl animate-float-slow"></div>
-
-          <div className="absolute top-0 left-0 w-full h-full opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-          
-          {/* Main Content with Continuous Float */}
-          <div className="relative z-10 animate-float-content">
-            <div className="flex items-center gap-3 mb-10 animate-slide-up">
-              <div className="w-12 h-12 bg-white bg-opacity-20 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                <GraduationCap size={28} className="text-white" />
+        {/* Login Form */}
+        <div className="w-full p-8 flex flex-col justify-center">
+          <div className="mb-6 text-center">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-slate-900 rounded-lg flex items-center justify-center">
+                <GraduationCap size={24} className="text-white" />
               </div>
-              <span className="text-3xl font-bold tracking-tight">EduMatrix</span>
+              <span className="text-2xl font-bold tracking-tight text-slate-900">EduMatrix</span>
             </div>
-            <h1 className="text-5xl font-bold leading-tight mb-6 animate-slide-up-delay-1">
-              Welcome to the Future of Learning.
-            </h1>
-            <p className="text-xl opacity-80 animate-slide-up-delay-2">
-              Streamline your educational journey with our comprehensive management dashboard.
-            </p>
-          </div>
-          <div className="relative z-10 text-sm opacity-60 animate-slide-up-delay-2">
-            © 2024 EduMatrix Inc.
-          </div>
-        </div>
-
-        {/* Right Side - Login Form */}
-        <div className="w-full md:w-1/2 p-16 flex flex-col justify-center">
-          <div className="mb-10">
-            <h2 className="text-3xl font-bold text-slate-900 mb-3">로그인</h2>
-            <p className="text-base text-slate-500">자격 증명을 사용하여 대시보드에 액세스하세요.</p>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">로그인</h2>
+            <p className="text-sm text-slate-500">자격 증명을 사용하여 대시보드에 액세스하세요.</p>
           </div>
 
           <Form
@@ -142,7 +119,7 @@ export default function LoginPage() {
             className="space-y-6"
           >
             <Form.Item
-              label={<span className="block text-base font-medium text-slate-700 mb-2">사용자 ID / Email</span>}
+              label={<span className="block text-sm font-medium text-slate-700 mb-2">사용자 ID / Email</span>}
               name="email"
               rules={[
                 { required: true, message: '사용자 ID 또는 이메일을 입력해주세요' },
@@ -155,7 +132,7 @@ export default function LoginPage() {
             </Form.Item>
             
             <Form.Item
-              label={<span className="block text-base font-medium text-slate-700 mb-2">Password</span>}
+              label={<span className="block text-sm font-medium text-slate-700 mb-2">Password</span>}
               name="password"
               rules={[{ required: true, message: '비밀번호를 입력해주세요' }]}
             >
@@ -165,9 +142,9 @@ export default function LoginPage() {
               />
             </Form.Item>
             
-            <div className="flex items-center justify-between text-base">
+            <div className="flex items-center justify-between text-sm">
               <label className="flex items-center text-slate-600 cursor-pointer">
-                <input type="checkbox" className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-400 mr-2" />
+                <input type="checkbox" className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-400 mr-2" />
                 Remember me
               </label>
               <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">Forgot Password?</a>
@@ -176,15 +153,11 @@ export default function LoginPage() {
             <Button 
               type="primary"
               htmlType="submit" 
-              className="w-full h-16 rounded-xl font-semibold text-lg text-white hover:text-white active:text-white transition-all bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full h-12 rounded-xl font-semibold text-base text-white hover:text-white active:text-white transition-all bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               Login to Dashboard
             </Button>
           </Form>
-
-          <div className="mt-10 text-center text-base text-slate-400">
-            Don't have an account? <a href="#" className="text-slate-600 font-medium hover:underline">Contact Support</a>
-          </div>
         </div>
       </div>
     </div>

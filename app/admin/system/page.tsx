@@ -334,17 +334,14 @@ export default function SystemSettingsPage() {
   }
 
   return (
-    <div className="admin-page p-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between mb-6">
-      </div>
-
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
+      <div className="admin-page p-4 md:p-6">
       {/* Tabs */}
-      <Card className="rounded-xl shadow-sm border border-gray-200">
+      <Card className="rounded-2xl shadow-lg border border-slate-200 bg-gradient-to-br from-white to-slate-50/50">
         <Tabs
           activeKey={activeTab}
-          onChange={(key) => setActiveTab(key as 'settings' | 'users')}
-          className="[&_.ant-tabs-nav]:mb-0 [&_.ant-tabs-tab]:px-6 [&_.ant-tabs-tab]:h-12 [&_.ant-tabs-tab-btn]:text-base [&_.ant-tabs-content-holder]:pt-6"
+          onChange={(key) => setActiveTab(key as 'settings' | 'users' | 'common-code')}
+          className="[&_.ant-tabs-nav]:mb-0 [&_.ant-tabs-nav]:px-6 [&_.ant-tabs-nav]:pt-4 [&_.ant-tabs-tab]:px-6 [&_.ant-tabs-tab]:h-12 [&_.ant-tabs-tab-btn]:text-base [&_.ant-tabs-tab-active]:[&_.ant-tabs-tab-btn]:text-slate-900 [&_.ant-tabs-tab-active]:[&_.ant-tabs-tab-btn]:font-semibold [&_.ant-tabs-ink-bar]:bg-slate-800 [&_.ant-tabs-content-holder]:pt-6"
           items={[
             {
               key: 'settings',
@@ -355,189 +352,225 @@ export default function SystemSettingsPage() {
                 form={settingsForm}
                 layout="vertical"
                 onFinish={handleSettingsSubmit}
-                className="max-w-3xl"
+                className="max-w-4xl mx-auto"
               >
                 {/* 일반 설정 */}
                 <div className="mb-8">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-slate-900">일반 설정</h3>
-                    <Button
-                      type="primary"
-                      icon={<Save className="w-4 h-4 text-white" />}
-                      onClick={() => settingsForm.submit()}
-                      style={{
-                        color: 'white',
-                      }}
-                      className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white hover:!text-white [&_.anticon]:!text-white [&_.anticon]:hover:!text-white [&>span]:!text-white [&>span]:hover:!text-white [&:hover>span]:!text-white [&:hover_.anticon]:!text-white [&:hover]:!text-white"
-                    >
-                      저장
-                    </Button>
-                  </div>
-                  <div className="space-y-4">
-                    <Form.Item label="시스템 언어" className="mb-0">
-                      <Select
-                        defaultValue="ko"
-                        options={[
-                          { value: 'ko', label: '한국어' },
-                          { value: 'en', label: 'English' },
-                        ]}
-                        className="h-11 rounded-xl"
-                      />
-                    </Form.Item>
-                    <Form.Item label="시간대" className="mb-0">
-                      <Select
-                        defaultValue="Asia/Seoul"
-                        options={[
-                          { value: 'Asia/Seoul', label: 'Asia/Seoul (KST)' },
-                          { value: 'UTC', label: 'UTC' },
-                        ]}
-                        className="h-11 rounded-xl"
-                      />
-                    </Form.Item>
-                    <Form.Item label="날짜 형식" className="mb-0">
-                      <Select
-                        defaultValue="YYYY.MM.DD"
-                        options={[
-                          { value: 'YYYY.MM.DD', label: 'YYYY.MM.DD' },
-                          { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' },
-                          { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
-                        ]}
-                        className="h-11 rounded-xl"
-                      />
-                    </Form.Item>
-                  </div>
+                  <Card className="rounded-2xl border border-slate-200 shadow-sm bg-white overflow-hidden">
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-slate-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
+                            <Save className="w-5 h-5 text-white" />
+                          </div>
+                          <h3 className="text-lg font-bold text-slate-900">일반 설정</h3>
+                        </div>
+                        <Button
+                          type="primary"
+                          icon={<Save className="w-4 h-4 text-white" />}
+                          onClick={() => settingsForm.submit()}
+                          style={{
+                            color: 'white',
+                          }}
+                          className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white hover:!text-white [&_.anticon]:!text-white [&_.anticon]:hover:!text-white [&>span]:!text-white [&>span]:hover:!text-white [&:hover>span]:!text-white [&:hover_.anticon]:!text-white [&:hover]:!text-white"
+                        >
+                          저장
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="p-6 space-y-4">
+                      <Form.Item label={<span className="text-sm font-semibold text-slate-700">시스템 언어</span>} className="mb-0">
+                        <Select
+                          defaultValue="ko"
+                          options={[
+                            { value: 'ko', label: '한국어' },
+                            { value: 'en', label: 'English' },
+                          ]}
+                          className="h-11 rounded-xl [&_.ant-select-selector]:border-2 [&_.ant-select-selector]:border-slate-200 [&_.ant-select-selector]:hover:border-blue-400 [&_.ant-select-focused_.ant-select-selector]:border-blue-500"
+                        />
+                      </Form.Item>
+                      <Form.Item label={<span className="text-sm font-semibold text-slate-700">시간대</span>} className="mb-0">
+                        <Select
+                          defaultValue="Asia/Seoul"
+                          options={[
+                            { value: 'Asia/Seoul', label: 'Asia/Seoul (KST)' },
+                            { value: 'UTC', label: 'UTC' },
+                          ]}
+                          className="h-11 rounded-xl [&_.ant-select-selector]:border-2 [&_.ant-select-selector]:border-slate-200 [&_.ant-select-selector]:hover:border-blue-400 [&_.ant-select-focused_.ant-select-selector]:border-blue-500"
+                        />
+                      </Form.Item>
+                      <Form.Item label={<span className="text-sm font-semibold text-slate-700">날짜 형식</span>} className="mb-0">
+                        <Select
+                          defaultValue="YYYY.MM.DD"
+                          options={[
+                            { value: 'YYYY.MM.DD', label: 'YYYY.MM.DD' },
+                            { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' },
+                            { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
+                          ]}
+                          className="h-11 rounded-xl [&_.ant-select-selector]:border-2 [&_.ant-select-selector]:border-slate-200 [&_.ant-select-selector]:hover:border-blue-400 [&_.ant-select-focused_.ant-select-selector]:border-blue-500"
+                        />
+                      </Form.Item>
+                    </div>
+                  </Card>
                 </div>
 
                 {/* 알림 설정 */}
                 <div className="mb-8">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-slate-900">알림 설정</h3>
-                    <Button
-                      type="primary"
-                      icon={<Save className="w-4 h-4 text-white" />}
-                      onClick={() => settingsForm.submit()}
-                      style={{
-                        color: 'white',
-                      }}
-                      className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white hover:!text-white [&_.anticon]:!text-white [&_.anticon]:hover:!text-white [&>span]:!text-white [&>span]:hover:!text-white [&:hover>span]:!text-white [&:hover_.anticon]:!text-white [&:hover]:!text-white"
-                    >
-                      저장
-                    </Button>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                      <div>
-                        <div className="text-base font-medium text-gray-900">이메일 알림</div>
-                        <div className="text-sm text-gray-500">중요한 알림을 이메일로 받습니다</div>
+                  <Card className="rounded-2xl border border-slate-200 shadow-sm bg-white overflow-hidden">
+                    <div className="bg-gradient-to-r from-purple-50 to-indigo-50 px-6 py-4 border-b border-slate-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg">
+                            <Save className="w-5 h-5 text-white" />
+                          </div>
+                          <h3 className="text-lg font-bold text-slate-900">알림 설정</h3>
+                        </div>
+                        <Button
+                          type="primary"
+                          icon={<Save className="w-4 h-4 text-white" />}
+                          onClick={() => settingsForm.submit()}
+                          style={{
+                            color: 'white',
+                          }}
+                          className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white hover:!text-white [&_.anticon]:!text-white [&_.anticon]:hover:!text-white [&>span]:!text-white [&>span]:hover:!text-white [&:hover>span]:!text-white [&:hover_.anticon]:!text-white [&:hover]:!text-white"
+                        >
+                          저장
+                        </Button>
                       </div>
-                      <Switch
-                        checked={emailNotifications}
-                        onChange={setEmailNotifications}
-                        className="[&_.ant-switch-checked]:bg-blue-600"
-                      />
                     </div>
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                      <div>
-                        <div className="text-base font-medium text-gray-900">SMS 알림</div>
-                        <div className="text-sm text-gray-500">긴급 알림을 SMS로 받습니다</div>
+                    <div className="p-6 space-y-4">
+                      <div className="flex items-center justify-between p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100 hover:shadow-md transition-all">
+                        <div>
+                          <div className="text-base font-semibold text-slate-900 mb-1">이메일 알림</div>
+                          <div className="text-sm text-slate-600">중요한 알림을 이메일로 받습니다</div>
+                        </div>
+                        <Switch
+                          checked={emailNotifications}
+                          onChange={setEmailNotifications}
+                          className="[&_.ant-switch-checked]:bg-blue-600 [&_.ant-switch]:min-w-[44px] [&_.ant-switch]:h-6"
+                        />
                       </div>
-                      <Switch
-                        checked={smsNotifications}
-                        onChange={setSmsNotifications}
-                        className="[&_.ant-switch-checked]:bg-blue-600"
-                      />
+                      <div className="flex items-center justify-between p-5 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-100 hover:shadow-md transition-all">
+                        <div>
+                          <div className="text-base font-semibold text-slate-900 mb-1">SMS 알림</div>
+                          <div className="text-sm text-slate-600">긴급 알림을 SMS로 받습니다</div>
+                        </div>
+                        <Switch
+                          checked={smsNotifications}
+                          onChange={setSmsNotifications}
+                          className="[&_.ant-switch-checked]:bg-blue-600 [&_.ant-switch]:min-w-[44px] [&_.ant-switch]:h-6"
+                        />
+                      </div>
                     </div>
-                  </div>
+                  </Card>
                 </div>
 
                 {/* 백업 설정 */}
                 <div className="mb-8">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-slate-900">백업 설정</h3>
-                    <Button
-                      type="primary"
-                      icon={<Save className="w-4 h-4 text-white" />}
-                      onClick={() => settingsForm.submit()}
-                      style={{
-                        color: 'white',
-                      }}
-                      className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white hover:!text-white [&_.anticon]:!text-white [&_.anticon]:hover:!text-white [&>span]:!text-white [&>span]:hover:!text-white [&:hover>span]:!text-white [&:hover_.anticon]:!text-white [&:hover]:!text-white"
-                    >
-                      저장
-                    </Button>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                      <div>
-                        <div className="text-base font-medium text-gray-900">자동 백업</div>
-                        <div className="text-sm text-gray-500">매일 자동으로 데이터를 백업합니다</div>
+                  <Card className="rounded-2xl border border-slate-200 shadow-sm bg-white overflow-hidden">
+                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-4 border-b border-slate-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg">
+                            <Save className="w-5 h-5 text-white" />
+                          </div>
+                          <h3 className="text-lg font-bold text-slate-900">백업 설정</h3>
+                        </div>
+                        <Button
+                          type="primary"
+                          icon={<Save className="w-4 h-4 text-white" />}
+                          onClick={() => settingsForm.submit()}
+                          style={{
+                            color: 'white',
+                          }}
+                          className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white hover:!text-white [&_.anticon]:!text-white [&_.anticon]:hover:!text-white [&>span]:!text-white [&>span]:hover:!text-white [&:hover>span]:!text-white [&:hover_.anticon]:!text-white [&:hover]:!text-white"
+                        >
+                          저장
+                        </Button>
                       </div>
-                      <Switch
-                        checked={autoBackup}
-                        onChange={setAutoBackup}
-                        className="[&_.ant-switch-checked]:bg-blue-600"
-                      />
                     </div>
-                    <Form.Item label="백업 주기" className="mb-0">
-                      <Select
-                        defaultValue="daily"
-                        options={[
-                          { value: 'daily', label: '매일' },
-                          { value: 'weekly', label: '매주' },
-                          { value: 'monthly', label: '매월' },
-                        ]}
-                        className="h-11 rounded-xl"
-                      />
-                    </Form.Item>
-                  </div>
+                    <div className="p-6 space-y-4">
+                      <div className="flex items-center justify-between p-5 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-100 hover:shadow-md transition-all">
+                        <div>
+                          <div className="text-base font-semibold text-slate-900 mb-1">자동 백업</div>
+                          <div className="text-sm text-slate-600">매일 자동으로 데이터를 백업합니다</div>
+                        </div>
+                        <Switch
+                          checked={autoBackup}
+                          onChange={setAutoBackup}
+                          className="[&_.ant-switch-checked]:bg-blue-600 [&_.ant-switch]:min-w-[44px] [&_.ant-switch]:h-6"
+                        />
+                      </div>
+                      <Form.Item label={<span className="text-sm font-semibold text-slate-700">백업 주기</span>} className="mb-0">
+                        <Select
+                          defaultValue="daily"
+                          options={[
+                            { value: 'daily', label: '매일' },
+                            { value: 'weekly', label: '매주' },
+                            { value: 'monthly', label: '매월' },
+                          ]}
+                          className="h-11 rounded-xl [&_.ant-select-selector]:border-2 [&_.ant-select-selector]:border-slate-200 [&_.ant-select-selector]:hover:border-blue-400 [&_.ant-select-focused_.ant-select-selector]:border-blue-500"
+                        />
+                      </Form.Item>
+                    </div>
+                  </Card>
                 </div>
 
                 {/* 보안 설정 */}
                 <div className="mb-8">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-slate-900">보안 설정</h3>
-                    <Button
-                      type="primary"
-                      icon={<Save className="w-4 h-4 text-white" />}
-                      onClick={() => settingsForm.submit()}
-                      style={{
-                        color: 'white',
-                      }}
-                      className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white hover:!text-white [&_.anticon]:!text-white [&_.anticon]:hover:!text-white [&>span]:!text-white [&>span]:hover:!text-white [&:hover>span]:!text-white [&:hover_.anticon]:!text-white [&:hover]:!text-white"
-                    >
-                      저장
-                    </Button>
-                  </div>
-                  <div className="space-y-4">
-                    <Form.Item label="세션 타임아웃 (분)" className="mb-0">
-                      <Input
-                        type="number"
-                        defaultValue="30"
-                        className="h-11 rounded-xl"
-                      />
-                    </Form.Item>
-                    <Form.Item label="비밀번호 최소 길이" className="mb-0">
-                      <Input
-                        type="number"
-                        defaultValue="8"
-                        className="h-11 rounded-xl"
-                      />
-                    </Form.Item>
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                      <div>
-                        <div className="text-base font-medium text-gray-900">2단계 인증 필수</div>
-                        <div className="text-sm text-gray-500">모든 사용자에게 2단계 인증을 요구합니다</div>
+                  <Card className="rounded-2xl border border-slate-200 shadow-sm bg-white overflow-hidden">
+                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 px-6 py-4 border-b border-slate-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg">
+                            <Save className="w-5 h-5 text-white" />
+                          </div>
+                          <h3 className="text-lg font-bold text-slate-900">보안 설정</h3>
+                        </div>
+                        <Button
+                          type="primary"
+                          icon={<Save className="w-4 h-4 text-white" />}
+                          onClick={() => settingsForm.submit()}
+                          style={{
+                            color: 'white',
+                          }}
+                          className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white hover:!text-white [&_.anticon]:!text-white [&_.anticon]:hover:!text-white [&>span]:!text-white [&>span]:hover:!text-white [&:hover>span]:!text-white [&:hover_.anticon]:!text-white [&:hover]:!text-white"
+                        >
+                          저장
+                        </Button>
                       </div>
-                      <Switch className="[&_.ant-switch-checked]:bg-blue-600" />
                     </div>
-                  </div>
+                    <div className="p-6 space-y-4">
+                      <Form.Item label={<span className="text-sm font-semibold text-slate-700">세션 타임아웃 (분)</span>} className="mb-0">
+                        <Input
+                          type="number"
+                          defaultValue="30"
+                          className="h-11 rounded-xl border-2 border-slate-200 hover:border-blue-400 focus:border-blue-500 transition-colors"
+                        />
+                      </Form.Item>
+                      <Form.Item label={<span className="text-sm font-semibold text-slate-700">비밀번호 최소 길이</span>} className="mb-0">
+                        <Input
+                          type="number"
+                          defaultValue="8"
+                          className="h-11 rounded-xl border-2 border-slate-200 hover:border-blue-400 focus:border-blue-500 transition-colors"
+                        />
+                      </Form.Item>
+                      <div className="flex items-center justify-between p-5 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-100 hover:shadow-md transition-all">
+                        <div>
+                          <div className="text-base font-semibold text-slate-900 mb-1">2단계 인증 필수</div>
+                          <div className="text-sm text-slate-600">모든 사용자에게 2단계 인증을 요구합니다</div>
+                        </div>
+                        <Switch className="[&_.ant-switch-checked]:bg-blue-600 [&_.ant-switch]:min-w-[44px] [&_.ant-switch]:h-6" />
+                      </div>
+                    </div>
+                  </Card>
                 </div>
 
                 {/* 저장 버튼 */}
-                <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                <div className="flex justify-end gap-3 pt-6 border-t border-slate-200 mt-8">
                   <Button
                     onClick={() => settingsForm.resetFields()}
-                    className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+                    className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 font-medium transition-all text-slate-700"
                   >
                     초기화
                   </Button>
@@ -550,7 +583,7 @@ export default function SystemSettingsPage() {
                     }}
                     className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white hover:!text-white [&_.anticon]:!text-white [&_.anticon]:hover:!text-white [&>span]:!text-white [&>span]:hover:!text-white [&:hover>span]:!text-white [&:hover_.anticon]:!text-white [&:hover]:!text-white"
                   >
-                    저장
+                    전체 저장
                   </Button>
                 </div>
               </Form>
@@ -565,9 +598,9 @@ export default function SystemSettingsPage() {
               {viewMode === 'list' && (
                 <>
               {/* Search and Table Card */}
-              <Card className="rounded-xl shadow-sm border border-gray-200">
+              <Card className="rounded-2xl shadow-lg border border-slate-200 bg-white">
                 {/* Search Toolbar */}
-                <div className="flex items-center h-16 px-4 py-3 border-b border-gray-200 gap-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center h-auto sm:h-16 px-4 md:px-6 py-4 border-b border-slate-200 gap-3">
                   {/* Add User Button */}
                   <Button
                     type="primary"
@@ -579,7 +612,7 @@ export default function SystemSettingsPage() {
                   </Button>
                   
                   {/* Search Input - Left Side */}
-                  <div className="w-full max-w-[420px]">
+                  <div className="w-full sm:max-w-[420px]">
                     <Input
                       placeholder="검색어를 입력하세요..."
                       value={searchText}
@@ -587,16 +620,16 @@ export default function SystemSettingsPage() {
                       allowClear
                       onPressEnter={handleSearch}
                       prefix={<Search className="h-5 w-5 text-slate-400" />}
-                      className="admin-search-input h-11 w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 transition hover:border-slate-300 focus:border-slate-300 focus:ring-2 focus:ring-slate-300"
+                      className="admin-search-input h-11 w-full rounded-xl border-2 border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 transition hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-400"
                     />
                   </div>
                   
                   {/* Filter Button with Dropdown - Right Side */}
-                  <div className="relative ml-auto" ref={filterDropdownRef}>
+                  <div className="relative ml-auto w-full sm:w-auto" ref={filterDropdownRef}>
                     <Button
                       icon={<Filter className="w-4 h-4" />}
                       onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
-                      className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all flex items-center gap-2"
+                      className="h-11 px-6 rounded-xl border-2 border-slate-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 font-medium transition-all flex items-center gap-2 text-slate-700"
                     >
                       필터
                       <ChevronRight className={`w-4 h-4 transition-transform ${filterDropdownOpen ? 'rotate-90' : ''}`} />
@@ -604,7 +637,7 @@ export default function SystemSettingsPage() {
                     
                     {/* Filter Dropdown */}
                     {filterDropdownOpen && (
-                      <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50 p-4">
+                      <div className="absolute right-0 top-full mt-2 w-80 bg-white border-2 border-slate-200 rounded-xl shadow-xl z-50 p-4">
                         <div className="space-y-4">
                           {/* Role Filter */}
                           <div>
@@ -686,7 +719,7 @@ export default function SystemSettingsPage() {
                   }}
                   rowKey="key"
                   scroll={{ x: 'max-content' }}
-                  className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:sticky [&_.ant-table-thead>tr>th]:top-0 [&_.ant-table-thead>tr>th]:z-10 [&_.ant-table-tbody>tr]:border-b [&_.ant-table-tbody>tr]:border-gray-100 [&_.ant-pagination]:!mt-4 [&_.ant-pagination]:!mb-0 [&_.ant-pagination-item]:!rounded-lg [&_.ant-pagination-item]:!border-[#E6E6EF] [&_.ant-pagination-item]:!h-9 [&_.ant-pagination-item]:!min-w-[36px] [&_.ant-pagination-item-active]:!border-[#3b82f6] [&_.ant-pagination-item-active]:!bg-[#3b82f6] [&_.ant-pagination-item-active>a]:!text-white [&_.ant-pagination-prev]:!rounded-lg [&_.ant-pagination-prev]:!border-[#E6E6EF] [&_.ant-pagination-next]:!rounded-lg [&_.ant-pagination-next]:!border-[#E6E6EF] [&_.ant-pagination-options]:!ml-4 [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-[#E6E6EF] [&_.ant-pagination-total-text]:!text-[#151827] [&_.ant-pagination-total-text]:!mr-4"
+                  className="overflow-x-auto [&_.ant-table-thead>tr>th]:bg-gradient-to-r [&_.ant-table-thead>tr>th]:from-slate-50 [&_.ant-table-thead>tr>th]:to-slate-100 [&_.ant-table-thead>tr>th]:sticky [&_.ant-table-thead>tr>th]:top-0 [&_.ant-table-thead>tr>th]:z-10 [&_.ant-table-thead>tr>th]:text-slate-700 [&_.ant-table-thead>tr>th]:text-sm [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-thead>tr>th]:border-b-2 [&_.ant-table-thead>tr>th]:border-slate-200 [&_.ant-table-tbody>tr]:border-b [&_.ant-table-tbody>tr]:border-slate-100 [&_.ant-table-tbody>tr]:hover:bg-blue-50/50 [&_.ant-pagination]:!mt-4 [&_.ant-pagination]:!mb-0 [&_.ant-pagination-item]:!rounded-lg [&_.ant-pagination-item]:!border-[#E6E6EF] [&_.ant-pagination-item]:!h-9 [&_.ant-pagination-item]:!min-w-[36px] [&_.ant-pagination-item-active]:!border-[#3b82f6] [&_.ant-pagination-item-active]:!bg-[#3b82f6] [&_.ant-pagination-item-active>a]:!text-white [&_.ant-pagination-prev]:!rounded-lg [&_.ant-pagination-prev]:!border-[#E6E6EF] [&_.ant-pagination-next]:!rounded-lg [&_.ant-pagination-next]:!border-[#E6E6EF] [&_.ant-pagination-options]:!ml-4 [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-[#E6E6EF] [&_.ant-pagination-total-text]:!text-[#151827] [&_.ant-pagination-total-text]:!mr-4"
                 />
               </Card>
                 </>
@@ -694,15 +727,17 @@ export default function SystemSettingsPage() {
               
               {viewMode === 'detail' && selectedUser ? (
                 /* Detail View - Redesigned to match other detail pages */
-                <div className="pt-6">
+                <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 -mx-6 -mt-6 px-6 pt-0">
                   {/* Sticky Header */}
-                  <DetailPageHeaderSticky
-                    onBack={handleBackToList}
-                    onEdit={handleEditFromDetail}
-                  />
+                  <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-slate-200 shadow-sm px-4 md:px-6 py-3 md:py-4">
+                    <DetailPageHeaderSticky
+                      onBack={handleBackToList}
+                      onEdit={handleEditFromDetail}
+                    />
+                  </div>
 
                   {/* Main Content Container */}
-                  <div className="max-w-5xl mx-auto pt-6 pb-12 space-y-4">
+                  <div className="max-w-7xl mx-auto pt-6 pb-12 space-y-6">
                     {/* Summary Card */}
                     <UserSummaryCard
                       userId={selectedUser.userId}
@@ -715,23 +750,23 @@ export default function SystemSettingsPage() {
                     />
 
                     {/* Tab Navigation */}
-                    <div className="flex gap-2 border-b border-gray-200 pb-4">
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-2 inline-flex gap-2">
                       <button
                         onClick={() => setDetailTab('basic')}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        className={`px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${
                           detailTab === 'basic'
-                            ? 'bg-slate-900 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-slate-800 text-white shadow-lg scale-105'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                         }`}
                       >
                         기본 정보
                       </button>
                       <button
                         onClick={() => setDetailTab('permissions')}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        className={`px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${
                           detailTab === 'permissions'
-                            ? 'bg-slate-900 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-slate-800 text-white shadow-lg scale-105'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                         }`}
                       >
                         권한 정보
@@ -804,17 +839,22 @@ export default function SystemSettingsPage() {
                 onCancel={handleBackToList}
                 footer={null}
                 width={800}
-                className="[&_.ant-modal-content]:rounded-2xl [&_.ant-modal-header]:border-b [&_.ant-modal-header]:border-slate-200"
+                className="[&_.ant-modal-content]:rounded-2xl [&_.ant-modal-content]:shadow-2xl [&_.ant-modal-header]:border-b-2 [&_.ant-modal-header]:border-slate-200 [&_.ant-modal-header]:bg-gradient-to-r [&_.ant-modal-header]:from-slate-50 [&_.ant-modal-header]:to-white [&_.ant-modal-header]:px-6 [&_.ant-modal-header]:py-4"
                 title={
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-slate-900">
-                      {formMode === 'create' ? '사용자 등록' : '사용자 수정'}
-                    </h3>
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
+                        <UserPlus className="w-5 h-5 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-slate-900">
+                        {formMode === 'create' ? '사용자 등록' : '사용자 수정'}
+                      </h3>
+                    </div>
                     <Button
                       type="text"
                       icon={<X className="w-4 h-4" />}
                       onClick={handleBackToList}
-                      className="h-8 w-8 p-0"
+                      className="h-8 w-8 p-0 hover:bg-slate-100 rounded-lg"
                     />
                   </div>
                 }
@@ -823,20 +863,20 @@ export default function SystemSettingsPage() {
                   form={form}
                   layout="vertical"
                   onFinish={handleFormSubmit}
-                  className="mt-4"
+                  className="mt-6"
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Form.Item
-                      label="이름"
+                      label={<span className="text-sm font-semibold text-slate-700">이름</span>}
                       name="name"
                       rules={[{ required: true, message: '이름을 입력해주세요' }]}
                       className="mb-0"
                     >
-                      <Input placeholder="이름을 입력하세요" className="h-11 rounded-xl" />
+                      <Input placeholder="이름을 입력하세요" className="h-11 rounded-xl border-2 border-slate-200 hover:border-blue-400 focus:border-blue-500 transition-colors" />
                     </Form.Item>
 
                     <Form.Item
-                      label="이메일"
+                      label={<span className="text-sm font-semibold text-slate-700">이메일</span>}
                       name="email"
                       rules={[
                         { required: true, message: '이메일을 입력해주세요' },
@@ -844,19 +884,19 @@ export default function SystemSettingsPage() {
                       ]}
                       className="mb-0"
                     >
-                      <Input placeholder="이메일을 입력하세요" className="h-11 rounded-xl" />
+                      <Input placeholder="이메일을 입력하세요" className="h-11 rounded-xl border-2 border-slate-200 hover:border-blue-400 focus:border-blue-500 transition-colors" />
                     </Form.Item>
 
                     <Form.Item
-                      label="전화번호"
+                      label={<span className="text-sm font-semibold text-slate-700">전화번호</span>}
                       name="phone"
                       className="mb-0"
                     >
-                      <Input placeholder="전화번호를 입력하세요" className="h-11 rounded-xl" />
+                      <Input placeholder="전화번호를 입력하세요" className="h-11 rounded-xl border-2 border-slate-200 hover:border-blue-400 focus:border-blue-500 transition-colors" />
                     </Form.Item>
 
                     <Form.Item
-                      label="역할"
+                      label={<span className="text-sm font-semibold text-slate-700">역할</span>}
                       name="role"
                       rules={[{ required: true, message: '역할을 선택해주세요' }]}
                       className="mb-0"
@@ -864,21 +904,21 @@ export default function SystemSettingsPage() {
                       <Select
                         placeholder="역할을 선택하세요"
                         options={roleOptions.filter(opt => opt.value !== 'all')}
-                        className="h-11 rounded-xl"
+                        className="h-11 rounded-xl [&_.ant-select-selector]:border-2 [&_.ant-select-selector]:border-slate-200 [&_.ant-select-selector]:hover:border-blue-400 [&_.ant-select-focused_.ant-select-selector]:border-blue-500"
                       />
                     </Form.Item>
 
                     <Form.Item
-                      label="부서"
+                      label={<span className="text-sm font-semibold text-slate-700">부서</span>}
                       name="department"
                       rules={[{ required: true, message: '부서를 입력해주세요' }]}
                       className="mb-0"
                     >
-                      <Input placeholder="부서를 입력하세요" className="h-11 rounded-xl" />
+                      <Input placeholder="부서를 입력하세요" className="h-11 rounded-xl border-2 border-slate-200 hover:border-blue-400 focus:border-blue-500 transition-colors" />
                     </Form.Item>
 
                     <Form.Item
-                      label="상태"
+                      label={<span className="text-sm font-semibold text-slate-700">상태</span>}
                       name="status"
                       rules={[{ required: true, message: '상태를 선택해주세요' }]}
                       className="mb-0"
@@ -886,16 +926,16 @@ export default function SystemSettingsPage() {
                       <Select
                         placeholder="상태를 선택하세요"
                         options={statusOptions.filter(opt => opt.value !== 'all')}
-                        className="h-11 rounded-xl"
+                        className="h-11 rounded-xl [&_.ant-select-selector]:border-2 [&_.ant-select-selector]:border-slate-200 [&_.ant-select-selector]:hover:border-blue-400 [&_.ant-select-focused_.ant-select-selector]:border-blue-500"
                       />
                     </Form.Item>
                   </div>
 
-                  <div className="flex justify-end gap-3 pt-6 border-t border-slate-200 mt-6">
+                  <div className="flex justify-end gap-3 pt-6 border-t-2 border-slate-200 mt-8">
                     <Button
                       icon={<X className="w-4 h-4" />}
                       onClick={handleBackToList}
-                      className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-slate-700 hover:text-white font-medium transition-all text-slate-700"
+                      className="h-11 px-6 rounded-xl border-2 border-slate-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 font-medium transition-all text-slate-700"
                     >
                       취소
                     </Button>
@@ -928,6 +968,7 @@ export default function SystemSettingsPage() {
           ]}
         />
       </Card>
+      </div>
     </div>
   )
 }
