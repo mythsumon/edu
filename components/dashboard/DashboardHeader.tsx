@@ -55,8 +55,7 @@ export function DashboardHeader({ onDateRangeChange, onExport, onRefresh }: Dash
               value={dateRange}
               onChange={handleDateRangeChange}
               style={{ width: '100%' }}
-              className="sm:!w-[140px]"
-              className="[&_.ant-select-selector]:rounded-lg [&_.ant-select-selector]:border-slate-300"
+              className="sm:!w-[140px] [&_.ant-select-selector]:rounded-lg [&_.ant-select-selector]:border-slate-300"
               options={[
                 { label: '오늘', value: 'today' },
                 { label: '최근 7일', value: '7days' },
