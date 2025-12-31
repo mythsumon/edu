@@ -26,11 +26,14 @@ export function DashboardHeader({ onDateRangeChange, onExport, onRefresh }: Dash
     }
   }
 
-  const handleCustomDateChange = (dates: [Dayjs, Dayjs] | null) => {
-    setCustomDates(dates)
-    if (dates) {
+  const handleCustomDateChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
+    if (dates && dates[0] && dates[1]) {
+      const validDates: [Dayjs, Dayjs] = [dates[0], dates[1]]
+      setCustomDates(validDates)
       setDateRange('custom')
-      onDateRangeChange?.('custom', dates)
+      onDateRangeChange?.('custom', validDates)
+    } else {
+      setCustomDates(null)
     }
   }
 
