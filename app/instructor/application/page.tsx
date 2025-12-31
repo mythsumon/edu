@@ -37,8 +37,8 @@ interface InstructorApplicationItem {
   role?: string
   instructorName?: string
   applicationDate?: string
-  startDate: string
-  endDate: string
+  startDate?: string
+  endDate?: string
   note?: string
   status?: '수락됨' | '거절됨' | '대기'
   applier?: ApplierInfo
