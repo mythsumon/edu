@@ -539,3 +539,4 @@ await api.syncApplicationStatus(educationId, '거절됨')
    - State syncs between pages after refresh
 
 
+

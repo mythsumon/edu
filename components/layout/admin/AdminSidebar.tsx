@@ -12,11 +12,12 @@ import {
   Menu,
   User,
   LogOut,
+  Save,
 } from 'lucide-react'
 import { useLanguage } from '@/components/localization/LanguageContext'
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { Modal, Form, Input, Select } from 'antd'
+import { Modal, Form, Input, Select, Button } from 'antd'
 
 interface MenuItem {
   labelKey: string
@@ -109,7 +110,7 @@ export function AdminSidebar({ isCollapsed, setIsCollapsed }: AdminSidebarProps)
   }
 
   return (
-    <aside className={`${isCollapsed ? 'w-20' : 'w-64'} bg-white border-r border-gray-200 flex flex-col h-screen fixed left-0 top-0 z-40 transition-all duration-300`}>
+    <aside className={`${isCollapsed ? 'w-20' : 'w-64'} bg-white border-r border-gray-200 flex flex-col h-screen fixed left-0 top-0 z-40 transition-all duration-300 hidden md:flex`}>
       {/* Sidebar Header */}
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         {!isCollapsed ? (
@@ -258,26 +259,26 @@ export function AdminSidebar({ isCollapsed, setIsCollapsed }: AdminSidebarProps)
           </button>
 
           {isProfileOpen && !isCollapsed && (
-            <div className="absolute bottom-full left-0 mb-2 w-full rounded-lg bg-white shadow-lg ring-1 ring-black/5 overflow-hidden border border-gray-200">
-              <div className="px-4 py-3 border-b border-gray-100">
-                <div className="text-sm font-semibold text-gray-900">
+            <div className="absolute bottom-full left-0 mb-2 w-full rounded-2xl bg-white shadow-xl ring-1 ring-slate-200/50 overflow-hidden border border-slate-100">
+              <div className="px-4 py-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
+                <div className="text-sm font-semibold text-slate-900">
                   {locale === 'ko' ? '관리자' : 'Administrator'}
                 </div>
-                <div className="text-xs text-gray-500 mt-0.5">admin@example.com</div>
+                <div className="text-xs text-slate-500 mt-0.5">admin@example.com</div>
               </div>
               <div className="py-1">
                 <button
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                   onClick={() => {
                     setIsProfileModalOpen(true)
                     setIsProfileOpen(false)
                   }}
                 >
-                  <User className="w-4 h-4 text-gray-400" />
+                  <User className="w-4 h-4 text-slate-400" />
                   <span>{t('header.profile')}</span>
                 </button>
                 <button
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                   onClick={() => {
                     accountForm.setFieldsValue({
                       name: locale === 'ko' ? '관리자' : 'Administrator',
@@ -289,13 +290,13 @@ export function AdminSidebar({ isCollapsed, setIsCollapsed }: AdminSidebarProps)
                     setIsProfileOpen(false)
                   }}
                 >
-                  <Settings className="w-4 h-4 text-gray-400" />
+                  <Settings className="w-4 h-4 text-slate-400" />
                   <span>{locale === 'ko' ? '계정 설정' : 'Account Settings'}</span>
                 </button>
               </div>
-              <div className="border-t border-gray-100">
+              <div className="border-t border-slate-100">
                 <button
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition-colors"
                   onClick={() => {
                     router.push('/login')
                   }}
@@ -367,17 +368,35 @@ export function AdminSidebar({ isCollapsed, setIsCollapsed }: AdminSidebarProps)
         title={locale === 'ko' ? '계정 설정' : 'Account Settings'}
         open={isAccountModalOpen}
         onCancel={() => setIsAccountModalOpen(false)}
-        okText={locale === 'ko' ? '저장' : 'Save'}
-        cancelText={locale === 'ko' ? '취소' : 'Cancel'}
-        onOk={() => {
-          accountForm
-            .validateFields()
-            .then((values) => {
-              console.log('Account settings:', values)
-              setIsAccountModalOpen(false)
-            })
-            .catch(() => {})
-        }}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => setIsAccountModalOpen(false)}
+            className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700 hover:border-blue-600"
+          >
+            {locale === 'ko' ? '취소' : 'Cancel'}
+          </Button>,
+          <Button
+            key="save"
+            type="primary"
+            icon={<Save className="w-4 h-4 text-white" />}
+            onClick={() => {
+              accountForm
+                .validateFields()
+                .then((values) => {
+                  console.log('Account settings:', values)
+                  setIsAccountModalOpen(false)
+                })
+                .catch(() => {})
+            }}
+            style={{
+              color: 'white',
+            }}
+            className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white hover:!text-white [&_.anticon]:!text-white [&_.anticon]:hover:!text-white [&>span]:!text-white [&>span]:hover:!text-white [&:hover>span]:!text-white [&:hover_.anticon]:!text-white [&:hover]:!text-white"
+          >
+            {locale === 'ko' ? '저장' : 'Save'}
+          </Button>,
+        ]}
         centered
       >
         <Form

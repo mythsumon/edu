@@ -1,68 +1,42 @@
 'use client'
 
-import { Form, Button, Card, message } from 'antd'
+import { Form, Button, message } from 'antd'
 import { InputField } from '@/components/shared/common'
-import { GraduationCap, Copy, Check } from 'lucide-react'
+import { GraduationCap } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import type { UserRole } from '@/contexts/AuthContext'
-
-// Demo account credentials
-const DEMO_ACCOUNTS = {
-  admin: {
-    id: 'admin_demo',
-    email: 'admin_demo',
-    password: 'Admin@1234'
-  },
-  instructor: {
-    id: 'instructor_demo',
-    email: 'instructor_demo',
-    password: 'Teacher@1234'
-  }
-}
+import { useEffect } from 'react'
 
 export default function LoginPage() {
   const [form] = Form.useForm()
   const router = useRouter()
   const { login } = useAuth()
-  const [selectedRole, setSelectedRole] = useState<UserRole>('admin')
-  const [showDemoAccounts, setShowDemoAccounts] = useState(false)
 
-  // 초기 로드 시 선택된 역할의 계정 정보 자동 입력
+  // Set default values for ID and password
   useEffect(() => {
-    const account = DEMO_ACCOUNTS[selectedRole]
     form.setFieldsValue({
-      email: account.email,
-      password: account.password
+      email: 'admin@example.com',
+      password: 'Admin@1234'
     })
-  }, [form, selectedRole])
+  }, [form])
 
-  const handleSubmit = (values: any) => {
-    // TODO: 실제 로그인 로직 연동 (인증 성공 시 아래로 이동)
-    // Check if credentials match demo accounts
-    // Accept both ID and email (they are the same for demo accounts)
-    const account = DEMO_ACCOUNTS[selectedRole]
-    const inputIdOrEmail = values.email?.trim()
-    const isValidCredentials = 
-      (inputIdOrEmail === account.id || inputIdOrEmail === account.email) &&
-      values.password === account.password
-    
-    if (isValidCredentials) {
-      login(selectedRole)
-      if (selectedRole === 'admin') {
-        router.push('/admin')
-      } else {
-        router.push('/instructor/dashboard')
-      }
-    } else {
+  const handleSubmit = async (values: any) => {
+    try {
+      // TODO: 실제 API 호출로 로그인 처리
+      // const response = await fetch('/api/auth/login', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(values)
+      // })
+      // const data = await response.json()
+      
+      // 임시: 로그인 성공 시 관리자로 로그인
+      // 실제로는 API 응답에서 역할을 받아와야 함
+      login('admin')
+      router.push('/admin')
+    } catch (error) {
       message.error('로그인 정보가 올바르지 않습니다.')
     }
-  }
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-    // TODO: Show success message
   }
 
   return (
@@ -125,7 +99,7 @@ export default function LoginPage() {
       <div className="bg-white rounded-2xl shadow-xl overflow-hidden max-w-6xl w-full flex flex-col md:flex-row min-h-[800px]">
         
         {/* Left Side - Hero / Branding */}
-        <div className={`w-full md:w-1/2 p-16 text-white flex flex-col justify-between relative overflow-hidden transition-all duration-500 ${selectedRole === 'admin' ? 'gradient-admin' : 'gradient-instructor'}`}>
+        <div className="w-full md:w-1/2 p-16 text-white flex flex-col justify-between relative overflow-hidden bg-slate-900">
           
           {/* Animated Background Elements */}
           <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-white opacity-10 rounded-full blur-3xl animate-float"></div>
@@ -160,99 +134,6 @@ export default function LoginPage() {
             <p className="text-base text-slate-500">자격 증명을 사용하여 대시보드에 액세스하세요.</p>
           </div>
 
-          {/* Role Selection */}
-          <div className="mb-6">
-            <label className="block text-base font-medium text-slate-700 mb-2">역할 선택</label>
-            <div className="flex gap-4">
-              <button
-                type="button"
-                onClick={() => setSelectedRole('admin')}
-                className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
-                  selectedRole === 'admin'
-                    ? 'border-blue-600 bg-blue-50 text-blue-700 font-medium'
-                    : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
-                }`}
-              >
-                관리자
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedRole('instructor')}
-                className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
-                  selectedRole === 'instructor'
-                    ? 'border-blue-600 bg-blue-50 text-blue-700 font-medium'
-                    : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
-                }`}
-              >
-                강사
-              </button>
-            </div>
-          </div>
-
-          {/* Demo Accounts Section */}
-          <Card className="mb-6 border-gray-200">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-gray-700">데모 계정</h3>
-              <button
-                type="button"
-                onClick={() => setShowDemoAccounts(!showDemoAccounts)}
-                className="text-xs text-blue-600 hover:text-blue-700"
-              >
-                {showDemoAccounts ? '숨기기' : '보기'}
-              </button>
-            </div>
-            {showDemoAccounts && (
-              <div className="space-y-3">
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-medium text-gray-600">관리자</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedRole('admin')
-                        form.setFieldsValue({
-                          email: DEMO_ACCOUNTS.admin.id,
-                          password: DEMO_ACCOUNTS.admin.password
-                        })
-                      }}
-                      className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                    >
-                      <Copy className="w-3 h-3" />
-                      사용
-                    </button>
-                  </div>
-                  <div className="text-xs text-gray-500 space-y-1">
-                    <div>ID: {DEMO_ACCOUNTS.admin.email}</div>
-                    <div>PW: {DEMO_ACCOUNTS.admin.password}</div>
-                  </div>
-                </div>
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-medium text-gray-600">강사</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedRole('instructor')
-                        form.setFieldsValue({
-                          email: DEMO_ACCOUNTS.instructor.id,
-                          password: DEMO_ACCOUNTS.instructor.password
-                        })
-                      }}
-                      className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                    >
-                      <Copy className="w-3 h-3" />
-                      사용
-                    </button>
-                  </div>
-                  <div className="text-xs text-gray-500 space-y-1">
-                    <div>ID: {DEMO_ACCOUNTS.instructor.email}</div>
-                    <div>PW: {DEMO_ACCOUNTS.instructor.password}</div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </Card>
-
           <Form
             form={form}
             layout="vertical"
@@ -269,7 +150,7 @@ export default function LoginPage() {
             >
               <InputField
                 type="text"
-                placeholder="admin_demo 또는 admin@example.com"
+                placeholder="사용자 ID 또는 이메일을 입력하세요"
               />
             </Form.Item>
             

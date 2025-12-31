@@ -103,13 +103,54 @@ export function Breadcrumb({ className = '' }: BreadcrumbProps = {}) {
     return null
   }
 
+  // Handle dynamic routes (attendance, activity, equipment detail pages)
+  const isDetailPage = pathname?.match(/\/admin\/(attendance|activity|equipment)\/\[id\]/) || 
+                       pathname?.match(/\/admin\/(attendance|activity|equipment)\/\d+/)
+  
+  let detailPageType: string | null = null
+  if (pathname?.includes('/attendance/')) {
+    detailPageType = 'attendance'
+  } else if (pathname?.includes('/activity/')) {
+    detailPageType = 'activity'
+  } else if (pathname?.includes('/equipment/')) {
+    detailPageType = 'equipment'
+  }
+
+  // For detail pages, show operations as parent
+  if (isDetailPage && detailPageType) {
+    const operationsGroup = adminMenuConfig.find(g => g.labelKey === 'sidebar.educationOperations')
+    let detailLabel = ''
+    
+    if (detailPageType === 'attendance') {
+      detailLabel = '교육 출석부'
+    } else if (detailPageType === 'activity') {
+      detailLabel = '교육 활동 일지'
+    } else if (detailPageType === 'equipment') {
+      detailLabel = '교구 확인서'
+    }
+
+    return (
+      <div className={`flex items-center gap-1.5 sm:gap-2 text-gray-500 flex-wrap ${className}`}>
+        <span className="whitespace-nowrap">{t('sidebar.home') || '홈'}</span>
+        <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+        {operationsGroup && (
+          <>
+            <span className="whitespace-nowrap">{t(operationsGroup.labelKey)}</span>
+            <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+          </>
+        )}
+        <span className="text-gray-900 font-medium whitespace-nowrap">{detailLabel}</span>
+      </div>
+    )
+  }
+
   return (
-    <div className={`flex items-center gap-2 text-sm text-gray-500 ${className}`}>
-      <span>{t('sidebar.home') || '홈'}</span>
-      <ChevronRight className="w-4 h-4" />
-      <span>{t(parentGroup.labelKey)}</span>
-      <ChevronRight className="w-4 h-4" />
-      <span className="text-gray-900 font-medium">{t(currentItem.labelKey)}</span>
+    <div className={`flex items-center gap-1.5 sm:gap-2 text-gray-500 flex-wrap ${className}`}>
+      <span className="whitespace-nowrap">{t('sidebar.home') || '홈'}</span>
+      <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+      <span className="whitespace-nowrap">{t(parentGroup.labelKey)}</span>
+      <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+      <span className="text-gray-900 font-medium whitespace-nowrap">{t(currentItem.labelKey)}</span>
     </div>
   )
 }

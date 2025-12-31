@@ -363,9 +363,12 @@ export default function SystemSettingsPage() {
                     <h3 className="text-lg font-semibold text-slate-900">일반 설정</h3>
                     <Button
                       type="primary"
-                      icon={<Save className="w-4 h-4" />}
+                      icon={<Save className="w-4 h-4 text-white" />}
                       onClick={() => settingsForm.submit()}
-                      className="h-9 px-4 rounded-xl border-0 font-medium text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      style={{
+                        color: 'white',
+                      }}
+                      className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white hover:!text-white [&_.anticon]:!text-white [&_.anticon]:hover:!text-white [&>span]:!text-white [&>span]:hover:!text-white [&:hover>span]:!text-white [&:hover_.anticon]:!text-white [&:hover]:!text-white"
                     >
                       저장
                     </Button>
@@ -411,9 +414,12 @@ export default function SystemSettingsPage() {
                     <h3 className="text-lg font-semibold text-slate-900">알림 설정</h3>
                     <Button
                       type="primary"
-                      icon={<Save className="w-4 h-4" />}
+                      icon={<Save className="w-4 h-4 text-white" />}
                       onClick={() => settingsForm.submit()}
-                      className="h-9 px-4 rounded-xl border-0 font-medium text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      style={{
+                        color: 'white',
+                      }}
+                      className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white hover:!text-white [&_.anticon]:!text-white [&_.anticon]:hover:!text-white [&>span]:!text-white [&>span]:hover:!text-white [&:hover>span]:!text-white [&:hover_.anticon]:!text-white [&:hover]:!text-white"
                     >
                       저장
                     </Button>
@@ -450,9 +456,12 @@ export default function SystemSettingsPage() {
                     <h3 className="text-lg font-semibold text-slate-900">백업 설정</h3>
                     <Button
                       type="primary"
-                      icon={<Save className="w-4 h-4" />}
+                      icon={<Save className="w-4 h-4 text-white" />}
                       onClick={() => settingsForm.submit()}
-                      className="h-9 px-4 rounded-xl border-0 font-medium text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      style={{
+                        color: 'white',
+                      }}
+                      className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white hover:!text-white [&_.anticon]:!text-white [&_.anticon]:hover:!text-white [&>span]:!text-white [&>span]:hover:!text-white [&:hover>span]:!text-white [&:hover_.anticon]:!text-white [&:hover]:!text-white"
                     >
                       저장
                     </Button>
@@ -489,9 +498,12 @@ export default function SystemSettingsPage() {
                     <h3 className="text-lg font-semibold text-slate-900">보안 설정</h3>
                     <Button
                       type="primary"
-                      icon={<Save className="w-4 h-4" />}
+                      icon={<Save className="w-4 h-4 text-white" />}
                       onClick={() => settingsForm.submit()}
-                      className="h-9 px-4 rounded-xl border-0 font-medium text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      style={{
+                        color: 'white',
+                      }}
+                      className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white hover:!text-white [&_.anticon]:!text-white [&_.anticon]:hover:!text-white [&>span]:!text-white [&>span]:hover:!text-white [&:hover>span]:!text-white [&:hover_.anticon]:!text-white [&:hover]:!text-white"
                     >
                       저장
                     </Button>
@@ -531,9 +543,12 @@ export default function SystemSettingsPage() {
                   </Button>
                   <Button
                     type="primary"
-                    icon={<Save className="w-4 h-4" />}
+                    icon={<Save className="w-4 h-4 text-white" />}
                     onClick={() => settingsForm.submit()}
-                    className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    style={{
+                      color: 'white',
+                    }}
+                    className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white hover:!text-white [&_.anticon]:!text-white [&_.anticon]:hover:!text-white [&>span]:!text-white [&>span]:hover:!text-white [&:hover>span]:!text-white [&:hover_.anticon]:!text-white [&:hover]:!text-white"
                   >
                     저장
                   </Button>
@@ -886,9 +901,12 @@ export default function SystemSettingsPage() {
                     </Button>
                     <Button
                       type="primary"
-                      icon={<Save className="w-4 h-4" />}
+                      icon={<Save className="w-4 h-4 text-white" />}
                       onClick={() => form.submit()}
-                      className="h-11 px-6 rounded-xl border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      style={{
+                        color: 'white',
+                      }}
+                      className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white hover:!text-white [&_.anticon]:!text-white [&_.anticon]:hover:!text-white [&>span]:!text-white [&>span]:hover:!text-white [&:hover>span]:!text-white [&:hover_.anticon]:!text-white [&:hover]:!text-white"
                     >
                       {formMode === 'create' ? '등록하기' : '저장하기'}
                     </Button>

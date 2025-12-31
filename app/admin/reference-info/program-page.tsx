@@ -301,21 +301,12 @@ export default function ProgramManagementPage() {
             </Button>
             <Button
               type="primary"
-              icon={<Save className="w-4 h-4" />}
+              icon={<Save className="w-4 h-4 text-white" />}
               onClick={() => form.submit()}
-              className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white"
               style={{
-                background: '#0f172a',
-                borderColor: 'transparent',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                color: '#ffffff',
+                color: 'white',
               }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#1e293b'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#0f172a'
-                }}
+              className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white hover:!text-white [&_.anticon]:!text-white [&_.anticon]:hover:!text-white [&>span]:!text-white [&>span]:hover:!text-white [&:hover>span]:!text-white [&:hover_.anticon]:!text-white [&:hover]:!text-white"
             >
               등록하기
             </Button>

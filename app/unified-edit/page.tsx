@@ -181,22 +181,12 @@ export default function UnifiedEditPage() {
           <>
             <Button
               type="primary"
-              icon={<Save className="w-4 h-4" />}
+              icon={<Save className="w-4 h-4 text-white" />}
               onClick={handleSave}
-              className="h-11 px-6 rounded-lg font-semibold text-white transition-all hover:opacity-90 shadow-sm hover:shadow-md"
               style={{
-                backgroundColor: '#1a202c',
-                borderColor: '#1a202c',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                color: 'white',
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#2d3748'
-                e.currentTarget.style.borderColor = '#2d3748'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#1a202c'
-                e.currentTarget.style.borderColor = '#1a202c'
-              }}
+              className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white hover:!text-white [&_.anticon]:!text-white [&_.anticon]:hover:!text-white [&>span]:!text-white [&>span]:hover:!text-white [&:hover>span]:!text-white [&:hover_.anticon]:!text-white [&:hover]:!text-white"
             >
               모두 저장
             </Button>
