@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Table, Button } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { Trash2 } from 'lucide-react'
+import { Trash2, Check, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface ApplierInfo {
