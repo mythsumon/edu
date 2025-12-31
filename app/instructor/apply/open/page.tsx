@@ -12,7 +12,7 @@ import type { Education, InstructorApplication } from '@/lib/dataStore'
 export default function ApplyForEducationPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const educationIdParam = searchParams.get('educationId')
+  const educationIdParam = searchParams?.get('educationId') || null
   
   const allEducations = dataStore.getEducations()
   const currentInstructorName = '홍길동' // Mock instructor name
