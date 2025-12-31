@@ -32,6 +32,11 @@ interface InstructorApplicationItem {
   educationId: string
   educationName: string
   institution: string
+  region?: string
+  gradeClass?: string
+  role?: string
+  instructorName?: string
+  applicationDate?: string
   startDate: string
   endDate: string
   note?: string
