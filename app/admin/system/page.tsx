@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useMemo, useEffect, useRef } from 'react'
-import { Table, Button, Card, Form, Select, Space, Switch, Tabs, Modal, Input } from 'antd'
+import { Table, Button, Card, Form, Select, Space, Switch, Tabs, Modal, Input, Checkbox } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { ChevronRight, Save, Trash2, RotateCcw, Eye, UserPlus, ArrowLeft, Search, Filter, X } from 'lucide-react'
 import { CommonCodePage } from '@/components/admin/common-code'
@@ -223,6 +223,40 @@ export default function SystemSettingsPage() {
 
   const columns: ColumnsType<UserItem> = [
     {
+      title: (
+        <Checkbox
+          checked={selectedRowKeys.length > 0 && selectedRowKeys.length === filteredUsers.length}
+          indeterminate={selectedRowKeys.length > 0 && selectedRowKeys.length < filteredUsers.length}
+          onChange={(e: any) => {
+            if (e.target.checked) {
+              setSelectedRowKeys(filteredUsers.map(item => item.key))
+            } else {
+              setSelectedRowKeys([])
+            }
+          }}
+        />
+      ),
+      key: 'selection',
+      width: 50,
+      fixed: 'left' as const,
+      render: (_, record) => (
+        <Checkbox
+          checked={selectedRowKeys.includes(record.key)}
+          onChange={(e: any) => {
+            e.stopPropagation()
+            if (e.target.checked) {
+              setSelectedRowKeys([...selectedRowKeys, record.key])
+            } else {
+              setSelectedRowKeys(selectedRowKeys.filter(key => key !== record.key))
+            }
+          }}
+          onClick={(e: any) => {
+            e.stopPropagation()
+          }}
+        />
+      ),
+    },
+    {
       title: '사용자ID',
       dataIndex: 'userId',
       key: 'userId',
@@ -325,13 +359,6 @@ export default function SystemSettingsPage() {
       ),
     },
   ]
-
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (selectedKeys: React.Key[]) => {
-      setSelectedRowKeys(selectedKeys)
-    },
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
@@ -701,7 +728,6 @@ export default function SystemSettingsPage() {
                 <Table
                   columns={columns}
                   dataSource={filteredUsers}
-                  rowSelection={rowSelection}
                   onRow={(record) => ({
                     onClick: () => handleViewDetail(record),
                     className: 'cursor-pointer hover:bg-gray-50',
@@ -841,21 +867,13 @@ export default function SystemSettingsPage() {
                 width={800}
                 className="[&_.ant-modal-content]:rounded-2xl [&_.ant-modal-content]:shadow-2xl [&_.ant-modal-header]:border-b-2 [&_.ant-modal-header]:border-slate-200 [&_.ant-modal-header]:bg-gradient-to-r [&_.ant-modal-header]:from-slate-50 [&_.ant-modal-header]:to-white [&_.ant-modal-header]:px-6 [&_.ant-modal-header]:py-4"
                 title={
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
-                        <UserPlus className="w-5 h-5 text-white" />
-                      </div>
-                      <h3 className="text-lg font-bold text-slate-900">
-                        {formMode === 'create' ? '사용자 등록' : '사용자 수정'}
-                      </h3>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
+                      <UserPlus className="w-5 h-5 text-white" />
                     </div>
-                    <Button
-                      type="text"
-                      icon={<X className="w-4 h-4" />}
-                      onClick={handleBackToList}
-                      className="h-8 w-8 p-0 hover:bg-slate-100 rounded-lg"
-                    />
+                    <h3 className="text-lg font-bold text-slate-900">
+                      {formMode === 'create' ? '사용자 등록' : '사용자 수정'}
+                    </h3>
                   </div>
                 }
               >

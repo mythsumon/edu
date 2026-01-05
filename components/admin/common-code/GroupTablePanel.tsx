@@ -43,13 +43,25 @@ export function GroupTablePanel({
       title: 'Group Name',
       dataIndex: 'name',
       key: 'name',
-      render: (text: string) => <span className="text-sm font-medium text-slate-900">{text}</span>,
+      ellipsis: true,
+      width: 150,
+      render: (text: string) => (
+        <span className="text-sm font-medium text-slate-900 whitespace-nowrap overflow-hidden text-ellipsis block">
+          {text}
+        </span>
+      ),
     },
     {
       title: 'Group Code',
       dataIndex: 'code',
       key: 'code',
-      render: (text: string) => <span className="text-sm text-slate-600">{text}</span>,
+      ellipsis: true,
+      width: 120,
+      render: (text: string) => (
+        <span className="text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis block">
+          {text}
+        </span>
+      ),
     },
     {
       title: 'Status',
@@ -167,7 +179,7 @@ export function GroupTablePanel({
               onClick: () => onSelectGroup(record.id === selectedGroupId ? null : record.id),
               className: `cursor-pointer ${record.id === selectedGroupId ? 'bg-slate-100' : 'hover:bg-slate-50/60'}`,
             })}
-            className="[&_.ant-table-thead>tr>th]:bg-slate-50 [&_.ant-table-thead>tr>th]:text-slate-600 [&_.ant-table-thead>tr>th]:text-xs [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-tbody>tr]:border-b [&_.ant-table-tbody>tr]:border-gray-100"
+            className="[&_.ant-table-thead>tr>th]:bg-slate-50 [&_.ant-table-thead>tr>th]:text-slate-600 [&_.ant-table-thead>tr>th]:text-xs [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-thead>tr>th]:whitespace-nowrap [&_.ant-table-tbody>tr]:border-b [&_.ant-table-tbody>tr]:border-gray-100 [&_.ant-table-cell]:overflow-hidden [&_.ant-table-cell]:text-ellipsis"
           />
         </div>
       )}
