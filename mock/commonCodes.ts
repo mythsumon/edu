@@ -257,11 +257,260 @@ export const regionGroupKeys: GroupKey[] = [
   },
 ]
 
+// Title: 교육기관_대분류
+export const institutionMainCategoryTitle: Title = {
+  id: 'title-institution-main',
+  name: '교육기관_대분류',
+  status: 'Active',
+  groupCount: 1,
+  createdAt: '2024-01-10',
+  updatedAt: '2024-01-15',
+}
+
+// Groups: 대분류 (단일 그룹)
+export const institutionMainCategoryGroups: Group[] = [
+  {
+    id: 'institution-main-group',
+    titleId: 'title-institution-main',
+    name: '대분류',
+    code: 'MAIN',
+    status: 'Active',
+    valueCount: 3,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+]
+
+// Group Keys: 대분류 값들
+export const institutionMainCategoryKeys: GroupKey[] = [
+  {
+    id: 'key-main-1',
+    groupId: 'institution-main-group',
+    label: '찾아가는교육',
+    value: 'VISITING',
+    sortOrder: 1,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'key-main-2',
+    groupId: 'institution-main-group',
+    label: '센터교육',
+    value: 'CENTER',
+    sortOrder: 2,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'key-main-3',
+    groupId: 'institution-main-group',
+    label: '기타',
+    value: 'OTHER',
+    sortOrder: 3,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+]
+
+// Title: 교육기관_1분류
+export const institutionSubCategory1Title: Title = {
+  id: 'title-institution-sub1',
+  name: '교육기관_1분류',
+  status: 'Active',
+  groupCount: 1,
+  createdAt: '2024-01-10',
+  updatedAt: '2024-01-15',
+}
+
+// Groups: 1분류 (단일 그룹)
+export const institutionSubCategory1Groups: Group[] = [
+  {
+    id: 'institution-sub1-group',
+    titleId: 'title-institution-sub1',
+    name: '1분류',
+    code: 'SUB1',
+    status: 'Active',
+    valueCount: 2,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+]
+
+// Group Keys: 1분류 값들
+export const institutionSubCategory1Keys: GroupKey[] = [
+  {
+    id: 'key-sub1-1',
+    groupId: 'institution-sub1-group',
+    label: '북부',
+    value: 'NORTH',
+    sortOrder: 1,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'key-sub1-2',
+    groupId: 'institution-sub1-group',
+    label: '남부',
+    value: 'SOUTH',
+    sortOrder: 2,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+]
+
+// Title: 교육기관_2분류
+export const institutionSubCategory2Title: Title = {
+  id: 'title-institution-sub2',
+  name: '교육기관_2분류',
+  status: 'Active',
+  groupCount: 1,
+  createdAt: '2024-01-10',
+  updatedAt: '2024-01-15',
+}
+
+// Groups: 2분류 (단일 그룹)
+export const institutionSubCategory2Groups: Group[] = [
+  {
+    id: 'institution-sub2-group',
+    titleId: 'title-institution-sub2',
+    name: '2분류',
+    code: 'SUB2',
+    status: 'Active',
+    valueCount: 10,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+]
+
+// Group Keys: 2분류 값들
+export const institutionSubCategory2Keys: GroupKey[] = [
+  {
+    id: 'key-sub2-1',
+    groupId: 'institution-sub2-group',
+    label: '일반학교',
+    value: 'GENERAL_SCHOOL',
+    sortOrder: 1,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'key-sub2-2',
+    groupId: 'institution-sub2-group',
+    label: '특수학교',
+    value: 'SPECIAL_SCHOOL',
+    sortOrder: 2,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'key-sub2-3',
+    groupId: 'institution-sub2-group',
+    label: '일반학교 내 특수학급',
+    value: 'SPECIAL_CLASS',
+    sortOrder: 3,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'key-sub2-4',
+    groupId: 'institution-sub2-group',
+    label: '도서벽지',
+    value: 'REMOTE_AREA',
+    sortOrder: 4,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'key-sub2-5',
+    groupId: 'institution-sub2-group',
+    label: '지역아동센터',
+    value: 'CHILDREN_CENTER',
+    sortOrder: 5,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'key-sub2-6',
+    groupId: 'institution-sub2-group',
+    label: '기타',
+    value: 'OTHER',
+    sortOrder: 6,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'key-sub2-7',
+    groupId: 'institution-sub2-group',
+    label: '기타(농어촌)',
+    value: 'OTHER_RURAL',
+    sortOrder: 7,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'key-sub2-8',
+    groupId: 'institution-sub2-group',
+    label: '기타(연계거점)',
+    value: 'OTHER_HUB',
+    sortOrder: 8,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'key-sub2-9',
+    groupId: 'institution-sub2-group',
+    label: '기타(다함께돌봄센터)',
+    value: 'OTHER_CARE',
+    sortOrder: 9,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'key-sub2-10',
+    groupId: 'institution-sub2-group',
+    label: '기타(도서관)',
+    value: 'OTHER_LIBRARY',
+    sortOrder: 10,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+]
+
 // Combined data for Common Code page
 export const commonCodeData = {
-  titles: [regionTitle],
-  groups: regionGroups,
-  groupKeys: regionGroupKeys,
+  titles: [
+    regionTitle,
+    institutionMainCategoryTitle,
+    institutionSubCategory1Title,
+    institutionSubCategory2Title,
+  ],
+  groups: [
+    ...regionGroups,
+    ...institutionMainCategoryGroups,
+    ...institutionSubCategory1Groups,
+    ...institutionSubCategory2Groups,
+  ],
+  groupKeys: [
+    ...regionGroupKeys,
+    ...institutionMainCategoryKeys,
+    ...institutionSubCategory1Keys,
+    ...institutionSubCategory2Keys,
+  ],
 }
 
 

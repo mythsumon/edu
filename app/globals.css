@@ -23,10 +23,11 @@
   }
   
   .dark {
-    --background: #1F2937;
-    --background-surface: #2D1B0E;
-    --foreground: #F9FAFB;
-    --foreground-secondary: #D1D5DB;
+    --background: #111827; /* Gray-900 */
+    --background-surface: #1f2937; /* Gray-800 */
+    --foreground: #f9fafb; /* Gray-50 */
+    --foreground-secondary: #d1d5db; /* Gray-300 */
+    --foreground-muted: #9ca3af; /* Gray-400 */
   }
   
   * {
@@ -40,6 +41,12 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-size: 16px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  .dark body {
+    background-color: #111827; /* Gray-900 */
+    color: #f9fafb; /* Gray-50 */
   }
   
   /* Base text sizes */
@@ -107,7 +114,7 @@
   
   /* Custom utility classes for the admin dashboard */
   .card {
-    @apply bg-white rounded-2xl shadow-sm border border-slate-200 dark:bg-gray-800 dark:border-gray-700;
+    @apply bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700 transition-colors;
   }
   
   .card-hover {
@@ -157,6 +164,11 @@
     font-weight: 600;
     color: #475569;
     font-size: 0.75rem;
+  }
+
+  .dark .ant-table-thead > tr > th {
+    background-color: #111827 !important;
+    color: #d1d5db !important;
   }
   
   /* Select box hover styles to match other form elements */

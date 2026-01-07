@@ -113,66 +113,177 @@ export default function MyScheduleListPage() {
     return isMain ? '주강사' : '보조강사'
   }
 
-  const getStatusBadge = (assignment: InstructorAssignment) => {
-    if (assignment.status === '진행중') {
-      return <Badge status="processing" text="진행 중" />
-    } else if (assignment.status === '완료') {
-      return <Badge status="success" text="완료" />
-    } else if (assignment.assignmentStatus === 'confirmed') {
-      return <Badge status="default" text="확정" />
+  // Flatten assignments to lessons for table display
+  const tableData = useMemo(() => {
+    const data: Array<{
+      key: string
+      educationId: string
+      educationName: string
+      institution: string
+      session: number
+      date: string
+      startTime: string
+      endTime: string
+      status: string
+      assignmentKey: string
+    }> = []
+    
+    filteredData.forEach((assignment) => {
+      if (assignment.lessons && assignment.lessons.length > 0) {
+        assignment.lessons.forEach((lesson) => {
+          // Check if instructor is in this lesson
+          const mainInstructors = Array.isArray(lesson.mainInstructors) ? lesson.mainInstructors : []
+          const assistantInstructors = Array.isArray(lesson.assistantInstructors) ? lesson.assistantInstructors : []
+          
+          const isInLesson = mainInstructors.some(inst => inst.name === currentInstructorName) ||
+                            assistantInstructors.some(inst => inst.name === currentInstructorName)
+          
+          if (isInLesson) {
+            data.push({
+              key: `${assignment.key}-${lesson.session}`,
+              educationId: assignment.educationId,
+              educationName: assignment.educationName,
+              institution: assignment.institution,
+              session: lesson.session || 0,
+              date: lesson.date || '',
+              startTime: lesson.startTime || '',
+              endTime: lesson.endTime || '',
+              status: assignment.assignmentStatus === 'confirmed' ? '1차 확정' : '대기',
+              assignmentKey: assignment.key,
+            })
+          }
+        })
+      }
+    })
+    
+    return data
+  }, [filteredData, currentInstructorName])
+
+  const getStatusBadge = (status: string) => {
+    if (status === '1차 확정') {
+      return (
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+          {status}
+        </span>
+      )
     } else {
-      return <Badge status="warning" text="대기" />
+      return (
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
+          {status}
+        </span>
+      )
     }
   }
 
-  const columns: ColumnsType<InstructorAssignment> = [
+  const columns: ColumnsType<any> = [
+    {
+      title: '교육ID',
+      dataIndex: 'educationId',
+      key: 'educationId',
+      width: 120,
+      render: (text: string) => <span className="text-sm font-medium text-gray-900">{text}</span>,
+    },
+    {
+      title: '수업 상태',
+      dataIndex: 'status',
+      key: 'status',
+      width: 120,
+      render: (status: string) => getStatusBadge(status),
+    },
     {
       title: '교육명',
       dataIndex: 'educationName',
       key: 'educationName',
-      width: 250,
-      render: (text: string) => <span className="font-medium text-gray-900">{text}</span>,
+      width: 200,
+      render: (text: string) => <span className="text-sm font-medium text-gray-900">{text}</span>,
     },
     {
       title: '교육기관',
       dataIndex: 'institution',
       key: 'institution',
       width: 150,
+      render: (text: string) => <span className="text-sm text-gray-700">{text}</span>,
     },
     {
-      title: '일정',
-      key: 'period',
-      width: 200,
-      render: (_, record) => (
-        <span>{record.periodStart} ~ {record.periodEnd}</span>
-      ),
-    },
-    {
-      title: '역할',
-      key: 'role',
+      title: '수업 차시',
+      dataIndex: 'session',
+      key: 'session',
       width: 100,
-      render: (_, record) => (
-        <span className="font-medium">{getRoleForAssignment(record)}</span>
-      ),
+      render: (session: number) => <span className="text-sm text-gray-700">{session}차시</span>,
     },
     {
-      title: '상태',
-      key: 'status',
+      title: '일자',
+      dataIndex: 'date',
+      key: 'date',
       width: 120,
-      render: (_, record) => getStatusBadge(record),
+      render: (date: string) => <span className="text-sm text-gray-700">{date}</span>,
     },
     {
-      title: '작업',
-      key: 'action',
+      title: '시작 시간',
+      dataIndex: 'startTime',
+      key: 'startTime',
+      width: 100,
+      render: (time: string) => <span className="text-sm text-gray-700">{time}</span>,
+    },
+    {
+      title: '교육 출석부',
+      key: 'attendance',
       width: 120,
+      align: 'center' as const,
       render: (_, record) => (
         <Button
-          type="primary"
           size="small"
-          icon={<Eye className="w-4 h-4" />}
-          onClick={() => router.push(`/instructor/schedule/${record.educationId}`)}
+          icon={<Eye className="w-3 h-3" />}
+          onClick={(e) => {
+            e.stopPropagation()
+            router.push(`/instructor/schedule/${record.educationId}/attendance?session=${record.session}`)
+          }}
+          className="h-8 px-3 rounded-lg border border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-gray-700 hover:text-gray-900"
         >
-          상세 보기
+          상세
+        </Button>
+      ),
+    },
+    {
+      title: '교육 활동 일지',
+      key: 'activity',
+      width: 120,
+      align: 'center' as const,
+      render: (_, record) => (
+        <Button
+          size="small"
+          icon={<Eye className="w-3 h-3" />}
+          onClick={(e) => {
+            e.stopPropagation()
+            // Navigate to activity log detail page using educationId as logId
+            // If activity log doesn't exist, it will create a new one
+            router.push(`/instructor/activity-logs/${record.educationId}`)
+          }}
+          className="h-8 px-3 rounded-lg border border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-gray-700 hover:text-gray-900"
+        >
+          상세
+        </Button>
+      ),
+    },
+    {
+      title: '교구 확인서',
+      key: 'material',
+      width: 120,
+      align: 'center' as const,
+      render: (_, record) => (
+        <Button
+          size="small"
+          icon={<Eye className="w-3 h-3" />}
+          onClick={(e) => {
+            e.stopPropagation()
+            // Navigate to equipment confirmation detail page
+            // Use educationId as doc id, create if not exists
+            const docId = record.educationId
+            router.push(`/instructor/equipment-confirmations/${docId}`)
+          }}
+          className="h-8 px-3 rounded-lg border border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-gray-700 hover:text-gray-900"
+        >
+          상세
         </Button>
       ),
     },
@@ -180,18 +291,8 @@ export default function MyScheduleListPage() {
 
   return (
     <ProtectedRoute requiredRole="instructor">
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              내 출강 리스트
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              확정된 출강 일정을 확인하고 관리하세요.
-            </p>
-          </div>
-
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 transition-colors">
+        <div className="p-6">
           {/* Filters */}
           <Card className="mb-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -238,7 +339,7 @@ export default function MyScheduleListPage() {
           <Card>
             <Table
               columns={columns}
-              dataSource={filteredData}
+              dataSource={tableData}
               rowKey="key"
               scroll={{ x: 'max-content' }}
               pagination={{

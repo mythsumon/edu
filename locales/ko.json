@@ -8,6 +8,7 @@
     "title": "교육 관리 시스템",
     "home": "홈",
     "dashboard": "대시보드",
+    "myDashboard": "내 대시보드",
     "overallStatus": "전체 프로그램 현황",
     "regionalStatus": "권역별 현황",
     "educationOperations": "교육 운영",
@@ -26,7 +27,9 @@
     "institution": "교육기관 관리",
     "program": "프로그램 관리",
     "instructor": "강사 관리",
-    "systemSettings": "시스템 설정"
+    "systemSettings": "시스템 설정",
+    "educationApplication": "교육 신청",
+    "educationAssignment": "교육 배정"
   },
   "pageHeader": {
     "breadcrumbHome": "홈",

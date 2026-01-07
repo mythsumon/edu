@@ -15,8 +15,8 @@ export default function LoginPage() {
   // Set default values for ID and password
   useEffect(() => {
     form.setFieldsValue({
-      email: 'admin@example.com',
-      password: 'Admin@1234'
+      email: 'instructor@example.com',
+      password: 'Instructor@1234'
     })
   }, [form])
 
@@ -30,17 +30,43 @@ export default function LoginPage() {
       // })
       // const data = await response.json()
       
-      // 임시: 로그인 성공 시 관리자로 로그인
+      // 임시: 이메일/비밀번호에 따라 역할 결정
       // 실제로는 API 응답에서 역할을 받아와야 함
-      login('admin')
-      router.push('/admin')
+      const { email, password } = values
+      
+      // Instructor credentials
+      if (email === 'instructor@example.com' && password === 'Instructor@1234') {
+        login('instructor')
+        router.push('/instructor/dashboard')
+        message.success('강사로 로그인되었습니다.')
+        return
+      }
+      
+      // Admin credentials
+      if (email === 'admin@example.com' && password === 'Admin@1234') {
+        login('admin')
+        router.push('/admin')
+        message.success('관리자로 로그인되었습니다.')
+        return
+      }
+      
+      // Operator credentials
+      if (email === 'operator@example.com' && password === 'Operator@1234') {
+        login('operator')
+        router.push('/admin')
+        message.success('운영자로 로그인되었습니다.')
+        return
+      }
+      
+      // Default: show error
+      message.error('로그인 정보가 올바르지 않습니다.')
     } catch (error) {
       message.error('로그인 정보가 올바르지 않습니다.')
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4 font-sans">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-gray-900 p-4 font-sans transition-colors">
       <style jsx>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px); }
@@ -96,19 +122,19 @@ export default function LoginPage() {
         }
       `}</style>
       
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden max-w-md w-full flex flex-col">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden max-w-md w-full flex flex-col transition-colors">
         
         {/* Login Form */}
         <div className="w-full p-8 flex flex-col justify-center">
           <div className="mb-6 text-center">
             <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-slate-900 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-slate-900 dark:bg-blue-600 rounded-lg flex items-center justify-center">
                 <GraduationCap size={24} className="text-white" />
               </div>
-              <span className="text-2xl font-bold tracking-tight text-slate-900">EduMatrix</span>
+              <span className="text-2xl font-bold tracking-tight text-slate-900 dark:text-gray-100">EduMatrix</span>
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">로그인</h2>
-            <p className="text-sm text-slate-500">자격 증명을 사용하여 대시보드에 액세스하세요.</p>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-gray-100 mb-2">로그인</h2>
+            <p className="text-sm text-slate-500 dark:text-gray-400">자격 증명을 사용하여 대시보드에 액세스하세요.</p>
           </div>
 
           <Form
@@ -119,7 +145,7 @@ export default function LoginPage() {
             className="space-y-6"
           >
             <Form.Item
-              label={<span className="block text-sm font-medium text-slate-700 mb-2">사용자 ID / Email</span>}
+              label={<span className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">사용자 ID / Email</span>}
               name="email"
               rules={[
                 { required: true, message: '사용자 ID 또는 이메일을 입력해주세요' },
@@ -132,7 +158,7 @@ export default function LoginPage() {
             </Form.Item>
             
             <Form.Item
-              label={<span className="block text-sm font-medium text-slate-700 mb-2">Password</span>}
+              label={<span className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Password</span>}
               name="password"
               rules={[{ required: true, message: '비밀번호를 입력해주세요' }]}
             >
@@ -143,11 +169,11 @@ export default function LoginPage() {
             </Form.Item>
             
             <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center text-slate-600 cursor-pointer">
-                <input type="checkbox" className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-400 mr-2" />
+              <label className="flex items-center text-slate-600 dark:text-gray-400 cursor-pointer">
+                <input type="checkbox" className="w-4 h-4 rounded border-slate-300 dark:border-gray-600 text-blue-600 focus:ring-blue-400 mr-2" />
                 Remember me
               </label>
-              <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">Forgot Password?</a>
+              <a href="#" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">Forgot Password?</a>
             </div>
 
             <Button 

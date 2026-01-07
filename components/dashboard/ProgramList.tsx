@@ -78,7 +78,8 @@ export function ProgramList({ selectedRegion }: { selectedRegion?: number }) {
     } else if (type === 'activity') {
       router.push(`/admin/activity/${programId}`)
     } else if (type === 'equipment') {
-      router.push(`/admin/equipment/${programId}`)
+      // Navigate to equipment confirmation detail page (shared with instructor)
+      router.push(`/instructor/equipment-confirmations/${programId}`)
     } else {
       // In a real app, navigate to the appropriate detail page
       console.log(`Opening ${type} detail for program ${programId}`)

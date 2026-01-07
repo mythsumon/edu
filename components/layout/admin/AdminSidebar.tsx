@@ -17,7 +17,9 @@ import {
 import { useLanguage } from '@/components/localization/LanguageContext'
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { Modal, Form, Input, Select, Button } from 'antd'
+import { Modal, Form, Input, Select, Button, Upload, message } from 'antd'
+import { Upload as UploadIcon } from 'lucide-react'
+import type { UploadFile } from 'antd/es/upload/interface'
 
 interface MenuItem {
   labelKey: string
@@ -83,13 +85,36 @@ export function AdminSidebar({ isCollapsed, setIsCollapsed }: AdminSidebarProps)
   const pathname = usePathname()
   const router = useRouter()
   const { t, locale, setLocale } = useLanguage()
-  const { userRole } = useAuth()
+  const { userRole, userProfile, updateProfile } = useAuth()
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false)
   const [accountForm] = Form.useForm()
+  const [signatureFileList, setSignatureFileList] = useState<UploadFile[]>([])
+  
+  // Convert image file to base64 URL
+  const getBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = (error) => reject(error)
+    })
+  }
+  
+  const handleSignatureUpload = async (file: File) => {
+    try {
+      const base64Url = await getBase64(file)
+      updateProfile({ signatureImageUrl: base64Url })
+      message.success(locale === 'ko' ? '서명이 업로드되었습니다.' : 'Signature uploaded successfully.')
+      return false // Prevent default upload
+    } catch (error) {
+      message.error(locale === 'ko' ? '서명 업로드에 실패했습니다.' : 'Failed to upload signature.')
+      return false
+    }
+  }
 
   // Only show admin sidebar if user is admin
   if (userRole !== 'admin') {
@@ -281,11 +306,22 @@ export function AdminSidebar({ isCollapsed, setIsCollapsed }: AdminSidebarProps)
                   className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                   onClick={() => {
                     accountForm.setFieldsValue({
-                      name: locale === 'ko' ? '관리자' : 'Administrator',
-                      email: 'admin@example.com',
-                      phone: '010-1234-5678',
+                      name: userProfile?.name || (locale === 'ko' ? '관리자' : 'Administrator'),
+                      email: userProfile?.email || 'admin@example.com',
+                      phone: userProfile?.phone || '010-1234-5678',
                       language: locale,
                     })
+                    // Set signature file list if signature exists
+                    if (userProfile?.signatureImageUrl) {
+                      setSignatureFileList([{
+                        uid: '-1',
+                        name: 'signature.png',
+                        status: 'done',
+                        url: userProfile.signatureImageUrl,
+                      }])
+                    } else {
+                      setSignatureFileList([])
+                    }
                     setIsAccountModalOpen(true)
                     setIsProfileOpen(false)
                   }}
@@ -384,7 +420,12 @@ export function AdminSidebar({ isCollapsed, setIsCollapsed }: AdminSidebarProps)
               accountForm
                 .validateFields()
                 .then((values) => {
-                  console.log('Account settings:', values)
+                  // Update profile with form values
+                  updateProfile({
+                    name: values.name,
+                    phone: values.phone,
+                  })
+                  message.success(locale === 'ko' ? '계정 설정이 저장되었습니다.' : 'Account settings saved.')
                   setIsAccountModalOpen(false)
                 })
                 .catch(() => {})
@@ -460,6 +501,43 @@ export function AdminSidebar({ isCollapsed, setIsCollapsed }: AdminSidebarProps)
             ]}
           >
             <Input.Password className="h-10 rounded-lg" />
+          </Form.Item>
+          <Form.Item
+            label={locale === 'ko' ? '서명 이미지' : 'Signature Image'}
+            name="signature"
+            extra={locale === 'ko' ? '출석부에 사용할 서명 이미지를 업로드하세요. (PNG 권장)' : 'Upload signature image for attendance sheets. (PNG recommended)'}
+          >
+            <Upload
+              fileList={signatureFileList}
+              beforeUpload={handleSignatureUpload}
+              onRemove={() => {
+                updateProfile({ signatureImageUrl: undefined })
+                setSignatureFileList([])
+                message.success(locale === 'ko' ? '서명이 삭제되었습니다.' : 'Signature removed.')
+              }}
+              accept="image/png,image/jpeg,image/jpg"
+              maxCount={1}
+              listType="picture-card"
+            >
+              {signatureFileList.length < 1 && (
+                <div className="flex flex-col items-center justify-center">
+                  <UploadIcon className="w-6 h-6 text-gray-400 mb-2" />
+                  <span className="text-sm text-gray-500">
+                    {locale === 'ko' ? '서명 업로드' : 'Upload Signature'}
+                  </span>
+                </div>
+              )}
+            </Upload>
+            {userProfile?.signatureImageUrl && (
+              <div className="mt-2 p-2 border border-gray-200 rounded">
+                <div className="text-xs text-gray-500 mb-1">{locale === 'ko' ? '현재 서명 미리보기:' : 'Current signature preview:'}</div>
+                <img
+                  src={userProfile.signatureImageUrl}
+                  alt="서명"
+                  className="max-w-full max-h-20 object-contain"
+                />
+              </div>
+            )}
           </Form.Item>
         </Form>
       </Modal>

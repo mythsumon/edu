@@ -1,26 +1,35 @@
 'use client'
 
 import { ReactNode } from 'react'
-import { ConfigProvider } from 'antd'
+import { ConfigProvider, theme } from 'antd'
 import { AuthProvider } from '@/contexts/AuthContext'
-import { ThemeProvider } from '@/contexts/ThemeContext'
+import { ThemeProvider, useTheme } from '@/contexts/ThemeContext'
 import { LanguageProvider } from '@/components/localization/LanguageContext'
 
 interface AppProvidersProps {
   children: ReactNode
 }
 
-export function AppProviders({ children }: AppProvidersProps) {
+function ThemedConfigProvider({ children }: { children: ReactNode }) {
+  const { theme: appTheme } = useTheme()
+  const { defaultAlgorithm, darkAlgorithm } = theme
+
   return (
     <ConfigProvider
       theme={{
+        algorithm: appTheme === 'dark' ? darkAlgorithm : defaultAlgorithm,
         token: {
-          colorPrimary: '#0f172a', // Dark slate (matching login button)
-          colorInfo: '#3b82f6', // Bright Blue
-          colorSuccess: '#10b981', // Emerald Green
-          colorWarning: '#f59e0b', // Amber
+          colorPrimary: appTheme === 'dark' ? '#60a5fa' : '#0f172a',
+          colorInfo: '#3b82f6',
+          colorSuccess: '#10b981',
+          colorWarning: '#f59e0b',
           colorError: '#ef4444',
-          borderRadius: 12, // Rounded-xl
+          borderRadius: 12,
+          colorBgContainer: appTheme === 'dark' ? '#1f2937' : '#ffffff',
+          colorBgElevated: appTheme === 'dark' ? '#374151' : '#ffffff',
+          colorText: appTheme === 'dark' ? '#f9fafb' : '#0f172a',
+          colorTextSecondary: appTheme === 'dark' ? '#d1d5db' : '#64748b',
+          colorBorder: appTheme === 'dark' ? '#4b5563' : '#e2e8f0',
         },
         components: {
           Button: {
@@ -31,9 +40,9 @@ export function AppProviders({ children }: AppProvidersProps) {
             borderRadiusLG: 12,
             borderRadiusSM: 12,
             primaryShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-            primaryColor: '#0f172a',
-            colorPrimaryHover: '#1e293b',
-            colorPrimaryActive: '#0f172a',
+            colorPrimary: appTheme === 'dark' ? '#60a5fa' : '#0f172a',
+            colorPrimaryHover: appTheme === 'dark' ? '#3b82f6' : '#1e293b',
+            colorPrimaryActive: appTheme === 'dark' ? '#2563eb' : '#0f172a',
           },
           Input: {
             controlHeight: 44,
@@ -42,12 +51,12 @@ export function AppProviders({ children }: AppProvidersProps) {
             borderRadius: 12,
             borderRadiusLG: 12,
             borderRadiusSM: 12,
-            colorBgContainer: '#f8fafc', // Slate-50 background
-            colorBorder: '#e2e8f0', // Slate-200 border
-            colorText: '#0f172a', // Slate-900 text
-            colorTextPlaceholder: '#94a3b8', // Slate-400 placeholder
-            hoverBorderColor: '#cbd5e1',
-            activeBorderColor: '#60a5fa', // Blue-400
+            colorBgContainer: appTheme === 'dark' ? '#374151' : '#f8fafc',
+            colorBorder: appTheme === 'dark' ? '#4b5563' : '#e2e8f0',
+            colorText: appTheme === 'dark' ? '#f9fafb' : '#0f172a',
+            colorTextPlaceholder: appTheme === 'dark' ? '#9ca3af' : '#94a3b8',
+            hoverBorderColor: appTheme === 'dark' ? '#60a5fa' : '#cbd5e1',
+            activeBorderColor: '#60a5fa',
             activeShadow: '0 0 0 2px rgba(96, 165, 250, 0.2)',
           },
           Select: {
@@ -57,13 +66,13 @@ export function AppProviders({ children }: AppProvidersProps) {
             borderRadius: 12,
             borderRadiusLG: 12,
             borderRadiusSM: 12,
-            colorBgContainer: '#ffffff',
-            colorBorder: '#e2e8f0',
-            hoverBorderColor: '#cbd5e1',
+            colorBgContainer: appTheme === 'dark' ? '#374151' : '#ffffff',
+            colorBorder: appTheme === 'dark' ? '#4b5563' : '#e2e8f0',
+            hoverBorderColor: appTheme === 'dark' ? '#60a5fa' : '#cbd5e1',
             activeBorderColor: '#60a5fa',
-            optionSelectedBg: '#dbeafe', // Blue-100
-            optionActiveBg: '#eff6ff', // Blue-50
-            optionSelectedColor: '#1e40af', // Blue-800
+            optionSelectedBg: appTheme === 'dark' ? '#1e3a8a' : '#dbeafe',
+            optionActiveBg: appTheme === 'dark' ? '#1e40af' : '#eff6ff',
+            optionSelectedColor: appTheme === 'dark' ? '#ffffff' : '#1e40af',
           },
           DatePicker: {
             controlHeight: 44,
@@ -72,28 +81,55 @@ export function AppProviders({ children }: AppProvidersProps) {
             borderRadius: 12,
             borderRadiusLG: 12,
             borderRadiusSM: 12,
-            colorBgContainer: '#ffffff',
-            colorBorder: '#e2e8f0',
-            hoverBorderColor: '#cbd5e1',
+            colorBgContainer: appTheme === 'dark' ? '#374151' : '#ffffff',
+            colorBorder: appTheme === 'dark' ? '#4b5563' : '#e2e8f0',
+            hoverBorderColor: appTheme === 'dark' ? '#60a5fa' : '#cbd5e1',
             activeBorderColor: '#60a5fa',
           },
           Card: {
             borderRadiusLG: 16,
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+            colorBgContainer: appTheme === 'dark' ? '#1f2937' : '#ffffff',
+            colorBorderSecondary: appTheme === 'dark' ? '#374151' : '#e2e8f0',
+            boxShadow: appTheme === 'dark' 
+              ? '0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2)'
+              : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
           },
           Table: {
             borderRadiusLG: 16,
+            colorBgContainer: appTheme === 'dark' ? '#1f2937' : '#ffffff',
+            colorText: appTheme === 'dark' ? '#f9fafb' : '#0f172a',
+            colorTextHeading: appTheme === 'dark' ? '#f9fafb' : '#0f172a',
+            colorBorderSecondary: appTheme === 'dark' ? '#374151' : '#e2e8f0',
+            headerBg: appTheme === 'dark' ? '#111827' : '#f8fafc',
+          },
+          Modal: {
+            colorBgElevated: appTheme === 'dark' ? '#1f2937' : '#ffffff',
+            colorText: appTheme === 'dark' ? '#f9fafb' : '#0f172a',
+          },
+          Tabs: {
+            colorText: appTheme === 'dark' ? '#d1d5db' : '#64748b',
+            itemSelectedColor: appTheme === 'dark' ? '#60a5fa' : '#0f172a',
+            itemHoverColor: appTheme === 'dark' ? '#93c5fd' : '#1e293b',
+            inkBarColor: appTheme === 'dark' ? '#60a5fa' : '#0f172a',
           },
         },
       }}
     >
-      <AuthProvider>
-        <ThemeProvider>
+      {children}
+    </ConfigProvider>
+  )
+}
+
+export function AppProviders({ children }: AppProvidersProps) {
+  return (
+    <AuthProvider>
+      <ThemeProvider>
+        <ThemedConfigProvider>
           <LanguageProvider>
             {children}
           </LanguageProvider>
-        </ThemeProvider>
-      </AuthProvider>
-    </ConfigProvider>
+        </ThemedConfigProvider>
+      </ThemeProvider>
+    </AuthProvider>
   )
 }

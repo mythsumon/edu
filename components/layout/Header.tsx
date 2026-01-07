@@ -131,20 +131,18 @@ export function Header() {
   }
 
   const isInstructor = pathname?.startsWith('/instructor')
+  const pageTitle = getPageTitle()
   
   return (
-    <header className={`h-auto sm:h-14 md:h-16 flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 md:px-6 py-2 sm:py-0 relative z-20 bg-white border-b border-slate-200 gap-2 sm:gap-0`}>
+    <header className={`h-auto sm:h-14 md:h-16 flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 md:px-6 py-2 sm:py-0 relative z-20 bg-white dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700 gap-2 sm:gap-0 transition-colors`}>
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 min-w-0 w-full sm:w-auto">
-        <h1 className="text-lg md:text-xl font-bold text-slate-900 truncate">
-          {getPageTitle()}
-        </h1>
-        {!isInstructor && <Breadcrumb className="mb-0 text-xs sm:text-sm" />}
+        <Breadcrumb className="mb-0 text-xs sm:text-sm" />
       </div>
       <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
         {/* Theme toggle */}
         <button 
           onClick={toggleTheme}
-          className="flex items-center justify-center w-9 h-9 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors"
+          className="flex items-center justify-center w-9 h-9 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-gray-100 hover:bg-slate-100 dark:hover:bg-gray-700 rounded-full transition-colors"
           aria-label={theme === 'light' ? '다크 모드로 전환' : '라이트 모드로 전환'}
         >
           {theme === 'light' ? (
@@ -157,7 +155,7 @@ export function Header() {
         {/* Language toggle */}
         <button 
           onClick={toggleLanguage}
-          className="flex items-center gap-2 h-8 px-3 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+          className="flex items-center gap-2 h-8 px-3 text-sm font-medium text-slate-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
         >
           {locale === 'ko' ? 'KO' : 'EN'}
           <Globe className="w-4 h-4" />

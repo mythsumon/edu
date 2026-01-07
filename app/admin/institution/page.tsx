@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Table, Button, Card, Form, Select, Checkbox, Space, Input } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
@@ -156,6 +157,7 @@ const cityOptions = [
 ]
 
 export default function InstitutionManagementPage() {
+  const router = useRouter()
   const [viewMode, setViewMode] = useState<'list' | 'register' | 'edit' | 'detail'>('list')
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
   const [currentPage, setCurrentPage] = useState(1)
@@ -191,6 +193,9 @@ export default function InstitutionManagementPage() {
   
   // Common code state for dependent dropdowns
   const [selectedRegionGroupId, setSelectedRegionGroupId] = useState<string | undefined>(undefined)
+  const [selectedMainCategoryGroupId, setSelectedMainCategoryGroupId] = useState<string | undefined>(undefined)
+  const [selectedSubCategory1GroupId, setSelectedSubCategory1GroupId] = useState<string | undefined>(undefined)
+  const [selectedSubCategory2GroupId, setSelectedSubCategory2GroupId] = useState<string | undefined>(undefined)
   
   // Get region groups (권역 1~6) from common code store
   const regionGroups = useMemo(() => {
@@ -202,6 +207,35 @@ export default function InstitutionManagementPage() {
     if (!selectedRegionGroupId) return []
     return getKeysByGroupId(selectedRegionGroupId)
   }, [selectedRegionGroupId])
+  
+  // Get institution classification groups
+  const mainCategoryGroups = useMemo(() => {
+    return getGroupsByTitleId('title-institution-main')
+  }, [])
+  
+  const subCategory1Groups = useMemo(() => {
+    return getGroupsByTitleId('title-institution-sub1')
+  }, [])
+  
+  const subCategory2Groups = useMemo(() => {
+    return getGroupsByTitleId('title-institution-sub2')
+  }, [])
+  
+  // Get classification keys
+  const mainCategoryKeys = useMemo(() => {
+    if (!selectedMainCategoryGroupId) return []
+    return getKeysByGroupId(selectedMainCategoryGroupId)
+  }, [selectedMainCategoryGroupId])
+  
+  const subCategory1Keys = useMemo(() => {
+    if (!selectedSubCategory1GroupId) return []
+    return getKeysByGroupId(selectedSubCategory1GroupId)
+  }, [selectedSubCategory1GroupId])
+  
+  const subCategory2Keys = useMemo(() => {
+    if (!selectedSubCategory2GroupId) return []
+    return getKeysByGroupId(selectedSubCategory2GroupId)
+  }, [selectedSubCategory2GroupId])
   
   // Region group options for dropdown
   const regionGroupOptions = useMemo(() => {
@@ -218,6 +252,62 @@ export default function InstitutionManagementPage() {
       label: key.label,
     }))
   }, [regionKeys])
+  
+  // Classification options
+  const mainCategoryOptions = useMemo(() => {
+    if (mainCategoryGroups.length === 0 || !selectedMainCategoryGroupId) return []
+    return getKeysByGroupId(selectedMainCategoryGroupId).map((key) => ({
+      value: key.value,
+      label: key.label,
+    }))
+  }, [mainCategoryGroups, selectedMainCategoryGroupId])
+  
+  const subCategory1Options = useMemo(() => {
+    if (subCategory1Groups.length === 0 || !selectedSubCategory1GroupId) return []
+    return getKeysByGroupId(selectedSubCategory1GroupId).map((key) => ({
+      value: key.value,
+      label: key.label,
+    }))
+  }, [subCategory1Groups, selectedSubCategory1GroupId])
+  
+  const subCategory2Options = useMemo(() => {
+    if (subCategory2Groups.length === 0 || !selectedSubCategory2GroupId) return []
+    return getKeysByGroupId(selectedSubCategory2GroupId).map((key) => ({
+      value: key.value,
+      label: key.label,
+    }))
+  }, [subCategory2Groups, selectedSubCategory2GroupId])
+  
+  // Watch subCategory2 for conditional field
+  const subCategory2Value = Form.useWatch('subCategory2', form)
+  
+  // Check if education level mix is required
+  const requiresEducationLevelMix = useMemo(() => {
+    if (!subCategory2Value) return false
+    const requiresMix = [
+      'SPECIAL_SCHOOL',
+      'CHILDREN_CENTER',
+      'OTHER',
+      'OTHER_RURAL',
+      'OTHER_HUB',
+      'OTHER_CARE',
+      'OTHER_LIBRARY',
+    ]
+    return requiresMix.includes(subCategory2Value)
+  }, [subCategory2Value])
+  
+  // Initialize classification groups on mount
+  useEffect(() => {
+    if (mainCategoryGroups.length > 0 && !selectedMainCategoryGroupId) {
+      setSelectedMainCategoryGroupId(mainCategoryGroups[0].id)
+    }
+    if (subCategory1Groups.length > 0 && !selectedSubCategory1GroupId) {
+      setSelectedSubCategory1GroupId(subCategory1Groups[0].id)
+    }
+    if (subCategory2Groups.length > 0 && !selectedSubCategory2GroupId) {
+      setSelectedSubCategory2GroupId(subCategory2Groups[0].id)
+    }
+  }, [mainCategoryGroups, subCategory1Groups, subCategory2Groups])
 
   const handleRegisterClick = () => {
     setViewMode('register')
@@ -225,6 +315,10 @@ export default function InstitutionManagementPage() {
     setEmailLocal('')
     setEmailDomain('')
     setSelectedRegionGroupId(undefined)
+    // Initialize classification group IDs
+    if (mainCategoryGroups.length > 0) setSelectedMainCategoryGroupId(mainCategoryGroups[0].id)
+    if (subCategory1Groups.length > 0) setSelectedSubCategory1GroupId(subCategory1Groups[0].id)
+    if (subCategory2Groups.length > 0) setSelectedSubCategory2GroupId(subCategory2Groups[0].id)
   }
   
   // Handle region group change - reset region key selection
@@ -617,6 +711,84 @@ export default function InstitutionManagementPage() {
                         >
                           <Input placeholder="전화번호를 입력하세요" className="h-11 rounded-xl" />
                         </Form.Item>
+
+                        <Form.Item
+                          label={
+                            <span>
+                              대분류 <span className="text-red-500">*</span>
+                            </span>
+                          }
+                          name="mainCategory"
+                          rules={[{ required: true, message: '대분류를 선택해주세요' }]}
+                          className="mb-0"
+                          help="교육기관의 대분류를 선택하세요"
+                        >
+                          <Select
+                            placeholder="대분류를 선택하세요"
+                            options={mainCategoryOptions}
+                            className="h-11 rounded-xl"
+                          />
+                        </Form.Item>
+
+                        <Form.Item
+                          label={
+                            <span>
+                              1분류 <span className="text-red-500">*</span>
+                            </span>
+                          }
+                          name="subCategory1"
+                          rules={[{ required: true, message: '1분류를 선택해주세요' }]}
+                          className="mb-0"
+                          help="교육기관의 1분류를 선택하세요"
+                        >
+                          <Select
+                            placeholder="1분류를 선택하세요"
+                            options={subCategory1Options}
+                            className="h-11 rounded-xl"
+                          />
+                        </Form.Item>
+
+                        <Form.Item
+                          label={
+                            <span>
+                              2분류 <span className="text-red-500">*</span>
+                            </span>
+                          }
+                          name="subCategory2"
+                          rules={[{ required: true, message: '2분류를 선택해주세요' }]}
+                          className="mb-0"
+                          help="교육기관의 2분류를 선택하세요"
+                        >
+                          <Select
+                            placeholder="2분류를 선택하세요"
+                            options={subCategory2Options}
+                            className="h-11 rounded-xl"
+                          />
+                        </Form.Item>
+
+                        {requiresEducationLevelMix && (
+                          <Form.Item
+                            label={
+                              <span>
+                                학교급 혼합 <span className="text-red-500">*</span>
+                              </span>
+                            }
+                            name="educationLevelMix"
+                            rules={[{ required: true, message: '학교급 혼합을 선택해주세요' }]}
+                            className="mb-0"
+                            help="학교급 혼합을 선택하세요"
+                          >
+                            <Select
+                              placeholder="학교급 혼합을 선택하세요"
+                              options={[
+                                { value: '초중', label: '초중' },
+                                { value: '중고', label: '중고' },
+                                { value: '초중고', label: '초중고' },
+                              ]}
+                              className="h-11 rounded-xl"
+                            />
+                          </Form.Item>
+                        )}
                       </div>
                     ),
                   },
@@ -675,6 +847,12 @@ export default function InstitutionManagementPage() {
                   삭제 ({selectedRowKeys.length})
                 </Button>
               )}
+              <Button
+                onClick={() => router.push('/admin/institutions/bulk-upload')}
+                className="h-11 px-6 rounded-lg border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+              >
+                일괄 등록
+              </Button>
               <Button
                 type="primary"
                 onClick={handleRegisterClick}

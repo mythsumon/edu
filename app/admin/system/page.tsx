@@ -361,10 +361,10 @@ export default function SystemSettingsPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 transition-colors">
       <div className="admin-page p-4 md:p-6">
       {/* Tabs */}
-      <Card className="rounded-2xl shadow-lg border border-slate-200 bg-gradient-to-br from-white to-slate-50/50">
+      <Card className="rounded-2xl shadow-lg border border-slate-200 dark:border-gray-700 bg-gradient-to-br from-white to-slate-50/50 dark:from-gray-800 dark:to-gray-800 transition-colors">
         <Tabs
           activeKey={activeTab}
           onChange={(key) => setActiveTab(key as 'settings' | 'users' | 'common-code')}
@@ -383,8 +383,8 @@ export default function SystemSettingsPage() {
               >
                 {/* 일반 설정 */}
                 <div className="mb-8">
-                  <Card className="rounded-2xl border border-slate-200 shadow-sm bg-white overflow-hidden">
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-slate-200">
+                  <Card className="rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm bg-white dark:bg-gray-800 overflow-hidden transition-colors">
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-700 px-6 py-4 border-b border-slate-200 dark:border-gray-600">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
@@ -466,7 +466,7 @@ export default function SystemSettingsPage() {
                       </div>
                     </div>
                     <div className="p-6 space-y-4">
-                      <div className="flex items-center justify-between p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100 hover:shadow-md transition-all">
+                      <div className="flex items-center justify-between p-5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-700 rounded-xl border border-blue-100 dark:border-gray-600 hover:shadow-md transition-all">
                         <div>
                           <div className="text-base font-semibold text-slate-900 mb-1">이메일 알림</div>
                           <div className="text-sm text-slate-600">중요한 알림을 이메일로 받습니다</div>

@@ -700,25 +700,99 @@ export default function InstructorAssignmentPage() {
                       <h3 className="text-lg font-semibold text-[#3a2e2a]">교육 정보</h3>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 px-6 py-6">
-                    {[
-                      { label: '교육ID', value: selectedEducation.educationId },
-                      { label: '교육과정명', value: selectedEducation.educationName },
-                      ...(selectedEducation.program ? [{ label: '프로그램', value: selectedEducation.program }] : []),
-                      ...(selectedEducation.description ? [{ label: '설명', value: selectedEducation.description }] : []),
-                      { label: '사업장', value: selectedEducation.institution },
-                      { label: '교육기관', value: selectedEducation.institution },
-                      { label: '시작일', value: selectedEducation.periodStart },
-                      { label: '종료일', value: selectedEducation.periodEnd },
-                      ...(selectedEducation.approvalStatus ? [{ label: '승인여부', value: selectedEducation.approvalStatus }] : []),
-                      ...(selectedEducation.status ? [{ label: '상태', value: selectedEducation.status }] : []),
-                      ...(selectedEducation.note ? [{ label: '비고', value: selectedEducation.note }] : []),
-                    ].map((item) => (
-                      <div key={item.label} className="space-y-1">
-                        <div className="text-sm font-semibold text-gray-500">{item.label}</div>
-                        <div className="text-base font-medium text-gray-900">{item.value}</div>
-                      </div>
-                    ))}
+                  <div className="p-6">
+                    <Collapse
+                      ghost
+                      defaultActiveKey={['basic', 'institution', 'period', 'status']}
+                      className="[&_.ant-collapse-item]:border-b [&_.ant-collapse-item]:border-gray-100 [&_.ant-collapse-header]:px-0 [&_.ant-collapse-content]:px-0"
+                    >
+                      <Panel
+                        key="basic"
+                        header={
+                          <div className="flex items-center gap-2">
+                            <span className="text-base font-semibold text-gray-900">기본 정보</span>
+                          </div>
+                        }
+                      >
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 pt-4">
+                          {[
+                            { label: '교육ID', value: selectedEducation.educationId },
+                            { label: '교육과정명', value: selectedEducation.educationName },
+                            ...(selectedEducation.program ? [{ label: '프로그램', value: selectedEducation.program }] : []),
+                            ...(selectedEducation.description ? [{ label: '설명', value: selectedEducation.description }] : []),
+                          ].map((item) => (
+                            <div key={item.label} className="space-y-1">
+                              <div className="text-sm font-semibold text-gray-500">{item.label}</div>
+                              <div className="text-base font-medium text-gray-900">{item.value}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </Panel>
+                      <Panel
+                        key="institution"
+                        header={
+                          <div className="flex items-center gap-2">
+                            <span className="text-base font-semibold text-gray-900">교육기관 정보</span>
+                          </div>
+                        }
+                      >
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 pt-4">
+                          {[
+                            { label: '사업장', value: selectedEducation.institution },
+                            { label: '교육기관', value: selectedEducation.institution },
+                            { label: '구역', value: selectedEducation.region },
+                            { label: '학년·반', value: selectedEducation.gradeClass },
+                          ].map((item) => (
+                            <div key={item.label} className="space-y-1">
+                              <div className="text-sm font-semibold text-gray-500">{item.label}</div>
+                              <div className="text-base font-medium text-gray-900">{item.value}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </Panel>
+                      <Panel
+                        key="period"
+                        header={
+                          <div className="flex items-center gap-2">
+                            <span className="text-base font-semibold text-gray-900">교육 기간</span>
+                          </div>
+                        }
+                      >
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 pt-4">
+                          {[
+                            { label: '시작일', value: selectedEducation.periodStart },
+                            { label: '종료일', value: selectedEducation.periodEnd },
+                            { label: '교육기간', value: selectedEducation.period },
+                          ].map((item) => (
+                            <div key={item.label} className="space-y-1">
+                              <div className="text-sm font-semibold text-gray-500">{item.label}</div>
+                              <div className="text-base font-medium text-gray-900">{item.value}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </Panel>
+                      <Panel
+                        key="status"
+                        header={
+                          <div className="flex items-center gap-2">
+                            <span className="text-base font-semibold text-gray-900">상태 및 비고</span>
+                          </div>
+                        }
+                      >
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 pt-4">
+                          {[
+                            ...(selectedEducation.approvalStatus ? [{ label: '승인여부', value: selectedEducation.approvalStatus }] : []),
+                            ...(selectedEducation.status ? [{ label: '상태', value: selectedEducation.status }] : []),
+                            ...(selectedEducation.note ? [{ label: '비고', value: selectedEducation.note }] : []),
+                          ].map((item) => (
+                            <div key={item.label} className="space-y-1">
+                              <div className="text-sm font-semibold text-gray-500">{item.label}</div>
+                              <div className="text-base font-medium text-gray-900">{item.value}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </Panel>
+                    </Collapse>
                   </div>
                 </div>
               )}

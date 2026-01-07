@@ -368,42 +368,42 @@ export default function InstructorApplicationPage() {
         dataIndex: 'educationId',
         key: 'educationId',
         width: 150,
-        render: (text: string) => <span className="text-sm font-medium text-white">{text}</span>,
+        render: (text: string) => <span className="text-sm font-medium text-slate-900 dark:text-gray-100">{text}</span>,
       },
       {
         title: '교육명',
         dataIndex: 'educationName',
         key: 'educationName',
         width: 200,
-        render: (text: string) => <span className="text-sm font-medium text-white">{text}</span>,
+        render: (text: string) => <span className="text-sm font-medium text-slate-900 dark:text-gray-100">{text}</span>,
       },
       {
         title: '교육기관명',
         dataIndex: 'institution',
         key: 'institution',
         width: 150,
-        render: (text: string) => <span className="text-sm font-medium text-white">{text}</span>,
+        render: (text: string) => <span className="text-sm font-medium text-slate-900 dark:text-gray-100">{text}</span>,
       },
       {
         title: '시작일',
         dataIndex: 'startDate',
         key: 'startDate',
         width: 120,
-        render: (text: string) => <span className="text-sm font-medium text-white">{text}</span>,
+        render: (text: string) => <span className="text-sm font-medium text-slate-900 dark:text-gray-100">{text}</span>,
       },
       {
         title: '종료일',
         dataIndex: 'endDate',
         key: 'endDate',
         width: 120,
-        render: (text: string) => <span className="text-sm font-medium text-white">{text}</span>,
+        render: (text: string) => <span className="text-sm font-medium text-slate-900 dark:text-gray-100">{text}</span>,
       },
       {
         title: '비고',
         dataIndex: 'note',
         key: 'note',
         width: 150,
-        render: (text: string) => <span className="text-sm font-medium text-white">{text || '-'}</span>,
+        render: (text: string) => <span className="text-sm font-medium text-slate-900 dark:text-gray-100">{text || '-'}</span>,
       },
       {
         title: '삭제',
@@ -432,17 +432,17 @@ export default function InstructorApplicationPage() {
 
   return (
     <ProtectedRoute requiredRole="instructor">
-      <div className="p-6 bg-gray-900 min-h-screen">
+      <div className="p-6 bg-slate-50 dark:bg-gray-900 min-h-screen transition-colors">
 
       {viewMode === 'list' ? (
         <>
           {/* Page Header */}
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-white mb-2">내가 신청한 교육들</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-gray-100 mb-2">내가 신청한 교육들</h1>
           </div>
 
           {/* Table */}
-          <div className="bg-gray-800 rounded-lg border border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-gray-700 shadow-sm">
             <div className="overflow-x-auto">
               <Table
                 columns={columns}
@@ -450,7 +450,7 @@ export default function InstructorApplicationPage() {
                 locale={{
                   emptyText: (
                     <div className="py-12 text-center">
-                      <div className="text-gray-400 text-base">데이터가 없습니다.</div>
+                      <div className="text-slate-500 dark:text-gray-400 text-base">데이터가 없습니다.</div>
                     </div>
                   ),
                 }}
@@ -468,7 +468,7 @@ export default function InstructorApplicationPage() {
                 }}
                 rowKey="key"
                 scroll={{ x: 'max-content' }}
-                className="[&_.ant-table]:bg-gray-800 [&_.ant-table-thead>tr>th]:bg-gray-800 [&_.ant-table-thead>tr>th]:border-gray-700 [&_.ant-table-thead>tr>th]:text-white [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-tbody>tr]:bg-gray-800 [&_.ant-table-tbody>tr]:border-gray-700 [&_.ant-table-tbody>tr:hover]:bg-gray-700 [&_.ant-table-tbody>tr]:transition-colors [&_.ant-pagination]:text-white [&_.ant-pagination-item]:bg-gray-700 [&_.ant-pagination-item]:border-gray-600 [&_.ant-pagination-item>a]:text-white [&_.ant-pagination-item-active]:bg-blue-600 [&_.ant-pagination-item-active]:border-blue-600"
+                className="[&_.ant-table]:bg-white dark:[&_.ant-table]:bg-gray-800 [&_.ant-table-thead>tr>th]:bg-slate-50 dark:[&_.ant-table-thead>tr>th]:bg-gray-800 [&_.ant-table-thead>tr>th]:border-slate-200 dark:[&_.ant-table-thead>tr>th]:border-gray-700 [&_.ant-table-thead>tr>th]:text-slate-700 dark:[&_.ant-table-thead>tr>th]:text-gray-300 [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-tbody>tr]:bg-white dark:[&_.ant-table-tbody>tr]:bg-gray-800 [&_.ant-table-tbody>tr]:border-slate-200 dark:[&_.ant-table-tbody>tr]:border-gray-700 [&_.ant-table-tbody>tr:hover]:bg-slate-50 dark:[&_.ant-table-tbody>tr:hover]:bg-gray-700 [&_.ant-table-tbody>tr]:transition-colors [&_.ant-pagination]:text-slate-700 dark:[&_.ant-pagination]:text-gray-300 [&_.ant-pagination-item]:bg-white dark:[&_.ant-pagination-item]:bg-gray-700 [&_.ant-pagination-item]:border-slate-200 dark:[&_.ant-pagination-item]:border-gray-600 [&_.ant-pagination-item>a]:text-slate-700 dark:[&_.ant-pagination-item>a]:text-gray-300 [&_.ant-pagination-item-active]:bg-blue-600 [&_.ant-pagination-item-active]:border-blue-600 [&_.ant-pagination-item-active>a]:text-white"
               />
             </div>
           </div>
