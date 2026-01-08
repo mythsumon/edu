@@ -16,6 +16,7 @@ interface AuthContextType {
   userRole: UserRole
   setUserRole: (role: UserRole) => void
   isAuthenticated: boolean
+  isLoading: boolean
   userProfile: UserProfile | null
   setUserProfile: (profile: UserProfile | null) => void
   login: (role: UserRole) => void
@@ -28,6 +29,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [userRole, setUserRole] = useState<UserRole>(null)
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     // Check if user role and profile are stored in localStorage
@@ -66,6 +68,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           localStorage.setItem('userProfile', JSON.stringify(defaultProfile))
         }
       }
+      setIsLoading(false)
+    } else {
+      setIsLoading(false)
     }
   }, [])
 
@@ -99,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     userRole,
     setUserRole,
     isAuthenticated: !!userRole,
+    isLoading,
     userProfile,
     setUserProfile,
     login,

@@ -109,3 +109,4 @@ export function EquipmentItemsTable({ items, onChange, disabled = false }: Equip
   )
 }
 
+

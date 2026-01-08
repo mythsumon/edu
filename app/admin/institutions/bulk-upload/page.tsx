@@ -6,7 +6,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Button, Card, Upload, Table, Checkbox, Space, message, Alert } from 'antd'
 import type { UploadProps } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { UploadOutlined } from '@ant-design/icons'
+import { UploadOutlined, DownloadOutlined } from '@ant-design/icons'
 import { PageHeaderSticky, DetailSectionCard } from '@/components/admin/operations'
 import { 
   getGroupsByTitleId, 
@@ -149,6 +149,98 @@ export default function BulkUploadPage() {
     router.back()
   }
 
+  const handleDownloadTemplate = () => {
+    // Create CSV template with headers and example data
+    const headers = [
+      '권역',
+      '지역',
+      '기관명',
+      '주소',
+      '전화번호',
+      '대분류',
+      '1분류',
+      '2분류',
+      '학교급혼합'
+    ]
+
+    // Example data rows
+    const exampleRows = [
+      [
+        '1권역',
+        '수원시',
+        '수원초등학교',
+        '경기도 수원시 영통구 월드컵로 123',
+        '031-123-4567',
+        '초등학교',
+        '일반',
+        '일반',
+        ''
+      ],
+      [
+        '1권역',
+        '수원시',
+        '수원중학교',
+        '경기도 수원시 영통구 월드컵로 456',
+        '031-234-5678',
+        '중학교',
+        '일반',
+        '일반',
+        ''
+      ],
+      [
+        '2권역',
+        '성남시',
+        '성남고등학교',
+        '경기도 성남시 분당구 정자로 789',
+        '031-345-6789',
+        '고등학교',
+        '일반',
+        '일반',
+        ''
+      ],
+      [
+        '1권역',
+        '수원시',
+        '수원특수학교',
+        '경기도 수원시 영통구 월드컵로 321',
+        '031-456-7890',
+        '특수학교',
+        '특수',
+        '특수학교',
+        '초중고'
+      ]
+    ]
+
+    // Create CSV content
+    const csvContent = [
+      headers.join(','),
+      ...exampleRows.map(row => row.map(cell => {
+        // Escape commas and quotes in cell values
+        if (cell.includes(',') || cell.includes('"') || cell.includes('\n')) {
+          return `"${cell.replace(/"/g, '""')}"`
+        }
+        return cell
+      }).join(','))
+    ].join('\n')
+
+    // Add BOM for Excel compatibility
+    const BOM = '\uFEFF'
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
+    
+    // Create download link
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', '기관_일괄등록_템플릿.csv')
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    message.success('템플릿 파일이 다운로드되었습니다.')
+  }
+
   const previewColumns: ColumnsType<BulkUploadRow> = [
     {
       title: '상태',
@@ -252,6 +344,15 @@ export default function BulkUploadPage() {
 
         <div className="max-w-7xl mx-auto pt-6 pb-12 space-y-6">
           <DetailSectionCard title="파일 업로드">
+            <div className="mb-4 flex items-center justify-end">
+              <Button
+                icon={<DownloadOutlined />}
+                onClick={handleDownloadTemplate}
+                className="h-10 px-6 rounded-xl border border-gray-300 hover:bg-blue-600 hover:text-white hover:border-blue-600 font-medium transition-all text-slate-700"
+              >
+                예시 템플릿 다운로드
+              </Button>
+            </div>
             <Dragger
               customRequest={handleUpload}
               accept=".csv,.xlsx,.xls"

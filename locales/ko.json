@@ -29,7 +29,9 @@
     "instructor": "강사 관리",
     "systemSettings": "시스템 설정",
     "educationApplication": "교육 신청",
-    "educationAssignment": "교육 배정"
+    "educationAssignment": "교육 배정",
+    "documentManagement": "문서 제출 관리",
+    "submissions": "제출 대기 목록"
   },
   "pageHeader": {
     "breadcrumbHome": "홈",

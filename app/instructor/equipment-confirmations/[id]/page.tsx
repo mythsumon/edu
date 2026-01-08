@@ -105,12 +105,13 @@ export default function EquipmentConfirmationDetailPage() {
   }
 
   // Role-based editability
+  // Admin can always edit regardless of status
   const isEditable = isAdmin 
-    ? (doc.status === 'DRAFT' || doc.status === 'REJECTED')
+    ? true // Admin can always edit
     : (doc.status === 'DRAFT' || doc.status === 'REJECTED')
   const isReadonly = !isAdmin && (doc.status === 'SUBMITTED' || doc.status === 'APPROVED' || doc.status === 'RETURNED')
   const canEditReturn = doc.status === 'BORROWED' && !isAdmin
-  const canAdminEdit = isAdmin && (doc.status === 'SUBMITTED' || doc.status === 'APPROVED' || doc.status === 'BORROWED')
+  const canAdminEdit = isAdmin // Admin can always edit
 
   const handleFieldChange = (field: keyof EquipmentConfirmationDoc, value: any) => {
     setDoc({ ...doc, [field]: value })
@@ -402,16 +403,15 @@ export default function EquipmentConfirmationDetailPage() {
                 {/* Admin actions */}
                 {isAdmin && (
                   <>
-                    {canAdminEdit && (
-                      <Button
-                        type="primary"
-                        icon={<Save className="w-4 h-4" />}
-                        onClick={handleSave}
-                        loading={loading}
-                      >
-                        저장
-                      </Button>
-                    )}
+                    {/* Admin can always edit */}
+                    <Button
+                      type="primary"
+                      icon={<Save className="w-4 h-4" />}
+                      onClick={handleSave}
+                      loading={loading}
+                    >
+                      저장
+                    </Button>
                     {doc.status === 'SUBMITTED' && (
                       <>
                         <Button

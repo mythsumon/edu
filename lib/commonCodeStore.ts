@@ -138,5 +138,61 @@ export function resetStore() {
   }
 }
 
+/**
+ * Get program session codes (차시)
+ * @returns Array of enabled session keys sorted by sortOrder
+ */
+export function getProgramSessionCodes(): GroupKey[] {
+  const title = store.titles.find((t) => t.name === '프로그램_차시' && t.status === 'Active')
+  if (!title) return []
+
+  const group = store.groups.find(
+    (g) => g.titleId === title.id && g.name === 'DEFAULT' && g.status === 'Active'
+  )
+  if (!group) return []
+
+  return store.groupKeys
+    .filter((key) => key.groupId === group.id && key.enabled)
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+}
+
+/**
+ * Get program type codes (프로그램 유형)
+ * @returns Array of enabled type keys sorted by sortOrder
+ */
+export function getProgramTypeCodes(): GroupKey[] {
+  const title = store.titles.find((t) => t.name === '프로그램_유형' && t.status === 'Active')
+  if (!title) return []
+
+  const group = store.groups.find(
+    (g) => g.titleId === title.id && g.name === 'DEFAULT' && g.status === 'Active'
+  )
+  if (!group) return []
+
+  return store.groupKeys
+    .filter((key) => key.groupId === group.id && key.enabled)
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+}
+
+/**
+ * Get a program session key by value
+ * @param value - The value to search for
+ * @returns GroupKey or undefined
+ */
+export function getProgramSessionByValue(value: string): GroupKey | undefined {
+  const codes = getProgramSessionCodes()
+  return codes.find((key) => key.value === value)
+}
+
+/**
+ * Get a program type key by value
+ * @param value - The value to search for
+ * @returns GroupKey or undefined
+ */
+export function getProgramTypeByValue(value: string): GroupKey | undefined {
+  const codes = getProgramTypeCodes()
+  return codes.find((key) => key.value === value)
+}
+
 
 

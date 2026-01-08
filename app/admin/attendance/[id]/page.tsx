@@ -1,724 +1,440 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Button, Card, Input, Select, Space, Spin, Alert, Table, Checkbox } from 'antd'
-import { ArrowLeft, Save, Trash2, X, UserPlus, CheckCircle, XCircle } from 'lucide-react'
-import { programService } from '@/services/programService'
-import { AttendanceData, Student, Instructor } from '@/types/program'
-import {
-  DetailPageHeaderSticky,
-  AttendanceSummaryCard,
-  DetailSectionCard,
-  DefinitionListGrid,
-} from '@/components/admin/operations'
-import { useLanguage } from '@/components/localization/LanguageContext'
-import { API_ENDPOINTS } from '@/entities/endpoints'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { Button, Space, Modal, Input, Table, message } from 'antd'
+import type { ColumnsType } from 'antd/es/table'
+import { ArrowLeft, CheckCircle2, XCircle } from 'lucide-react'
+import { DetailPageHeaderSticky, DetailSectionCard } from '@/components/admin/operations'
+import { getAttendanceDocByEducationId, getAttendanceDocById, getAttendanceDocs, upsertAttendanceDoc, type AttendanceDocument } from '@/app/instructor/schedule/[educationId]/attendance/storage'
+import { useAuth } from '@/contexts/AuthContext'
+import { InstitutionContactAndSignatures } from '@/components/instructor/attendance/InstitutionContactAndSignatures'
+import dayjs from 'dayjs'
 
 const { TextArea } = Input
 
-export default function AttendanceDetailPage() {
-  const params = useParams() as { id?: string } | null
+export default function AdminAttendanceDetailPage() {
+  const params = useParams()
   const router = useRouter()
-  const { t } = useLanguage()
-  const [isEditMode, setIsEditMode] = useState(false)
-  const [data, setData] = useState<AttendanceData | null>(null)
-  const [students, setStudents] = useState<Student[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [institutionOptions, setInstitutionOptions] = useState<{ value: string; label: string }[]>([])
+  const { userProfile } = useAuth()
+  const educationId = params?.id as string
 
-  // Fetch institutions list
+  const [doc, setDoc] = useState<AttendanceDocument | null>(null)
+  const [rejectModalVisible, setRejectModalVisible] = useState(false)
+  const [rejectReason, setRejectReason] = useState('')
+  const [loading, setLoading] = useState(false)
+
   useEffect(() => {
-    const fetchInstitutions = async () => {
-      try {
-        const response = await fetch(API_ENDPOINTS.INSTITUTIONS)
-        if (response.ok) {
-          const institutions = await response.json()
-          const options = institutions.map((inst: any) => ({
-            value: inst.name || inst.institutionName,
-            label: inst.name || inst.institutionName,
-          }))
-          setInstitutionOptions(options)
-        } else {
-          // Fallback to dummy data if API fails
-          const dummyInstitutions = [
-            { value: '경기교육청', label: '경기교육청' },
-            { value: '수원교육청', label: '수원교육청' },
-            { value: '성남교육청', label: '성남교육청' },
-            { value: '안양교육청', label: '안양교육청' },
-            { value: '고양교육청', label: '고양교육청' },
-            { value: '용인교육청', label: '용인교육청' },
-          ]
-          setInstitutionOptions(dummyInstitutions)
-        }
-      } catch (err) {
-        // Fallback to dummy data on error
-        const dummyInstitutions = [
-          { value: '경기교육청', label: '경기교육청' },
-          { value: '수원교육청', label: '수원교육청' },
-          { value: '성남교육청', label: '성남교육청' },
-          { value: '안양교육청', label: '안양교육청' },
-          { value: '고양교육청', label: '고양교육청' },
-          { value: '용인교육청', label: '용인교육청' },
-        ]
-        setInstitutionOptions(dummyInstitutions)
-      }
+    // Initialize example data if needed (only in development)
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      const { initExampleAttendanceDocs } = require('@/app/instructor/schedule/[educationId]/attendance/initExampleData')
+      initExampleAttendanceDocs()
     }
-
-    fetchInstitutions()
   }, [])
 
-  // Fetch data when component mounts
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        if (params && params.id) {
-          const id = parseInt(params.id as string)
-          const attendanceData = await programService.getAttendanceData(id)
-          setData(attendanceData)
-          // Convert legacy attendance fields to new structure if needed
-          const convertedStudents: Student[] = attendanceData.students.map((student) => ({
-            ...student,
-            tardiness: (student.tardiness || student.attendance3_5 || '') as 'O' | 'X' | '',
-            absence: (student.absence || student.attendance3_6 || '') as 'O' | 'X' | '',
-          }))
-          setStudents(convertedStudents)
+    if (educationId) {
+      // Try to find by educationId first
+      let attendanceDoc = getAttendanceDocByEducationId(educationId)
+      
+      // If not found, try to find by id (in case educationId is actually the document id)
+      if (!attendanceDoc) {
+        attendanceDoc = getAttendanceDocById(educationId)
+      }
+      
+      // If still not found, try with attendance- prefix
+      if (!attendanceDoc) {
+        attendanceDoc = getAttendanceDocById(`attendance-${educationId}`)
+      }
+      
+      if (attendanceDoc) {
+        setDoc(attendanceDoc)
+      } else {
+        const allDocs = getAttendanceDocs()
+        
+        // Show more helpful error message
+        if (allDocs.length === 0) {
+          message.warning('출석부 문서가 없습니다. 강사가 먼저 출석부를 생성하고 제출해야 합니다.')
+        } else {
+          message.warning(`출석부를 찾을 수 없습니다. (ID: ${educationId})`)
+          console.log('Available attendance docs:', allDocs.map(d => ({ id: d.id, educationId: d.educationId })))
         }
-      } catch (err) {
-        setError(t('attendance.loadError'))
-        // console.error(err)
-      } finally {
-        setLoading(false)
+        
+        // Redirect to submissions page instead of going back
+        setTimeout(() => {
+          router.push('/admin/submissions')
+        }, 2000)
       }
     }
+  }, [educationId, router])
 
-    if (params && params.id) {
-      fetchData()
+  const handleApprove = () => {
+    if (!doc) return
+
+    Modal.confirm({
+      title: '승인 확인',
+      content: '이 출석부를 승인하시겠습니까?',
+      onOk: () => {
+        const updated: AttendanceDocument = {
+          ...doc,
+          status: 'APPROVED',
+          approvedAt: new Date().toISOString(),
+          approvedBy: userProfile?.name || '',
+        }
+        const result = upsertAttendanceDoc(updated)
+        if (result.success) {
+          setDoc(updated)
+          message.success('승인되었습니다.')
+        } else {
+          message.error(result.error || '승인 처리 중 오류가 발생했습니다.')
+        }
+      },
+    })
+  }
+
+  const handleReject = () => {
+    if (!rejectReason.trim()) {
+      message.warning('반려 사유를 입력해주세요.')
+      return
     }
-  }, [params?.id])
 
-  const handleEdit = () => {
-    setIsEditMode(true)
-  }
+    if (!doc) return
 
-  const handleCancel = () => {
-    setIsEditMode(false)
-    if (data) {
-      setStudents(data.students) // Reset to original data
+    const updated: AttendanceDocument = {
+      ...doc,
+      status: 'REJECTED',
+      rejectedAt: new Date().toISOString(),
+      rejectedBy: userProfile?.name || '',
+      rejectReason,
+    }
+    const result = upsertAttendanceDoc(updated)
+    if (result.success) {
+      setDoc(updated)
+      setRejectModalVisible(false)
+      setRejectReason('')
+      message.success('반려되었습니다.')
+    } else {
+      message.error(result.error || '반려 처리 중 오류가 발생했습니다.')
     }
   }
 
-  const handleSave = async () => {
-    if (!data) return
-    
-    try {
-      const updatedData = { ...data, students }
-      await programService.updateAttendanceData(updatedData)
-      setData(updatedData)
-      setIsEditMode(false)
-    } catch (err) {
-      setError(t('attendance.saveError'))
-      // console.error(err)
-    }
-  }
-
-  const handleDelete = () => {
-    // In real app, show confirmation modal and delete
-    // console.log('Delete attendance:', data?.id)
-  }
-
-  const handleAddStudent = () => {
-    const newStudent: Student = {
-      id: `new-${Date.now()}`,
-      number: students.length + 1,
-      name: '',
-      gender: '남',
-      tardiness: '',
-      absence: '',
-      note: '',
-    }
-    setStudents([...students, newStudent])
-  }
-
-  const handleDeleteStudent = (studentId: string) => {
-    setStudents(students.filter((s) => s.id !== studentId))
-  }
-
-  const handleStudentChange = (studentId: string, field: keyof Student, value: any) => {
-    setStudents(
-      students.map((s) => (s.id === studentId ? { ...s, [field]: value } : s))
+  if (!doc) {
+    return (
+      <ProtectedRoute requiredRole="admin">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 flex items-center justify-center">
+          <div>로딩 중...</div>
+        </div>
+      </ProtectedRoute>
     )
   }
 
-  const handleBack = () => {
-    router.back();
-  }
-
-  const handleEditFromDetail = () => {
-    setIsEditMode(true)
-  }
-
-  if (loading) {
-    return (
-      <div className="p-6 flex items-center justify-center min-h-screen">
-        <Spin size="large" />
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <Alert message={t('attendance.error')} description={error} type="error" showIcon />
-      </div>
-    )
-  }
-
-  if (!data) {
-    return (
-      <div className="p-6">
-        <Alert message={t('attendance.noData')} description={t('attendance.noDataDescription')} type="warning" showIcon />
-      </div>
-    )
-  }
-
-  if (!isEditMode) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
-        {/* Sticky Header */}
+  return (
+    <ProtectedRoute requiredRole="admin">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 transition-colors">
         <DetailPageHeaderSticky
-          onBack={handleBack}
-          onEdit={handleEditFromDetail}
-          onDelete={handleDelete}
+          title="교육 출석부 상세"
+          onBack={() => router.back()}
         />
 
-        {/* Attendance Book Title */}
-        <div className="bg-white border-b border-slate-200">
-          <div className="max-w-7xl mx-auto px-6 py-6">
-            <div className="relative text-center">
-              {/* Decorative Background */}
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-purple-50 to-indigo-50 rounded-2xl opacity-30"></div>
-              
-              {/* Title Content */}
-              <div className="relative">
-                <div className="inline-block mb-3">
-                  <div className="px-5 py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full shadow-md">
-                    <span className="text-xs font-semibold text-white uppercase tracking-wider">2025</span>
-                  </div>
-                </div>
-                <h1 className="text-2xl md:text-3xl font-bold mb-3 bg-gradient-to-r from-blue-700 via-purple-700 to-indigo-700 bg-clip-text text-transparent">
-                  2025 소프트웨어(SW) 미래채움 교육 출석부
-                </h1>
-                <div className="flex items-center justify-center gap-4">
-                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-slate-300"></div>
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <div className="flex-1 h-px bg-gradient-to-l from-transparent via-slate-300 to-slate-300"></div>
-                </div>
-              </div>
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              교육 출석부 상세
+            </h1>
+            <div className="flex items-center gap-4">
+              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                doc.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                doc.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                'bg-blue-100 text-blue-800'
+              }`}>
+                {doc.status === 'APPROVED' ? '승인됨' :
+                 doc.status === 'REJECTED' ? '반려됨' :
+                 '제출됨'}
+              </span>
             </div>
           </div>
-        </div>
 
-        {/* Main Content Container */}
-        <div className="max-w-7xl mx-auto px-6 pt-8 pb-12 space-y-6">
-          {/* Summary Card */}
-          <AttendanceSummaryCard
-            attendanceCode={data.attendanceCode}
-            programName={data.programName}
-            institutionName={data.institutionName}
-            grade={data.grade}
-            class={data.class}
-            totalApplicants={data.totalApplicants}
-            totalGraduates={data.totalGraduates}
-            maleGraduates={data.maleGraduates}
-            femaleGraduates={data.femaleGraduates}
-            programId={data.id}
-          />
+          {/* Action Buttons */}
+          {doc.status === 'SUBMITTED' && (
+            <div className="mb-6 flex gap-4">
+              <Button
+                type="primary"
+                icon={<CheckCircle2 className="w-4 h-4" />}
+                onClick={handleApprove}
+                size="large"
+                style={{ background: '#10b981', borderColor: '#10b981' }}
+              >
+                승인
+              </Button>
+              <Button
+                danger
+                icon={<XCircle className="w-4 h-4" />}
+                onClick={() => setRejectModalVisible(true)}
+                size="large"
+              >
+                반려
+              </Button>
+            </div>
+          )}
 
-          {/* Basic Info Section */}
-          <DetailSectionCard title={t('attendance.basicInfo')}>
-            <DefinitionListGrid
-              items={[
-                { label: t('attendance.attendanceCode'), value: data.attendanceCode },
-                { label: t('attendance.programName'), value: data.programName },
-                { label: t('attendance.institutionName'), value: data.institutionName },
-                { label: t('attendance.gradeClass'), value: `${data.grade}${t('attendance.grade')} ${data.class}${t('attendance.class')}` },
-              ]}
-            />
-          </DetailSectionCard>
-
-          {/* Statistics Section - Enhanced Design */}
-          <DetailSectionCard title={t('attendance.statistics')}>
+          {/* 교육 정보 */}
+          <DetailSectionCard title="교육 정보" className="mb-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="group relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-bl-full" />
-                <div className="relative">
-                  <p className="text-sm text-blue-100 mb-2 font-medium">{t('attendance.totalApplicants')}</p>
-                  <p className="text-3xl font-bold text-white">{data.totalApplicants}</p>
-                  <p className="text-xs text-blue-100 mt-1">{t('attendance.person')}</p>
+              <div>
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">소재지</div>
+                <div className="text-base font-medium text-gray-900 dark:text-gray-100">{doc.location}</div>
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">기관명</div>
+                <div className="text-base font-medium text-gray-900 dark:text-gray-100">{doc.institution}</div>
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">학급명</div>
+                <div className="text-base font-medium text-gray-900 dark:text-gray-100">{doc.gradeClass}</div>
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">프로그램명</div>
+                <div className="text-base font-medium text-gray-900 dark:text-gray-100">{doc.programName}</div>
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">총차시</div>
+                <div className="text-base font-medium text-gray-900 dark:text-gray-100">{doc.totalSessions}차시</div>
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">성별 인원</div>
+                <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                  남 {doc.maleCount}명 / 여 {doc.femaleCount}명
                 </div>
               </div>
-              <div className="group relative overflow-hidden bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-bl-full" />
-                <div className="relative">
-                  <p className="text-sm text-emerald-100 mb-2 font-medium">{t('attendance.totalGraduates')}</p>
-                  <p className="text-3xl font-bold text-white">{data.totalGraduates}</p>
-                  <p className="text-xs text-emerald-100 mt-1">{t('attendance.person')}</p>
-                </div>
+              <div>
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">수강생</div>
+                <div className="text-base font-medium text-gray-900 dark:text-gray-100">{doc.students.length}명</div>
               </div>
-              <div className="group relative overflow-hidden bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-bl-full" />
-                <div className="relative">
-                  <p className="text-sm text-indigo-100 mb-2 font-medium">{t('attendance.maleGraduates')}</p>
-                  <p className="text-3xl font-bold text-white">{data.maleGraduates}</p>
-                  <p className="text-xs text-indigo-100 mt-1">{t('attendance.person')}</p>
-                </div>
-              </div>
-              <div className="group relative overflow-hidden bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-bl-full" />
-                <div className="relative">
-                  <p className="text-sm text-purple-100 mb-2 font-medium">{t('attendance.femaleGraduates')}</p>
-                  <p className="text-3xl font-bold text-white">{data.femaleGraduates}</p>
-                  <p className="text-xs text-purple-100 mt-1">{t('attendance.person')}</p>
-                </div>
+              <div>
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">학교 담당자</div>
+                <div className="text-base font-medium text-gray-900 dark:text-gray-100">{doc.schoolContactName}</div>
               </div>
             </div>
           </DetailSectionCard>
 
-          {/* Instructor Info Section - Enhanced Design */}
-          <DetailSectionCard title={t('attendance.instructorInfo')}>
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-              <div className="divide-y divide-slate-100">
-                {data.instructors.map((instructor, index) => (
-                  <div key={index} className="p-4 hover:bg-slate-50 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="w-20 flex-shrink-0">
-                        <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-100 text-blue-700">
-                          {instructor.role}
-                        </span>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-base font-semibold text-slate-900">
-                          {instructor.name}{t('attendance.instructor')}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </DetailSectionCard>
-
-          {/* Student Attendance Info Section - Enhanced Design */}
-          <DetailSectionCard title={t('attendance.studentAttendance')}>
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+          {/* 회차별 수업 정보 */}
+          {doc.sessions && doc.sessions.length > 0 && (
+            <DetailSectionCard title="회차별 수업 정보" className="mb-6">
               <Table
                 columns={[
                   {
-                    title: t('attendance.number'),
+                    title: '구분',
+                    dataIndex: 'label',
+                    key: 'label',
+                    width: 120,
+                    render: (text: string) => (
+                      <span className="font-semibold text-gray-700 dark:text-gray-300">{text}</span>
+                    ),
+                  },
+                  ...doc.sessions.map((session, index) => ({
+                    title: `${session.sessionNumber}회차`,
+                    key: `session${index + 1}`,
+                    width: 200,
+                    align: 'center' as const,
+                    render: (_: any, record: any) => record[`session${index + 1}`],
+                  })),
+                ]}
+                dataSource={[
+                  {
+                    key: 'date',
+                    label: '강의날짜',
+                    ...doc.sessions.reduce((acc, session, index) => {
+                      const normalizedDate = session.date.replace(/\./g, '-')
+                      const d = dayjs(normalizedDate)
+                      const weekdays = ['일', '월', '화', '수', '목', '금', '토']
+                      acc[`session${index + 1}`] = d.isValid() 
+                        ? `${d.month() + 1}.${d.date()}(${weekdays[d.day()]})`
+                        : session.date
+                      return acc
+                    }, {} as Record<string, string>),
+                  },
+                  {
+                    key: 'time',
+                    label: '시간',
+                    ...doc.sessions.reduce((acc, session, index) => {
+                      acc[`session${index + 1}`] = `${session.startTime} ~ ${session.endTime}`
+                      return acc
+                    }, {} as Record<string, string>),
+                  },
+                  {
+                    key: 'sessions',
+                    label: '차시',
+                    ...doc.sessions.reduce((acc, session, index) => {
+                      acc[`session${index + 1}`] = `${session.sessions}차시`
+                      return acc
+                    }, {} as Record<string, string>),
+                  },
+                  {
+                    key: 'mainInstructor',
+                    label: '주강사',
+                    ...doc.sessions.reduce((acc, session, index) => {
+                      acc[`session${index + 1}`] = session.mainInstructor
+                      return acc
+                    }, {} as Record<string, string>),
+                  },
+                  {
+                    key: 'assistantInstructor',
+                    label: '보조강사',
+                    ...doc.sessions.reduce((acc, session, index) => {
+                      acc[`session${index + 1}`] = session.assistantInstructor || '-'
+                      return acc
+                    }, {} as Record<string, string>),
+                  },
+                  {
+                    key: 'studentCount',
+                    label: '수강생 수',
+                    ...doc.sessions.reduce((acc, session, index) => {
+                      acc[`session${index + 1}`] = `${session.studentCount}명`
+                      return acc
+                    }, {} as Record<string, string>),
+                  },
+                  {
+                    key: 'attendanceCount',
+                    label: '출석 수',
+                    ...doc.sessions.reduce((acc, session, index) => {
+                      acc[`session${index + 1}`] = `${session.attendanceCount}명`
+                      return acc
+                    }, {} as Record<string, string>),
+                  },
+                ]}
+                pagination={false}
+              />
+            </DetailSectionCard>
+          )}
+
+          {/* 학생별 출석 정보 */}
+          {doc.students && doc.students.length > 0 && (
+            <DetailSectionCard title="학생별 출석 정보" className="mb-6">
+              <Table
+                columns={[
+                  {
+                    title: '출석번호',
                     dataIndex: 'number',
                     key: 'number',
                     width: 80,
                     align: 'center',
-                    render: (_, __, index) => (
-                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-700 font-medium text-sm">
-                        {index + 1}
-                      </span>
-                    ),
                   },
                   {
-                    title: t('attendance.name'),
+                    title: '이름',
                     dataIndex: 'name',
                     key: 'name',
                     width: 120,
-                    render: (text) => <span className="text-base font-semibold text-slate-900">{text}</span>,
                   },
                   {
-                    title: t('attendance.gender'),
+                    title: '성별',
                     dataIndex: 'gender',
                     key: 'gender',
                     width: 80,
                     align: 'center',
-                    render: (text) => (
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium ${
-                        text === '남' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
+                    render: (gender: '남' | '여') => (
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                        gender === '남' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'
                       }`}>
-                        {text}
+                        {gender}
                       </span>
                     ),
                   },
+                  ...doc.sessions.map((session, index) => ({
+                    title: `${session.sessionNumber}회차`,
+                    key: `session-${index}`,
+                    align: 'center' as const,
+                    width: 120,
+                    render: (_: any, record: any) => {
+                      const value = record.sessionAttendances[index] || 0
+                      if (record.isTransferred) {
+                        return <span className="text-sm text-gray-400">-</span>
+                      }
+                      return <span className="text-sm font-medium">{value}</span>
+                    },
+                  })),
                   {
-                    title: t('attendance.tardiness'),
-                    dataIndex: 'tardiness',
-                    key: 'tardiness',
+                    title: '수료여부',
+                    key: 'completion',
                     width: 100,
                     align: 'center',
-                    render: (text) => (
-                      text === 'O' ? (
-                        <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
-                      ) : text === 'X' ? (
-                        <XCircle className="w-5 h-5 text-red-500 mx-auto" />
-                      ) : (
-                        <span className="text-slate-400">-</span>
-                      )
-                    ),
-                  },
-                  {
-                    title: t('attendance.absence'),
-                    dataIndex: 'absence',
-                    key: 'absence',
-                    width: 100,
-                    align: 'center',
-                    render: (text) => (
-                      text === 'O' ? (
-                        <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
-                      ) : text === 'X' ? (
-                        <XCircle className="w-5 h-5 text-red-500 mx-auto" />
-                      ) : (
-                        <span className="text-slate-400">-</span>
-                      )
-                    ),
-                  },
-                  {
-                    title: t('attendance.note'),
-                    dataIndex: 'note',
-                    key: 'note',
-                    render: (text) => (
-                      <span className="text-sm text-slate-600">{text || <span className="text-slate-400">-</span>}</span>
+                    render: (_: any, record: any) => (
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                        record.completionStatus === 'O' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {record.completionStatus === 'O' ? '수료' : '미수료'}
+                      </span>
                     ),
                   },
                 ]}
-                dataSource={students}
-                pagination={false}
-                rowClassName="hover:bg-blue-50/50 transition-colors"
-                className="w-full [&_.ant-table-thead>tr>th]:bg-gradient-to-r [&_.ant-table-thead>tr>th]:from-slate-50 [&_.ant-table-thead>tr>th]:to-slate-100 [&_.ant-table-thead>tr>th]:text-slate-700 [&_.ant-table-thead>tr>th]:text-sm [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-thead>tr>th]:border-b-2 [&_.ant-table-thead>tr>th]:border-slate-200 [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-slate-100"
+                dataSource={doc.students}
+                rowKey="id"
+                pagination={{
+                  pageSize: 20,
+                  showSizeChanger: true,
+                  showTotal: (total) => `총 ${total}명`,
+                }}
+                scroll={{ x: 'max-content' }}
               />
-            </div>
-          </DetailSectionCard>
-        </div>
-      </div>
-    )
-  }
+            </DetailSectionCard>
+          )}
 
-  // Edit Mode
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-slate-200 shadow-sm px-4 md:px-6 py-3 md:py-4">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
-          <Button
-            icon={<X className="w-4 h-4" />}
-            onClick={handleCancel}
-            className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700 hover:border-blue-600"
-          >
-            {t('attendance.cancel')}
-          </Button>
-          <Space>
+          {/* 기관 연락처 및 서명 */}
+          <DetailSectionCard title="기관 연락처 및 서명" className="mb-6">
+            <InstitutionContactAndSignatures
+              institutionContact={doc.institutionContact}
+              signatures={doc.signatures}
+              session1MainInstructorName={doc.sessions[0]?.mainInstructor || ''}
+              session1AssistantInstructorName={doc.sessions[0]?.assistantInstructor || ''}
+              session2MainInstructorName={doc.sessions[1]?.mainInstructor || ''}
+              session2AssistantInstructorName={doc.sessions[1]?.assistantInstructor || ''}
+              isEditMode={false}
+              onInstitutionContactChange={() => {}}
+              onSignatureApply={() => {}}
+              onSignatureDelete={() => {}}
+            />
+          </DetailSectionCard>
+
+          {/* 수정 버튼 */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm mb-6">
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              출석부를 수정하려면 아래 버튼을 클릭하세요.
+            </p>
             <Button
               type="primary"
-              icon={<Save className="w-4 h-4 text-white" />}
-              onClick={handleSave}
-              style={{
-                color: 'white',
+              onClick={() => {
+                // Use doc.educationId if available, otherwise try to extract from educationId param
+                const targetEducationId = doc.educationId || educationId.replace(/^attendance-/, '')
+                router.push(`/instructor/schedule/${targetEducationId}/attendance`)
               }}
-              className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white hover:!text-white [&_.anticon]:!text-white [&_.anticon]:hover:!text-white [&>span]:!text-white [&>span]:hover:!text-white [&:hover>span]:!text-white [&:hover_.anticon]:!text-white [&:hover]:!text-white"
             >
-              {t('attendance.save')}
+              출석부 수정하기
             </Button>
-          </Space>
+          </div>
+
+          {/* Reject Modal */}
+          <Modal
+            title="반려 사유 입력"
+            open={rejectModalVisible}
+            onOk={handleReject}
+            onCancel={() => {
+              setRejectModalVisible(false)
+              setRejectReason('')
+            }}
+            okText="반려"
+            cancelText="취소"
+          >
+            <TextArea
+              rows={4}
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="반려 사유를 입력하세요."
+            />
+          </Modal>
         </div>
       </div>
-
-      {/* Attendance Book Title */}
-      <div className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-6">
-          <div className="relative text-center">
-            {/* Decorative Background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-purple-50 to-indigo-50 rounded-2xl opacity-30"></div>
-            
-            {/* Title Content */}
-            <div className="relative">
-              <div className="inline-block mb-3">
-                <div className="px-5 py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full shadow-md">
-                  <span className="text-xs font-semibold text-white uppercase tracking-wider">2025</span>
-                </div>
-              </div>
-              <h1 className="text-2xl md:text-3xl font-bold mb-3 bg-gradient-to-r from-blue-700 via-purple-700 to-indigo-700 bg-clip-text text-transparent">
-                2025 소프트웨어(SW) 미래채움 교육 출석부
-              </h1>
-              <div className="flex items-center justify-center gap-4">
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-slate-300"></div>
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <div className="flex-1 h-px bg-gradient-to-l from-transparent via-slate-300 to-slate-300"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content Container */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 md:pt-8 pb-8 md:pb-12 space-y-4 md:space-y-6">
-        {/* Summary Card */}
-        <AttendanceSummaryCard
-          attendanceCode={data.attendanceCode}
-          programName={data.programName}
-          institutionName={data.institutionName}
-          grade={data.grade}
-          class={data.class}
-          totalApplicants={data.totalApplicants}
-          totalGraduates={data.totalGraduates}
-          maleGraduates={data.maleGraduates}
-          femaleGraduates={data.femaleGraduates}
-          programId={data.id}
-          isEditMode={true}
-          institutionOptions={institutionOptions}
-          onProgramNameChange={(value) => setData({ ...data, programName: value })}
-          onInstitutionNameChange={(value) => setData({ ...data, institutionName: value })}
-          onGradeChange={(value) => setData({ ...data, grade: value })}
-          onClassChange={(value) => setData({ ...data, class: value })}
-        />
-
-        {/* Basic Info Section */}
-        <DetailSectionCard title={t('attendance.basicInfo')}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-2">{t('attendance.attendanceCode')}</label>
-              <Input
-                value={data.attendanceCode}
-                onChange={(e) => setData({ ...data, attendanceCode: e.target.value })}
-                className="h-11 rounded-xl"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-2">{t('attendance.programName')}</label>
-              <Input
-                value={data.programName}
-                onChange={(e) => setData({ ...data, programName: e.target.value })}
-                className="h-11 rounded-xl"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-2">{t('attendance.institutionName')}</label>
-              <Input
-                value={data.institutionName}
-                onChange={(e) => setData({ ...data, institutionName: e.target.value })}
-                className="h-11 rounded-xl"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-2">{t('attendance.gradeClass')}</label>
-              <div className="flex items-center gap-2">
-                <Input
-                  type="number"
-                  value={parseInt(data.grade)}
-                  onChange={(e) => setData({ ...data, grade: e.target.value })}
-                  className="h-11 rounded-xl flex-1"
-                />
-                <span className="text-gray-500">{t('attendance.grade')}</span>
-                <Input
-                  type="number"
-                  value={parseInt(data.class)}
-                  onChange={(e) => setData({ ...data, class: e.target.value })}
-                  className="h-11 rounded-xl flex-1"
-                />
-                <span className="text-gray-500">{t('attendance.class')}</span>
-              </div>
-            </div>
-          </div>
-        </DetailSectionCard>
-
-        {/* Statistics Section - Enhanced Design */}
-        <DetailSectionCard title={t('attendance.statistics')}>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-            <div className="group relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-bl-full" />
-              <div className="relative">
-                <p className="text-sm text-blue-100 mb-2 font-medium">{t('attendance.totalApplicants')}</p>
-                <p className="text-3xl font-bold text-white">{data.totalApplicants}</p>
-                <p className="text-xs text-blue-100 mt-1">{t('attendance.person')}</p>
-              </div>
-            </div>
-            <div className="group relative overflow-hidden bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-bl-full" />
-              <div className="relative">
-                <p className="text-sm text-emerald-100 mb-2 font-medium">{t('attendance.totalGraduates')}</p>
-                <p className="text-3xl font-bold text-white">{data.totalGraduates}</p>
-                <p className="text-xs text-emerald-100 mt-1">{t('attendance.person')}</p>
-              </div>
-            </div>
-            <div className="group relative overflow-hidden bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-bl-full" />
-              <div className="relative">
-                <p className="text-sm text-indigo-100 mb-2 font-medium">{t('attendance.maleGraduates')}</p>
-                <p className="text-3xl font-bold text-white">{data.maleGraduates}</p>
-                <p className="text-xs text-indigo-100 mt-1">{t('attendance.person')}</p>
-              </div>
-            </div>
-            <div className="group relative overflow-hidden bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-bl-full" />
-              <div className="relative">
-                <p className="text-sm text-purple-100 mb-2 font-medium">{t('attendance.femaleGraduates')}</p>
-                <p className="text-3xl font-bold text-white">{data.femaleGraduates}</p>
-                <p className="text-xs text-purple-100 mt-1">{t('attendance.person')}</p>
-              </div>
-            </div>
-          </div>
-        </DetailSectionCard>
-
-        {/* Instructor Info Section - Enhanced Design */}
-        <DetailSectionCard title={t('attendance.instructorInfo')}>
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-            <div className="divide-y divide-slate-100">
-              {data.instructors.map((instructor, index) => (
-                <div key={index} className="p-4 hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="w-20 flex-shrink-0">
-                      <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-100 text-blue-700">
-                        {instructor.role}
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <Input
-                        value={instructor.name}
-                        onChange={(e) => {
-                          const updatedInstructors = [...data.instructors];
-                          updatedInstructors[index].name = e.target.value;
-                          setData({ ...data, instructors: updatedInstructors });
-                        }}
-                        className="h-11 rounded-xl"
-                        suffix={t('attendance.instructor')}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </DetailSectionCard>
-
-        {/* Student Attendance Info Section - Enhanced Design */}
-        <DetailSectionCard title={t('attendance.studentAttendance')}>
-          <div className="space-y-4">
-            <div className="flex justify-end">
-              <Button
-                type="dashed"
-                icon={<UserPlus className="w-4 h-4" />}
-                onClick={handleAddStudent}
-                className="h-10 px-5 rounded-xl border-2 border-dashed border-blue-300 text-blue-600 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 font-medium transition-all"
-              >
-                {t('attendance.addStudent')}
-              </Button>
-            </div>
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm overflow-x-auto">
-              <Table
-              columns={[
-                {
-                  title: t('attendance.number'),
-                  dataIndex: 'number',
-                  key: 'number',
-                  render: (_, __, index) => index + 1,
-                },
-                {
-                  title: t('attendance.name'),
-                  dataIndex: 'name',
-                  key: 'name',
-                  render: (text, record) => (
-                    <Input
-                      value={text}
-                      onChange={(e) => handleStudentChange(record.id, 'name', e.target.value)}
-                      className="h-8 rounded-lg"
-                    />
-                  ),
-                },
-                {
-                  title: t('attendance.gender'),
-                  dataIndex: 'gender',
-                  key: 'gender',
-                  render: (text, record) => (
-                    <Select
-                      value={text}
-                      onChange={(value) => handleStudentChange(record.id, 'gender', value)}
-                      className="h-8 rounded-lg w-full"
-                      options={[
-                        { value: '남', label: '남' },
-                        { value: '여', label: '여' },
-                      ]}
-                    />
-                  ),
-                },
-                {
-                  title: t('attendance.tardiness'),
-                  dataIndex: 'tardiness',
-                  key: 'tardiness',
-                  render: (text, record) => (
-                    <Select
-                      value={text}
-                      onChange={(value) => handleStudentChange(record.id, 'tardiness', value)}
-                      className="h-8 rounded-lg w-full"
-                      options={[
-                        { value: 'O', label: 'O' },
-                        { value: 'X', label: 'X' },
-                        { value: '', label: '-' },
-                      ]}
-                    />
-                  ),
-                },
-                {
-                  title: t('attendance.absence'),
-                  dataIndex: 'absence',
-                  key: 'absence',
-                  render: (text, record) => (
-                    <Select
-                      value={text}
-                      onChange={(value) => handleStudentChange(record.id, 'absence', value)}
-                      className="h-8 rounded-lg w-full"
-                      options={[
-                        { value: 'O', label: 'O' },
-                        { value: 'X', label: 'X' },
-                        { value: '', label: '-' },
-                      ]}
-                    />
-                  ),
-                },
-                {
-                  title: t('attendance.note'),
-                  dataIndex: 'note',
-                  key: 'note',
-                  render: (text, record) => (
-                    <Input
-                      value={text}
-                      onChange={(e) => handleStudentChange(record.id, 'note', e.target.value)}
-                      className="h-8 rounded-lg"
-                    />
-                  ),
-                },
-                {
-                  title: t('attendance.action'),
-                  key: 'action',
-                  render: (_, record) => (
-                    <Button
-                      danger
-                      icon={<Trash2 className="w-4 h-4" />}
-                      onClick={() => handleDeleteStudent(record.id)}
-                      className="h-8 px-3"
-                    />
-                  ),
-                },
-              ]}
-              dataSource={students}
-                pagination={{
-                  pageSize: 10,
-                  showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} results`,
-                }}
-                rowClassName="hover:bg-blue-50/50 transition-colors"
-                className="w-full [&_.ant-table-thead>tr>th]:bg-gradient-to-r [&_.ant-table-thead>tr>th]:from-slate-50 [&_.ant-table-thead>tr>th]:to-slate-100 [&_.ant-table-thead>tr>th]:text-slate-700 [&_.ant-table-thead>tr>th]:text-sm [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-thead>tr>th]:border-b-2 [&_.ant-table-thead>tr>th]:border-slate-200 [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-slate-100 [&_.ant-table]:text-sm [&_.ant-table]:table-fixed"
-              />
-            </div>
-          </div>
-        </DetailSectionCard>
-      </div>
-    </div>
+    </ProtectedRoute>
   )
 }

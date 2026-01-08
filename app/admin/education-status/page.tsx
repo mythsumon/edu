@@ -7,10 +7,15 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { StatusChangeToolbar } from '@/components/admin/operations/StatusChangeToolbar'
 import { EducationStatusTable, type EducationStatusItem } from '@/components/admin/operations/EducationStatusTable'
 import { InstructorAssignmentModal } from '@/components/admin/operations/InstructorAssignmentModal'
-import { Card, Input, Button, Select, DatePicker } from 'antd'
+import { Card, Input, Button, Select, DatePicker, Modal, message, Space } from 'antd'
 import { Search, Filter, ChevronRight, RotateCcw } from 'lucide-react'
 import dayjs, { Dayjs } from 'dayjs'
 import { statusOptions } from '@/components/admin/operations/StatusDropdown'
+import { 
+  getAllowedNextStatuses, 
+  isIrreversibleTransition,
+  type EducationStatus 
+} from '@/components/admin/operations/statusTransitions'
 
 const { RangePicker } = DatePicker
 
@@ -154,6 +159,56 @@ export default function EducationStatusPage() {
   const filterDropdownRef = useRef<HTMLDivElement>(null)
   const [assignmentModalOpen, setAssignmentModalOpen] = useState(false)
   const [assignmentMode, setAssignmentMode] = useState<'partial' | 'full' | null>(null)
+  const [statusChangeModalVisible, setStatusChangeModalVisible] = useState(false)
+  const [pendingStatusChange, setPendingStatusChange] = useState<{
+    id: string
+    currentStatus: string
+    newStatus: EducationStatus
+  } | null>(null)
+  const [data, setData] = useState<EducationStatusItem[]>(dummyData)
+  
+  // Bulk status change helpers for scheduled transitions
+  const handleBulkOpenToPublic = () => {
+    // Bulk change 오픈예정 → 강사공개 (for 21:00 scheduled change)
+    const openScheduled = data.filter(item => item.status === '오픈예정')
+    if (openScheduled.length === 0) {
+      message.info('오픈예정 상태인 교육이 없습니다.')
+      return
+    }
+    
+    Modal.confirm({
+      title: '일괄 상태 변경',
+      content: `오픈예정 상태인 ${openScheduled.length}개 교육을 강사공개로 변경하시겠습니까?`,
+      onOk: () => {
+        setData(prev => prev.map(item => 
+          item.status === '오픈예정' ? { ...item, status: '강사공개' } : item
+        ))
+        setSelectedIds([])
+        message.success(`${openScheduled.length}개 교육이 강사공개로 변경되었습니다.`)
+      },
+    })
+  }
+  
+  const handleBulkPublicToClosed = () => {
+    // Bulk change 강사공개 → 신청마감 (for next day scheduled change)
+    const publicEducations = data.filter(item => item.status === '강사공개')
+    if (publicEducations.length === 0) {
+      message.info('강사공개 상태인 교육이 없습니다.')
+      return
+    }
+    
+    Modal.confirm({
+      title: '일괄 상태 변경',
+      content: `강사공개 상태인 ${publicEducations.length}개 교육을 신청마감으로 변경하시겠습니까?`,
+      onOk: () => {
+        setData(prev => prev.map(item => 
+          item.status === '강사공개' ? { ...item, status: '신청마감' } : item
+        ))
+        setSelectedIds([])
+        message.success(`${publicEducations.length}개 교육이 신청마감으로 변경되었습니다.`)
+      },
+    })
+  }
   
   // Local filter state for dropdown
   const [tempStatusFilter, setTempStatusFilter] = useState<string>('')
@@ -178,7 +233,7 @@ export default function EducationStatusPage() {
 
   // Filter data based on filters and search
   const filteredData = useMemo(() => {
-    return dummyData.filter((item) => {
+    return data.filter((item) => {
       // Search filter
       if (searchText) {
         const searchLower = searchText.toLowerCase()
@@ -321,15 +376,98 @@ export default function EducationStatusPage() {
     if (selectedIds.length === 0 || !statusValue) {
       return
     }
-    console.log('상태 변경:', { selectedIds, statusValue })
-    // TODO: Implement status change logic
-    // This should not change API logic, just placeholder
-    // After successful change, you might want to:
-    // - Update the data
-    // - Clear selection
-    // - Reset status value
-    // setSelectedIds([])
-    // setStatusValue('')
+
+    // Check if all selected rows can transition to the new status
+    const selectedRows = data.filter(item => selectedIds.includes(item.key))
+    const allCanTransition = selectedRows.every(row => {
+      const allowed = getAllowedNextStatuses(row.status as EducationStatus)
+      return allowed.includes(statusValue as EducationStatus)
+    })
+
+    if (!allCanTransition) {
+      message.warning('선택한 교육 중 일부는 해당 상태로 변경할 수 없습니다.')
+      return
+    }
+
+    // Check if statuses are mixed
+    const uniqueStatuses = new Set(selectedRows.map(r => r.status))
+    if (uniqueStatuses.size > 1) {
+      message.warning('선택한 교육의 상태가 서로 달라 일괄 변경할 수 없습니다.')
+      return
+    }
+
+    // Show confirmation modal
+    const isIrreversible = selectedRows.some(row => 
+      isIrreversibleTransition(row.status as EducationStatus, statusValue as EducationStatus)
+    )
+
+    Modal.confirm({
+      title: '상태 변경 확인',
+      content: (
+        <div>
+          <p>선택한 {selectedIds.length}개 교육의 상태를 '{statusValue}'로 변경하시겠습니까?</p>
+          {isIrreversible && (
+            <p className="mt-2 text-orange-600 text-sm">
+              ⚠️ 이 변경은 되돌릴 수 없습니다.
+            </p>
+          )}
+        </div>
+      ),
+      okText: '변경',
+      cancelText: '취소',
+      onOk: () => {
+        // Update data
+        setData(prev => prev.map(item => {
+          if (selectedIds.includes(item.key)) {
+            return { ...item, status: statusValue }
+          }
+          return item
+        }))
+        setSelectedIds([])
+        setStatusValue('')
+        message.success('상태가 변경되었습니다.')
+      },
+    })
+  }
+
+  const handleRowStatusChange = (id: string, newStatus: EducationStatus) => {
+    const row = data.find(item => item.key === id)
+    if (!row) return
+
+    const currentStatus = row.status as EducationStatus
+    const allowed = getAllowedNextStatuses(currentStatus)
+    
+    if (!allowed.includes(newStatus)) {
+      message.warning('이 상태로 변경할 수 없습니다.')
+      return
+    }
+
+    const isIrreversible = isIrreversibleTransition(currentStatus, newStatus)
+
+    Modal.confirm({
+      title: '상태 변경 확인',
+      content: (
+        <div>
+          <p>교육 상태를 '{newStatus}'로 변경하시겠습니까?</p>
+          {isIrreversible && (
+            <p className="mt-2 text-orange-600 text-sm">
+              ⚠️ 이 변경은 되돌릴 수 없습니다.
+            </p>
+          )}
+        </div>
+      ),
+      okText: '변경',
+      cancelText: '취소',
+      onOk: () => {
+        setData(prev => prev.map(item => {
+          if (item.key === id) {
+            return { ...item, status: newStatus }
+          }
+          return item
+        }))
+        message.success('상태가 변경되었습니다.')
+      },
+    })
   }
 
   const handleRowClick = (record: EducationStatusItem) => {
@@ -343,16 +481,45 @@ export default function EducationStatusPage() {
         {/* Main Content */}
         <div className="p-6 space-y-4">
           {/* Toolbar */}
-          <StatusChangeToolbar
-            selectedCount={selectedIds.length}
-            onAssignPartial={handleAssignPartial}
-            onAssignAll={handleAssignAll}
-            statusValue={statusValue}
-            onStatusChange={handleStatusChange}
-            onApplyStatusChange={handleApplyStatusChange}
-            assignmentMode={assignmentMode}
-            onAssignmentModeChange={setAssignmentMode}
-          />
+          <div className="space-y-4">
+            <StatusChangeToolbar
+              selectedCount={selectedIds.length}
+              selectedRows={filteredData.filter(item => selectedIds.includes(item.key))}
+              onAssignPartial={handleAssignPartial}
+              onAssignAll={handleAssignAll}
+              statusValue={statusValue}
+              onStatusChange={handleStatusChange}
+              onApplyStatusChange={handleApplyStatusChange}
+              assignmentMode={assignmentMode}
+              onAssignmentModeChange={setAssignmentMode}
+            />
+            
+            {/* Bulk Scheduled Status Changes */}
+            <Card className="rounded-xl border border-blue-200 bg-blue-50/50">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-1">예약된 일괄 상태 변경</h3>
+                  <p className="text-xs text-gray-600">21:00 오픈예정→강사공개 / 다음날 강사공개→신청마감</p>
+                </div>
+                <Space>
+                  <Button
+                    size="small"
+                    onClick={handleBulkOpenToPublic}
+                    className="h-9 px-4 rounded-lg border border-blue-300 hover:bg-blue-600 hover:text-white font-medium"
+                  >
+                    오픈예정 → 강사공개
+                  </Button>
+                  <Button
+                    size="small"
+                    onClick={handleBulkPublicToClosed}
+                    className="h-9 px-4 rounded-lg border border-blue-300 hover:bg-blue-600 hover:text-white font-medium"
+                  >
+                    강사공개 → 신청마감
+                  </Button>
+                </Space>
+              </div>
+            </Card>
+          </div>
 
           {/* Instructor Assignment Modal */}
           <InstructorAssignmentModal
@@ -458,6 +625,7 @@ export default function EducationStatusPage() {
               onToggleRow={handleToggleRow}
               onToggleAll={handleToggleAll}
               onRowClick={handleRowClick}
+              onStatusChange={handleRowStatusChange}
               currentPage={currentPage}
               pageSize={pageSize}
               total={totalItems}

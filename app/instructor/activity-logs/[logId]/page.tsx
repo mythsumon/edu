@@ -11,6 +11,7 @@ import { DetailSectionCard } from '@/components/admin/operations'
 import { PhotoUploader } from '../components/PhotoUploader'
 import { SessionRowsTable } from '../components/SessionRowsTable'
 import { ActivityLog, ActivityLogSessionRow, UploadedImage } from '../types'
+import { upsertActivityLog, getActivityLogById, getActivityLogByEducationId } from '../storage'
 import dayjs from 'dayjs'
 
 const { TextArea } = Input
@@ -18,9 +19,10 @@ const { TextArea } = Input
 export default function ActivityLogDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const { userProfile } = useAuth()
+  const { userProfile, userRole } = useAuth()
   const logId = params?.logId as string
   const isNew = logId === 'new'
+  const isAdmin = userRole === 'admin' || userRole === 'manager'
 
   const [loading, setLoading] = useState(false)
   const [isEditMode, setIsEditMode] = useState(isNew) // New logs start in edit mode
@@ -61,51 +63,51 @@ export default function ActivityLogDetailPage() {
   // Load existing data
   useEffect(() => {
     if (!isNew && logId) {
-      // TODO: Fetch from API
-      // For now, use mock data
-      const mockData: ActivityLog = {
-        id: logId,
-        logCode: '2025-0001',
-        educationType: '소프트웨어(SW)',
-        institutionType: '초등학교',
-        region: '평택시',
-        institutionName: '평택안일초등학교',
-        grade: '5',
-        class: '6',
-        startDate: '2025-11-03',
-        endDate: '2025-11-10',
-        totalApplicants: 22,
-        graduateMale: 11,
-        graduateFemale: 11,
-        sessions: [
-          {
-            id: 'session-1',
-            sessionNumber: 1,
-            date: '2025-11-03',
-            time: '09:00 ~ 12:10',
-            activityName: '블록코딩 기초',
-          },
-          {
-            id: 'session-2',
-            sessionNumber: 2,
-            date: '2025-11-10',
-            time: '09:00 ~ 12:10',
-            activityName: '엔트리 기초 및 인공지능',
-          },
-        ],
-        photos: [],
-        createdAt: new Date().toISOString(),
-        createdBy: userProfile?.name || '',
-        status: 'DRAFT',
+      // Try to find by ID first
+      let savedLog = getActivityLogById(logId)
+      
+      // If not found and logId looks like an educationId (starts with EDU-), try by educationId
+      if (!savedLog && logId.startsWith('EDU-')) {
+        savedLog = getActivityLogByEducationId(logId)
       }
-      setFormData(mockData)
+      
+      if (savedLog) {
+        setFormData(savedLog)
+      } else {
+        // If still not found, create a new log with educationId set
+        const newLogData: ActivityLog = {
+          id: `log-${Date.now()}`,
+          logCode: `2025-${String(Date.now()).slice(-4)}`,
+          educationType: '',
+          institutionType: '',
+          region: '',
+          institutionName: '',
+          grade: '',
+          class: '',
+          startDate: '',
+          endDate: '',
+          totalApplicants: 0,
+          graduateMale: 0,
+          graduateFemale: 0,
+          sessions: [],
+          photos: [],
+          createdAt: new Date().toISOString(),
+          createdBy: userProfile?.name || '',
+          status: 'DRAFT',
+          educationId: logId.startsWith('EDU-') ? logId : undefined,
+        }
+        setFormData(newLogData)
+        setIsEditMode(true) // Start in edit mode for new logs
+      }
     } else if (isNew) {
       // Initialize new log with default values
       setFormData({
         ...formData,
+        id: `log-${Date.now()}`,
         logCode: `2025-${String(Date.now()).slice(-4)}`,
         createdAt: new Date().toISOString(),
         createdBy: userProfile?.name || '',
+        status: 'DRAFT',
       })
     }
   }, [logId, isNew, userProfile])
@@ -157,18 +159,62 @@ export default function ActivityLogDetailPage() {
     try {
       setLoading(true)
       
-      // TODO: Call API to save
-      // await saveActivityLog(formData)
+      const logToSave: ActivityLog = {
+        ...formData,
+        id: formData.id || `log-${Date.now()}`,
+        status: formData.status || 'DRAFT',
+        updatedAt: new Date().toISOString(),
+      }
+      
+      upsertActivityLog(logToSave)
+      setFormData(logToSave)
       
       message.success('저장되었습니다.')
       setIsEditMode(false)
-      // Don't navigate away, stay on the page
     } catch (error) {
       message.error('저장 중 오류가 발생했습니다.')
       console.error(error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSubmit = async () => {
+    const validation = validateForm()
+    if (!validation.valid) {
+      message.error(validation.error)
+      return
+    }
+
+    Modal.confirm({
+      title: '제출 확인',
+      content: '교육 활동 일지를 제출하시겠습니까? 제출 후에는 수정할 수 없습니다.',
+      onOk: async () => {
+        try {
+          setLoading(true)
+          
+          const logToSubmit: ActivityLog = {
+            ...formData,
+            id: formData.id || `log-${Date.now()}`,
+            status: 'SUBMITTED',
+            submittedAt: new Date().toISOString(),
+            submittedBy: userProfile?.name || '',
+            updatedAt: new Date().toISOString(),
+          }
+          
+          upsertActivityLog(logToSubmit)
+          setFormData(logToSubmit)
+          
+          message.success('제출되었습니다.')
+          setIsEditMode(false)
+        } catch (error) {
+          message.error('제출 중 오류가 발생했습니다.')
+          console.error(error)
+        } finally {
+          setLoading(false)
+        }
+      },
+    })
   }
 
   const handleDelete = () => {
@@ -233,7 +279,7 @@ export default function ActivityLogDetailPage() {
   const totalGraduates = formData.graduateMale + formData.graduateFemale
 
   return (
-    <ProtectedRoute requiredRole="instructor">
+    <ProtectedRoute requiredRole={['instructor', 'admin']}>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 transition-colors">
         {/* Header */}
         <div className="bg-white dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700 sticky top-0 z-10 shadow-sm">
@@ -253,13 +299,60 @@ export default function ActivityLogDetailPage() {
               </div>
               <Space>
                 {!isEditMode ? (
-                  <Button
-                    type="primary"
-                    icon={<Edit className="w-4 h-4" />}
-                    onClick={() => setIsEditMode(true)}
-                  >
-                    수정하기
-                  </Button>
+                  <>
+                    {/* Admin can always edit */}
+                    {isAdmin && (
+                      <Button
+                        type="primary"
+                        icon={<Edit className="w-4 h-4" />}
+                        onClick={() => setIsEditMode(true)}
+                      >
+                        수정하기
+                      </Button>
+                    )}
+                    {/* Instructor actions */}
+                    {!isAdmin && (
+                      <>
+                        {formData.status === 'DRAFT' && (
+                          <>
+                            <Button
+                              type="primary"
+                              icon={<Edit className="w-4 h-4" />}
+                              onClick={() => setIsEditMode(true)}
+                            >
+                              수정하기
+                            </Button>
+                            <Button
+                              type="primary"
+                              onClick={handleSubmit}
+                              loading={loading}
+                              style={{ background: '#10b981', borderColor: '#10b981' }}
+                            >
+                              제출하기
+                            </Button>
+                          </>
+                        )}
+                        {formData.status === 'SUBMITTED' && (
+                          <span className="text-blue-600 font-medium">제출 완료 (승인 대기 중)</span>
+                        )}
+                        {formData.status === 'APPROVED' && (
+                          <span className="text-green-600 font-medium">승인 완료</span>
+                        )}
+                        {formData.status === 'REJECTED' && (
+                          <>
+                            <span className="text-red-600 font-medium mr-2">반려됨</span>
+                            <Button
+                              type="primary"
+                              icon={<Edit className="w-4 h-4" />}
+                              onClick={() => setIsEditMode(true)}
+                            >
+                              수정하기
+                            </Button>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </>
                 ) : (
                   <>
                     <Button onClick={handleCancel} className="dark:text-gray-300">

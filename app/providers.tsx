@@ -5,6 +5,8 @@ import { ConfigProvider, theme } from 'antd'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext'
 import { LanguageProvider } from '@/components/localization/LanguageContext'
+import { ErrorBoundary } from './error-boundary'
+import { GlobalErrorHandler } from './error-handler'
 
 interface AppProvidersProps {
   children: ReactNode
@@ -122,14 +124,18 @@ function ThemedConfigProvider({ children }: { children: ReactNode }) {
 
 export function AppProviders({ children }: AppProvidersProps) {
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <ThemedConfigProvider>
-          <LanguageProvider>
-            {children}
-          </LanguageProvider>
-        </ThemedConfigProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <GlobalErrorHandler>
+      <ErrorBoundary>
+        <AuthProvider>
+          <ThemeProvider>
+            <ThemedConfigProvider>
+              <LanguageProvider>
+                {children}
+              </LanguageProvider>
+            </ThemedConfigProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </ErrorBoundary>
+    </GlobalErrorHandler>
   )
 }

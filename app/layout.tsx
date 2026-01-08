@@ -15,7 +15,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className="bg-slate-50 dark:bg-gray-900 text-slate-900 dark:text-gray-100 transition-colors" suppressHydrationWarning>
+      <body 
+        className="bg-slate-50 dark:bg-gray-900 text-slate-900 dark:text-gray-100 transition-colors" 
+        suppressHydrationWarning
+        suppressContentEditableWarning
+      >
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

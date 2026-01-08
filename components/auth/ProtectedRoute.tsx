@@ -17,9 +17,14 @@ export function ProtectedRoute({
   redirectTo = '/login'
 }: ProtectedRouteProps) {
   const router = useRouter()
-  const { userRole, isAuthenticated } = useAuth()
+  const { userRole, isAuthenticated, isLoading } = useAuth()
 
   useEffect(() => {
+    // Wait for auth to finish loading before checking authentication
+    if (isLoading) {
+      return
+    }
+
     if (!isAuthenticated) {
       router.push(redirectTo)
       return
@@ -39,9 +44,10 @@ export function ProtectedRoute({
         return
       }
     }
-  }, [isAuthenticated, userRole, requiredRole, redirectTo, router])
+  }, [isAuthenticated, userRole, requiredRole, redirectTo, router, isLoading])
 
-  if (!isAuthenticated) {
+  // Show loading spinner while checking authentication
+  if (isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Spin size="large" />

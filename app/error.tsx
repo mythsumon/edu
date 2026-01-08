@@ -10,7 +10,19 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
-    // Log the error to an error reporting service
+    // Suppress known React Strict Mode DOM errors
+    if (
+      error.message?.includes('removeChild') ||
+      error.message?.includes('NotFoundError') ||
+      error.name === 'NotFoundError' ||
+      error.message?.includes('Failed to execute \'removeChild\'')
+    ) {
+      // These errors are often caused by React Strict Mode double rendering
+      // and don't affect functionality - silently ignore them
+      return
+    }
+    
+    // Log other errors to an error reporting service
     console.error(error)
   }, [error])
 

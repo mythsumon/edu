@@ -68,6 +68,13 @@ const adminMenuConfig: MenuGroup[] = [
     ],
   },
   {
+    labelKey: 'sidebar.documentManagement',
+    icon: Save,
+    items: [
+      { labelKey: 'sidebar.submissions', href: '/admin/submissions' },
+    ],
+  },
+  {
     labelKey: 'sidebar.systemManagement',
     icon: Settings,
     items: [
@@ -85,7 +92,7 @@ export function AdminSidebar({ isCollapsed, setIsCollapsed }: AdminSidebarProps)
   const pathname = usePathname()
   const router = useRouter()
   const { t, locale, setLocale } = useLanguage()
-  const { userRole, userProfile, updateProfile } = useAuth()
+  const { userRole, userProfile, updateProfile, logout } = useAuth()
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
@@ -334,6 +341,7 @@ export function AdminSidebar({ isCollapsed, setIsCollapsed }: AdminSidebarProps)
                 <button
                   className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition-colors"
                   onClick={() => {
+                    logout()
                     router.push('/login')
                   }}
                 >

@@ -7,6 +7,7 @@ Welcome to the Education Dashboard documentation. This folder contains guides an
 - [User Guide](../USER_GUIDE.md) - Comprehensive guide for using the dashboard
 
 ## Technical Documentation
+- [Developer Flow Guide](DEVELOPER_FLOW.md) - **Complete guide for developers** - Setup, workflow, best practices, and common tasks
 - [Project Structure](../README.md#project-structure) - Overview of the codebase organization
 - [Development Setup](../README.md#getting-started) - Instructions for setting up the development environment
 - [Project Rules](project-rules.md) - Development guidelines and best practices

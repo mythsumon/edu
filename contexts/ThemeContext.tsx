@@ -30,8 +30,22 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Apply theme to document whenever theme changes
-    if (typeof document !== 'undefined') {
-      document.documentElement.classList.toggle('dark', theme === 'dark')
+    if (typeof document !== 'undefined' && document.documentElement) {
+      try {
+        const htmlElement = document.documentElement
+        if (theme === 'dark') {
+          if (!htmlElement.classList.contains('dark')) {
+            htmlElement.classList.add('dark')
+          }
+        } else {
+          if (htmlElement.classList.contains('dark')) {
+            htmlElement.classList.remove('dark')
+          }
+        }
+      } catch (error) {
+        // Silently handle DOM manipulation errors (can occur during React Strict Mode)
+        console.warn('Theme application error:', error)
+      }
     }
   }, [theme])
 

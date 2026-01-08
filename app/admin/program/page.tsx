@@ -26,16 +26,32 @@ import {
   DefinitionListGrid,
   SectionAccordion
 } from '@/components/admin/operations'
+import {
+  getProgramSessionCodes,
+  getProgramTypeCodes,
+  getProgramSessionByValue,
+  getProgramTypeByValue,
+} from '@/lib/commonCodeStore'
+import { Alert } from 'antd'
 
 const { TextArea } = Input
+
+/**
+ * TODO: After feature stabilization, UI must be redesigned to avoid dependency 
+ * on legacy system look & feel.
+ */
 
 interface ProgramItem {
   key: string
   status: string
   programId: string
-  name: string
+  name: string // Legacy: plain string, New: computed from sessionValue + programTypeValue
   note: string
   registeredAt: string
+  // New structured fields (optional for backward compatibility)
+  sessionValue?: string // Common Code value (e.g., "8", "16", "50")
+  programTypeValue?: string // Common Code value (e.g., "BLOCK", "TEXT", "AGREE")
+  programDisplayName?: string
 }
 
 const dummyData: ProgramItem[] = [
@@ -108,6 +124,16 @@ export default function ProgramManagementPage() {
   const [filterDropdownOpen, setFilterDropdownOpen] = useState<boolean>(false)
   const filterDropdownRef = useRef<HTMLDivElement>(null)
 
+  // Program codes from Common Code
+  const sessionCodes = useMemo(() => getProgramSessionCodes(), [])
+  const typeCodes = useMemo(() => getProgramTypeCodes(), [])
+
+  // Check if Common Codes are available
+  const hasCommonCodes = sessionCodes.length > 0 && typeCodes.length > 0
+
+  // Computed program display name from form values
+  const [computedProgramName, setComputedProgramName] = useState<string>('')
+
   // Close filter dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -130,6 +156,9 @@ export default function ProgramManagementPage() {
   const handleRegisterClick = () => {
     setViewMode('register')
     form.resetFields()
+    setComputedProgramName('')
+    // Set default status to "대기"
+    form.setFieldsValue({ status: '대기' })
   }
 
   const handleBackToList = () => {
@@ -139,8 +168,41 @@ export default function ProgramManagementPage() {
   }
 
   const handleFormSubmit = (values: any) => {
-    console.log('Form values:', values)
+    // Store structured data
+    const programData = {
+      ...values,
+      // For backward compatibility: also store as 'name' field
+      name: computedProgramName || values.programDisplayName,
+      programDisplayName: computedProgramName,
+      // Store structured fields (values are Common Code values)
+      sessionValue: values.sessionValue,
+      programTypeValue: values.programTypeValue,
+    }
+    console.log('Form values:', programData)
     handleBackToList()
+  }
+
+  // Handle program selection changes to compute display name
+  const handleProgramSelectionChange = () => {
+    const sessionValue = form.getFieldValue('sessionValue')
+    const programTypeValue = form.getFieldValue('programTypeValue')
+    
+    if (sessionValue && programTypeValue) {
+      const sessionKey = getProgramSessionByValue(sessionValue)
+      const typeKey = getProgramTypeByValue(programTypeValue)
+      
+      if (sessionKey && typeKey) {
+        const displayName = `(${sessionKey.label}) ${typeKey.label}`
+        setComputedProgramName(displayName)
+        form.setFieldsValue({ programDisplayName: displayName })
+      } else {
+        setComputedProgramName('')
+        form.setFieldsValue({ programDisplayName: '' })
+      }
+    } else {
+      setComputedProgramName('')
+      form.setFieldsValue({ programDisplayName: '' })
+    }
   }
 
   const handleDelete = () => {
@@ -161,7 +223,79 @@ export default function ProgramManagementPage() {
   const handleViewDetail = (record: ProgramItem) => {
     setSelectedProgram(record)
     setViewMode('detail')
+    
+    // For backward compatibility: try to parse legacy programName
+    // Format: "(8차시) 텍스트코딩"
+    if (record.name && !record.sessionValue && !record.programTypeValue) {
+      const match = record.name.match(/^\((\d+)차시\)\s+(.+)$/)
+      if (match) {
+        const sessionCount = parseInt(match[1], 10)
+        const programTypeName = match[2]
+        
+        // Try to find matching Common Code values
+        const sessionKey = sessionCodes.find((k) => k.value === String(sessionCount) || k.label === `${sessionCount}차시`)
+        const typeKey = typeCodes.find((k) => k.label === programTypeName)
+        
+        if (sessionKey) record.sessionValue = sessionKey.value
+        if (typeKey) record.programTypeValue = typeKey.value
+      }
+    }
   }
+
+  // Build detail view items
+  const detailViewItems = useMemo(() => {
+    if (!selectedProgram) return []
+    
+    const items: Array<{ label: string; value: string | React.ReactNode; help?: string }> = [
+      { label: '프로그램 ID', value: selectedProgram.programId },
+    ]
+
+    // Program name - handle both legacy and new format
+    const isLegacy = selectedProgram.name && 
+      !selectedProgram.programDisplayName && 
+      !selectedProgram.name.match(/^\(\d+차시\)\s+.+$/)
+    
+    items.push({
+      label: '프로그램명',
+      value: selectedProgram.programDisplayName || selectedProgram.name,
+      ...(isLegacy ? { help: '레거시 데이터 (읽기 전용)' } : {}),
+    })
+
+    // Add structured fields if available
+    if (selectedProgram.sessionValue && selectedProgram.programTypeValue) {
+      const sessionKey = getProgramSessionByValue(selectedProgram.sessionValue)
+      const typeKey = getProgramTypeByValue(selectedProgram.programTypeValue)
+      
+      if (sessionKey) {
+        items.push({ label: '차시', value: sessionKey.label })
+      }
+      if (typeKey) {
+        items.push({ label: '프로그램 유형', value: typeKey.label })
+      }
+    }
+
+    // Add remaining fields
+    items.push(
+      {
+        label: '상태',
+        value: (
+          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+            selectedProgram.status === '활성'
+              ? 'bg-blue-100 text-blue-700'
+              : selectedProgram.status === '대기'
+                ? 'bg-amber-100 text-amber-700'
+                : 'bg-red-100 text-red-700'
+          }`}>
+            {selectedProgram.status}
+          </span>
+        ),
+      },
+      { label: '등록일시', value: selectedProgram.registeredAt },
+      { label: '비고', value: selectedProgram.note || '-' }
+    )
+
+    return items
+  }, [selectedProgram, sessionCodes, typeCodes])
 
   const sections = [
     { key: 'program', label: '프로그램 정보' },
@@ -303,28 +437,7 @@ export default function ProgramManagementPage() {
 
             {/* Program Basic Info Section */}
             <DetailSectionCard title="프로그램 정보">
-              <DefinitionListGrid
-                items={[
-                  { label: '프로그램 ID', value: selectedProgram.programId },
-                  { label: '프로그램명', value: selectedProgram.name },
-                  {
-                    label: '상태',
-                    value: (
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                        selectedProgram.status === '활성'
-                          ? 'bg-blue-100 text-blue-700'
-                          : selectedProgram.status === '대기'
-                            ? 'bg-amber-100 text-amber-700'
-                            : 'bg-red-100 text-red-700'
-                      }`}>
-                        {selectedProgram.status}
-                      </span>
-                    ),
-                  },
-                  { label: '등록일시', value: selectedProgram.registeredAt },
-                  { label: '비고', value: selectedProgram.note || '-' },
-                ]}
-              />
+              <DefinitionListGrid items={detailViewItems} />
             </DetailSectionCard>
           </div>
         </div>
@@ -339,7 +452,12 @@ export default function ProgramManagementPage() {
               const values = form.getFieldsValue()
               console.log('Temp save:', values)
             }}
-            onSave={() => form.submit()}
+            onSave={() => {
+              if (!hasCommonCodes) {
+                return // Disable save if Common Codes are missing
+              }
+              form.submit()
+            }}
           />
 
           {/* Main Content Container */}
@@ -347,7 +465,12 @@ export default function ProgramManagementPage() {
             <Form
               form={form}
               layout="vertical"
-              onFinish={handleFormSubmit}
+              onFinish={(values) => {
+                if (!hasCommonCodes) {
+                  return // Prevent submission if Common Codes are missing
+                }
+                handleFormSubmit(values)
+              }}
             >
               <SectionAccordion
                 sections={[
@@ -357,48 +480,101 @@ export default function ProgramManagementPage() {
                     helperText: '프로그램의 기본 정보를 입력하세요',
                     defaultOpen: true,
                     children: (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                        <Form.Item
-                          label={
-                            <span>
-                              프로그램명 <span className="text-red-500">*</span>
-                            </span>
-                          }
-                          name="name"
-                          rules={[{ required: true, message: '프로그램명을 입력해주세요' }]}
-                          className="mb-0"
-                        >
-                          <Input placeholder="프로그램명을 입력하세요" className="h-11 rounded-xl" />
-                        </Form.Item>
-
-                        <Form.Item
-                          label={
-                            <span>
-                              상태 <span className="text-red-500">*</span>
-                            </span>
-                          }
-                          name="status"
-                          rules={[{ required: true, message: '상태를 선택해주세요' }]}
-                          className="mb-0"
-                        >
-                          <Select
-                            placeholder="상태를 선택하세요"
-                            options={programStatusOptions}
-                            className="h-11 rounded-xl"
+                      <div className="space-y-4 pt-4">
+                        {!hasCommonCodes && (
+                          <Alert
+                            message="공통코드 미등록"
+                            description="차시/프로그램 유형 공통코드가 등록되어 있지 않습니다. Common Code 메뉴에서 등록해 주세요."
+                            type="warning"
+                            showIcon
+                            className="mb-4"
                           />
-                        </Form.Item>
+                        )}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <Form.Item
+                            label={
+                              <span>
+                                차시 <span className="text-red-500">*</span>
+                              </span>
+                            }
+                            name="sessionValue"
+                            rules={[{ required: true, message: '차시를 선택해주세요' }]}
+                            className="mb-0"
+                          >
+                            <Select
+                              placeholder="차시를 선택하세요"
+                              options={sessionCodes.map((key) => ({
+                                value: key.value,
+                                label: key.label,
+                              }))}
+                              className="h-11 rounded-xl"
+                              onChange={handleProgramSelectionChange}
+                              disabled={!hasCommonCodes}
+                            />
+                          </Form.Item>
 
-                        <Form.Item
-                          label="비고"
-                          name="note"
-                          className="mb-0 md:col-span-2"
-                        >
-                          <TextArea
-                            rows={4}
-                            placeholder="비고를 입력하세요"
-                            className="rounded-xl"
-                          />
-                        </Form.Item>
+                          <Form.Item
+                            label={
+                              <span>
+                                프로그램 유형 <span className="text-red-500">*</span>
+                              </span>
+                            }
+                            name="programTypeValue"
+                            rules={[{ required: true, message: '프로그램 유형을 선택해주세요' }]}
+                            className="mb-0"
+                          >
+                            <Select
+                              placeholder="프로그램 유형을 선택하세요"
+                              options={typeCodes.map((key) => ({
+                                value: key.value,
+                                label: key.label,
+                              }))}
+                              className="h-11 rounded-xl"
+                              onChange={handleProgramSelectionChange}
+                              disabled={!hasCommonCodes}
+                            />
+                          </Form.Item>
+
+                          <Form.Item
+                            label="프로그램명"
+                            name="programDisplayName"
+                            className="mb-0 md:col-span-2"
+                          >
+                            <Input
+                              value={computedProgramName}
+                              placeholder="차시와 프로그램 유형을 선택하면 자동으로 생성됩니다"
+                              className="h-11 rounded-xl"
+                              readOnly
+                              disabled
+                            />
+                          </Form.Item>
+
+                          <Form.Item
+                            label="상태"
+                            name="status"
+                            className="mb-0"
+                            initialValue="대기"
+                          >
+                            <Select
+                              placeholder="상태"
+                              options={programStatusOptions}
+                              className="h-11 rounded-xl"
+                              disabled
+                            />
+                          </Form.Item>
+
+                          <Form.Item
+                            label="비고"
+                            name="note"
+                            className="mb-0 md:col-span-2"
+                          >
+                            <TextArea
+                              rows={4}
+                              placeholder="비고를 입력하세요"
+                              className="rounded-xl"
+                            />
+                          </Form.Item>
+                        </div>
                       </div>
                     ),
                   },

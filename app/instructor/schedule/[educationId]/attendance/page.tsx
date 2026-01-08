@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { Button, Card, Input, Select, Space, Table, InputNumber, message, Upload, Modal, DatePicker } from 'antd'
 import { UploadOutlined } from '@ant-design/icons'
@@ -13,6 +13,7 @@ import { InstitutionContactAndSignatures } from '@/components/instructor/attenda
 import type { InstitutionContact, AttendanceSignatures, Signature } from '@/components/instructor/attendance/InstitutionContactAndSignatures'
 import { dataStore } from '@/lib/dataStore'
 import type { InstructorAssignment } from '@/lib/dataStore'
+import { upsertAttendanceDoc, getAttendanceDocByEducationId, type AttendanceDocument } from './storage'
 import dayjs from 'dayjs'
 
 const { TextArea } = Input
@@ -46,6 +47,7 @@ export default function InstructorAttendancePage() {
   const searchParams = useSearchParams()
   const sessionParam = searchParams?.get('session')
   const { userRole, userProfile } = useAuth()
+  const isAdmin = userRole === 'admin' || userRole === 'manager'
   
   const [isEditMode, setIsEditMode] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -196,47 +198,148 @@ export default function InstructorAttendancePage() {
             },
           ]
           setSessions(exactSessions)
+        } else {
+          // If no lessons, initialize with empty sessions
+          setSessions([])
+          setStudents([])
         }
+      } else {
+        // Assignment not found - set empty state
+        setAssignment(null)
+        setSessions([])
+        setStudents([])
       }
     }
   }, [educationId])
 
   // Validation: Check if attendance sheet can be submitted
   const canSubmit = (): boolean => {
-    if (!signatures.school) {
-      message.warning('학교 담당자 서명이 필요합니다.')
-      return false
-    }
-    if (!signatures.session1MainInstructor || !signatures.session1AssistantInstructor) {
-      message.warning('1회차 주강사 및 보조강사 서명이 필요합니다.')
-      return false
-    }
-    if (!signatures.session2MainInstructor || !signatures.session2AssistantInstructor) {
-      message.warning('2회차 주강사 및 보조강사 서명이 필요합니다.')
-      return false
-    }
-    
+    // 모든 서명은 선택사항으로 변경됨 - 서명 없이도 제출 가능
+    // 학교 담당자 서명
+    // if (!signatures.school) {
+    //   message.warning('학교 담당자 서명이 필요합니다.')
+    //   return false
+    // }
+    // 1회차 강사 서명
+    // if (!signatures.session1MainInstructor || !signatures.session1AssistantInstructor) {
+    //   message.warning('1회차 주강사 및 보조강사 서명이 필요합니다.')
+    //   return false
+    // }
+    // 2회차 강사 서명
+    // if (!signatures.session2MainInstructor || !signatures.session2AssistantInstructor) {
+    //   message.warning('2회차 주강사 및 보조강사 서명이 필요합니다.')
+    //   return false
+    // }
+
     return true
   }
+
+  const [attendanceStatus, setAttendanceStatus] = useState<'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'>('DRAFT')
+
+  // Load attendance document
+  useEffect(() => {
+    if (educationId) {
+      const savedDoc = getAttendanceDocByEducationId(educationId)
+      if (savedDoc) {
+        setAttendanceStatus(savedDoc.status)
+        // Load saved data
+        setHeaderData({
+          location: savedDoc.location,
+          institution: savedDoc.institution,
+          gradeClass: savedDoc.gradeClass,
+          programName: savedDoc.programName,
+          totalSessions: savedDoc.totalSessions,
+          maleCount: savedDoc.maleCount,
+          femaleCount: savedDoc.femaleCount,
+          schoolContactName: savedDoc.schoolContactName,
+        })
+        setInstitutionContact(savedDoc.institutionContact)
+        setSignatures(savedDoc.signatures)
+        setSessions(savedDoc.sessions)
+        setStudents(savedDoc.students)
+      }
+    }
+  }, [educationId])
 
   const handleSave = async () => {
     try {
       setLoading(true)
       
-      // Validate before saving
-      if (!canSubmit()) {
-        setLoading(false)
-        return
+      // Get existing document to preserve createdAt if it exists
+      const existingDoc = getAttendanceDocByEducationId(educationId)
+      
+      const docToSave: AttendanceDocument = {
+        id: `attendance-${educationId}`,
+        educationId: educationId!,
+        assignmentId: assignment?.id,
+        ...headerData,
+        institutionContact,
+        signatures,
+        sessions,
+        students,
+        status: attendanceStatus,
+        createdAt: existingDoc?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       }
       
-      // TODO: API 호출하여 출석 데이터 저장
-      message.success('출석 정보가 저장되었습니다.')
-      setIsEditMode(false)
+      const saveResult = upsertAttendanceDoc(docToSave)
+      if (saveResult.success) {
+        message.success('출석 정보가 저장되었습니다.')
+        setIsEditMode(false)
+      } else {
+        message.error(saveResult.error || '저장 중 오류가 발생했습니다.')
+      }
     } catch (error) {
+      console.error('Save error:', error)
       message.error('저장 중 오류가 발생했습니다.')
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSubmit = async () => {
+    if (!canSubmit()) {
+      return
+    }
+
+    Modal.confirm({
+      title: '제출 확인',
+      content: '교육 출석부를 제출하시겠습니까? 제출 후에는 수정할 수 없습니다.',
+      onOk: async () => {
+        try {
+          setLoading(true)
+          
+          const docToSubmit: AttendanceDocument = {
+            id: `attendance-${educationId}`,
+            educationId: educationId!,
+            assignmentId: assignment?.id,
+            ...headerData,
+            institutionContact,
+            signatures,
+            sessions,
+            students,
+            status: 'SUBMITTED',
+            submittedAt: new Date().toISOString(),
+            submittedBy: userProfile?.name || '',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }
+          
+          const submitResult = upsertAttendanceDoc(docToSubmit)
+          if (submitResult.success) {
+            setAttendanceStatus('SUBMITTED')
+            message.success('제출되었습니다.')
+            setIsEditMode(false)
+          } else {
+            message.error(submitResult.error || '제출 중 오류가 발생했습니다.')
+          }
+        } catch (error) {
+          message.error('제출 중 오류가 발생했습니다.')
+        } finally {
+          setLoading(false)
+        }
+      },
+    })
   }
   
   const handleInstitutionContactChange = (contact: InstitutionContact) => {
@@ -311,16 +414,232 @@ export default function InstructorAttendancePage() {
     message.success('학생이 추가되었습니다.')
   }
   
-  const handleSessionDataChange = (field: keyof SessionAttendance, sessionIndex: number, value: string | number) => {
+  const handleSessionDataChange = useCallback((field: keyof SessionAttendance, sessionIndex: number, value: string | number | string[]) => {
     setSessions(prevSessions => {
       const updated = [...prevSessions]
-      updated[sessionIndex] = {
-        ...updated[sessionIndex],
-        [field]: value,
+      if (updated[sessionIndex]) {
+        updated[sessionIndex] = {
+          ...updated[sessionIndex],
+          [field]: value,
+        }
       }
       return updated
     })
-  }
+  }, [])
+
+  // Memoize session table data source
+  const sessionTableDataSource = useMemo(() => {
+    if (!sessions || sessions.length === 0) return []
+    
+    return [
+      {
+        key: 'date',
+        label: '강의날짜',
+        ...sessions.reduce((acc, session, index) => {
+          acc[`session${index + 1}`] = session ? (
+            isEditMode ? (
+              <DatePicker
+                value={dayjs(session.date, 'YYYY-MM-DD').isValid() ? dayjs(session.date, 'YYYY-MM-DD') : dayjs(session.date)}
+                onChange={(date) => {
+                  if (date) {
+                    handleSessionDataChange('date', index, date.format('YYYY-MM-DD'))
+                  }
+                }}
+                format="YYYY-MM-DD"
+                className="w-full"
+                placeholder="날짜 선택"
+              />
+            ) : (
+              (() => {
+                const normalizedDate = session.date.replace(/\./g, '-')
+                const d = dayjs(normalizedDate)
+                if (!d.isValid()) return session.date
+                const weekdays = ['일', '월', '화', '수', '목', '금', '토']
+                return `${d.month() + 1}.${d.date()}(${weekdays[d.day()]})`
+              })()
+            )
+          ) : '-'
+          return acc
+        }, {} as Record<string, any>),
+      },
+      {
+        key: 'time',
+        label: '시간',
+        ...sessions.reduce((acc, session, index) => {
+          acc[`session${index + 1}`] = session ? (
+            isEditMode ? (
+              <div className="flex gap-1">
+                <Input
+                  value={session.startTime}
+                  onChange={(e) => handleSessionDataChange('startTime', index, e.target.value)}
+                  className="w-full"
+                />
+                <span>~</span>
+                <Input
+                  value={session.endTime}
+                  onChange={(e) => handleSessionDataChange('endTime', index, e.target.value)}
+                  className="w-full"
+                />
+              </div>
+            ) : (
+              `${session.startTime} ~ ${session.endTime}`
+            )
+          ) : '-'
+          return acc
+        }, {} as Record<string, any>),
+      },
+      {
+        key: 'mainInstructor',
+        label: '주강사',
+        ...sessions.reduce((acc, session, index) => {
+          acc[`session${index + 1}`] = session ? (
+            isEditMode ? (
+              <Input
+                value={session.mainInstructor}
+                onChange={(e) => handleSessionDataChange('mainInstructor', index, e.target.value)}
+                className="w-full"
+              />
+            ) : (
+              session.mainInstructor
+            )
+          ) : '-'
+          return acc
+        }, {} as Record<string, any>),
+      },
+      {
+        key: 'assistantInstructor',
+        label: '보조강사',
+        ...sessions.reduce((acc, session, index) => {
+          acc[`session${index + 1}`] = session ? (
+            isEditMode ? (
+              <Input
+                value={session.assistantInstructor}
+                onChange={(e) => handleSessionDataChange('assistantInstructor', index, e.target.value)}
+                className="w-full"
+              />
+            ) : (
+              session.assistantInstructor
+            )
+          ) : '-'
+          return acc
+        }, {} as Record<string, any>),
+      },
+      {
+        key: 'sessions',
+        label: '차시',
+        ...sessions.reduce((acc, session, index) => {
+          acc[`session${index + 1}`] = session ? (
+            isEditMode ? (
+              <InputNumber
+                min={0}
+                max={10}
+                value={session.sessions}
+                onChange={(val) => handleSessionDataChange('sessions', index, val || 0)}
+                className="w-full"
+              />
+            ) : (
+              session.sessions
+            )
+          ) : '-'
+          return acc
+        }, {} as Record<string, any>),
+      },
+      {
+        key: 'studentCount',
+        label: '학생정원',
+        ...sessions.reduce((acc, session, index) => {
+          acc[`session${index + 1}`] = session ? (
+            isEditMode ? (
+              <InputNumber
+                min={0}
+                value={session.studentCount}
+                onChange={(val) => handleSessionDataChange('studentCount', index, val || 0)}
+                className="w-full"
+              />
+            ) : (
+              session.studentCount
+            )
+          ) : '-'
+          return acc
+        }, {} as Record<string, any>),
+      },
+      {
+        key: 'attendanceCount',
+        label: '출석인원',
+        ...sessions.reduce((acc, session, index) => {
+          acc[`session${index + 1}`] = session ? (
+            isEditMode ? (
+              <InputNumber
+                min={0}
+                value={session.attendanceCount}
+                onChange={(val) => handleSessionDataChange('attendanceCount', index, val || 0)}
+                className="w-full"
+              />
+            ) : (
+              session.attendanceCount
+            )
+          ) : '-'
+          return acc
+        }, {} as Record<string, any>),
+      },
+      {
+        key: 'institutionContacts',
+        label: '기관 담당자',
+        ...sessions.reduce((acc, session, index) => {
+          acc[`session${index + 1}`] = session ? (
+            isEditMode ? (
+              <div className="space-y-2">
+                {session.institutionContacts.map((contact, idx) => (
+                  <Input
+                    key={idx}
+                    value={contact}
+                    onChange={(e) => {
+                      const updated = [...session.institutionContacts]
+                      updated[idx] = e.target.value
+                      handleSessionDataChange('institutionContacts', index, updated)
+                    }}
+                    className="w-full"
+                    placeholder="담당자 이름"
+                  />
+                ))}
+                {session.institutionContacts.length < 2 && (
+                  <Button
+                    size="small"
+                    type="dashed"
+                    onClick={() => {
+                      const updated = [...session.institutionContacts, '']
+                      handleSessionDataChange('institutionContacts', index, updated)
+                    }}
+                    className="w-full"
+                  >
+                    + 담당자 추가
+                  </Button>
+                )}
+                {session.institutionContacts.length > 1 && (
+                  <Button
+                    size="small"
+                    danger
+                    onClick={() => {
+                      const updated = session.institutionContacts.slice(0, -1)
+                      handleSessionDataChange('institutionContacts', index, updated)
+                    }}
+                    className="w-full"
+                  >
+                    삭제
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="text-sm">
+                {session.institutionContacts.filter(Boolean).join(', ') || '-'}
+              </div>
+            )
+          ) : '-'
+          return acc
+        }, {} as Record<string, any>),
+      },
+    ]
+  }, [sessions, isEditMode, handleSessionDataChange])
 
   const handleBack = () => {
     router.back()
@@ -333,7 +652,8 @@ export default function InstructorAttendancePage() {
   const femaleStudents = headerData.femaleCount
   const completionRate = totalStudents > 0 ? Math.round((completedStudents / totalStudents) * 100) : 0
 
-  const columns: ColumnsType<StudentAttendance> = [
+  // Memoize columns to prevent errors when sessions is empty
+  const columns: ColumnsType<StudentAttendance> = useMemo(() => [
     {
       title: '출석번호',
       dataIndex: 'number',
@@ -375,7 +695,7 @@ export default function InstructorAttendancePage() {
         </span>
       ),
     },
-      ...sessions.map((session, index) => ({
+      ...(sessions && sessions.length > 0 ? sessions.map((session, index) => ({
       title: `${session.sessionNumber}회차`,
       key: `session-${index}`,
       align: 'center' as const,
@@ -398,7 +718,7 @@ export default function InstructorAttendancePage() {
           <span className="text-sm font-medium">{value}</span>
         )
       },
-    })),
+    })) : []),
     {
       title: '수료여부',
       key: 'completion',
@@ -417,7 +737,7 @@ export default function InstructorAttendancePage() {
         )
       },
     },
-  ]
+  ], [sessions, students, isEditMode])
 
   if (!assignment) {
     return (
@@ -432,7 +752,7 @@ export default function InstructorAttendancePage() {
   }
 
   return (
-    <ProtectedRoute requiredRole="instructor">
+    <ProtectedRoute requiredRole={['instructor', 'admin']}>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 transition-colors">
         {/* Header */}
         <div className="bg-white dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700 sticky top-0 z-10 shadow-sm">
@@ -452,13 +772,60 @@ export default function InstructorAttendancePage() {
               </div>
               <Space>
                 {!isEditMode ? (
-                  <Button
-                    type="primary"
-                    icon={<Edit className="w-4 h-4" />}
-                    onClick={() => setIsEditMode(true)}
-                  >
-                    수정하기
-                  </Button>
+                  <>
+                    {/* Admin can always edit */}
+                    {isAdmin && (
+                      <Button
+                        type="primary"
+                        icon={<Edit className="w-4 h-4" />}
+                        onClick={() => setIsEditMode(true)}
+                      >
+                        수정하기
+                      </Button>
+                    )}
+                    {/* Instructor actions */}
+                    {!isAdmin && (
+                      <>
+                        {attendanceStatus === 'DRAFT' && (
+                          <>
+                            <Button
+                              type="primary"
+                              icon={<Edit className="w-4 h-4" />}
+                              onClick={() => setIsEditMode(true)}
+                            >
+                              수정하기
+                            </Button>
+                            <Button
+                              type="primary"
+                              onClick={handleSubmit}
+                              loading={loading}
+                              style={{ background: '#10b981', borderColor: '#10b981' }}
+                            >
+                              제출하기
+                            </Button>
+                          </>
+                        )}
+                        {attendanceStatus === 'SUBMITTED' && (
+                          <span className="text-blue-600 font-medium">제출 완료 (승인 대기 중)</span>
+                        )}
+                        {attendanceStatus === 'APPROVED' && (
+                          <span className="text-green-600 font-medium">승인 완료</span>
+                        )}
+                        {attendanceStatus === 'REJECTED' && (
+                          <>
+                            <span className="text-red-600 font-medium mr-2">반려됨</span>
+                            <Button
+                              type="primary"
+                              icon={<Edit className="w-4 h-4" />}
+                              onClick={() => setIsEditMode(true)}
+                            >
+                              수정하기
+                            </Button>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </>
                 ) : (
                   <>
                     <Button onClick={handleCancel} className="dark:text-gray-300">
@@ -773,371 +1140,33 @@ export default function InstructorAttendancePage() {
           </Modal>
 
           {/* SECTION 2: 회차별 수업 정보 - 가로형 테이블 */}
-          <DetailSectionCard title="회차별 수업 정보" className="mb-6">
-            <Table
-              columns={[
-                {
-                  title: '구분',
-                  dataIndex: 'label',
-                  key: 'label',
-                  width: 120,
-                  render: (text: string) => (
-                    <span className="font-semibold text-gray-700 dark:text-gray-300">{text}</span>
-                  ),
-                },
-                {
-                  title: '1회차',
-                  dataIndex: 'session1',
-                  key: 'session1',
-                  width: 200,
-                  align: 'center',
-                },
-                {
-                  title: '2회차',
-                  dataIndex: 'session2',
-                  key: 'session2',
-                  width: 200,
-                  align: 'center',
-                },
-              ]}
-              dataSource={[
-                {
-                  key: 'date',
-                  label: '강의날짜',
-                  session1: sessions[0] ? (
-                    isEditMode ? (
-                      <DatePicker
-                        value={dayjs(sessions[0].date, 'YYYY-MM-DD').isValid() ? dayjs(sessions[0].date, 'YYYY-MM-DD') : dayjs(sessions[0].date)}
-                        onChange={(date) => {
-                          if (date) {
-                            handleSessionDataChange('date', 0, date.format('YYYY-MM-DD'))
-                          }
-                        }}
-                        format="YYYY-MM-DD"
-                        className="w-full"
-                        placeholder="날짜 선택"
-                      />
-                    ) : (
-                      (() => {
-                        const normalizedDate = sessions[0].date.replace(/\./g, '-')
-                        const d = dayjs(normalizedDate)
-                        if (!d.isValid()) return sessions[0].date
-                        const weekdays = ['일', '월', '화', '수', '목', '금', '토']
-                        return `${d.month() + 1}.${d.date()}(${weekdays[d.day()]})`
-                      })()
-                    )
-                  ) : '-',
-                  session2: sessions[1] ? (
-                    isEditMode ? (
-                      <DatePicker
-                        value={dayjs(sessions[1].date, 'YYYY-MM-DD').isValid() ? dayjs(sessions[1].date, 'YYYY-MM-DD') : dayjs(sessions[1].date)}
-                        onChange={(date) => {
-                          if (date) {
-                            handleSessionDataChange('date', 1, date.format('YYYY-MM-DD'))
-                          }
-                        }}
-                        format="YYYY-MM-DD"
-                        className="w-full"
-                        placeholder="날짜 선택"
-                      />
-                    ) : (
-                      (() => {
-                        const normalizedDate = sessions[1].date.replace(/\./g, '-')
-                        const d = dayjs(normalizedDate)
-                        if (!d.isValid()) return sessions[1].date
-                        const weekdays = ['일', '월', '화', '수', '목', '금', '토']
-                        return `${d.month() + 1}.${d.date()}(${weekdays[d.day()]})`
-                      })()
-                    )
-                  ) : '-',
-                },
-                {
-                  key: 'time',
-                  label: '시간',
-                  session1: sessions[0] ? (
-                    isEditMode ? (
-                      <div className="flex gap-1">
-                        <Input
-                          value={sessions[0].startTime}
-                          onChange={(e) => handleSessionDataChange('startTime', 0, e.target.value)}
-                          className="w-full"
-                        />
-                        <span>~</span>
-                        <Input
-                          value={sessions[0].endTime}
-                          onChange={(e) => handleSessionDataChange('endTime', 0, e.target.value)}
-                          className="w-full"
-                        />
-                      </div>
-                    ) : (
-                      `${sessions[0].startTime} ~ ${sessions[0].endTime}`
-                    )
-                  ) : '-',
-                  session2: sessions[1] ? (
-                    isEditMode ? (
-                      <div className="flex gap-1">
-                        <Input
-                          value={sessions[1].startTime}
-                          onChange={(e) => handleSessionDataChange('startTime', 1, e.target.value)}
-                          className="w-full"
-                        />
-                        <span>~</span>
-                        <Input
-                          value={sessions[1].endTime}
-                          onChange={(e) => handleSessionDataChange('endTime', 1, e.target.value)}
-                          className="w-full"
-                        />
-                      </div>
-                    ) : (
-                      `${sessions[1].startTime} ~ ${sessions[1].endTime}`
-                    )
-                  ) : '-',
-                },
-                {
-                  key: 'mainInstructor',
-                  label: '주강사',
-                  session1: sessions[0] ? (
-                    isEditMode ? (
-                      <Input
-                        value={sessions[0].mainInstructor}
-                        onChange={(e) => handleSessionDataChange('mainInstructor', 0, e.target.value)}
-                        className="w-full"
-                      />
-                    ) : (
-                      sessions[0].mainInstructor
-                    )
-                  ) : '-',
-                  session2: sessions[1] ? (
-                    isEditMode ? (
-                      <Input
-                        value={sessions[1].mainInstructor}
-                        onChange={(e) => handleSessionDataChange('mainInstructor', 1, e.target.value)}
-                        className="w-full"
-                      />
-                    ) : (
-                      sessions[1].mainInstructor
-                    )
-                  ) : '-',
-                },
-                {
-                  key: 'assistantInstructor',
-                  label: '보조강사',
-                  session1: sessions[0] ? (
-                    isEditMode ? (
-                      <Input
-                        value={sessions[0].assistantInstructor}
-                        onChange={(e) => handleSessionDataChange('assistantInstructor', 0, e.target.value)}
-                        className="w-full"
-                      />
-                    ) : (
-                      sessions[0].assistantInstructor
-                    )
-                  ) : '-',
-                  session2: sessions[1] ? (
-                    isEditMode ? (
-                      <Input
-                        value={sessions[1].assistantInstructor}
-                        onChange={(e) => handleSessionDataChange('assistantInstructor', 1, e.target.value)}
-                        className="w-full"
-                      />
-                    ) : (
-                      sessions[1].assistantInstructor
-                    )
-                  ) : '-',
-                },
-                {
-                  key: 'sessions',
-                  label: '차시',
-                  session1: sessions[0] ? (
-                    isEditMode ? (
-                      <InputNumber
-                        min={0}
-                        max={10}
-                        value={sessions[0].sessions}
-                        onChange={(val) => handleSessionDataChange('sessions', 0, val || 0)}
-                        className="w-full"
-                      />
-                    ) : (
-                      sessions[0].sessions
-                    )
-                  ) : '-',
-                  session2: sessions[1] ? (
-                    isEditMode ? (
-                      <InputNumber
-                        min={0}
-                        max={10}
-                        value={sessions[1].sessions}
-                        onChange={(val) => handleSessionDataChange('sessions', 1, val || 0)}
-                        className="w-full"
-                      />
-                    ) : (
-                      sessions[1].sessions
-                    )
-                  ) : '-',
-                },
-                {
-                  key: 'studentCount',
-                  label: '학생정원',
-                  session1: sessions[0] ? (
-                    isEditMode ? (
-                      <InputNumber
-                        min={0}
-                        value={sessions[0].studentCount}
-                        onChange={(val) => handleSessionDataChange('studentCount', 0, val || 0)}
-                        className="w-full"
-                      />
-                    ) : (
-                      sessions[0].studentCount
-                    )
-                  ) : '-',
-                  session2: sessions[1] ? (
-                    isEditMode ? (
-                      <InputNumber
-                        min={0}
-                        value={sessions[1].studentCount}
-                        onChange={(val) => handleSessionDataChange('studentCount', 1, val || 0)}
-                        className="w-full"
-                      />
-                    ) : (
-                      sessions[1].studentCount
-                    )
-                  ) : '-',
-                },
-                {
-                  key: 'attendanceCount',
-                  label: '출석인원',
-                  session1: sessions[0] ? (
-                    isEditMode ? (
-                      <InputNumber
-                        min={0}
-                        value={sessions[0].attendanceCount}
-                        onChange={(val) => handleSessionDataChange('attendanceCount', 0, val || 0)}
-                        className="w-full"
-                      />
-                    ) : (
-                      sessions[0].attendanceCount
-                    )
-                  ) : '-',
-                  session2: sessions[1] ? (
-                    isEditMode ? (
-                      <InputNumber
-                        min={0}
-                        value={sessions[1].attendanceCount}
-                        onChange={(val) => handleSessionDataChange('attendanceCount', 1, val || 0)}
-                        className="w-full"
-                      />
-                    ) : (
-                      sessions[1].attendanceCount
-                    )
-                  ) : '-',
-                },
-                {
-                  key: 'institutionContacts',
-                  label: '기관 담당자',
-                  session1: sessions[0] ? (
-                    isEditMode ? (
-                      <div className="space-y-2">
-                        {sessions[0].institutionContacts.map((contact, idx) => (
-                          <Input
-                            key={idx}
-                            value={contact}
-                            onChange={(e) => {
-                              const updated = [...sessions[0].institutionContacts]
-                              updated[idx] = e.target.value
-                              handleSessionDataChange('institutionContacts', 0, updated)
-                            }}
-                            className="w-full"
-                            placeholder="담당자 이름"
-                          />
-                        ))}
-                        {sessions[0].institutionContacts.length < 2 && (
-                          <Button
-                            size="small"
-                            type="dashed"
-                            onClick={() => {
-                              const updated = [...sessions[0].institutionContacts, '']
-                              handleSessionDataChange('institutionContacts', 0, updated)
-                            }}
-                            className="w-full"
-                          >
-                            + 담당자 추가
-                          </Button>
-                        )}
-                        {sessions[0].institutionContacts.length > 1 && (
-                          <Button
-                            size="small"
-                            danger
-                            onClick={() => {
-                              const updated = sessions[0].institutionContacts.slice(0, -1)
-                              handleSessionDataChange('institutionContacts', 0, updated)
-                            }}
-                            className="w-full"
-                          >
-                            삭제
-                          </Button>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-sm">
-                        {sessions[0].institutionContacts.filter(Boolean).join(', ') || '-'}
-                      </div>
-                    )
-                  ) : '-',
-                  session2: sessions[1] ? (
-                    isEditMode ? (
-                      <div className="space-y-2">
-                        {sessions[1].institutionContacts.map((contact, idx) => (
-                          <Input
-                            key={idx}
-                            value={contact}
-                            onChange={(e) => {
-                              const updated = [...sessions[1].institutionContacts]
-                              updated[idx] = e.target.value
-                              handleSessionDataChange('institutionContacts', 1, updated)
-                            }}
-                            className="w-full"
-                            placeholder="담당자 이름"
-                          />
-                        ))}
-                        {sessions[1].institutionContacts.length < 2 && (
-                          <Button
-                            size="small"
-                            type="dashed"
-                            onClick={() => {
-                              const updated = [...sessions[1].institutionContacts, '']
-                              handleSessionDataChange('institutionContacts', 1, updated)
-                            }}
-                            className="w-full"
-                          >
-                            + 담당자 추가
-                          </Button>
-                        )}
-                        {sessions[1].institutionContacts.length > 1 && (
-                          <Button
-                            size="small"
-                            danger
-                            onClick={() => {
-                              const updated = sessions[1].institutionContacts.slice(0, -1)
-                              handleSessionDataChange('institutionContacts', 1, updated)
-                            }}
-                            className="w-full"
-                          >
-                            삭제
-                          </Button>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-sm">
-                        {sessions[1].institutionContacts.filter(Boolean).join(', ') || '-'}
-                      </div>
-                    )
-                  ) : '-',
-                },
-              ]}
-              rowKey="key"
-              pagination={false}
-            />
-          </DetailSectionCard>
+          {sessions && sessions.length > 0 && (
+            <DetailSectionCard title="회차별 수업 정보" className="mb-6">
+              <Table
+                columns={[
+                  {
+                    title: '구분',
+                    dataIndex: 'label',
+                    key: 'label',
+                    width: 120,
+                    render: (text: string) => (
+                      <span className="font-semibold text-gray-700 dark:text-gray-300">{text}</span>
+                    ),
+                  },
+                  ...sessions.map((session, index) => ({
+                    title: `${session.sessionNumber}회차`,
+                    key: `session${index}`,
+                    width: 200,
+                    align: 'center' as const,
+                    render: (_: any, record: any) => record[`session${index + 1}`],
+                  })),
+                ]}
+                dataSource={sessionTableDataSource}
+                rowKey="key"
+                pagination={false}
+              />
+            </DetailSectionCard>
+          )}
 
           {/* 서명 영역 - 회차별 수업 정보 카드 바로 아래 */}
           <div className="mb-6">

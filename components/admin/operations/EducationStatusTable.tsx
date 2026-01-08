@@ -1,7 +1,14 @@
 'use client'
 
-import { Table, Checkbox } from 'antd'
-import type { ColumnsType } from 'antd/es/table'
+import { Table, Checkbox, Dropdown, Button, Tooltip } from 'antd'
+import type { ColumnsType, MenuProps } from 'antd/es/table'
+import { ChevronDown, Edit2 } from 'lucide-react'
+import { 
+  getAllowedNextStatuses, 
+  statusDescriptions, 
+  statusIcons,
+  type EducationStatus 
+} from './statusTransitions'
 
 export interface EducationStatusItem {
   key: string
@@ -25,6 +32,7 @@ interface EducationStatusTableProps {
   onToggleRow: (id: string) => void
   onToggleAll: (selected: boolean) => void
   onRowClick?: (record: EducationStatusItem) => void
+  onStatusChange?: (id: string, newStatus: EducationStatus) => void
   currentPage?: number
   pageSize?: number
   total?: number
@@ -52,6 +60,7 @@ export function EducationStatusTable({
   onToggleRow,
   onToggleAll,
   onRowClick,
+  onStatusChange,
   currentPage = 1,
   pageSize = 10,
   total,
@@ -114,13 +123,67 @@ export function EducationStatusTable({
       title: '상태',
       dataIndex: 'status',
       key: 'status',
-      width: 120,
-      render: (status: string) => {
+      width: 200,
+      render: (status: string, record: EducationStatusItem) => {
         const config = getStatusStyle(status)
+        const currentStatus = status as EducationStatus
+        const allowedNextStatuses = getAllowedNextStatuses(currentStatus)
+        const canChange = allowedNextStatuses.length > 0 && onStatusChange !== undefined
+        
+        // Create dropdown menu for status change
+        const statusMenuItems: MenuProps['items'] = allowedNextStatuses.map((nextStatus) => ({
+          key: nextStatus,
+          label: (
+            <div className="flex items-center gap-2">
+              <span>{statusIcons[nextStatus]}</span>
+              <span>{nextStatus}</span>
+            </div>
+          ),
+        }))
+
+        const handleStatusMenuClick = ({ key }: { key: string }) => {
+          if (onStatusChange) {
+            onStatusChange(record.key, key as EducationStatus)
+          }
+        }
+
         return (
-          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
-            {status}
-          </span>
+          <div className="flex items-center gap-2">
+            <Tooltip title={statusDescriptions[currentStatus] || '상태 정보'}>
+              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text} cursor-default`}>
+                <span className="text-sm">{statusIcons[currentStatus]}</span>
+                <span>{status}</span>
+              </span>
+            </Tooltip>
+            {canChange ? (
+              <Dropdown
+                menu={{ items: statusMenuItems, onClick: handleStatusMenuClick }}
+                trigger={['click']}
+                placement="bottomLeft"
+              >
+                <Tooltip title="상태 변경">
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<Edit2 className="w-3 h-3" />}
+                    className="h-6 w-6 p-0 flex items-center justify-center hover:bg-blue-50 hover:text-blue-600"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </Tooltip>
+              </Dropdown>
+            ) : (
+              <Tooltip title="이 상태에서는 변경할 수 없습니다">
+                <Button
+                  type="text"
+                  size="small"
+                  disabled
+                  icon={<Edit2 className="w-3 h-3" />}
+                  className="h-6 w-6 p-0 flex items-center justify-center opacity-30 cursor-not-allowed"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </Tooltip>
+            )}
+          </div>
         )
       },
     },

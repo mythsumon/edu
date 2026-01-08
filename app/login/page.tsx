@@ -1,16 +1,17 @@
 'use client'
 
-import { Form, Button, message } from 'antd'
+import { Form, Button, message, Spin } from 'antd'
 import { InputField } from '@/components/shared/common'
 import { GraduationCap } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function LoginPage() {
   const [form] = Form.useForm()
   const router = useRouter()
   const { login } = useAuth()
+  const [isLoading, setIsLoading] = useState(false)
 
   // Set default values for ID and password
   useEffect(() => {
@@ -21,6 +22,7 @@ export default function LoginPage() {
   }, [form])
 
   const handleSubmit = async (values: any) => {
+    setIsLoading(true)
     try {
       // TODO: 실제 API 호출로 로그인 처리
       // const response = await fetch('/api/auth/login', {
@@ -34,39 +36,59 @@ export default function LoginPage() {
       // 실제로는 API 응답에서 역할을 받아와야 함
       const { email, password } = values
       
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 800))
+      
       // Instructor credentials
       if (email === 'instructor@example.com' && password === 'Instructor@1234') {
         login('instructor')
-        router.push('/instructor/dashboard')
         message.success('강사로 로그인되었습니다.')
+        // Add small delay before redirect to show success message
+        await new Promise(resolve => setTimeout(resolve, 500))
+        router.push('/instructor/dashboard')
         return
       }
       
       // Admin credentials
       if (email === 'admin@example.com' && password === 'Admin@1234') {
         login('admin')
-        router.push('/admin')
         message.success('관리자로 로그인되었습니다.')
+        // Add small delay before redirect to show success message
+        await new Promise(resolve => setTimeout(resolve, 500))
+        router.push('/admin')
         return
       }
       
       // Operator credentials
       if (email === 'operator@example.com' && password === 'Operator@1234') {
         login('operator')
-        router.push('/admin')
         message.success('운영자로 로그인되었습니다.')
+        // Add small delay before redirect to show success message
+        await new Promise(resolve => setTimeout(resolve, 500))
+        router.push('/admin')
         return
       }
       
       // Default: show error
+      setIsLoading(false)
       message.error('로그인 정보가 올바르지 않습니다.')
     } catch (error) {
+      setIsLoading(false)
       message.error('로그인 정보가 올바르지 않습니다.')
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-gray-900 p-4 font-sans transition-colors">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-gray-900 p-4 font-sans transition-colors relative">
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-8 flex flex-col items-center gap-4 shadow-xl">
+            <Spin size="large" />
+            <p className="text-slate-700 dark:text-gray-300 font-medium">로그인 중...</p>
+          </div>
+        </div>
+      )}
       <style jsx>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px); }
@@ -179,6 +201,8 @@ export default function LoginPage() {
             <Button 
               type="primary"
               htmlType="submit" 
+              loading={isLoading}
+              disabled={isLoading}
               className="w-full h-12 rounded-xl font-semibold text-base text-white hover:text-white active:text-white transition-all bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               Login to Dashboard

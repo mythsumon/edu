@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { Card } from 'antd'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
@@ -13,7 +13,13 @@ import { StatusBreakdownChart } from '@/components/dashboard/StatusBreakdownChar
 import { EvidenceReviewChart } from '@/components/dashboard/EvidenceReviewChart'
 import { CompletionRateCard } from '@/components/dashboard/CompletionRateCard'
 import { PendingApplicationsPanel } from '@/components/dashboard/PendingApplicationsPanel'
-import { ProgramList } from '@/components/dashboard/ProgramList'
+import { Table, Badge, Space, Tabs, Button } from 'antd'
+import type { ColumnsType } from 'antd/es/table'
+import { Eye } from 'lucide-react'
+import { getAttendanceDocs } from '@/app/instructor/schedule/[educationId]/attendance/storage'
+import { getActivityLogs } from '@/app/instructor/activity-logs/storage'
+import { getDocs as getEquipmentDocs } from '@/app/instructor/equipment-confirmations/storage'
+import dayjs from 'dayjs'
 import { SearchPanel } from '@/components/dashboard/SearchPanel'
 import { ResultPanel } from '@/components/dashboard/ResultPanel'
 import { RegionMap } from '@/components/dashboard/RegionMap'
@@ -22,7 +28,6 @@ import { EntryCards } from '@/components/dashboard/EntryCards'
 import { CompactSearchControls } from '@/components/dashboard/CompactSearchControls'
 import { EnhancedResultPanel } from '@/components/dashboard/EnhancedResultPanel'
 import { CollapsibleSection } from '@/components/dashboard/CollapsibleSection'
-import { Button } from 'antd'
 import { ArrowLeft, BookOpen, Users, GraduationCap, MapPin, ChevronDown, ChevronUp } from 'lucide-react'
 import { 
   generateAssignmentsTrendData, 
@@ -39,15 +44,30 @@ import {
 } from 'lucide-react'
 import { type SpecialCategory } from '@/types/region'
 
+interface SubmissionItem {
+  id: string
+  type: 'attendance' | 'activity' | 'equipment'
+  educationId: string
+  educationName: string
+  institutionName: string
+  instructorName: string
+  submittedAt: string
+  status: 'SUBMITTED' | 'APPROVED' | 'REJECTED'
+  rejectReason?: string
+}
+
 export default function AdminDashboardPage() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const [selectedRegion, setSelectedRegion] = useState<number | undefined>()
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [kpiData, setKpiData] = useState<KPIData[]>([])
   const [trendData, setTrendData] = useState<any[]>([])
   const [statusData, setStatusData] = useState<any[]>([])
   const [reviewData, setReviewData] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState<string>('dashboard')
+  const [submissionTab, setSubmissionTab] = useState<'attendance' | 'activity' | 'equipment'>('attendance')
+  const [submissions, setSubmissions] = useState<any[]>([])
   const [collapsedSections, setCollapsedSections] = useState<{ [key: string]: boolean }>({
     charts: false,
     secondCharts: false,
@@ -76,10 +96,9 @@ export default function AdminDashboardPage() {
   // Load dashboard data
   useEffect(() => {
     const loadData = async () => {
-      setLoading(true)
+      setLoading(false) // Remove loading state
       try {
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 500))
+        // Remove API call delay
 
         // Calculate KPIs from dataStore
         const educations = dataStore.getEducations()
@@ -198,7 +217,166 @@ export default function AdminDashboardPage() {
     }
 
     loadData()
-  }, [])
+    loadSubmissions()
+  }, [submissionTab])
+
+  const loadSubmissions = () => {
+    const allSubmissions: SubmissionItem[] = []
+
+    // Attendance
+    const attendanceDocs = getAttendanceDocs()
+    attendanceDocs
+      .filter(doc => doc.status === 'SUBMITTED' || doc.status === 'APPROVED' || doc.status === 'REJECTED')
+      .forEach(doc => {
+        allSubmissions.push({
+          id: doc.id,
+          type: 'attendance',
+          educationId: doc.educationId,
+          educationName: doc.programName,
+          institutionName: doc.institution,
+          instructorName: doc.submittedBy || '미상',
+          submittedAt: doc.submittedAt || doc.createdAt,
+          status: doc.status,
+          rejectReason: doc.rejectReason,
+        })
+      })
+
+    // Activity
+    const activityLogs = getActivityLogs()
+    activityLogs
+      .filter(log => log.status === 'SUBMITTED' || log.status === 'APPROVED' || log.status === 'REJECTED')
+      .forEach(log => {
+        allSubmissions.push({
+          id: log.id || '',
+          type: 'activity',
+          educationId: log.educationId || '',
+          educationName: `${log.educationType} - ${log.institutionName}`,
+          institutionName: log.institutionName,
+          instructorName: log.submittedBy || log.createdBy || '미상',
+          submittedAt: log.submittedAt || log.createdAt || '',
+          status: log.status || 'SUBMITTED',
+          rejectReason: log.rejectReason,
+        })
+      })
+
+    // Equipment
+    const equipmentDocs = getEquipmentDocs()
+    equipmentDocs
+      .filter(doc => doc.status === 'SUBMITTED' || doc.status === 'APPROVED' || doc.status === 'REJECTED')
+      .forEach(doc => {
+        allSubmissions.push({
+          id: doc.id,
+          type: 'equipment',
+          educationId: doc.id,
+          educationName: doc.materialName,
+          institutionName: doc.organizationName,
+          instructorName: doc.createdByName,
+          submittedAt: doc.createdAt,
+          status: doc.status,
+          rejectReason: doc.rejectReason,
+        })
+      })
+
+    // Sort by submitted date (newest first)
+    allSubmissions.sort((a, b) => 
+      new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+    )
+
+    setSubmissions(allSubmissions)
+  }
+
+  const handleViewSubmission = (item: SubmissionItem) => {
+    if (item.type === 'attendance') {
+      const attendanceId = item.educationId || item.id
+      router.push(`/admin/attendance/${attendanceId}`)
+    } else if (item.type === 'activity') {
+      router.push(`/admin/activity-logs/${item.id}`)
+    } else if (item.type === 'equipment') {
+      router.push(`/admin/equipment-confirmations/${item.id}`)
+    }
+  }
+
+  const getStatusBadge = (status: string) => {
+    if (status === 'APPROVED') {
+      return <Badge status="success" text="승인됨" />
+    }
+    if (status === 'REJECTED') {
+      return <Badge status="error" text="반려됨" />
+    }
+    return <Badge status="processing" text="제출됨" />
+  }
+
+  const getTypeLabel = (type: string) => {
+    if (type === 'attendance') return '교육 출석부'
+    if (type === 'activity') return '교육 활동 일지'
+    if (type === 'equipment') return '교구 확인서'
+    return type
+  }
+
+  const submissionColumns: ColumnsType<SubmissionItem> = [
+    {
+      title: '문서 유형',
+      dataIndex: 'type',
+      key: 'type',
+      width: 120,
+      render: (type: string) => (
+        <span className="font-medium">{getTypeLabel(type)}</span>
+      ),
+    },
+    {
+      title: '교육명',
+      dataIndex: 'educationName',
+      key: 'educationName',
+      width: 200,
+    },
+    {
+      title: '기관명',
+      dataIndex: 'institutionName',
+      key: 'institutionName',
+      width: 150,
+    },
+    {
+      title: '강사명',
+      dataIndex: 'instructorName',
+      key: 'instructorName',
+      width: 120,
+    },
+    {
+      title: '제출일시',
+      dataIndex: 'submittedAt',
+      key: 'submittedAt',
+      width: 180,
+      render: (date: string) => dayjs(date).format('YYYY-MM-DD HH:mm'),
+    },
+    {
+      title: '상태',
+      dataIndex: 'status',
+      key: 'status',
+      width: 100,
+      render: (status: string) => getStatusBadge(status),
+    },
+    {
+      title: '관리',
+      key: 'actions',
+      width: 120,
+      align: 'center',
+      render: (_, record) => (
+        <Space>
+          <Button
+            size="small"
+            icon={<Eye className="w-3 h-3" />}
+            onClick={() => handleViewSubmission(record)}
+          >
+            상세
+          </Button>
+        </Space>
+      ),
+    },
+  ]
+
+  const attendanceCount = submissions.filter(s => s.type === 'attendance').length
+  const activityCount = submissions.filter(s => s.type === 'activity').length
+  const equipmentCount = submissions.filter(s => s.type === 'equipment').length
 
   const handleDateRangeChange = (range: string, dates?: any) => {
     console.log('Date range changed:', range, dates)
@@ -839,9 +1017,47 @@ export default function AdminDashboardPage() {
             </div>
           </Card>
 
-          {/* Program List Table - Common (visible in all tabs) */}
+          {/* Submissions Table - Common (visible in all tabs) */}
           <div className="mt-6">
-            <ProgramList selectedRegion={selectedRegion} />
+            <Card className="rounded-2xl shadow-lg border border-slate-200">
+              <div className="mb-4">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                  문서 제출 현황
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400">
+                  강사가 제출한 문서를 확인할 수 있습니다.
+                </p>
+              </div>
+              <Tabs
+                activeKey={submissionTab}
+                onChange={(key) => setSubmissionTab(key as any)}
+                items={[
+                  {
+                    key: 'attendance',
+                    label: `교육 출석부 (${attendanceCount})`,
+                  },
+                  {
+                    key: 'activity',
+                    label: `교육 활동 일지 (${activityCount})`,
+                  },
+                  {
+                    key: 'equipment',
+                    label: `교구 확인서 (${equipmentCount})`,
+                  },
+                ]}
+              />
+              <Table
+                columns={submissionColumns}
+                dataSource={submissions.filter(s => s.type === submissionTab)}
+                rowKey="id"
+                pagination={{
+                  pageSize: 20,
+                  showSizeChanger: true,
+                  showTotal: (total) => `총 ${total}건`,
+                }}
+                scroll={{ x: 'max-content' }}
+              />
+            </Card>
           </div>
       </div>
     </ProtectedRoute>

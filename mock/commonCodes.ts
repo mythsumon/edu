@@ -491,6 +491,142 @@ export const institutionSubCategory2Keys: GroupKey[] = [
   },
 ]
 
+// Title: 프로그램_차시
+export const programSessionTitle: Title = {
+  id: 'title-program-session',
+  name: '프로그램_차시',
+  status: 'Active',
+  groupCount: 1,
+  createdAt: '2024-01-10',
+  updatedAt: '2024-01-15',
+}
+
+// Group: DEFAULT
+export const programSessionGroups: Group[] = [
+  {
+    id: 'group-program-session-default',
+    titleId: 'title-program-session',
+    name: 'DEFAULT',
+    code: 'DEFAULT',
+    status: 'Active',
+    valueCount: 5,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+]
+
+// Group Keys: 프로그램_차시
+export const programSessionGroupKeys: GroupKey[] = [
+  {
+    id: 'key-program-session-8',
+    groupId: 'group-program-session-default',
+    label: '8차시',
+    value: '8',
+    sortOrder: 1,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'key-program-session-16',
+    groupId: 'group-program-session-default',
+    label: '16차시',
+    value: '16',
+    sortOrder: 2,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'key-program-session-50',
+    groupId: 'group-program-session-default',
+    label: '50차시',
+    value: '50',
+    sortOrder: 3,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'key-program-session-agree',
+    groupId: 'group-program-session-default',
+    label: '협의',
+    value: 'AGREE',
+    sortOrder: 4,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'key-program-session-etc',
+    groupId: 'group-program-session-default',
+    label: '기타',
+    value: 'ETC',
+    sortOrder: 5,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+]
+
+// Title: 프로그램_유형
+export const programTypeTitle: Title = {
+  id: 'title-program-type',
+  name: '프로그램_유형',
+  status: 'Active',
+  groupCount: 1,
+  createdAt: '2024-01-10',
+  updatedAt: '2024-01-15',
+}
+
+// Group: DEFAULT
+export const programTypeGroups: Group[] = [
+  {
+    id: 'group-program-type-default',
+    titleId: 'title-program-type',
+    name: 'DEFAULT',
+    code: 'DEFAULT',
+    status: 'Active',
+    valueCount: 3,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+]
+
+// Group Keys: 프로그램_유형
+export const programTypeGroupKeys: GroupKey[] = [
+  {
+    id: 'key-program-type-block',
+    groupId: 'group-program-type-default',
+    label: '블록코딩',
+    value: 'BLOCK',
+    sortOrder: 1,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'key-program-type-text',
+    groupId: 'group-program-type-default',
+    label: '텍스트코딩',
+    value: 'TEXT',
+    sortOrder: 2,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'key-program-type-agree',
+    groupId: 'group-program-type-default',
+    label: '협의',
+    value: 'AGREE',
+    sortOrder: 3,
+    enabled: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15',
+  },
+]
+
 // Combined data for Common Code page
 export const commonCodeData = {
   titles: [
@@ -498,18 +634,24 @@ export const commonCodeData = {
     institutionMainCategoryTitle,
     institutionSubCategory1Title,
     institutionSubCategory2Title,
+    programSessionTitle,
+    programTypeTitle,
   ],
   groups: [
     ...regionGroups,
     ...institutionMainCategoryGroups,
     ...institutionSubCategory1Groups,
     ...institutionSubCategory2Groups,
+    ...programSessionGroups,
+    ...programTypeGroups,
   ],
   groupKeys: [
     ...regionGroupKeys,
     ...institutionMainCategoryKeys,
     ...institutionSubCategory1Keys,
     ...institutionSubCategory2Keys,
+    ...programSessionGroupKeys,
+    ...programTypeGroupKeys,
   ],
 }
 

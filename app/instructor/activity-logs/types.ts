@@ -32,7 +32,15 @@ export interface ActivityLog {
   photos: UploadedImage[]
   createdAt?: string
   createdBy?: string
-  status?: 'DRAFT' | 'SUBMITTED'
+  status?: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'
+  submittedAt?: string
+  submittedBy?: string
+  approvedAt?: string
+  approvedBy?: string
+  rejectedAt?: string
+  rejectedBy?: string
+  rejectReason?: string
+  educationId?: string // Link to education program
 }
 
 export interface InstructorProfile {
