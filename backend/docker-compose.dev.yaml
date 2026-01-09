@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  starter0_postgres:
+    image: postgres:13
+    container_name: starter0_postgres_container
+    environment:
+       - POSTGRES_USER=postgres
+       - POSTGRES_PASSWORD=postgres
+       - POSTGRES_DB=starter
+       - POSTGRES_PORT=5432
+    volumes:
+      - starter0_postgres:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"  # Bind to localhost only
+    networks:
+      - starter0_network
+
+volumes:
+  starter0_postgres:
+    driver: local
+
+networks:
+  starter0_network:
+    driver: bridge
