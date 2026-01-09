@@ -1,0 +1,18 @@
+# OS-specific files
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+[Dd]esktop.ini
+
+# Linux
+*~
+
+# Code Editor files
+# Cursor (rules are tracked in git)
+.vscode/
+
+# IntelliJ IDEA
+.idea/
+*.iml
