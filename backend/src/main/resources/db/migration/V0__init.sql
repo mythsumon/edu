@@ -28,7 +28,7 @@ CREATE TABLE refresh_tokens (
     user_agent VARCHAR(255),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP,
-    CONSTRAINT fk_refresh_token_user FOREIGN KEY (user_id) REFERENCES users(id)
+    CONSTRAINT fk_refresh_token_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Create indexes for refresh_tokens
