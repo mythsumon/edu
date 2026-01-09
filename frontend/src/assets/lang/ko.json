@@ -1,0 +1,80 @@
+{
+  "common": {
+    "login": "로그인",
+    "logout": "로그아웃",
+    "email": "이메일",
+    "password": "비밀번호",
+    "submit": "제출",
+    "cancel": "취소",
+    "close": "닫기",
+    "save": "저장",
+    "delete": "삭제",
+    "edit": "수정",
+    "create": "생성",
+    "update": "업데이트",
+    "search": "검색",
+    "filter": "필터",
+    "reset": "초기화",
+    "confirm": "확인",
+    "loading": "로딩 중...",
+    "error": "오류",
+    "success": "성공",
+    "retry": "다시 시도",
+    "back": "뒤로",
+    "next": "다음",
+    "previous": "이전"
+  },
+  "auth": {
+    "title": "EduMatrix",
+    "loginTitle": "로그인",
+    "loginSubtitle": "자격 증명을 사용하여 대시보드에 액세스하세요.",
+    "userIdEmail": "사용자 ID / 이메일",
+    "emailPlaceholder": "admin@example.com",
+    "passwordPlaceholder": "비밀번호를 입력하세요",
+    "forgotPassword": "비밀번호를 잊으셨나요?",
+    "loggingIn": "로그인 중...",
+    "loginButton": "대시보드 로그인",
+    "loginFailed": "로그인 실패",
+    "invalidCredentials": "이메일 또는 비밀번호가 잘못되었습니다. 다시 시도해 주세요.",
+    "accessDenied": "접근 거부됨"
+  },
+  "header": {
+    "title": "관리 대시보드"
+  },
+  "sidebar": {
+    "dashboard": "대시보드",
+    "educationOperations": "교육 운영",
+    "instructorAssignment": "강사 배정",
+    "referenceInformationManagement": "참조 정보 관리",
+    "systemManagement": "시스템 관리",
+    "overallProgramStatus": "전체 프로그램 상태",
+    "instructorApplicationManagement": "강사 신청 관리",
+    "instructorAllocationManagement": "강사 배정 관리",
+    "teachingConfirmationManagement": "강의 확인 관리",
+    "institutionManagement": "기관 관리",
+    "programManagement": "프로그램 관리",
+    "instructorManagement": "강사 관리",
+    "settingsAndUserManagement": "설정 및 사용자 관리",
+    "educationManagementSystem": "교육 관리 시스템",
+    "administrator": "관리자"
+  },
+  "errors": {
+    "generic": "오류가 발생했습니다",
+    "notFound": "리소스를 찾을 수 없습니다",
+    "unauthorized": "권한이 없습니다",
+    "forbidden": "접근이 금지되었습니다",
+    "serverError": "내부 서버 오류",
+    "networkError": "네트워크 오류가 발생했습니다. 연결을 확인해 주세요.",
+    "validationError": "유효성 검사 실패"
+  },
+  "empty": {
+    "noData": "데이터 없음",
+    "noDataDescription": "표시할 데이터가 없습니다."
+  },
+  "language": {
+    "english": "English",
+    "korean": "한국어",
+    "changeLanguage": "언어 변경"
+  }
+}
+

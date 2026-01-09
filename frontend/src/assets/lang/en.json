@@ -1,0 +1,80 @@
+{
+  "common": {
+    "login": "Login",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "close": "Close",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update",
+    "search": "Search",
+    "filter": "Filter",
+    "reset": "Reset",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "retry": "Retry",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous"
+  },
+  "auth": {
+    "title": "EduMatrix",
+    "loginTitle": "Login",
+    "loginSubtitle": "Access the dashboard using your credentials.",
+    "userIdEmail": "User ID / Email",
+    "emailPlaceholder": "admin@example.com",
+    "passwordPlaceholder": "Enter your password",
+    "forgotPassword": "Forgot Password?",
+    "loggingIn": "Logging in...",
+    "loginButton": "Login to Dashboard",
+    "loginFailed": "Login Failed",
+    "invalidCredentials": "Invalid email or password. Please try again.",
+    "accessDenied": "Access denied"
+  },
+  "header": {
+    "title": "Management Dashboard"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "educationOperations": "Education Operations",
+    "instructorAssignment": "Instructor Assignment",
+    "referenceInformationManagement": "Reference Information Management",
+    "systemManagement": "System Management",
+    "overallProgramStatus": "Overall Program Status",
+    "instructorApplicationManagement": "Instructor Application Management",
+    "instructorAllocationManagement": "Instructor Allocation Management",
+    "teachingConfirmationManagement": "Teaching Confirmation Management",
+    "institutionManagement": "Institution Management",
+    "programManagement": "Program Management",
+    "instructorManagement": "Instructor Management",
+    "settingsAndUserManagement": "Settings and User Management",
+    "educationManagementSystem": "Education Management System",
+    "administrator": "Administrator"
+  },
+  "errors": {
+    "generic": "An error occurred",
+    "notFound": "Resource not found",
+    "unauthorized": "Unauthorized access",
+    "forbidden": "Access forbidden",
+    "serverError": "Internal server error",
+    "networkError": "Network error. Please check your connection.",
+    "validationError": "Validation failed"
+  },
+  "empty": {
+    "noData": "No data available",
+    "noDataDescription": "There is no data to display at this time."
+  },
+  "language": {
+    "english": "English",
+    "korean": "한국어",
+    "changeLanguage": "Change Language"
+  }
+}
+
