@@ -45,7 +45,7 @@ public class TokenService {
         Instant now = Instant.now();
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("com.itwizard.starter")
+                .issuer("com.itwizard.swaedu")
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(accessTokenExpiration))
                 .subject(jwtPayload.getUsername())
