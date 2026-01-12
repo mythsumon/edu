@@ -30,12 +30,14 @@
     "loginSubtitle": "Enter your credentials to access your account.",
     "userIdEmail": "Email",
     "emailPlaceholder": "Enter your email",
+    "username": "Username",
+    "usernamePlaceholder": "Enter your username",
     "passwordPlaceholder": "Enter your password",
     "forgotPassword": "Forgot Password?",
     "loggingIn": "Signing in...",
     "loginButton": "Sign In",
     "loginFailed": "Login Failed",
-    "invalidCredentials": "Invalid email or password. Please try again.",
+    "invalidCredentials": "Invalid username or password. Please try again.",
     "accessDenied": "Access denied"
   },
   "header": {
@@ -56,7 +58,13 @@
     "instructorManagement": "Instructor Management",
     "settingsAndUserManagement": "Settings and User Management",
     "educationManagementSystem": "Education Management System",
-    "administrator": "Administrator"
+    "administrator": "Administrator",
+    "myOverview": "My Overview",
+    "myClasses": "My Classes",
+    "mySchedule": "My Schedule",
+    "myStudents": "My Students",
+    "attendance": "Attendance",
+    "grades": "Grades"
   },
   "errors": {
     "generic": "An error occurred",

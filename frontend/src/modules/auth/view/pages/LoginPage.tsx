@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { User, Lock, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
@@ -16,6 +16,7 @@ import {
 } from "@/shared/ui/dialog";
 import { useAuthStore } from "@/shared/stores/auth.store";
 import { ROUTES } from "@/shared/constants/routes";
+import { STORAGE_KEYS } from "@/shared/constants/storageKeys";
 import { loginSchema, type LoginFormData } from "../../model/auth.schema";
 import { useLoginMutation } from "../../controller/mutations";
 import bgLoginImage from "@/assets/images/background/bg-login.png";
@@ -37,7 +38,7 @@ export const LoginPage = () => {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
     },
   });
@@ -45,7 +46,25 @@ export const LoginPage = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate(ROUTES.DASHBOARD, { replace: true });
+      // Get user role from localStorage to determine dashboard route
+      try {
+        const userStr = localStorage.getItem(STORAGE_KEYS.USER)
+        if (userStr) {
+          const user = JSON.parse(userStr)
+          const userRole = user?.roleName?.toUpperCase()
+          if (userRole === 'ADMIN') {
+            navigate(ROUTES.ADMIN_DASHBOARD, { replace: true })
+          } else if (userRole === 'INSTRUCTOR') {
+            navigate(ROUTES.INSTRUCTOR_DASHBOARD, { replace: true })
+          } else {
+            navigate(ROUTES.DASHBOARD, { replace: true })
+          }
+        } else {
+          navigate(ROUTES.DASHBOARD, { replace: true })
+        }
+      } catch (error) {
+        navigate(ROUTES.DASHBOARD, { replace: true })
+      }
     }
   }, [isAuthenticated, navigate]);
 
@@ -63,7 +82,7 @@ export const LoginPage = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     loginMutation.mutate({
-      email: data.email,
+      username: data.username,
       password: data.password,
     });
   };
@@ -97,25 +116,25 @@ export const LoginPage = () => {
 
           {/* Login Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {/* Email Input */}
+            {/* Username Input */}
             <div className="space-y-2">
               <div className="flex items-center gap-2 mb-1">
-                <Mail className="h-4 w-4 text-primary" />
-                <Label htmlFor="email" className="text-foreground">
-                  {t("auth.userIdEmail")}
+                <User className="h-4 w-4 text-primary" />
+                <Label htmlFor="username" className="text-foreground">
+                  {t("auth.username")}
                 </Label>
               </div>
               <Input
-                id="email"
-                type="email"
-                placeholder={t("auth.emailPlaceholder")}
-                {...register("email")}
-                className={errors.email ? "border-destructive" : ""}
+                id="username"
+                type="text"
+                placeholder={t("auth.usernamePlaceholder")}
+                {...register("username")}
+                className={errors.username ? "border-destructive" : ""}
                 disabled={loginMutation.isPending}
               />
-              {errors.email && (
+              {errors.username && (
                 <p className="text-sm text-destructive">
-                  {errors.email.message}
+                  {errors.username.message}
                 </p>
               )}
             </div>
