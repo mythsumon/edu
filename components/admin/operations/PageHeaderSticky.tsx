@@ -8,9 +8,10 @@ interface PageHeaderStickyProps {
   onCancel: () => void
   onTempSave: () => void
   onSave: () => void
+  saveDisabled?: boolean
 }
 
-export function PageHeaderSticky({ mode, onCancel, onTempSave, onSave }: PageHeaderStickyProps) {
+export function PageHeaderSticky({ mode, onCancel, onTempSave, onSave, saveDisabled = false }: PageHeaderStickyProps) {
   return (
     <div className="sticky top-0 z-10 bg-white border-b border-slate-200 px-6 py-4">
       <div className="flex items-center justify-between">
@@ -36,6 +37,7 @@ export function PageHeaderSticky({ mode, onCancel, onTempSave, onSave }: PageHea
             type="primary"
             icon={<Save className="w-4 h-4 text-white" />}
             onClick={onSave}
+            disabled={saveDisabled}
             style={{
               color: 'white',
             }}
