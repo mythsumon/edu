@@ -15,7 +15,7 @@ import {
   getKeyById 
 } from '@/lib/commonCodeStore'
 import { normalizeText, parseCSV, validateBulkUploadRow } from './bulkUploadHelpers'
-import type { BulkUploadRow, BulkUploadPreview } from './types'
+import type { BulkUploadRow, BulkUploadPreview, BulkUploadError } from './types'
 
 const { Dragger } = Upload
 
@@ -43,7 +43,7 @@ export default function BulkUploadPage() {
       
       // Validate and process rows
       const rows: BulkUploadRow[] = []
-      const errors: string[] = []
+      const errors: BulkUploadError[] = []
 
       for (let i = 0; i < parsed.length; i++) {
         const row = parsed[i]
