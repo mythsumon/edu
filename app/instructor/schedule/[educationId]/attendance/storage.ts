@@ -79,8 +79,6 @@ export interface AttendanceDocument {
   rejectedAt?: string
   rejectedBy?: string
   rejectReason?: string
-  approvedAt?: string
-  approvedBy?: string
   createdAt: string
   updatedAt: string
 }
