@@ -3,6 +3,7 @@
 import { upsertAttendanceDoc, getAttendanceDocById, getAttendanceDocByEducationId } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import { upsertActivityLog, getActivityLogById } from '@/app/instructor/activity-logs/storage'
 import { upsertDoc, getDocById } from '@/app/instructor/equipment-confirmations/storage'
+import { getEducationSubmissionGroups } from './submission-utils'
 import type { ApprovalAction } from './submission-types'
 
 /**
@@ -116,7 +117,6 @@ export function approveOrRejectAllDocuments(
   const errors: string[] = []
   
   // Get all documents for this education
-  const { getEducationSubmissionGroups } = require('./submission-utils')
   const groups = getEducationSubmissionGroups()
   const group = groups.find(g => g.educationId === educationId)
   

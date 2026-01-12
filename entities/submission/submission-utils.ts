@@ -290,6 +290,50 @@ export function getInstructorSubmissions(instructorName: string): {
 }
 
 /**
+ * Get all submission groups (grouped by education)
+ */
+export function getEducationSubmissionGroups(): EducationSubmissionGroup[] {
+  const summaries = getAllEducationDocSummaries()
+  
+  return summaries.map(summary => ({
+    educationId: summary.educationId,
+    educationName: summary.educationName,
+    institutionName: summary.institutionName,
+    instructorName: summary.instructorName,
+    attendance: summary.attendance ? {
+      id: summary.attendance.id,
+      type: 'attendance',
+      educationId: summary.educationId,
+      status: summary.attendance.status,
+      submittedAt: summary.attendance.submittedAt,
+      submittedBy: summary.instructorName,
+      rejectReason: summary.attendance.rejectReason,
+    } : undefined,
+    activity: summary.activity ? {
+      id: summary.activity.id,
+      type: 'activity',
+      educationId: summary.educationId,
+      status: summary.activity.status,
+      submittedAt: summary.activity.submittedAt,
+      submittedBy: summary.instructorName,
+      rejectReason: summary.activity.rejectReason,
+    } : undefined,
+    equipment: summary.equipment ? {
+      id: summary.equipment.id,
+      type: 'equipment',
+      educationId: summary.educationId,
+      status: summary.equipment.status,
+      submittedAt: summary.equipment.submittedAt,
+      submittedBy: summary.instructorName,
+      rejectReason: summary.equipment.rejectReason,
+    } : undefined,
+    overallStatus: summary.overallStatus,
+    submittedAt: summary.lastUpdatedAt,
+    lastUpdatedAt: summary.lastUpdatedAt,
+  }))
+}
+
+/**
  * Get submission groups filtered by instructor name (legacy support)
  */
 export function getEducationSubmissionGroupsByInstructor(instructorName: string): EducationSubmissionGroup[] {
