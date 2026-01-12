@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Button, Modal, Input, message, Image } from 'antd'
+import { Button, Modal, Input, message, Image, Badge, Space } from 'antd'
 import { ArrowLeft, CheckCircle2, XCircle } from 'lucide-react'
 import { DetailPageHeaderSticky, DetailSectionCard } from '@/components/admin/operations'
 import { getActivityLogById, upsertActivityLog } from '@/app/instructor/activity-logs/storage'
@@ -49,9 +49,21 @@ export default function AdminActivityLogDetailPage() {
           status: 'APPROVED',
           approvedAt: new Date().toISOString(),
           approvedBy: userProfile?.name || '',
+          // Clear reject info when approving
+          rejectedAt: undefined,
+          rejectedBy: undefined,
+          rejectReason: undefined,
         }
         upsertActivityLog(updated)
         setLog(updated)
+        // Trigger storage event for other tabs/windows
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new StorageEvent('storage', {
+            key: 'activity_logs',
+            newValue: localStorage.getItem('activity_logs'),
+            oldValue: localStorage.getItem('activity_logs'),
+          }))
+        }
         message.success('승인되었습니다.')
       },
     })
@@ -71,11 +83,22 @@ export default function AdminActivityLogDetailPage() {
       rejectedAt: new Date().toISOString(),
       rejectedBy: userProfile?.name || '',
       rejectReason,
+      // Clear approve info when rejecting
+      approvedAt: undefined,
+      approvedBy: undefined,
     }
     upsertActivityLog(updated)
     setLog(updated)
     setRejectModalVisible(false)
     setRejectReason('')
+    // Trigger storage event for other tabs/windows
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'activity_logs',
+        newValue: localStorage.getItem('activity_logs'),
+        oldValue: localStorage.getItem('activity_logs'),
+      }))
+    }
     message.success('반려되었습니다.')
   }
 
@@ -89,54 +112,79 @@ export default function AdminActivityLogDetailPage() {
     )
   }
 
+  const getStatusBadge = () => {
+    const statusMap = {
+      DRAFT: { color: 'default', text: '초안' },
+      SUBMITTED: { color: 'processing', text: '제출됨' },
+      APPROVED: { color: 'success', text: '승인됨' },
+      REJECTED: { color: 'error', text: '반려됨' },
+    }
+    const status = statusMap[log.status || 'DRAFT']
+    return <Badge status={status.color as any} text={status.text} />
+  }
+
   return (
     <ProtectedRoute requiredRole="admin">
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 transition-colors">
-        <DetailPageHeaderSticky
-          title="교육 활동 일지 상세"
-          onBack={() => router.back()}
-        />
-
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              교육 활동 일지 상세
-            </h1>
-            <div className="flex items-center gap-4">
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                log.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                log.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
-                'bg-blue-100 text-blue-800'
-              }`}>
-                {log.status === 'APPROVED' ? '승인됨' :
-                 log.status === 'REJECTED' ? '반려됨' :
-                 '제출됨'}
-              </span>
+        {/* Header */}
+        <div className="bg-white dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700 sticky top-0 z-10 shadow-sm">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Button
+                  icon={<ArrowLeft className="w-4 h-4" />}
+                  onClick={() => router.back()}
+                  className="flex items-center dark:text-gray-300"
+                >
+                  돌아가기
+                </Button>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    교육 활동 일지 상세
+                  </h1>
+                  <div className="mt-1">{getStatusBadge()}</div>
+                </div>
+              </div>
+              <Space>
+                {log.status === 'SUBMITTED' && (
+                  <>
+                    <Button
+                      type="primary"
+                      icon={<CheckCircle2 className="w-4 h-4" />}
+                      onClick={handleApprove}
+                      style={{ background: '#10b981', borderColor: '#10b981' }}
+                    >
+                      승인
+                    </Button>
+                    <Button
+                      danger
+                      icon={<XCircle className="w-4 h-4" />}
+                      onClick={() => setRejectModalVisible(true)}
+                    >
+                      반려
+                    </Button>
+                  </>
+                )}
+              </Space>
             </div>
           </div>
+        </div>
 
-          {/* Action Buttons */}
-          {log.status === 'SUBMITTED' && (
-            <div className="mb-6 flex gap-4">
-              <Button
-                type="primary"
-                icon={<CheckCircle2 className="w-4 h-4" />}
-                onClick={handleApprove}
-                size="large"
-                style={{ background: '#10b981', borderColor: '#10b981' }}
-              >
-                승인
-              </Button>
-              <Button
-                danger
-                icon={<XCircle className="w-4 h-4" />}
-                onClick={() => setRejectModalVisible(true)}
-                size="large"
-              >
-                반려
-              </Button>
+        {/* Submitted banner */}
+        {log.status === 'SUBMITTED' && (
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  제출 완료 (승인 대기 중)
+                </span>
+              </div>
             </div>
-          )}
+          </div>
+        )}
+
+        <div className="max-w-7xl mx-auto px-6 py-8">
 
           {/* 교육 정보 */}
           <DetailSectionCard title="교육 정보" className="mb-6">

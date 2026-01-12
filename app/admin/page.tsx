@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Card } from 'antd'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
@@ -13,12 +13,20 @@ import { StatusBreakdownChart } from '@/components/dashboard/StatusBreakdownChar
 import { EvidenceReviewChart } from '@/components/dashboard/EvidenceReviewChart'
 import { CompletionRateCard } from '@/components/dashboard/CompletionRateCard'
 import { PendingApplicationsPanel } from '@/components/dashboard/PendingApplicationsPanel'
-import { Table, Badge, Space, Tabs, Button } from 'antd'
+import { Table, Badge, Space, Tabs, Button, Input } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { Eye } from 'lucide-react'
+import { Eye, Search } from 'lucide-react'
 import { getAttendanceDocs } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import { getActivityLogs } from '@/app/instructor/activity-logs/storage'
 import { getDocs as getEquipmentDocs } from '@/app/instructor/equipment-confirmations/storage'
+import {
+  getAllEducationDocSummaries,
+  type EducationDocSummary,
+} from '@/entities/submission'
+import { DocumentStatusIndicator, EducationDetailDrawer } from '@/components/shared/common'
+import { upsertAttendanceDoc } from '@/app/instructor/schedule/[educationId]/attendance/storage'
+import { upsertActivityLog } from '@/app/instructor/activity-logs/storage'
+import { upsertDoc } from '@/app/instructor/equipment-confirmations/storage'
 import dayjs from 'dayjs'
 import { SearchPanel } from '@/components/dashboard/SearchPanel'
 import { ResultPanel } from '@/components/dashboard/ResultPanel'
@@ -66,8 +74,11 @@ export default function AdminDashboardPage() {
   const [statusData, setStatusData] = useState<any[]>([])
   const [reviewData, setReviewData] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState<string>('dashboard')
-  const [submissionTab, setSubmissionTab] = useState<'attendance' | 'activity' | 'equipment'>('attendance')
-  const [submissions, setSubmissions] = useState<any[]>([])
+  const [submissionTab, setSubmissionTab] = useState<'all' | 'pending' | 'rejected' | 'approved'>('pending')
+  const [summaries, setSummaries] = useState<EducationDocSummary[]>([])
+  const [selectedEducationId, setSelectedEducationId] = useState<string | null>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [searchText, setSearchText] = useState<string>('')
   const [collapsedSections, setCollapsedSections] = useState<{ [key: string]: boolean }>({
     charts: false,
     secondCharts: false,
@@ -217,111 +228,242 @@ export default function AdminDashboardPage() {
     }
 
     loadData()
-    loadSubmissions()
-  }, [submissionTab])
+    loadSummaries()
+  }, [])
 
-  const loadSubmissions = () => {
-    const allSubmissions: SubmissionItem[] = []
-
-    // Attendance
-    const attendanceDocs = getAttendanceDocs()
-    attendanceDocs
-      .filter(doc => doc.status === 'SUBMITTED' || doc.status === 'APPROVED' || doc.status === 'REJECTED')
-      .forEach(doc => {
-        allSubmissions.push({
-          id: doc.id,
-          type: 'attendance',
-          educationId: doc.educationId,
-          educationName: doc.programName,
-          institutionName: doc.institution,
-          instructorName: doc.submittedBy || '미상',
-          submittedAt: doc.submittedAt || doc.createdAt,
-          status: doc.status,
-          rejectReason: doc.rejectReason,
-        })
-      })
-
-    // Activity
-    const activityLogs = getActivityLogs()
-    activityLogs
-      .filter(log => log.status === 'SUBMITTED' || log.status === 'APPROVED' || log.status === 'REJECTED')
-      .forEach(log => {
-        allSubmissions.push({
-          id: log.id || '',
-          type: 'activity',
-          educationId: log.educationId || '',
-          educationName: `${log.educationType} - ${log.institutionName}`,
-          institutionName: log.institutionName,
-          instructorName: log.submittedBy || log.createdBy || '미상',
-          submittedAt: log.submittedAt || log.createdAt || '',
-          status: log.status || 'SUBMITTED',
-          rejectReason: log.rejectReason,
-        })
-      })
-
-    // Equipment
-    const equipmentDocs = getEquipmentDocs()
-    equipmentDocs
-      .filter(doc => doc.status === 'SUBMITTED' || doc.status === 'APPROVED' || doc.status === 'REJECTED')
-      .forEach(doc => {
-        allSubmissions.push({
-          id: doc.id,
-          type: 'equipment',
-          educationId: doc.id,
-          educationName: doc.materialName,
-          institutionName: doc.organizationName,
-          instructorName: doc.createdByName,
-          submittedAt: doc.createdAt,
-          status: doc.status,
-          rejectReason: doc.rejectReason,
-        })
-      })
-
-    // Sort by submitted date (newest first)
-    allSubmissions.sort((a, b) => 
-      new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
-    )
-
-    setSubmissions(allSubmissions)
+  const loadSummaries = () => {
+    // Initialize example data if needed (only in development)
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      const { initExampleAttendanceDocs } = require('@/app/instructor/schedule/[educationId]/attendance/initExampleData')
+      initExampleAttendanceDocs()
+    }
+    const allSummaries = getAllEducationDocSummaries()
+    setSummaries(allSummaries)
   }
 
-  const handleViewSubmission = (item: SubmissionItem) => {
-    if (item.type === 'attendance') {
-      const attendanceId = item.educationId || item.id
-      router.push(`/admin/attendance/${attendanceId}`)
-    } else if (item.type === 'activity') {
-      router.push(`/admin/activity-logs/${item.id}`)
-    } else if (item.type === 'equipment') {
-      router.push(`/admin/equipment-confirmations/${item.id}`)
+  const filteredSummaries = useMemo(() => {
+    let filtered = summaries
+
+    // Tab filter
+    if (submissionTab === 'pending') {
+      filtered = filtered.filter(s => {
+        const hasSubmitted = s.attendance?.status === 'SUBMITTED' || 
+                            s.activity?.status === 'SUBMITTED' || 
+                            s.equipment?.status === 'SUBMITTED'
+        return hasSubmitted
+      })
+    } else if (submissionTab === 'rejected') {
+      filtered = filtered.filter(s => s.overallStatus === 'REJECTED')
+    } else if (submissionTab === 'approved') {
+      filtered = filtered.filter(s => s.overallStatus === 'ALL_APPROVED')
+    }
+
+    // Search filter
+    if (searchText) {
+      const searchLower = searchText.toLowerCase()
+      filtered = filtered.filter(s => {
+        return (
+          s.educationId.toLowerCase().includes(searchLower) ||
+          s.educationName.toLowerCase().includes(searchLower) ||
+          s.institutionName.toLowerCase().includes(searchLower) ||
+          s.instructorName.toLowerCase().includes(searchLower)
+        )
+      })
+    }
+
+    return filtered
+  }, [summaries, submissionTab, searchText])
+
+  const handleViewDetail = (educationId: string) => {
+    setSelectedEducationId(educationId)
+    setDrawerOpen(true)
+  }
+
+  const handleViewAttendance = (educationId: string) => {
+    router.push(`/admin/attendance/${educationId}`)
+  }
+
+  const handleViewActivity = (id: string) => {
+    router.push(`/admin/activity-logs/${id}`)
+  }
+
+  const handleViewEquipment = (id: string) => {
+    router.push(`/admin/equipment-confirmations/${id}`)
+  }
+
+  const handleApprove = async (type: 'attendance' | 'activity' | 'equipment', id: string) => {
+    try {
+      if (type === 'attendance') {
+        const docs = getAttendanceDocs()
+        const doc = docs.find(d => d.id === id)
+        if (doc) {
+          const updated = {
+            ...doc,
+            status: 'APPROVED' as const,
+            approvedAt: new Date().toISOString(),
+            approvedBy: '관리자',
+          }
+          upsertAttendanceDoc(updated)
+          message.success('출석부가 승인되었습니다.')
+        }
+      } else if (type === 'activity') {
+        const logs = getActivityLogs()
+        const log = logs.find(l => l.id === id)
+        if (log) {
+          const updated = {
+            ...log,
+            status: 'APPROVED' as const,
+            approvedAt: new Date().toISOString(),
+            approvedBy: '관리자',
+          }
+          upsertActivityLog(updated)
+          message.success('활동 일지가 승인되었습니다.')
+        }
+      } else if (type === 'equipment') {
+        const docs = getEquipmentDocs()
+        const doc = docs.find(d => d.id === id)
+        if (doc) {
+          const updated = {
+            ...doc,
+            status: 'APPROVED' as const,
+            approvedAt: new Date().toISOString(),
+            approvedBy: '관리자',
+          }
+          upsertDoc(updated)
+          message.success('교구 확인서가 승인되었습니다.')
+        }
+      }
+      // Trigger storage event for other tabs/windows
+      if (typeof window !== 'undefined') {
+        const storageKey = type === 'attendance' ? 'attendance_documents' : 
+                          type === 'activity' ? 'activity_logs' : 
+                          'equipment_confirmation_docs'
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: storageKey,
+          newValue: localStorage.getItem(storageKey),
+          oldValue: localStorage.getItem(storageKey),
+        }))
+      }
+      loadSummaries()
+      setDrawerOpen(false)
+      setSelectedEducationId(null)
+    } catch (error) {
+      message.error('승인 처리 중 오류가 발생했습니다.')
     }
   }
 
-  const getStatusBadge = (status: string) => {
-    if (status === 'APPROVED') {
-      return <Badge status="success" text="승인됨" />
+  const handleReject = async (type: 'attendance' | 'activity' | 'equipment', id: string, reason: string) => {
+    if (!reason || reason.trim() === '') {
+      message.warning('반려 사유를 입력해주세요.')
+      return
+    }
+
+    try {
+      if (type === 'attendance') {
+        const docs = getAttendanceDocs()
+        const doc = docs.find(d => d.id === id)
+        if (doc) {
+          const updated = {
+            ...doc,
+            status: 'REJECTED' as const,
+            rejectedAt: new Date().toISOString(),
+            rejectedBy: '관리자',
+            rejectReason: reason,
+          }
+          upsertAttendanceDoc(updated)
+          message.success('출석부가 반려되었습니다.')
+        }
+      } else if (type === 'activity') {
+        const logs = getActivityLogs()
+        const log = logs.find(l => l.id === id)
+        if (log) {
+          const updated = {
+            ...log,
+            status: 'REJECTED' as const,
+            rejectedAt: new Date().toISOString(),
+            rejectedBy: '관리자',
+            rejectReason: reason,
+          }
+          upsertActivityLog(updated)
+          message.success('활동 일지가 반려되었습니다.')
+        }
+      } else if (type === 'equipment') {
+        const docs = getEquipmentDocs()
+        const doc = docs.find(d => d.id === id)
+        if (doc) {
+          const updated = {
+            ...doc,
+            status: 'REJECTED' as const,
+            rejectedAt: new Date().toISOString(),
+            rejectedBy: '관리자',
+            rejectReason: reason,
+          }
+          upsertDoc(updated)
+          message.success('교구 확인서가 반려되었습니다.')
+        }
+      }
+      // Trigger storage event for other tabs/windows
+      if (typeof window !== 'undefined') {
+        const storageKey = type === 'attendance' ? 'attendance_documents' : 
+                          type === 'activity' ? 'activity_logs' : 
+                          'equipment_confirmation_docs'
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: storageKey,
+          newValue: localStorage.getItem(storageKey),
+          oldValue: localStorage.getItem(storageKey),
+        }))
+      }
+      loadSummaries()
+      setDrawerOpen(false)
+      setSelectedEducationId(null)
+    } catch (error) {
+      message.error('반려 처리 중 오류가 발생했습니다.')
+    }
+  }
+
+  const getOverallStatusBadge = (status: string) => {
+    if (status === 'ALL_APPROVED') {
+      return (
+        <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-emerald-50 to-green-100 text-emerald-700 border border-emerald-200">
+          전체 승인
+        </span>
+      )
     }
     if (status === 'REJECTED') {
-      return <Badge status="error" text="반려됨" />
+      return (
+        <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-red-50 to-red-100 text-red-700 border border-red-200">
+          반려됨
+        </span>
+      )
     }
-    return <Badge status="processing" text="제출됨" />
+    if (status === 'ALL_SUBMITTED') {
+      return (
+        <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 border border-blue-200">
+          전체 제출
+        </span>
+      )
+    }
+    if (status === 'PARTIAL') {
+      return (
+        <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-amber-50 to-yellow-100 text-amber-700 border border-amber-200">
+          일부 제출
+        </span>
+      )
+    }
+    return (
+      <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 border border-gray-200">
+        대기
+      </span>
+    )
   }
 
-  const getTypeLabel = (type: string) => {
-    if (type === 'attendance') return '교육 출석부'
-    if (type === 'activity') return '교육 활동 일지'
-    if (type === 'equipment') return '교구 확인서'
-    return type
-  }
-
-  const submissionColumns: ColumnsType<SubmissionItem> = [
+  const submissionColumns: ColumnsType<EducationDocSummary> = [
     {
-      title: '문서 유형',
-      dataIndex: 'type',
-      key: 'type',
+      title: '교육ID',
+      dataIndex: 'educationId',
+      key: 'educationId',
       width: 120,
-      render: (type: string) => (
-        <span className="font-medium">{getTypeLabel(type)}</span>
-      ),
+      render: (text: string) => <span className="font-medium">{text}</span>,
     },
     {
       title: '교육명',
@@ -342,18 +484,63 @@ export default function AdminDashboardPage() {
       width: 120,
     },
     {
-      title: '제출일시',
-      dataIndex: 'submittedAt',
-      key: 'submittedAt',
-      width: 180,
-      render: (date: string) => dayjs(date).format('YYYY-MM-DD HH:mm'),
+      title: '문서 상태',
+      key: 'docStatus',
+      width: 300,
+      render: (_, record) => (
+        <div className="flex flex-col gap-2">
+          <DocumentStatusIndicator
+            status={record.attendance?.status}
+            count={record.attendance?.count}
+            label="출석부"
+            onClick={() => {
+              if (record.attendance?.id) {
+                router.push(`/admin/attendance/${record.educationId}`)
+              }
+            }}
+            educationId={record.educationId}
+            documentId={record.attendance?.id}
+          />
+          <DocumentStatusIndicator
+            status={record.activity?.status}
+            count={record.activity?.count}
+            label="활동일지"
+            onClick={() => {
+              if (record.activity?.id) {
+                router.push(`/admin/activity-logs/${record.activity.id}`)
+              }
+            }}
+            educationId={record.educationId}
+            documentId={record.activity?.id}
+          />
+          <DocumentStatusIndicator
+            status={record.equipment?.status}
+            count={record.equipment?.count}
+            label="교구확인서"
+            onClick={() => {
+              if (record.equipment?.id) {
+                router.push(`/admin/equipment-confirmations/${record.equipment.id}`)
+              }
+            }}
+            educationId={record.educationId}
+            documentId={record.equipment?.id}
+          />
+        </div>
+      ),
     },
     {
-      title: '상태',
-      dataIndex: 'status',
-      key: 'status',
-      width: 100,
-      render: (status: string) => getStatusBadge(status),
+      title: '전체 상태',
+      dataIndex: 'overallStatus',
+      key: 'overallStatus',
+      width: 120,
+      render: (status: string) => getOverallStatusBadge(status),
+    },
+    {
+      title: '최종 수정일',
+      dataIndex: 'lastUpdatedAt',
+      key: 'lastUpdatedAt',
+      width: 150,
+      render: (date?: string) => date ? dayjs(date).format('YYYY-MM-DD HH:mm') : '-',
     },
     {
       title: '관리',
@@ -365,7 +552,7 @@ export default function AdminDashboardPage() {
           <Button
             size="small"
             icon={<Eye className="w-3 h-3" />}
-            onClick={() => handleViewSubmission(record)}
+            onClick={() => handleViewDetail(record.educationId)}
           >
             상세
           </Button>
@@ -374,9 +561,15 @@ export default function AdminDashboardPage() {
     },
   ]
 
-  const attendanceCount = submissions.filter(s => s.type === 'attendance').length
-  const activityCount = submissions.filter(s => s.type === 'activity').length
-  const equipmentCount = submissions.filter(s => s.type === 'equipment').length
+  const pendingCount = summaries.filter(s => {
+    const hasSubmitted = s.attendance?.status === 'SUBMITTED' || 
+                        s.activity?.status === 'SUBMITTED' || 
+                        s.equipment?.status === 'SUBMITTED'
+    return hasSubmitted
+  }).length
+  const approvedCount = summaries.filter(s => s.overallStatus === 'ALL_APPROVED').length
+  const rejectedCount = summaries.filter(s => s.overallStatus === 'REJECTED').length
+  const allCount = summaries.length
 
   const handleDateRangeChange = (range: string, dates?: any) => {
     console.log('Date range changed:', range, dates)
@@ -475,12 +668,106 @@ export default function AdminDashboardPage() {
             >
               권역별 현황
             </button>
+            <button
+              onClick={() => setActiveTab('submissions')}
+              className={`flex-1 md:flex-none px-4 md:px-8 py-2.5 md:py-3 rounded-xl font-semibold text-sm md:text-base transition-all duration-300 ${
+                activeTab === 'submissions'
+                  ? 'bg-slate-800 text-white shadow-lg scale-105'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
+              문서 제출 현황
+            </button>
           </div>
 
           {/* Tab Content */}
-          <Card className="rounded-2xl shadow-lg border border-slate-200 mb-6 bg-gradient-to-br from-white to-slate-50/50">
-            <div className="pt-8 px-2">
-              {activeTab === 'dashboard' ? (
+          {activeTab === 'submissions' ? (
+            /* 문서 제출 현황 탭 */
+            <Card className="rounded-2xl shadow-lg border border-slate-200 mb-6">
+              <div className="mb-6 pt-6 px-6">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                  문서 제출 현황
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400">
+                  교육별로 제출된 문서를 확인하고 승인/반려할 수 있습니다.
+                </p>
+              </div>
+
+              {/* Statistics Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6 px-6">
+                <Card className="rounded-xl">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">전체</div>
+                  <div className="text-3xl font-bold text-slate-600">{allCount}</div>
+                </Card>
+                <Card className="rounded-xl">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">승인 대기</div>
+                  <div className="text-3xl font-bold text-blue-600">{pendingCount}</div>
+                </Card>
+                <Card className="rounded-xl">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">승인 완료</div>
+                  <div className="text-3xl font-bold text-green-600">{approvedCount}</div>
+                </Card>
+                <Card className="rounded-xl">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">반려</div>
+                  <div className="text-3xl font-bold text-red-600">{rejectedCount}</div>
+                </Card>
+              </div>
+
+              {/* Search Bar */}
+              <div className="mb-4 px-6">
+                <Input
+                  placeholder="교육ID, 교육명, 기관명, 강사명으로 검색"
+                  prefix={<Search className="w-4 h-4 text-gray-400" />}
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  allowClear
+                  className="max-w-md"
+                />
+              </div>
+
+              {/* Tabs as Filters */}
+              <div className="px-6 mb-4">
+                <Tabs
+                  activeKey={submissionTab}
+                  onChange={(key) => setSubmissionTab(key as any)}
+                  items={[
+                    {
+                      key: 'all',
+                      label: `전체 (${allCount})`,
+                    },
+                    {
+                      key: 'pending',
+                      label: `미제출 있음 (${pendingCount})`,
+                    },
+                    {
+                      key: 'rejected',
+                      label: `반려 있음 (${rejectedCount})`,
+                    },
+                    {
+                      key: 'approved',
+                      label: `승인 완료 (${approvedCount})`,
+                    },
+                  ]}
+                />
+              </div>
+              <div className="px-6 pb-6">
+                <Table
+                  columns={submissionColumns}
+                  dataSource={filteredSummaries}
+                  rowKey="educationId"
+                  pagination={{
+                    pageSize: 20,
+                    showSizeChanger: true,
+                    showTotal: (total) => `총 ${total}건`,
+                  }}
+                  scroll={{ x: 'max-content' }}
+                />
+              </div>
+            </Card>
+          ) : (
+            <Card className="rounded-2xl shadow-lg border border-slate-200 mb-6 bg-gradient-to-br from-white to-slate-50/50">
+              <div className="pt-8 px-2">
+                {activeTab === 'dashboard' ? (
                 <div className="space-y-6">
                   {/* KPI Cards Row */}
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 gap-3">
@@ -1016,49 +1303,27 @@ export default function AdminDashboardPage() {
               )}
             </div>
           </Card>
+          )}
 
-          {/* Submissions Table - Common (visible in all tabs) */}
-          <div className="mt-6">
-            <Card className="rounded-2xl shadow-lg border border-slate-200">
-              <div className="mb-4">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                  문서 제출 현황
-                </h2>
-                <p className="text-gray-600 dark:text-gray-400">
-                  강사가 제출한 문서를 확인할 수 있습니다.
-                </p>
-              </div>
-              <Tabs
-                activeKey={submissionTab}
-                onChange={(key) => setSubmissionTab(key as any)}
-                items={[
-                  {
-                    key: 'attendance',
-                    label: `교육 출석부 (${attendanceCount})`,
-                  },
-                  {
-                    key: 'activity',
-                    label: `교육 활동 일지 (${activityCount})`,
-                  },
-                  {
-                    key: 'equipment',
-                    label: `교구 확인서 (${equipmentCount})`,
-                  },
-                ]}
-              />
-              <Table
-                columns={submissionColumns}
-                dataSource={submissions.filter(s => s.type === submissionTab)}
-                rowKey="id"
-                pagination={{
-                  pageSize: 20,
-                  showSizeChanger: true,
-                  showTotal: (total) => `총 ${total}건`,
-                }}
-                scroll={{ x: 'max-content' }}
-              />
-            </Card>
-          </div>
+
+          {/* Detail Drawer */}
+          {selectedEducationId && (
+            <EducationDetailDrawer
+              open={drawerOpen}
+              onClose={() => {
+                setDrawerOpen(false)
+                setSelectedEducationId(null)
+              }}
+              educationId={selectedEducationId}
+              summary={summaries.find(s => s.educationId === selectedEducationId) || null}
+              isAdmin={true}
+              onViewAttendance={handleViewAttendance}
+              onViewActivity={handleViewActivity}
+              onViewEquipment={handleViewEquipment}
+              onApprove={handleApprove}
+              onReject={handleReject}
+            />
+          )}
       </div>
     </ProtectedRoute>
   )

@@ -51,48 +51,87 @@ export default function EquipmentConfirmationDetailPage() {
   const isAdmin = userRole === 'admin' || userRole === 'manager'
 
   // Load doc
-  useEffect(() => {
+  const loadDoc = async () => {
     if (!id) {
       setLoading(false)
       return
     }
     
-    const loadDoc = async () => {
-      try {
-        let loadedDoc = getDocById(id)
-        if (!loadedDoc) {
-          // Create from default if not exists
-          loadedDoc = createDocFromDefault({ 
-            id,
-            createdByName: userProfile?.name || '홍길동',
-          })
-          upsertDoc(loadedDoc)
-        }
-        setDoc(loadedDoc)
-        
-        // Load inventory check and audit logs
-        if (isAdmin && loadedDoc) {
-          const baseInventory = getInventory()
-          const allDocs = getAllDocs()
-          const derived = deriveInventory(loadedDoc.items, allDocs, baseInventory)
-          setInventoryCheck(derived)
-          
-          const logs = getAuditLogs(loadedDoc.id)
-          setAuditLogs(logs)
-        }
-      } catch (error) {
-        console.error('Error loading equipment confirmation:', error)
-        // Delay message to ensure component is mounted
-        setTimeout(() => {
-          message.error('문서를 불러오는 중 오류가 발생했습니다.')
-        }, 100)
-      } finally {
-        setLoading(false)
+    try {
+      let loadedDoc = getDocById(id)
+      if (!loadedDoc) {
+        // Create from default if not exists
+        loadedDoc = createDocFromDefault({ 
+          id,
+          createdByName: userProfile?.name || '홍길동',
+        })
+        upsertDoc(loadedDoc)
       }
+      setDoc(loadedDoc)
+      
+      // Load inventory check and audit logs
+      if (isAdmin && loadedDoc) {
+        const baseInventory = getInventory()
+        const allDocs = getAllDocs()
+        const derived = deriveInventory(loadedDoc.items, allDocs, baseInventory)
+        setInventoryCheck(derived)
+        
+        const logs = getAuditLogs(loadedDoc.id)
+        setAuditLogs(logs)
+      }
+    } catch (error) {
+      console.error('Error loading equipment confirmation:', error)
+      // Delay message to ensure component is mounted
+      setTimeout(() => {
+        message.error('문서를 불러오는 중 오류가 발생했습니다.')
+      }, 100)
+    } finally {
+      setLoading(false)
     }
-    
+  }
+
+  useEffect(() => {
     loadDoc()
   }, [id, userProfile?.name, isAdmin])
+
+  // Listen for localStorage changes (when admin updates status)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !id) return
+
+    const handleStorageChange = (e: StorageEvent) => {
+      // Check if equipment_confirmation_docs storage was updated
+      if (e.key === 'equipment_confirmation_docs' && e.newValue) {
+        try {
+          const docs = JSON.parse(e.newValue) as EquipmentConfirmationDoc[]
+          const updatedDoc = docs.find(doc => doc.id === id)
+          if (updatedDoc) {
+            setDoc(updatedDoc)
+            if (updatedDoc.rejectReason) {
+              message.warning(`반려되었습니다: ${updatedDoc.rejectReason}`)
+            } else if (updatedDoc.status === 'APPROVED') {
+              message.success('승인되었습니다.')
+            }
+            // Reload inventory check and audit logs if admin
+            if (isAdmin) {
+              const baseInventory = getInventory()
+              const allDocs = getAllDocs()
+              const derived = deriveInventory(updatedDoc.items, allDocs, baseInventory)
+              setInventoryCheck(derived)
+              const logs = getAuditLogs(updatedDoc.id)
+              setAuditLogs(logs)
+            }
+          }
+        } catch (error) {
+          console.error('Error parsing updated equipment doc:', error)
+        }
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+    }
+  }, [id, isAdmin])
 
   if (loading || !doc) {
     return (

@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Button, Card, Input, Select, DatePicker, InputNumber, Space, message, Modal, Upload } from 'antd'
+import { Button, Card, Input, Select, DatePicker, InputNumber, Space, message, Modal, Upload, Badge } from 'antd'
 import { UploadOutlined } from '@ant-design/icons'
-import { ArrowLeft, Save, Trash2, Edit, X } from 'lucide-react'
+import { ArrowLeft, Save, Trash2, Edit, X, CheckCircle2, XCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { DetailSectionCard } from '@/components/admin/operations'
@@ -22,7 +22,7 @@ export default function ActivityLogDetailPage() {
   const { userProfile, userRole } = useAuth()
   const logId = params?.logId as string
   const isNew = logId === 'new'
-  const isAdmin = userRole === 'admin' || userRole === 'manager'
+  const isAdmin = userRole === 'admin' || userRole === 'operator'
 
   const [loading, setLoading] = useState(false)
   const [isEditMode, setIsEditMode] = useState(isNew) // New logs start in edit mode
@@ -61,7 +61,7 @@ export default function ActivityLogDetailPage() {
   }, [signatureModalVisible, userProfile?.signatureImageUrl, userProfile?.name, tempSignatureUrl])
 
   // Load existing data
-  useEffect(() => {
+  const loadActivityLog = () => {
     if (!isNew && logId) {
       // Try to find by ID first
       let savedLog = getActivityLogById(logId)
@@ -110,7 +110,40 @@ export default function ActivityLogDetailPage() {
         status: 'DRAFT',
       })
     }
+  }
+
+  useEffect(() => {
+    loadActivityLog()
   }, [logId, isNew, userProfile])
+
+  // Listen for localStorage changes (when admin updates status)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const handleStorageChange = (e: StorageEvent) => {
+      // Check if activity_logs storage was updated
+      if (e.key === 'activity_logs' && e.newValue) {
+        // Reload the activity log if it matches current logId
+        if (!isNew && logId) {
+          try {
+            const logs = JSON.parse(e.newValue) as ActivityLog[]
+            const updatedLog = logs.find(log => log.id === logId || (logId.startsWith('EDU-') && log.educationId === logId))
+            if (updatedLog) {
+              setFormData(updatedLog)
+              message.info('데이터가 업데이트되었습니다.')
+            }
+          } catch (error) {
+            console.error('Error parsing updated activity log:', error)
+          }
+        }
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+    }
+  }, [logId, isNew])
 
   // Validation
   const validateForm = (): { valid: boolean; error?: string } => {
@@ -163,7 +196,6 @@ export default function ActivityLogDetailPage() {
         ...formData,
         id: formData.id || `log-${Date.now()}`,
         status: formData.status || 'DRAFT',
-        updatedAt: new Date().toISOString(),
       }
       
       upsertActivityLog(logToSave)
@@ -186,9 +218,15 @@ export default function ActivityLogDetailPage() {
       return
     }
 
+    const isResubmit = formData.status === 'REJECTED'
+    const confirmTitle = isResubmit ? '재제출 확인' : '제출 확인'
+    const confirmContent = isResubmit 
+      ? '수정한 교육 활동 일지를 재제출하시겠습니까? 재제출 후에는 관리자 승인을 기다려야 합니다.'
+      : '교육 활동 일지를 제출하시겠습니까? 제출 후에는 수정할 수 없습니다.'
+
     Modal.confirm({
-      title: '제출 확인',
-      content: '교육 활동 일지를 제출하시겠습니까? 제출 후에는 수정할 수 없습니다.',
+      title: confirmTitle,
+      content: confirmContent,
       onOk: async () => {
         try {
           setLoading(true)
@@ -199,13 +237,16 @@ export default function ActivityLogDetailPage() {
             status: 'SUBMITTED',
             submittedAt: new Date().toISOString(),
             submittedBy: userProfile?.name || '',
-            updatedAt: new Date().toISOString(),
+            // 재제출 시 반려 관련 정보 초기화
+            rejectReason: undefined,
+            rejectedAt: undefined,
+            rejectedBy: undefined,
           }
           
           upsertActivityLog(logToSubmit)
           setFormData(logToSubmit)
           
-          message.success('제출되었습니다.')
+          message.success(isResubmit ? '재제출되었습니다.' : '제출되었습니다.')
           setIsEditMode(false)
         } catch (error) {
           message.error('제출 중 오류가 발생했습니다.')
@@ -293,9 +334,23 @@ export default function ActivityLogDetailPage() {
                 >
                   돌아가기
                 </Button>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  2025 소프트웨어(SW) 미래채움 – 교육 활동 일지
-                </h1>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    2025 소프트웨어(SW) 미래채움 – 교육 활동 일지
+                  </h1>
+                  <div className="mt-1">
+                    {(() => {
+                      const statusMap = {
+                        DRAFT: { color: 'default', text: '초안' },
+                        SUBMITTED: { color: 'processing', text: '제출됨' },
+                        APPROVED: { color: 'success', text: '승인됨' },
+                        REJECTED: { color: 'error', text: '반려됨' },
+                      }
+                      const status = statusMap[formData.status || 'DRAFT']
+                      return <Badge status={status.color as any} text={status.text} />
+                    })()}
+                  </div>
+                </div>
               </div>
               <Space>
                 {!isEditMode ? (
@@ -340,13 +395,20 @@ export default function ActivityLogDetailPage() {
                         )}
                         {formData.status === 'REJECTED' && (
                           <>
-                            <span className="text-red-600 font-medium mr-2">반려됨</span>
                             <Button
                               type="primary"
                               icon={<Edit className="w-4 h-4" />}
                               onClick={() => setIsEditMode(true)}
                             >
                               수정하기
+                            </Button>
+                            <Button
+                              type="primary"
+                              onClick={handleSubmit}
+                              loading={loading}
+                              style={{ background: '#10b981', borderColor: '#10b981' }}
+                            >
+                              재제출하기
                             </Button>
                           </>
                         )}
@@ -382,6 +444,49 @@ export default function ActivityLogDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* Submitted banner for instructor */}
+        {!isAdmin && formData.status === 'SUBMITTED' && (
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  제출 완료 (승인 대기 중)
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Rejected banner for instructor */}
+        {!isAdmin && formData.status === 'REJECTED' && (
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                  <span className="text-sm font-medium text-red-900 dark:text-red-100">
+                    반려됨
+                  </span>
+                </div>
+                {formData.rejectReason && (
+                  <div className="mt-2 pl-7">
+                    <div className="text-xs font-semibold text-red-800 dark:text-red-200 mb-1">
+                      반려 사유:
+                    </div>
+                    <div className="text-sm text-red-900 dark:text-red-100 bg-white dark:bg-gray-800 rounded p-3 border border-red-200 dark:border-red-700">
+                      {formData.rejectReason}
+                    </div>
+                  </div>
+                )}
+                <div className="mt-2 pl-7 text-xs text-red-700 dark:text-red-300">
+                  수정 후 재제출해주세요.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="max-w-7xl mx-auto px-6 py-8">
 

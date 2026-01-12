@@ -6,3 +6,5 @@ export { PageTitle } from './PageTitle';
 export { Input } from './Input';
 export { InputField } from './InputField';
 export { SearchToolbar } from './SearchToolbar';
+export { DocumentStatusIndicator } from './DocumentStatusIndicator';
+export { EducationDetailDrawer } from './EducationDetailDrawer';

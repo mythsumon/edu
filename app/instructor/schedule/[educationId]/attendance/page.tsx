@@ -237,7 +237,7 @@ export default function InstructorAttendancePage() {
   const [attendanceStatus, setAttendanceStatus] = useState<'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'>('DRAFT')
 
   // Load attendance document
-  useEffect(() => {
+  const loadAttendanceDoc = () => {
     if (educationId) {
       const savedDoc = getAttendanceDocByEducationId(educationId)
       if (savedDoc) {
@@ -258,6 +258,41 @@ export default function InstructorAttendancePage() {
         setSessions(savedDoc.sessions)
         setStudents(savedDoc.students)
       }
+    }
+  }
+
+  useEffect(() => {
+    loadAttendanceDoc()
+  }, [educationId])
+
+  // Listen for localStorage changes (when admin updates status)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !educationId) return
+
+    const handleStorageChange = (e: StorageEvent) => {
+      // Check if attendance_documents storage was updated
+      if (e.key === 'attendance_documents' && e.newValue) {
+        try {
+          const docs = JSON.parse(e.newValue) as AttendanceDocument[]
+          const updatedDoc = docs.find(doc => doc.educationId === educationId)
+          if (updatedDoc) {
+            setAttendanceStatus(updatedDoc.status)
+            // Update other fields if needed
+            if (updatedDoc.rejectReason) {
+              message.warning(`반려되었습니다: ${updatedDoc.rejectReason}`)
+            } else if (updatedDoc.status === 'APPROVED') {
+              message.success('승인되었습니다.')
+            }
+          }
+        } catch (error) {
+          console.error('Error parsing updated attendance doc:', error)
+        }
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
     }
   }, [educationId])
 

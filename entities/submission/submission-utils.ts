@@ -1,4 +1,5 @@
 // Utility functions for grouping submissions by education ID
+// SINGLE SOURCE OF TRUTH for evidence data
 
 import { getAttendanceDocs } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import { getActivityLogs } from '@/app/instructor/activity-logs/storage'
@@ -9,168 +10,218 @@ import type { EquipmentConfirmationDoc } from '@/app/instructor/equipment-confir
 import type { DocumentSubmission, EducationSubmissionGroup } from './submission-types'
 
 /**
- * Get all submissions grouped by education ID
+ * Document status summary for an education
  */
-export function getEducationSubmissionGroups(): EducationSubmissionGroup[] {
+export interface EducationDocSummary {
+  educationId: string
+  educationName: string
+  institutionName: string
+  instructorName: string
+  attendance?: {
+    id: string
+    status: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'
+    submittedAt?: string
+    rejectReason?: string
+    count: number
+  }
+  activity?: {
+    id: string
+    status: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'
+    submittedAt?: string
+    rejectReason?: string
+    count: number
+  }
+  equipment?: {
+    id: string
+    status: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'
+    submittedAt?: string
+    rejectReason?: string
+    count: number
+  }
+  overallStatus: 'ALL_APPROVED' | 'ALL_SUBMITTED' | 'PARTIAL' | 'PENDING' | 'REJECTED'
+  lastUpdatedAt?: string
+}
+
+/**
+ * Get document summary for a specific education
+ */
+export function deriveEducationDocSummary(educationId: string): EducationDocSummary | null {
   const attendanceDocs = getAttendanceDocs()
   const activityLogs = getActivityLogs()
   const equipmentDocs = getEquipmentDocs()
 
-  // Create a map to group by educationId
-  const groupsMap = new Map<string, EducationSubmissionGroup>()
+  const attendance = attendanceDocs.find(doc => doc.educationId === educationId)
+  const activity = activityLogs.find(log => (log.educationId || log.id) === educationId)
+  const equipment = equipmentDocs.find(doc => (doc.educationId || doc.id) === educationId)
 
-  // Process attendance documents
-  attendanceDocs
-    .filter(doc => doc.status !== 'DRAFT')
-    .forEach(doc => {
-      const educationId = doc.educationId
-      if (!groupsMap.has(educationId)) {
-        groupsMap.set(educationId, {
-          educationId,
-          educationName: doc.programName,
-          institutionName: doc.institution,
-          instructorName: doc.submittedBy || '미상',
-          overallStatus: 'PENDING',
-        })
-      }
-      const group = groupsMap.get(educationId)!
-      group.attendance = {
-        id: doc.id,
-        type: 'attendance',
-        educationId: doc.educationId,
-        status: doc.status,
-        submittedAt: doc.submittedAt,
-        submittedBy: doc.submittedBy,
-        approvedAt: doc.approvedAt,
-        approvedBy: doc.approvedBy,
-        rejectedAt: doc.rejectedAt,
-        rejectedBy: doc.rejectedBy,
-        rejectReason: doc.rejectReason,
-      }
-      if (doc.submittedAt && (!group.submittedAt || doc.submittedAt > group.submittedAt)) {
-        group.submittedAt = doc.submittedAt
-      }
-      if (doc.updatedAt && (!group.lastUpdatedAt || doc.updatedAt > group.lastUpdatedAt)) {
-        group.lastUpdatedAt = doc.updatedAt
-      }
-    })
+  if (!attendance && !activity && !equipment) {
+    return null
+  }
 
-  // Process activity logs
-  activityLogs
-    .filter(log => log.status && log.status !== 'DRAFT')
-    .forEach(log => {
-      const educationId = log.educationId || ''
-      if (!educationId) return
+  // Determine education name and institution from first available doc
+  const educationName = attendance?.programName || 
+                       (activity ? `${activity.educationType} - ${activity.institutionName}` : '') ||
+                       equipment?.materialName || 
+                       '미상'
+  const institutionName = attendance?.institution || 
+                         activity?.institutionName || 
+                         equipment?.organizationName || 
+                         '미상'
+  const instructorName = attendance?.submittedBy || 
+                        activity?.submittedBy || 
+                        activity?.createdBy || 
+                        equipment?.createdByName || 
+                        '미상'
 
-      if (!groupsMap.has(educationId)) {
-        groupsMap.set(educationId, {
-          educationId,
-          educationName: `${log.educationType} - ${log.institutionName}`,
-          institutionName: log.institutionName,
-          instructorName: log.submittedBy || log.createdBy || '미상',
-          overallStatus: 'PENDING',
-        })
-      }
-      const group = groupsMap.get(educationId)!
-      group.activity = {
-        id: log.id || '',
-        type: 'activity',
-        educationId: log.educationId || '',
-        status: log.status || 'SUBMITTED',
-        submittedAt: log.submittedAt,
-        submittedBy: log.submittedBy || log.createdBy,
-        approvedAt: log.approvedAt,
-        approvedBy: log.approvedBy,
-        rejectedAt: log.rejectedAt,
-        rejectedBy: log.rejectedBy,
-        rejectReason: log.rejectReason,
-      }
-      if (log.submittedAt && (!group.submittedAt || log.submittedAt > group.submittedAt)) {
-        group.submittedAt = log.submittedAt
-      }
-      if (log.createdAt && (!group.lastUpdatedAt || log.createdAt > group.lastUpdatedAt)) {
-        group.lastUpdatedAt = log.createdAt
-      }
-    })
+  const summary: EducationDocSummary = {
+    educationId,
+    educationName,
+    institutionName,
+    instructorName,
+    overallStatus: 'PENDING',
+    lastUpdatedAt: undefined,
+  }
 
-  // Process equipment confirmations
-  equipmentDocs
-    .filter(doc => doc.status !== 'DRAFT')
-    .forEach(doc => {
-      const educationId = doc.educationId || doc.id
-      if (!groupsMap.has(educationId)) {
-        groupsMap.set(educationId, {
-          educationId,
-          educationName: doc.materialName,
-          institutionName: doc.organizationName,
-          instructorName: doc.createdByName,
-          overallStatus: 'PENDING',
-        })
-      }
-      const group = groupsMap.get(educationId)!
-      group.equipment = {
-        id: doc.id,
-        type: 'equipment',
-        educationId: doc.educationId || doc.id,
-        status: doc.status,
-        submittedAt: doc.status === 'SUBMITTED' ? doc.createdAt : undefined,
-        submittedBy: doc.createdByName,
-        approvedAt: doc.approvedAt,
-        approvedBy: doc.approvedBy,
-        rejectedAt: doc.rejectedAt,
-        rejectedBy: doc.rejectedBy,
-        rejectReason: doc.rejectReason,
-      }
-      if (doc.createdAt && (!group.submittedAt || doc.createdAt > group.submittedAt)) {
-        group.submittedAt = doc.createdAt
-      }
-      if (doc.updatedAt && (!group.lastUpdatedAt || doc.updatedAt > group.lastUpdatedAt)) {
-        group.lastUpdatedAt = doc.updatedAt
-      }
-    })
-
-  // Calculate overall status for each group
-  const groups = Array.from(groupsMap.values())
-  groups.forEach(group => {
-    const docs = [group.attendance, group.activity, group.equipment].filter(Boolean) as DocumentSubmission[]
-    
-    if (docs.length === 0) {
-      group.overallStatus = 'PENDING'
-      return
+  if (attendance) {
+    summary.attendance = {
+      id: attendance.id,
+      status: attendance.status,
+      submittedAt: attendance.submittedAt,
+      rejectReason: attendance.rejectReason,
+      count: 1,
     }
+    if (attendance.updatedAt && (!summary.lastUpdatedAt || attendance.updatedAt > summary.lastUpdatedAt)) {
+      summary.lastUpdatedAt = attendance.updatedAt
+    }
+  }
 
+  if (activity) {
+    summary.activity = {
+      id: activity.id || '',
+      status: activity.status || 'DRAFT',
+      submittedAt: activity.submittedAt,
+      rejectReason: activity.rejectReason,
+      count: 1,
+    }
+    if (activity.createdAt && (!summary.lastUpdatedAt || activity.createdAt > summary.lastUpdatedAt)) {
+      summary.lastUpdatedAt = activity.createdAt
+    }
+  }
+
+  if (equipment) {
+    summary.equipment = {
+      id: equipment.id,
+      status: equipment.status,
+      submittedAt: equipment.status === 'SUBMITTED' ? equipment.createdAt : undefined,
+      rejectReason: equipment.rejectReason,
+      count: 1,
+    }
+    if (equipment.updatedAt && (!summary.lastUpdatedAt || equipment.updatedAt > summary.lastUpdatedAt)) {
+      summary.lastUpdatedAt = equipment.updatedAt
+    }
+  }
+
+  // Calculate overall status
+  const docs = [summary.attendance, summary.activity, summary.equipment].filter(Boolean) as any[]
+  if (docs.length === 0) {
+    summary.overallStatus = 'PENDING'
+  } else {
     const allApproved = docs.every(doc => doc.status === 'APPROVED')
     const allSubmitted = docs.every(doc => doc.status === 'SUBMITTED')
     const hasRejected = docs.some(doc => doc.status === 'REJECTED')
     const hasSubmitted = docs.some(doc => doc.status === 'SUBMITTED')
 
     if (allApproved) {
-      group.overallStatus = 'ALL_APPROVED'
+      summary.overallStatus = 'ALL_APPROVED'
     } else if (hasRejected) {
-      group.overallStatus = 'REJECTED'
+      summary.overallStatus = 'REJECTED'
     } else if (allSubmitted) {
-      group.overallStatus = 'ALL_SUBMITTED'
+      summary.overallStatus = 'ALL_SUBMITTED'
     } else if (hasSubmitted) {
-      group.overallStatus = 'PARTIAL'
+      summary.overallStatus = 'PARTIAL'
     } else {
-      group.overallStatus = 'PENDING'
+      summary.overallStatus = 'PENDING'
+    }
+  }
+
+  return summary
+}
+
+/**
+ * Get all education summaries (grouped by educationId)
+ */
+export function getAllEducationDocSummaries(): EducationDocSummary[] {
+  const attendanceDocs = getAttendanceDocs()
+  const activityLogs = getActivityLogs()
+  const equipmentDocs = getEquipmentDocs()
+
+  const educationMap = new Map<string, EducationDocSummary>()
+
+  // Process attendance docs
+  attendanceDocs.forEach(doc => {
+    const educationId = doc.educationId
+    if (!educationMap.has(educationId)) {
+      const summary = deriveEducationDocSummary(educationId)
+      if (summary) {
+        educationMap.set(educationId, summary)
+      }
     }
   })
 
-  // Sort by last updated date (newest first)
-  return groups.sort((a, b) => {
-    const dateA = a.lastUpdatedAt || a.submittedAt || ''
-    const dateB = b.lastUpdatedAt || b.submittedAt || ''
+  // Process activity logs
+  activityLogs.forEach(log => {
+    const educationId = log.educationId || log.id || ''
+    if (educationId && !educationMap.has(educationId)) {
+      const summary = deriveEducationDocSummary(educationId)
+      if (summary) {
+        educationMap.set(educationId, summary)
+      }
+    }
+  })
+
+  // Process equipment docs
+  equipmentDocs.forEach(doc => {
+    const educationId = doc.educationId || doc.id
+    if (!educationMap.has(educationId)) {
+      const summary = deriveEducationDocSummary(educationId)
+      if (summary) {
+        educationMap.set(educationId, summary)
+      }
+    }
+  })
+
+  // Sort by last updated (newest first)
+  return Array.from(educationMap.values()).sort((a, b) => {
+    const dateA = a.lastUpdatedAt || ''
+    const dateB = b.lastUpdatedAt || ''
     return new Date(dateB).getTime() - new Date(dateA).getTime()
   })
 }
 
 /**
- * Get submission groups filtered by instructor name
+ * Get education summaries filtered by instructor
  */
-export function getEducationSubmissionGroupsByInstructor(instructorName: string): EducationSubmissionGroup[] {
-  const allGroups = getEducationSubmissionGroups()
-  return allGroups.filter(group => group.instructorName === instructorName)
+export function getEducationDocSummariesByInstructor(instructorName: string): EducationDocSummary[] {
+  return getAllEducationDocSummaries().filter(summary => summary.instructorName === instructorName)
+}
+
+/**
+ * Get all evidence documents grouped by education
+ */
+export function getEvidenceByEducationGrouped(educationId: string): {
+  attendance?: AttendanceDocument
+  activity?: ActivityLog
+  equipment?: EquipmentConfirmationDoc
+} {
+  const attendanceDocs = getAttendanceDocs()
+  const activityLogs = getActivityLogs()
+  const equipmentDocs = getEquipmentDocs()
+
+  return {
+    attendance: attendanceDocs.find(doc => doc.educationId === educationId),
+    activity: activityLogs.find(log => (log.educationId || log.id) === educationId),
+    equipment: equipmentDocs.find(doc => (doc.educationId || doc.id) === educationId),
+  }
 }
 
 /**
@@ -187,47 +238,47 @@ export function getInstructorSubmissions(instructorName: string): {
   status: 'SUBMITTED' | 'APPROVED' | 'REJECTED'
   rejectReason?: string
 }[] {
-  const groups = getEducationSubmissionGroupsByInstructor(instructorName)
+  const summaries = getEducationDocSummariesByInstructor(instructorName)
   const submissions: any[] = []
 
-  groups.forEach(group => {
-    if (group.attendance && group.attendance.status !== 'DRAFT') {
+  summaries.forEach(summary => {
+    if (summary.attendance && summary.attendance.status !== 'DRAFT') {
       submissions.push({
-        id: group.attendance.id,
+        id: summary.attendance.id,
         type: 'attendance',
-        educationId: group.educationId,
-        educationName: group.educationName,
-        institutionName: group.institutionName,
-        instructorName: group.instructorName,
-        submittedAt: group.attendance.submittedAt || '',
-        status: group.attendance.status,
-        rejectReason: group.attendance.rejectReason,
+        educationId: summary.educationId,
+        educationName: summary.educationName,
+        institutionName: summary.institutionName,
+        instructorName: summary.instructorName,
+        submittedAt: summary.attendance.submittedAt || '',
+        status: summary.attendance.status,
+        rejectReason: summary.attendance.rejectReason,
       })
     }
-    if (group.activity && group.activity.status !== 'DRAFT') {
+    if (summary.activity && summary.activity.status !== 'DRAFT') {
       submissions.push({
-        id: group.activity.id,
+        id: summary.activity.id,
         type: 'activity',
-        educationId: group.educationId,
-        educationName: group.educationName,
-        institutionName: group.institutionName,
-        instructorName: group.instructorName,
-        submittedAt: group.activity.submittedAt || '',
-        status: group.activity.status,
-        rejectReason: group.activity.rejectReason,
+        educationId: summary.educationId,
+        educationName: summary.educationName,
+        institutionName: summary.institutionName,
+        instructorName: summary.instructorName,
+        submittedAt: summary.activity.submittedAt || '',
+        status: summary.activity.status,
+        rejectReason: summary.activity.rejectReason,
       })
     }
-    if (group.equipment && group.equipment.status !== 'DRAFT') {
+    if (summary.equipment && summary.equipment.status !== 'DRAFT') {
       submissions.push({
-        id: group.equipment.id,
+        id: summary.equipment.id,
         type: 'equipment',
-        educationId: group.educationId,
-        educationName: group.educationName,
-        institutionName: group.institutionName,
-        instructorName: group.instructorName,
-        submittedAt: group.equipment.submittedAt || '',
-        status: group.equipment.status,
-        rejectReason: group.equipment.rejectReason,
+        educationId: summary.educationId,
+        educationName: summary.educationName,
+        institutionName: summary.institutionName,
+        instructorName: summary.instructorName,
+        submittedAt: summary.equipment.submittedAt || '',
+        status: summary.equipment.status,
+        rejectReason: summary.equipment.rejectReason,
       })
     }
   })
@@ -238,3 +289,46 @@ export function getInstructorSubmissions(instructorName: string): {
   )
 }
 
+/**
+ * Get submission groups filtered by instructor name (legacy support)
+ */
+export function getEducationSubmissionGroupsByInstructor(instructorName: string): EducationSubmissionGroup[] {
+  const summaries = getEducationDocSummariesByInstructor(instructorName)
+  
+  return summaries.map(summary => ({
+    educationId: summary.educationId,
+    educationName: summary.educationName,
+    institutionName: summary.institutionName,
+    instructorName: summary.instructorName,
+    attendance: summary.attendance ? {
+      id: summary.attendance.id,
+      type: 'attendance',
+      educationId: summary.educationId,
+      status: summary.attendance.status,
+      submittedAt: summary.attendance.submittedAt,
+      submittedBy: summary.instructorName,
+      rejectReason: summary.attendance.rejectReason,
+    } : undefined,
+    activity: summary.activity ? {
+      id: summary.activity.id,
+      type: 'activity',
+      educationId: summary.educationId,
+      status: summary.activity.status,
+      submittedAt: summary.activity.submittedAt,
+      submittedBy: summary.instructorName,
+      rejectReason: summary.activity.rejectReason,
+    } : undefined,
+    equipment: summary.equipment ? {
+      id: summary.equipment.id,
+      type: 'equipment',
+      educationId: summary.educationId,
+      status: summary.equipment.status,
+      submittedAt: summary.equipment.submittedAt,
+      submittedBy: summary.instructorName,
+      rejectReason: summary.equipment.rejectReason,
+    } : undefined,
+    overallStatus: summary.overallStatus,
+    submittedAt: summary.lastUpdatedAt,
+    lastUpdatedAt: summary.lastUpdatedAt,
+  }))
+}

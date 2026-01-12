@@ -1,15 +1,21 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Table, Button, Card, Select, DatePicker, Input, Badge, Tabs, Space } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { Search, Eye } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
 import dayjs from 'dayjs'
 import { getAttendanceDocs } from '@/app/instructor/schedule/[educationId]/attendance/storage'
-import { getActivityLogs } from '@/app/instructor/activity-logs/storage'
-import { getDocs as getEquipmentDocs } from '@/app/instructor/equipment-confirmations/storage'
+import { getActivityLogs, getActivityLogByEducationId } from '@/app/instructor/activity-logs/storage'
+import { getDocs as getEquipmentDocs, getDocByEducationId, createDocFromDefault, upsertDoc } from '@/app/instructor/equipment-confirmations/storage'
+import {
+  getEducationDocSummariesByInstructor,
+  type EducationDocSummary,
+} from '@/entities/submission'
+import { DocumentStatusIndicator, EducationDetailDrawer } from '@/components/shared/common'
 import type { AttendanceDocument } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import type { ActivityLog } from '@/app/instructor/activity-logs/types'
 import type { EquipmentConfirmationDoc } from '@/app/instructor/equipment-confirmations/types'
@@ -18,177 +24,133 @@ const { RangePicker } = DatePicker
 
 export default function MyScheduleListPage() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<'attendance' | 'activity' | 'equipment'>('attendance')
+  const { userProfile } = useAuth()
+  const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'rejected' | 'approved'>('all')
   const [searchText, setSearchText] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null)
+  const [summaries, setSummaries] = useState<EducationDocSummary[]>([])
+  const [selectedEducationId, setSelectedEducationId] = useState<string | null>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   // Get current instructor info
-  const currentInstructorName = '홍길동' // Mock instructor name
+  const currentInstructorName = userProfile?.name || '홍길동' // Mock instructor name
 
-  // Get all submission data for the instructor
-  const allAttendanceDocs = getAttendanceDocs().filter(doc => doc.submittedBy === currentInstructorName)
-  const allActivityLogs = getActivityLogs().filter(log => log.submittedBy === currentInstructorName || log.createdBy === currentInstructorName)
-  const allEquipmentDocs = getEquipmentDocs().filter(doc => doc.createdByName === currentInstructorName)
+  useEffect(() => {
+    loadSummaries()
+  }, [])
 
-  // Create unique education list from all submissions
-  const uniqueEducations = useMemo(() => {
-    const educationMap = new Map<string, {
-      educationId: string
-      educationName: string
-      institutionName: string
-      session: number
-      date: string
-      startTime: string
-      endTime: string
-      status: string
-    }>()
+  const loadSummaries = () => {
+    const mySummaries = getEducationDocSummariesByInstructor(currentInstructorName)
+    setSummaries(mySummaries)
+  }
 
-    // From attendance docs
-    allAttendanceDocs.forEach(doc => {
-      if (!educationMap.has(doc.educationId)) {
-        educationMap.set(doc.educationId, {
-          educationId: doc.educationId,
-          educationName: doc.programName,
-          institutionName: doc.institution,
-          session: 1, // Default session
-          date: doc.submittedAt ? dayjs(doc.submittedAt).format('YYYY-MM-DD') : '',
-          startTime: '09:00',
-          endTime: '17:00',
-          status: doc.status === 'APPROVED' ? '승인됨' : doc.status === 'REJECTED' ? '반려됨' : '제출됨'
-        })
-      }
-    })
+  const filteredSummaries = useMemo(() => {
+    let filtered = summaries
 
-    // From activity logs
-    allActivityLogs.forEach(log => {
-      const educationId = log.educationId || log.id
-      if (!educationMap.has(educationId)) {
-        educationMap.set(educationId, {
-          educationId,
-          educationName: log.educationType ? `${log.educationType} - ${log.institutionName}` : log.institutionName,
-          institutionName: log.institutionName,
-          session: 1,
-          date: log.submittedAt ? dayjs(log.submittedAt).format('YYYY-MM-DD') : '',
-          startTime: '09:00',
-          endTime: '17:00',
-          status: log.status === 'APPROVED' ? '승인됨' : log.status === 'REJECTED' ? '반려됨' : '제출됨'
-        })
-      }
-    })
+    // Tab filter
+    if (activeTab === 'pending') {
+      filtered = filtered.filter(s => s.overallStatus === 'ALL_SUBMITTED' || s.overallStatus === 'PARTIAL')
+    } else if (activeTab === 'rejected') {
+      filtered = filtered.filter(s => s.overallStatus === 'REJECTED')
+    } else if (activeTab === 'approved') {
+      filtered = filtered.filter(s => s.overallStatus === 'ALL_APPROVED')
+    }
 
-    // From equipment docs
-    allEquipmentDocs.forEach(doc => {
-      const educationId = doc.educationId || doc.id
-      if (!educationMap.has(educationId)) {
-        educationMap.set(educationId, {
-          educationId,
-          educationName: doc.materialName,
-          institutionName: doc.organizationName,
-          session: 1,
-          date: doc.createdAt ? dayjs(doc.createdAt).format('YYYY-MM-DD') : '',
-          startTime: '09:00',
-          endTime: '17:00',
-          status: doc.status === 'APPROVED' ? '승인됨' : doc.status === 'REJECTED' ? '반려됨' : '제출됨'
-        })
-      }
-    })
+    // Search filter
+    if (searchText) {
+      const searchLower = searchText.toLowerCase()
+      filtered = filtered.filter(s => {
+        return (
+          s.educationId.toLowerCase().includes(searchLower) ||
+          s.educationName.toLowerCase().includes(searchLower) ||
+          s.institutionName.toLowerCase().includes(searchLower) ||
+          s.instructorName.toLowerCase().includes(searchLower)
+        )
+      })
+    }
 
-    return Array.from(educationMap.values())
-  }, [allAttendanceDocs, allActivityLogs, allEquipmentDocs])
+    return filtered
+  }, [summaries, activeTab, searchText])
 
-  // Use unique educations as myAssignments for filtering
-  const myAssignments = uniqueEducations
+  const handleViewDetail = (educationId: string) => {
+    setSelectedEducationId(educationId)
+    setDrawerOpen(true)
+  }
 
-  const filteredData = useMemo(() => {
-    return myAssignments.filter((item) => {
-      // Search filter
-      if (searchText) {
-        const searchLower = searchText.toLowerCase()
-        const matchesSearch = 
-          item.educationName.toLowerCase().includes(searchLower) ||
-          item.institution.toLowerCase().includes(searchLower) ||
-          item.educationId.toLowerCase().includes(searchLower)
-        if (!matchesSearch) return false
-      }
-
-      // Status filter
-      if (statusFilter !== 'all') {
-        if (statusFilter === 'confirmed' && item.assignmentStatus !== 'confirmed') return false
-        if (statusFilter === 'unconfirmed' && item.assignmentStatus !== 'unconfirmed') return false
-        if (statusFilter === 'in-progress' && item.status !== '진행중') return false
-        if (statusFilter === 'completed' && item.status !== '완료') return false
-      }
-
-      // Role filter (check if instructor is main or assistant)
-      if (roleFilter !== 'all') {
-        const isMain = item.lessons?.some(lesson => {
-          const mainInstructors = Array.isArray(lesson.mainInstructors) ? lesson.mainInstructors : []
-          return mainInstructors.some(inst => inst.name === currentInstructorName)
-        })
-        const isAssistant = item.lessons?.some(lesson => {
-          const assistantInstructors = Array.isArray(lesson.assistantInstructors) ? lesson.assistantInstructors : []
-          return assistantInstructors.some(inst => inst.name === currentInstructorName)
-        })
-        
-        if (roleFilter === 'main' && !isMain) return false
-        if (roleFilter === 'assistant' && !isAssistant) return false
-      }
-
-      // Date range filter
-      if (dateRange && dateRange[0] && dateRange[1]) {
-        const itemStart = item.periodStart ? dayjs(item.periodStart) : null
-        const itemEnd = item.periodEnd ? dayjs(item.periodEnd) : null
-        
-        if (itemStart && itemEnd) {
-          const filterStart = dateRange[0]
-          const filterEnd = dateRange[1]
-          
-          if (!(itemStart.isAfter(filterStart.subtract(1, 'day')) && itemEnd.isBefore(filterEnd.add(1, 'day')))) {
-            return false
-          }
-        }
-      }
-
-      return true
-    })
-  }, [myAssignments, searchText, statusFilter, roleFilter, dateRange, currentInstructorName])
-
-
-  // Create table data from unique educations
-  const tableData = useMemo(() => {
-    return filteredData.map((education, index) => ({
-      key: `${education.educationId}-${index}`,
-      educationId: education.educationId,
-      educationName: education.educationName,
-      institution: education.institutionName,
-      session: education.session,
-      date: education.date,
-      startTime: education.startTime,
-      endTime: education.endTime,
-      status: education.status,
-      assignmentKey: education.educationId,
-    }))
-  }, [filteredData])
-
-  const getStatusBadge = (status: string) => {
-    if (status === '1차 확정') {
-      return (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-          {status}
-        </span>
-      )
+  const handleViewAttendance = (educationId: string) => {
+    // 교육 출석부 상세보기를 누르면 강사의 activity-logs logId page로 이동
+    const activityLog = getActivityLogByEducationId(educationId)
+    if (activityLog?.id) {
+      router.push(`/instructor/activity-logs/${activityLog.id}`)
     } else {
-      return (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
-          {status}
-        </span>
-      )
+      // activity log가 없으면 educationId를 사용하여 새로 생성하거나 찾기
+      router.push(`/instructor/activity-logs/${educationId}`)
     }
   }
 
-  const columns: ColumnsType<any> = [
+  const handleViewActivity = (id: string) => {
+    // id가 educationId 형태일 수도 있으므로 확인
+    const activityLog = getActivityLogByEducationId(id)
+    if (activityLog?.id) {
+      router.push(`/instructor/activity-logs/${activityLog.id}`)
+    } else {
+      // activity log가 없으면 id를 사용하여 새로 생성하거나 찾기
+      router.push(`/instructor/activity-logs/${id}`)
+    }
+  }
+
+  const handleViewEquipment = (id: string) => {
+    // id가 educationId 형태일 수도 있으므로 확인
+    const existingDoc = getDocByEducationId(id)
+    if (existingDoc) {
+      router.push(`/instructor/equipment-confirmations/${existingDoc.id}`)
+    } else {
+      // educationId로 새로 생성
+      const newDoc = createDocFromDefault({ educationId: id })
+      upsertDoc(newDoc)
+      router.push(`/instructor/equipment-confirmations/${newDoc.id}`)
+    }
+  }
+
+  const getOverallStatusBadge = (status: string) => {
+    if (status === 'ALL_APPROVED') {
+      return (
+        <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-emerald-50 to-green-100 text-emerald-700 border border-emerald-200">
+          전체 승인
+        </span>
+      )
+    }
+    if (status === 'REJECTED') {
+      return (
+        <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-red-50 to-red-100 text-red-700 border border-red-200">
+          반려됨
+        </span>
+      )
+    }
+    if (status === 'ALL_SUBMITTED') {
+      return (
+        <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 border border-blue-200">
+          전체 제출
+        </span>
+      )
+    }
+    if (status === 'PARTIAL') {
+      return (
+        <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-amber-50 to-yellow-100 text-amber-700 border border-amber-200">
+          일부 제출
+        </span>
+      )
+    }
+    return (
+      <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 border border-gray-200">
+        대기
+      </span>
+    )
+  }
+
+  const columns: ColumnsType<EducationDocSummary> = [
     {
       title: '교육ID',
       dataIndex: 'educationId',
@@ -203,36 +165,91 @@ export default function MyScheduleListPage() {
       width: 200,
     },
     {
-      title: '교육기관',
-      dataIndex: 'institution',
-      key: 'institution',
+      title: '기관명',
+      dataIndex: 'institutionName',
+      key: 'institutionName',
       width: 150,
     },
     {
-      title: '수업 차시',
-      dataIndex: 'session',
-      key: 'session',
-      width: 100,
-      render: (session: number) => <span>{session}차시</span>,
+      title: '문서 상태',
+      key: 'docStatus',
+      width: 300,
+      render: (_, record) => (
+        <div className="flex flex-col gap-2">
+          <DocumentStatusIndicator
+            status={record.attendance?.status}
+            count={record.attendance?.count}
+            label="출석부"
+            onClick={() => {
+              if (record.attendance?.id) {
+                router.push(`/instructor/schedule/${record.educationId}/attendance`)
+              } else {
+                router.push(`/instructor/schedule/${record.educationId}/attendance`)
+              }
+            }}
+            educationId={record.educationId}
+            documentId={record.attendance?.id}
+          />
+          <DocumentStatusIndicator
+            status={record.activity?.status}
+            count={record.activity?.count}
+            label="활동일지"
+            onClick={() => {
+              if (record.activity?.id) {
+                router.push(`/instructor/activity-logs/${record.activity.id}`)
+              } else {
+                // Create new activity log
+                const { getActivityLogByEducationId } = require('@/app/instructor/activity-logs/storage')
+                const existingLog = getActivityLogByEducationId(record.educationId)
+                if (existingLog && existingLog.id) {
+                  router.push(`/instructor/activity-logs/${existingLog.id}`)
+                } else {
+                  router.push(`/instructor/activity-logs/new?educationId=${record.educationId}`)
+                }
+              }
+            }}
+            educationId={record.educationId}
+            documentId={record.activity?.id}
+          />
+          <DocumentStatusIndicator
+            status={record.equipment?.status}
+            count={record.equipment?.count}
+            label="교구확인서"
+            onClick={() => {
+              if (record.equipment?.id) {
+                router.push(`/instructor/equipment-confirmations/${record.equipment.id}`)
+              } else {
+                // Create new equipment doc
+                const { getDocByEducationId, createDocFromDefault, upsertDoc } = require('@/app/instructor/equipment-confirmations/storage')
+                const existingDoc = getDocByEducationId(record.educationId)
+                if (existingDoc) {
+                  router.push(`/instructor/equipment-confirmations/${existingDoc.id}`)
+                } else {
+                  const newDoc = createDocFromDefault({ educationId: record.educationId })
+                  upsertDoc(newDoc)
+                  router.push(`/instructor/equipment-confirmations/${newDoc.id}`)
+                }
+              }
+            }}
+            educationId={record.educationId}
+            documentId={record.equipment?.id}
+          />
+        </div>
+      ),
     },
     {
-      title: '일자',
-      dataIndex: 'date',
-      key: 'date',
+      title: '전체 상태',
+      dataIndex: 'overallStatus',
+      key: 'overallStatus',
       width: 120,
+      render: (status: string) => getOverallStatusBadge(status),
     },
     {
-      title: '시작 시간',
-      dataIndex: 'startTime',
-      key: 'startTime',
-      width: 100,
-    },
-    {
-      title: '상태',
-      dataIndex: 'status',
-      key: 'status',
-      width: 100,
-      render: (status: string) => getStatusBadge(status),
+      title: '최종 수정일',
+      dataIndex: 'lastUpdatedAt',
+      key: 'lastUpdatedAt',
+      width: 150,
+      render: (date?: string) => date ? dayjs(date).format('YYYY-MM-DD HH:mm') : '-',
     },
     {
       title: '관리',
@@ -244,16 +261,7 @@ export default function MyScheduleListPage() {
           <Button
             size="small"
             icon={<Eye className="w-3 h-3" />}
-            onClick={(e) => {
-              e.stopPropagation()
-              if (activeTab === 'attendance') {
-                router.push(`/instructor/schedule/${record.educationId}/attendance?session=${record.session}`)
-              } else if (activeTab === 'activity') {
-                router.push(`/instructor/activity-logs/${record.educationId}`)
-              } else if (activeTab === 'equipment') {
-                router.push(`/instructor/equipment-confirmations/${record.educationId}`)
-              }
-            }}
+            onClick={() => handleViewDetail(record.educationId)}
           >
             상세
           </Button>
@@ -262,15 +270,15 @@ export default function MyScheduleListPage() {
     },
   ]
 
-  // Calculate counts for statistics using actual submission data (like admin page)
-  const attendanceCount = allAttendanceDocs.length
-  const activityCount = allActivityLogs.length
-  const equipmentCount = allEquipmentDocs.length
+  const pendingCount = summaries.filter(s => s.overallStatus === 'ALL_SUBMITTED' || s.overallStatus === 'PARTIAL').length
+  const approvedCount = summaries.filter(s => s.overallStatus === 'ALL_APPROVED').length
+  const rejectedCount = summaries.filter(s => s.overallStatus === 'REJECTED').length
+  const allCount = summaries.length
 
   return (
     <ProtectedRoute requiredRole="instructor">
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 transition-colors">
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="p-6">
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               내 강의 스케줄
@@ -281,88 +289,66 @@ export default function MyScheduleListPage() {
           </div>
 
           {/* Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
             <Card className="rounded-xl">
-              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">확정 수업</div>
-              <div className="text-3xl font-bold text-blue-600">{attendanceCount}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">전체</div>
+              <div className="text-3xl font-bold text-slate-600">{allCount}</div>
             </Card>
             <Card className="rounded-xl">
-              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">활동 일지</div>
-              <div className="text-3xl font-bold text-green-600">{activityCount}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">승인 대기</div>
+              <div className="text-3xl font-bold text-blue-600">{pendingCount}</div>
             </Card>
             <Card className="rounded-xl">
-              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">교구 확인서</div>
-              <div className="text-3xl font-bold text-purple-600">{equipmentCount}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">승인 완료</div>
+              <div className="text-3xl font-bold text-green-600">{approvedCount}</div>
+            </Card>
+            <Card className="rounded-xl">
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">반려</div>
+              <div className="text-3xl font-bold text-red-600">{rejectedCount}</div>
             </Card>
           </div>
 
-          {/* Filters */}
-          <Card className="mb-6 rounded-xl">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Tabs as Filters */}
+          <Card className="rounded-xl">
+            {/* Search Bar */}
+            <div className="mb-4">
               <Input
-                placeholder="교육명, 기관명 검색"
+                placeholder="교육ID, 교육명, 기관명으로 검색"
                 prefix={<Search className="w-4 h-4 text-gray-400" />}
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
-                className="w-full"
-              />
-              
-              <Select
-                placeholder="상태 선택"
-                value={statusFilter}
-                onChange={setStatusFilter}
-                className="w-full"
-              >
-                <Select.Option value="all">전체</Select.Option>
-                <Select.Option value="confirmed">확정</Select.Option>
-                <Select.Option value="in-progress">진행 중</Select.Option>
-                <Select.Option value="completed">완료</Select.Option>
-              </Select>
-
-              <Select
-                placeholder="역할 선택"
-                value={roleFilter}
-                onChange={setRoleFilter}
-                className="w-full"
-              >
-                <Select.Option value="all">전체</Select.Option>
-                <Select.Option value="main">주강사</Select.Option>
-                <Select.Option value="assistant">보조강사</Select.Option>
-              </Select>
-
-              <RangePicker
-                className="w-full"
-                onChange={(dates) => setDateRange(dates as [dayjs.Dayjs | null, dayjs.Dayjs | null] | null)}
-                placeholder={['시작일', '종료일']}
+                allowClear
+                className="max-w-md"
               />
             </div>
-          </Card>
 
-          {/* Tabs and Table */}
-          <Card className="rounded-xl">
             <Tabs
               activeKey={activeTab}
               onChange={(key) => setActiveTab(key as any)}
               items={[
                 {
-                  key: 'attendance',
-                  label: `교육 출석부 (${attendanceCount})`,
+                  key: 'all',
+                  label: `전체 (${allCount})`,
                 },
                 {
-                  key: 'activity',
-                  label: `교육 활동 일지 (${activityCount})`,
+                  key: 'pending',
+                  label: `미제출 있음 (${pendingCount})`,
                 },
                 {
-                  key: 'equipment',
-                  label: `교구 확인서 (${equipmentCount})`,
+                  key: 'rejected',
+                  label: `반려 있음 (${rejectedCount})`,
+                },
+                {
+                  key: 'approved',
+                  label: `승인 완료 (${approvedCount})`,
                 },
               ]}
             />
 
             <Table
               columns={columns}
-              dataSource={tableData}
-              rowKey="key"
+              dataSource={filteredSummaries}
+              rowKey="educationId"
               scroll={{ x: 'max-content' }}
               pagination={{
                 pageSize: 20,
@@ -371,6 +357,23 @@ export default function MyScheduleListPage() {
               }}
             />
           </Card>
+
+          {/* Detail Drawer */}
+          {selectedEducationId && (
+            <EducationDetailDrawer
+              open={drawerOpen}
+              onClose={() => {
+                setDrawerOpen(false)
+                setSelectedEducationId(null)
+              }}
+              educationId={selectedEducationId}
+              summary={summaries.find(s => s.educationId === selectedEducationId) || null}
+              isAdmin={false}
+              onViewAttendance={handleViewAttendance}
+              onViewActivity={handleViewActivity}
+              onViewEquipment={handleViewEquipment}
+            />
+          )}
         </div>
       </div>
     </ProtectedRoute>

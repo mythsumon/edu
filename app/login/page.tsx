@@ -2,7 +2,7 @@
 
 import { Form, Button, message, Spin } from 'antd'
 import { InputField } from '@/components/shared/common'
-import { GraduationCap } from 'lucide-react'
+import { GraduationCap, Shield, User } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useEffect, useState } from 'react'
@@ -12,14 +12,15 @@ export default function LoginPage() {
   const router = useRouter()
   const { login } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
+  const [loginType, setLoginType] = useState<'instructor' | 'admin'>('instructor')
 
-  // Set default values for ID and password
+  // Set default values for ID and password based on login type
   useEffect(() => {
-    form.setFieldsValue({
-      email: 'instructor@example.com',
-      password: 'Instructor@1234'
-    })
-  }, [form])
+    const defaultValues = loginType === 'admin'
+      ? { email: 'admin@example.com', password: 'Admin@1234' }
+      : { email: 'instructor@example.com', password: 'Instructor@1234' }
+    form.setFieldsValue(defaultValues)
+  }, [form, loginType])
 
   const handleSubmit = async (values: any) => {
     setIsLoading(true)
@@ -48,7 +49,7 @@ export default function LoginPage() {
         router.push('/instructor/dashboard')
         return
       }
-      
+
       // Admin credentials
       if (email === 'admin@example.com' && password === 'Admin@1234') {
         login('admin')
@@ -58,7 +59,7 @@ export default function LoginPage() {
         router.push('/admin')
         return
       }
-      
+
       // Operator credentials
       if (email === 'operator@example.com' && password === 'Operator@1234') {
         login('operator')
@@ -157,6 +158,39 @@ export default function LoginPage() {
             </div>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-gray-100 mb-2">로그인</h2>
             <p className="text-sm text-slate-500 dark:text-gray-400">자격 증명을 사용하여 대시보드에 액세스하세요.</p>
+
+            {/* Login Type Selector */}
+            <div className="mt-6 mb-4">
+              <div className="text-center mb-3">
+                <span className="text-sm font-medium text-slate-600 dark:text-gray-400">로그인 유형 선택</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div
+                  className={`cursor-pointer rounded-lg border-2 p-4 text-center transition-all duration-200 ${
+                    loginType === 'instructor'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:border-blue-400 dark:text-blue-300'
+                      : 'border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700'
+                  }`}
+                  onClick={() => setLoginType('instructor')}
+                >
+                  <User size={20} className="mx-auto mb-2" />
+                  <div className="font-medium text-sm">강사</div>
+                  <div className="text-xs opacity-75 mt-1">수업 및 문서 관리</div>
+                </div>
+                <div
+                  className={`cursor-pointer rounded-lg border-2 p-4 text-center transition-all duration-200 ${
+                    loginType === 'admin'
+                      ? 'border-green-500 bg-green-50 text-green-700 dark:bg-green-900/20 dark:border-green-400 dark:text-green-300'
+                      : 'border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700'
+                  }`}
+                  onClick={() => setLoginType('admin')}
+                >
+                  <Shield size={20} className="mx-auto mb-2" />
+                  <div className="font-medium text-sm">관리자</div>
+                  <div className="text-xs opacity-75 mt-1">전체 시스템 관리</div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <Form

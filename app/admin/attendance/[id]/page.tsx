@@ -6,10 +6,12 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Button, Space, Modal, Input, Table, message } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { ArrowLeft, CheckCircle2, XCircle } from 'lucide-react'
+import { Badge } from 'antd'
 import { DetailPageHeaderSticky, DetailSectionCard } from '@/components/admin/operations'
 import { getAttendanceDocByEducationId, getAttendanceDocById, getAttendanceDocs, upsertAttendanceDoc, type AttendanceDocument } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import { useAuth } from '@/contexts/AuthContext'
 import { InstitutionContactAndSignatures } from '@/components/instructor/attendance/InstitutionContactAndSignatures'
+import { getActivityLogByEducationId } from '@/app/instructor/activity-logs/storage'
 import dayjs from 'dayjs'
 
 const { TextArea } = Input
@@ -81,10 +83,22 @@ export default function AdminAttendanceDetailPage() {
           status: 'APPROVED',
           approvedAt: new Date().toISOString(),
           approvedBy: userProfile?.name || '',
+          // Clear reject info when approving
+          rejectedAt: undefined,
+          rejectedBy: undefined,
+          rejectReason: undefined,
         }
         const result = upsertAttendanceDoc(updated)
         if (result.success) {
           setDoc(updated)
+          // Trigger storage event for other tabs/windows
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new StorageEvent('storage', {
+              key: 'attendance_documents',
+              newValue: localStorage.getItem('attendance_documents'),
+              oldValue: localStorage.getItem('attendance_documents'),
+            }))
+          }
           message.success('승인되었습니다.')
         } else {
           message.error(result.error || '승인 처리 중 오류가 발생했습니다.')
@@ -107,12 +121,23 @@ export default function AdminAttendanceDetailPage() {
       rejectedAt: new Date().toISOString(),
       rejectedBy: userProfile?.name || '',
       rejectReason,
+      // Clear approve info when rejecting
+      approvedAt: undefined,
+      approvedBy: undefined,
     }
     const result = upsertAttendanceDoc(updated)
     if (result.success) {
       setDoc(updated)
       setRejectModalVisible(false)
       setRejectReason('')
+      // Trigger storage event for other tabs/windows
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'attendance_documents',
+          newValue: localStorage.getItem('attendance_documents'),
+          oldValue: localStorage.getItem('attendance_documents'),
+        }))
+      }
       message.success('반려되었습니다.')
     } else {
       message.error(result.error || '반려 처리 중 오류가 발생했습니다.')
@@ -129,54 +154,79 @@ export default function AdminAttendanceDetailPage() {
     )
   }
 
+  const getStatusBadge = () => {
+    const statusMap = {
+      DRAFT: { color: 'default', text: '초안' },
+      SUBMITTED: { color: 'processing', text: '제출됨' },
+      APPROVED: { color: 'success', text: '승인됨' },
+      REJECTED: { color: 'error', text: '반려됨' },
+    }
+    const status = statusMap[doc.status]
+    return <Badge status={status.color as any} text={status.text} />
+  }
+
   return (
     <ProtectedRoute requiredRole="admin">
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 transition-colors">
-        <DetailPageHeaderSticky
-          title="교육 출석부 상세"
-          onBack={() => router.back()}
-        />
-
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              교육 출석부 상세
-            </h1>
-            <div className="flex items-center gap-4">
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                doc.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                doc.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
-                'bg-blue-100 text-blue-800'
-              }`}>
-                {doc.status === 'APPROVED' ? '승인됨' :
-                 doc.status === 'REJECTED' ? '반려됨' :
-                 '제출됨'}
-              </span>
+        {/* Header */}
+        <div className="bg-white dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700 sticky top-0 z-10 shadow-sm">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Button
+                  icon={<ArrowLeft className="w-4 h-4" />}
+                  onClick={() => router.back()}
+                  className="flex items-center dark:text-gray-300"
+                >
+                  돌아가기
+                </Button>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    교육 출석부 상세
+                  </h1>
+                  <div className="mt-1">{getStatusBadge()}</div>
+                </div>
+              </div>
+              <Space>
+                {doc.status === 'SUBMITTED' && (
+                  <>
+                    <Button
+                      type="primary"
+                      icon={<CheckCircle2 className="w-4 h-4" />}
+                      onClick={handleApprove}
+                      style={{ background: '#10b981', borderColor: '#10b981' }}
+                    >
+                      승인
+                    </Button>
+                    <Button
+                      danger
+                      icon={<XCircle className="w-4 h-4" />}
+                      onClick={() => setRejectModalVisible(true)}
+                    >
+                      반려
+                    </Button>
+                  </>
+                )}
+              </Space>
             </div>
           </div>
+        </div>
 
-          {/* Action Buttons */}
-          {doc.status === 'SUBMITTED' && (
-            <div className="mb-6 flex gap-4">
-              <Button
-                type="primary"
-                icon={<CheckCircle2 className="w-4 h-4" />}
-                onClick={handleApprove}
-                size="large"
-                style={{ background: '#10b981', borderColor: '#10b981' }}
-              >
-                승인
-              </Button>
-              <Button
-                danger
-                icon={<XCircle className="w-4 h-4" />}
-                onClick={() => setRejectModalVisible(true)}
-                size="large"
-              >
-                반려
-              </Button>
+        {/* Submitted banner */}
+        {doc.status === 'SUBMITTED' && (
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  제출 완료 (승인 대기 중)
+                </span>
+              </div>
             </div>
-          )}
+          </div>
+        )}
+
+        <div className="max-w-7xl mx-auto px-6 py-8">
 
           {/* 교육 정보 */}
           <DetailSectionCard title="교육 정보" className="mb-6">
@@ -397,21 +447,45 @@ export default function AdminAttendanceDetailPage() {
             />
           </DetailSectionCard>
 
-          {/* 수정 버튼 */}
+          {/* 수정 버튼 및 활동 일지 이동 */}
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm mb-6">
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              출석부를 수정하려면 아래 버튼을 클릭하세요.
-            </p>
-            <Button
-              type="primary"
-              onClick={() => {
-                // Use doc.educationId if available, otherwise try to extract from educationId param
-                const targetEducationId = doc.educationId || educationId.replace(/^attendance-/, '')
-                router.push(`/instructor/schedule/${targetEducationId}/attendance`)
-              }}
-            >
-              출석부 수정하기
-            </Button>
+            <div className="space-y-4">
+              <div>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  출석부를 수정하려면 아래 버튼을 클릭하세요.
+                </p>
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    // Use doc.educationId if available, otherwise try to extract from educationId param
+                    const targetEducationId = doc.educationId || educationId.replace(/^attendance-/, '')
+                    router.push(`/instructor/schedule/${targetEducationId}/attendance`)
+                  }}
+                >
+                  출석부 수정하기
+                </Button>
+              </div>
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  관련 활동 일지를 확인하려면 아래 버튼을 클릭하세요.
+                </p>
+                <Button
+                  onClick={() => {
+                    const targetEducationId = doc.educationId || educationId.replace(/^attendance-/, '')
+                    // 교육 출석부 상세 페이지에서 활동 일지로 이동
+                    const activityLog = getActivityLogByEducationId(targetEducationId)
+                    if (activityLog?.id) {
+                      router.push(`/instructor/activity-logs/${activityLog.id}`)
+                    } else {
+                      // activity log가 없으면 educationId를 사용하여 새로 생성하거나 찾기
+                      router.push(`/instructor/activity-logs/${targetEducationId}`)
+                    }
+                  }}
+                >
+                  활동 일지 보기
+                </Button>
+              </div>
+            </div>
           </div>
 
           {/* Reject Modal */}

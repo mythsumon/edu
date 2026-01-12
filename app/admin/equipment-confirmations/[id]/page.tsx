@@ -120,6 +120,15 @@ export default function AdminEquipmentConfirmationDetailPage() {
         const derived = deriveInventory(updated.items, allDocs, baseInventory)
         setInventoryCheck(derived)
         
+        // Trigger storage event for other tabs/windows
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new StorageEvent('storage', {
+            key: 'equipment_confirmation_docs',
+            newValue: localStorage.getItem('equipment_confirmation_docs'),
+            oldValue: localStorage.getItem('equipment_confirmation_docs'),
+          }))
+        }
+        
         message.success('승인되었습니다.')
       },
     })
@@ -146,6 +155,16 @@ export default function AdminEquipmentConfirmationDetailPage() {
     setAuditLogs(getAuditLogs(doc.id))
     setRejectModalVisible(false)
     setRejectReason('')
+    
+    // Trigger storage event for other tabs/windows
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'equipment_confirmation_docs',
+        newValue: localStorage.getItem('equipment_confirmation_docs'),
+        oldValue: localStorage.getItem('equipment_confirmation_docs'),
+      }))
+    }
+    
     message.success('반려되었습니다.')
   }
 

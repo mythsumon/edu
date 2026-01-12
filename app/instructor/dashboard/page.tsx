@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Card, Modal, Button, Badge } from 'antd'
+import { DocumentStatusIndicator } from '@/components/shared/common'
 import { 
   Calendar, 
   BookOpen, 
@@ -147,17 +148,47 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
     '완료': 'from-slate-400 to-slate-500'
   }
   
-  const getStatusBadge = (status: string) => {
-    if (status === 'APPROVED') {
-      return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">승인</span>
+  const handleAttendanceClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    // 교육 출석부 상세보기를 누르면 강사의 activity-logs logId page로 이동
+    const activityLog = getActivityLogByEducationId(course.id)
+    if (activityLog?.id) {
+      router.push(`/instructor/activity-logs/${activityLog.id}`)
+    } else {
+      // activity log가 없으면 educationId를 사용하여 새로 생성하거나 찾기
+      router.push(`/instructor/activity-logs/${course.id}`)
     }
-    if (status === 'SUBMITTED') {
-      return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">제출</span>
+  }
+  
+  const handleActivityClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (activityLog?.id) {
+      router.push(`/instructor/activity-logs/${activityLog.id}`)
+    } else {
+      const existingLog = getActivityLogByEducationId(course.id)
+      if (existingLog && existingLog.id) {
+        router.push(`/instructor/activity-logs/${existingLog.id}`)
+      } else {
+        router.push(`/instructor/activity-logs/new?educationId=${course.id}`)
+      }
     }
-    if (status === 'REJECTED') {
-      return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">반려</span>
+  }
+  
+  const handleEquipmentClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (equipmentDoc?.id) {
+      router.push(`/instructor/equipment-confirmations/${equipmentDoc.id}`)
+    } else {
+      const { getDocByEducationId, createDocFromDefault, upsertDoc } = require('@/app/instructor/equipment-confirmations/storage')
+      const existingDoc = getDocByEducationId(course.id)
+      if (existingDoc) {
+        router.push(`/instructor/equipment-confirmations/${existingDoc.id}`)
+      } else {
+        const newDoc = createDocFromDefault({ educationId: course.id })
+        upsertDoc(newDoc)
+        router.push(`/instructor/equipment-confirmations/${newDoc.id}`)
+      }
     }
-    return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">미제출</span>
   }
   
   return (
@@ -190,19 +221,31 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
           {/* Document Submission Status */}
           <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-gray-700">
             <div className="text-xs font-semibold text-slate-500 dark:text-gray-400 mb-1">문서 제출 상태</div>
-            <div className="flex flex-wrap gap-2">
-              <div className="flex items-center gap-1">
-                <span className="text-xs text-slate-600 dark:text-gray-400">출석부:</span>
-                {getStatusBadge(attendanceStatus)}
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-xs text-slate-600 dark:text-gray-400">활동일지:</span>
-                {getStatusBadge(activityStatus)}
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-xs text-slate-600 dark:text-gray-400">교구확인서:</span>
-                {getStatusBadge(equipmentStatus)}
-              </div>
+            <div className="flex flex-col gap-2">
+              <DocumentStatusIndicator
+                status={attendanceStatus as any}
+                count={attendanceDoc ? 1 : 0}
+                label="출석부"
+                onClick={handleAttendanceClick}
+                educationId={course.id}
+                documentId={attendanceDoc?.id}
+              />
+              <DocumentStatusIndicator
+                status={activityStatus as any}
+                count={activityLog ? 1 : 0}
+                label="활동일지"
+                onClick={handleActivityClick}
+                educationId={course.id}
+                documentId={activityLog?.id}
+              />
+              <DocumentStatusIndicator
+                status={equipmentStatus as any}
+                count={equipmentDoc ? 1 : 0}
+                label="교구확인서"
+                onClick={handleEquipmentClick}
+                educationId={course.id}
+                documentId={equipmentDoc?.id}
+              />
             </div>
           </div>
           
