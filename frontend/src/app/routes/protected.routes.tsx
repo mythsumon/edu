@@ -2,6 +2,7 @@ import { RouteObject } from 'react-router-dom'
 import { AppShell } from '../layout/AppShell'
 import { ProtectedLayout } from '../layout/ProtectedLayout'
 import { ROUTES } from '@/shared/constants/routes'
+import { HomePage } from '@/modules/home'
 import { DashboardPage } from '@/modules/dashboard'
 import { EducationOperationsPage } from '@/modules/education-operations'
 import {
@@ -15,14 +16,6 @@ import {
   InstructorManagementPage,
 } from '@/modules/reference-information-management'
 import { SettingsAndUserManagementPage } from '@/modules/system-management'
-
-// Placeholder pages - will be replaced with actual pages
-const HomePage = () => (
-  <div>
-    <h1 className="text-3xl font-bold mb-4">Home</h1>
-    <p className="text-muted-foreground">Dummy home page</p>
-  </div>
-)
 
 export const protectedRoutes: RouteObject[] = [
   {

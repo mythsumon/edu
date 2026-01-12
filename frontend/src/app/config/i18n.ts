@@ -2,15 +2,13 @@ import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import enTranslations from '@/assets/lang/en.json'
 import koTranslations from '@/assets/lang/ko.json'
+import { useUiStore } from '@/shared/stores/ui.store'
 
-// Get stored language from localStorage if available
+// Get stored language from UI store if available
 const getStoredLanguage = (): string => {
   try {
-    const stored = localStorage.getItem('sidebar_collapsed')
-    if (stored) {
-      const parsed = JSON.parse(stored)
-      return parsed.state?.language || 'en'
-    }
+    const language = useUiStore.getState().language
+    return language || 'en'
   } catch {
     // Ignore errors
   }

@@ -17,23 +17,22 @@ import {
 import { useAuthStore } from '@/shared/stores/auth.store'
 import { ROUTES } from '@/shared/constants/routes'
 import { loginSchema, type LoginFormData } from '../../model/auth.schema'
-
-// Dummy login credentials
-const DUMMY_EMAIL = 'admin@example.com'
-const DUMMY_PASSWORD = 'password123'
+import { useLoginMutation } from '../../controller/mutations'
 
 export const LoginPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { setAuth, isAuthenticated } = useAuthStore()
+  const { isAuthenticated } = useAuthStore()
   const [showPassword, setShowPassword] = useState(false)
   const [showErrorDialog, setShowErrorDialog] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
+  const loginMutation = useLoginMutation()
+
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -49,24 +48,23 @@ export const LoginPage = () => {
     }
   }, [isAuthenticated, navigate])
 
-  const onSubmit = async (data: LoginFormData) => {
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
-    // Dummy authentication
-    if (data.email === DUMMY_EMAIL && data.password === DUMMY_PASSWORD) {
-      // Login success
-      setAuth('dummy-token-123', {
-        id: '1',
-        email: DUMMY_EMAIL,
-        name: 'Admin User',
-      })
-      navigate(ROUTES.DASHBOARD)
-    } else {
-      // Login failure
-      setErrorMessage(t('auth.invalidCredentials'))
+  // Handle login errors
+  useEffect(() => {
+    if (loginMutation.isError) {
+      setErrorMessage(
+        loginMutation.error instanceof Error
+          ? loginMutation.error.message
+          : t('auth.invalidCredentials')
+      )
       setShowErrorDialog(true)
     }
+  }, [loginMutation.isError, loginMutation.error, t])
+
+  const onSubmit = async (data: LoginFormData) => {
+    loginMutation.mutate({
+      email: data.email,
+      password: data.password,
+    })
   }
 
   const handleForgotPassword = () => {
@@ -101,7 +99,7 @@ export const LoginPage = () => {
                 placeholder={t('auth.emailPlaceholder')}
                 {...register('email')}
                 className={errors.email ? 'border-destructive' : ''}
-                disabled={isSubmitting}
+                disabled={loginMutation.isPending}
               />
               {errors.email && (
                 <p className="text-sm text-destructive">{errors.email.message}</p>
@@ -117,14 +115,14 @@ export const LoginPage = () => {
                   type={showPassword ? 'text' : 'password'}
                   placeholder={t('auth.passwordPlaceholder')}
                   {...register('password')}
-                  disabled={isSubmitting}
+                  disabled={loginMutation.isPending}
                   className={errors.password ? 'border-destructive pr-10' : 'pr-10'}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  disabled={isSubmitting}
+                  disabled={loginMutation.isPending}
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -144,7 +142,7 @@ export const LoginPage = () => {
                 type="button"
                 onClick={handleForgotPassword}
                 className="text-sm text-primary hover:underline"
-                disabled={isSubmitting}
+                disabled={loginMutation.isPending}
               >
                 {t('auth.forgotPassword')}
               </button>
@@ -154,9 +152,9 @@ export const LoginPage = () => {
             <Button
               type="submit"
               className="w-full"
-              disabled={isSubmitting}
+              disabled={loginMutation.isPending}
             >
-              {isSubmitting ? t('auth.loggingIn') : t('auth.loginButton')}
+              {loginMutation.isPending ? t('auth.loggingIn') : t('auth.loginButton')}
             </Button>
           </form>
         </div>

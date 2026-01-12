@@ -1,5 +1,6 @@
 import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios'
 import { normalizeError } from './errors'
+import { useAuthStore } from '@/shared/stores/auth.store'
 
 /**
  * Setup request and response interceptors
@@ -9,7 +10,7 @@ export function setupInterceptors(instance: AxiosInstance): void {
   instance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
       // Get token from auth store if available
-      const token = localStorage.getItem('auth_token')
+      const token = useAuthStore.getState().token
       
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`
