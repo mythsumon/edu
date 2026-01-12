@@ -230,6 +230,7 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
                                   schoolName: evidence.activity?.institutionName || '',
                                   gradeClass: `${evidence.activity?.grade || ''}학년 ${evidence.activity?.class || ''}반`,
                                   instructorName: summary.instructorName,
+                                  documentType: '교육활동일지',
                                 })
                                 handleDownload('activity', filename)
                               }}
