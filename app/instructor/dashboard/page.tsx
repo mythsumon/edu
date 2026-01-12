@@ -57,7 +57,7 @@ const StatusBadge = ({ status }: { status: '예정' | '진행중' | '완료' }) 
   const config = statusConfig[status]
 
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${config.bg} ${config.text} shadow-lg ${config.glow}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${config.bg} ${config.text} shadow-md ${config.glow}`}>
       {status}
     </span>
   )
@@ -192,35 +192,35 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
   
   return (
     <Card 
-      className="rounded-2xl border-0 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer group overflow-hidden dark:bg-gray-800 dark:border-gray-700"
+      className="rounded-xl border-0 shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer group overflow-hidden dark:bg-gray-800 dark:border-gray-700"
       onClick={() => router.push(`/instructor/assignment/${course.id}`)}
     >
       <div className="relative">
-        <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${statusColors[course.status]}`}></div>
-        <div className="pt-4 space-y-4">
+        <div className={`absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r ${statusColors[course.status]}`}></div>
+        <div className="pt-3 space-y-2.5">
           <div>
-            <h3 className="font-bold text-lg text-slate-900 dark:text-gray-100 line-clamp-2 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+            <h3 className="font-bold text-sm text-slate-900 dark:text-gray-100 line-clamp-2 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
               {course.educationName}
             </h3>
-            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-gray-400">
-              <School className="w-4 h-4" />
-              <span>{course.institutionName}</span>
+            <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-gray-400">
+              <School className="w-3 h-3" />
+              <span className="line-clamp-1">{course.institutionName}</span>
             </div>
           </div>
           
-          <div className="flex items-center justify-between p-3 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-gray-700 dark:to-gray-600 rounded-xl">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-slate-500 dark:text-gray-400" />
-              <span className="text-sm font-medium text-slate-700 dark:text-gray-300">
+          <div className="flex items-center justify-between p-2 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-gray-700 dark:to-gray-600 rounded-lg">
+            <div className="flex items-center gap-1.5">
+              <Calendar className="w-3 h-3 text-slate-500 dark:text-gray-400" />
+              <span className="text-xs font-medium text-slate-700 dark:text-gray-300">
                 {course.startDate} ~ {course.endDate}
               </span>
             </div>
           </div>
           
           {/* Document Submission Status */}
-          <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-gray-700">
-            <div className="text-xs font-semibold text-slate-500 dark:text-gray-400 mb-1">문서 제출 상태</div>
-            <div className="flex flex-col gap-2">
+          <div className="space-y-1.5 pt-1.5 border-t border-slate-200 dark:border-gray-700">
+            <div className="text-xs font-semibold text-slate-500 dark:text-gray-400 mb-0.5">문서 제출 상태</div>
+            <div className="flex flex-col gap-1.5">
               <DocumentStatusIndicator
                 status={attendanceStatus as any}
                 count={attendanceDoc ? 1 : 0}
@@ -248,9 +248,9 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
             </div>
           </div>
           
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between pt-1">
             <StatusBadge status={course.status} />
-            <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-gray-400">
+            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-gray-400">
               <div className="flex items-center gap-1">
                 <User className="w-3 h-3" />
                 <span>{course.classInfo}</span>
@@ -958,7 +958,7 @@ export default function InstructorDashboard() {
                   </Card>
                 )
               ) : filteredCourses.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                   {filteredCourses.map((course) => (
                     <ModernCourseCard key={course.id} course={course} />
                   ))}
