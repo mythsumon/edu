@@ -7,7 +7,6 @@ function getDummyActivityLogs(): ActivityLog[] {
   const now = new Date().toISOString()
   const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-  const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
 
   return [
     {
@@ -126,7 +125,7 @@ function getDummyActivityLogs(): ActivityLog[] {
       photos: [],
       educationId: 'edu-003',
       status: 'DRAFT',
-      createdBy: '김철수',
+      createdBy: '홍길동',
       createdAt: now
     },
     {
@@ -134,12 +133,12 @@ function getDummyActivityLogs(): ActivityLog[] {
       logCode: 'LOG-2024-004',
       educationType: '로봇',
       institutionType: '중학교',
-      region: '인천',
-      institutionName: '인천중학교',
+      region: '경기',
+      institutionName: '성남중학교',
       grade: '2학년',
       class: '1반',
-      startDate: '2024-01-05',
-      endDate: '2024-01-10',
+      startDate: '2024-01-25',
+      endDate: '2024-01-30',
       totalApplicants: 30,
       graduateMale: 16,
       graduateFemale: 14,
@@ -147,20 +146,75 @@ function getDummyActivityLogs(): ActivityLog[] {
         {
           id: 'session-8',
           sessionNumber: 1,
-          date: '2024-01-05',
+          date: '2024-01-25',
           time: '14:00-16:00',
           activityName: '로봇 기초'
         }
       ],
       photos: [],
       educationId: 'edu-004',
-      status: 'REJECTED',
-      submittedAt: twoWeeksAgo,
-      submittedBy: '이영희',
-      rejectedAt: twoWeeksAgo,
-      rejectedBy: '관리자',
-      rejectReason: '활동 사진이 부족합니다.',
-      createdAt: twoWeeksAgo
+      status: 'DRAFT',
+      createdBy: '홍길동',
+      createdAt: now
+    },
+    {
+      id: 'activity-5',
+      logCode: 'LOG-2024-005',
+      educationType: '드론',
+      institutionType: '중학교',
+      region: '인천',
+      institutionName: '인천중학교',
+      grade: '1학년',
+      class: '3반',
+      startDate: '2024-01-22',
+      endDate: '2024-01-25',
+      totalApplicants: 30,
+      graduateMale: 18,
+      graduateFemale: 12,
+      sessions: [
+        {
+          id: 'session-9',
+          sessionNumber: 1,
+          date: '2024-01-22',
+          time: '10:00-12:00',
+          activityName: '드론 조종 실습'
+        }
+      ],
+      photos: [],
+      educationId: 'edu-005',
+      status: 'DRAFT',
+      createdBy: '홍길동',
+      createdAt: now
+    },
+    {
+      id: 'activity-6',
+      logCode: 'LOG-2024-006',
+      educationType: '3D 프린팅',
+      institutionType: '고등학교',
+      region: '대전',
+      institutionName: '대전고등학교',
+      grade: '3학년',
+      class: '2반',
+      startDate: '2024-01-18',
+      endDate: '2024-01-23',
+      totalApplicants: 30,
+      graduateMale: 13,
+      graduateFemale: 17,
+      sessions: [
+        {
+          id: 'session-10',
+          sessionNumber: 1,
+          date: '2024-01-18',
+          time: '13:00-15:00',
+          activityName: '3D 모델링 기초'
+        }
+      ],
+      photos: [],
+      educationId: 'edu-006',
+      status: 'SUBMITTED',
+      submittedAt: yesterday,
+      submittedBy: '홍길동',
+      createdAt: yesterday
     }
   ]
 }

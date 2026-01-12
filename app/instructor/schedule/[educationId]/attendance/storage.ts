@@ -97,7 +97,6 @@ function getDummyAttendanceDocs(): AttendanceDocument[] {
   const now = new Date().toISOString()
   const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-  const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
 
   return [
     {
@@ -241,7 +240,7 @@ function getDummyAttendanceDocs(): AttendanceDocument[] {
           startTime: '10:00',
           endTime: '12:00',
           sessions: 1,
-          mainInstructor: '김철수',
+          mainInstructor: '홍길동',
           assistantInstructor: '박영희',
           institutionContacts: ['한선생'],
           studentCount: 30,
@@ -259,8 +258,8 @@ function getDummyAttendanceDocs(): AttendanceDocument[] {
     {
       id: 'attendance-4',
       educationId: 'edu-004',
-      location: '인천광역시 남동구',
-      institution: '인천중학교',
+      location: '경기도 성남시',
+      institution: '성남중학교',
       gradeClass: '2학년 1반',
       programName: '로봇 교육',
       totalSessions: 5,
@@ -269,25 +268,25 @@ function getDummyAttendanceDocs(): AttendanceDocument[] {
       schoolContactName: '윤교장',
       institutionContact: {
         name: '장선생',
-        phone: '032-123-4567',
+        phone: '031-123-4567',
         email: 'jang@school.com'
       },
       signatures: {
         session1MainInstructor: {
-          signedByUserId: 'instructor-2',
-          signedByUserName: '이영희',
-          signedAt: twoWeeksAgo,
-          signatureImageUrl: '/mock/signatures/lee.png'
+          signedByUserId: 'instructor-1',
+          signedByUserName: '홍길동',
+          signedAt: weekAgo,
+          signatureImageUrl: '/mock/signatures/hong.png'
         }
       },
       sessions: [
         {
           sessionNumber: 1,
-          date: '2024-01-05',
+          date: '2024-01-25',
           startTime: '14:00',
           endTime: '16:00',
           sessions: 1,
-          mainInstructor: '이영희',
+          mainInstructor: '홍길동',
           assistantInstructor: '최민수',
           institutionContacts: ['장선생'],
           studentCount: 30,
@@ -299,13 +298,109 @@ function getDummyAttendanceDocs(): AttendanceDocument[] {
         { id: 'student-9', number: 2, name: '오지은', gender: '여', sessionAttendances: [1], completionStatus: 'O' }
       ],
       status: 'REJECTED',
-      submittedAt: twoWeeksAgo,
-      submittedBy: '이영희',
-      rejectedAt: twoWeeksAgo,
+      submittedAt: weekAgo,
+      submittedBy: '홍길동',
+      rejectedAt: weekAgo,
       rejectedBy: '관리자',
       rejectReason: '출석률이 기준 미달입니다.',
-      createdAt: twoWeeksAgo,
-      updatedAt: twoWeeksAgo
+      createdAt: weekAgo,
+      updatedAt: weekAgo
+    },
+    {
+      id: 'attendance-5',
+      educationId: 'edu-005',
+      location: '인천광역시 남동구',
+      institution: '인천중학교',
+      gradeClass: '1학년 3반',
+      programName: '드론 교육',
+      totalSessions: 4,
+      maleCount: 18,
+      femaleCount: 12,
+      schoolContactName: '강교장',
+      institutionContact: {
+        name: '신선생',
+        phone: '032-123-4567',
+        email: 'shin@school.com'
+      },
+      signatures: {
+        session1MainInstructor: {
+          signedByUserId: 'instructor-1',
+          signedByUserName: '홍길동',
+          signedAt: yesterday,
+          signatureImageUrl: '/mock/signatures/hong.png'
+        }
+      },
+      sessions: [
+        {
+          sessionNumber: 1,
+          date: '2024-01-22',
+          startTime: '10:00',
+          endTime: '12:00',
+          sessions: 1,
+          mainInstructor: '홍길동',
+          assistantInstructor: '박영희',
+          institutionContacts: ['신선생'],
+          studentCount: 30,
+          attendanceCount: 29
+        }
+      ],
+      students: [
+        { id: 'student-10', number: 1, name: '조민준', gender: '남', sessionAttendances: [1], completionStatus: 'O' },
+        { id: 'student-11', number: 2, name: '한소영', gender: '여', sessionAttendances: [1], completionStatus: 'O' }
+      ],
+      status: 'SUBMITTED',
+      submittedAt: yesterday,
+      submittedBy: '홍길동',
+      createdAt: yesterday,
+      updatedAt: yesterday
+    },
+    {
+      id: 'attendance-6',
+      educationId: 'edu-006',
+      location: '대전광역시 유성구',
+      institution: '대전고등학교',
+      gradeClass: '3학년 2반',
+      programName: '3D 프린팅 교육',
+      totalSessions: 6,
+      maleCount: 13,
+      femaleCount: 17,
+      schoolContactName: '송교장',
+      institutionContact: {
+        name: '윤선생',
+        phone: '042-123-4567',
+        email: 'yoon@school.com'
+      },
+      signatures: {
+        session1MainInstructor: {
+          signedByUserId: 'instructor-1',
+          signedByUserName: '홍길동',
+          signedAt: yesterday,
+          signatureImageUrl: '/mock/signatures/hong.png'
+        }
+      },
+      sessions: [
+        {
+          sessionNumber: 1,
+          date: '2024-01-18',
+          startTime: '13:00',
+          endTime: '15:00',
+          sessions: 1,
+          mainInstructor: '홍길동',
+          assistantInstructor: '김철수',
+          institutionContacts: ['윤선생'],
+          studentCount: 30,
+          attendanceCount: 30
+        }
+      ],
+      students: [
+        { id: 'student-12', number: 1, name: '배수현', gender: '여', sessionAttendances: [1], completionStatus: 'O' },
+        { id: 'student-13', number: 2, name: '전우진', gender: '남', sessionAttendances: [1], completionStatus: 'O' }
+      ],
+      status: 'SUBMITTED',
+      submittedAt: yesterday,
+      submittedBy: '홍길동',
+      createdAt: yesterday,
+      updatedAt: yesterday
     }
   ]
 }
