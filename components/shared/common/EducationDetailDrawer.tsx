@@ -129,6 +129,7 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
                                   sessionDate: evidence.attendance?.sessions[0]?.date,
                                   schoolName: evidence.attendance?.institution || '',
                                   gradeClass: evidence.attendance?.gradeClass || '',
+                                  documentType: '출석부',
                                 })
                                 handleDownload('attendance', filename)
                               }}
