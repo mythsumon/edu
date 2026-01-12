@@ -499,37 +499,34 @@ export default function AdminEquipmentConfirmationDetailPage() {
           <DetailSectionCard title="서명" className="mb-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {doc.signatures.manager && (
-                <div>
-                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">담당자 서명</div>
-                  <SignatureSlot
-                    signature={doc.signatures.manager}
-                    onApply={() => {}}
-                    onDelete={() => {}}
-                    readOnly={true}
-                  />
-                </div>
+                <SignatureSlot
+                  label="담당자"
+                  signature={doc.signatures.manager}
+                  signerName={doc.equipmentManagerName || ''}
+                  onApply={() => {}}
+                  onDelete={() => {}}
+                  disabled={true}
+                />
               )}
               {doc.signatures.borrower && (
-                <div>
-                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">대여자 서명</div>
-                  <SignatureSlot
-                    signature={doc.signatures.borrower}
-                    onApply={() => {}}
-                    onDelete={() => {}}
-                    readOnly={true}
-                  />
-                </div>
+                <SignatureSlot
+                  label="대여자"
+                  signature={doc.signatures.borrower}
+                  signerName={doc.borrowerName || ''}
+                  onApply={() => {}}
+                  onDelete={() => {}}
+                  disabled={true}
+                />
               )}
               {doc.signatures.returner && (
-                <div>
-                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">반납자 서명</div>
-                  <SignatureSlot
-                    signature={doc.signatures.returner}
-                    onApply={() => {}}
-                    onDelete={() => {}}
-                    readOnly={true}
-                  />
-                </div>
+                <SignatureSlot
+                  label="반납자"
+                  signature={doc.signatures.returner}
+                  signerName={doc.actualReturnerName || doc.plannedReturnerName || ''}
+                  onApply={() => {}}
+                  onDelete={() => {}}
+                  disabled={true}
+                />
               )}
             </div>
           </DetailSectionCard>
