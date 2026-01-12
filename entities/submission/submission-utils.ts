@@ -6,8 +6,19 @@ import { getActivityLogs } from '@/app/instructor/activity-logs/storage'
 import { getDocs as getEquipmentDocs } from '@/app/instructor/equipment-confirmations/storage'
 import type { AttendanceDocument } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import type { ActivityLog } from '@/app/instructor/activity-logs/types'
-import type { EquipmentConfirmationDoc } from '@/app/instructor/equipment-confirmations/types'
-import type { DocumentSubmission, EducationSubmissionGroup } from './submission-types'
+import type { EquipmentConfirmationDoc, EquipmentConfirmationStatus } from '@/app/instructor/equipment-confirmations/types'
+import type { DocumentSubmission, EducationSubmissionGroup, SubmissionStatus } from './submission-types'
+
+/**
+ * Map EquipmentConfirmationStatus to SubmissionStatus
+ * BORROWED and RETURNED are treated as APPROVED since they come after approval
+ */
+function mapEquipmentStatus(status: EquipmentConfirmationStatus): SubmissionStatus {
+  if (status === 'BORROWED' || status === 'RETURNED') {
+    return 'APPROVED'
+  }
+  return status as SubmissionStatus
+}
 
 /**
  * Document status summary for an education
@@ -111,7 +122,7 @@ export function deriveEducationDocSummary(educationId: string): EducationDocSumm
   if (equipment) {
     summary.equipment = {
       id: equipment.id,
-      status: equipment.status,
+      status: mapEquipmentStatus(equipment.status),
       submittedAt: equipment.submittedAt,
       rejectReason: equipment.rejectReason,
       count: 1,
