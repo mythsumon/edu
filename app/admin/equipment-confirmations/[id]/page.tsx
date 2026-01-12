@@ -438,7 +438,7 @@ export default function AdminEquipmentConfirmationDetailPage() {
             <EquipmentItemsTable
               items={doc.items}
               onChange={() => {}} // Read-only for admin
-              readOnly={true}
+              disabled={true}
             />
           </DetailSectionCard>
 
