@@ -33,6 +33,14 @@ export const protectedRoutes: RouteObject[] = [
             element: <DashboardPage />,
           },
           {
+            path: ROUTES.ADMIN_DASHBOARD,
+            element: <DashboardPage />,
+          },
+          {
+            path: ROUTES.INSTRUCTOR_DASHBOARD,
+            element: <DashboardPage />,
+          },
+          {
             path: ROUTES.EDUCATION_OPERATIONS,
             element: <EducationOperationsPage />,
           },

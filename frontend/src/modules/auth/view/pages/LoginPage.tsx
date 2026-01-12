@@ -16,6 +16,7 @@ import {
 } from "@/shared/ui/dialog";
 import { useAuthStore } from "@/shared/stores/auth.store";
 import { ROUTES } from "@/shared/constants/routes";
+import { STORAGE_KEYS } from "@/shared/constants/storageKeys";
 import { loginSchema, type LoginFormData } from "../../model/auth.schema";
 import { useLoginMutation } from "../../controller/mutations";
 import bgLoginImage from "@/assets/images/background/bg-login.png";
@@ -45,7 +46,25 @@ export const LoginPage = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate(ROUTES.DASHBOARD, { replace: true });
+      // Get user role from localStorage to determine dashboard route
+      try {
+        const userStr = localStorage.getItem(STORAGE_KEYS.USER)
+        if (userStr) {
+          const user = JSON.parse(userStr)
+          const userRole = user?.roleName?.toUpperCase()
+          if (userRole === 'ADMIN') {
+            navigate(ROUTES.ADMIN_DASHBOARD, { replace: true })
+          } else if (userRole === 'INSTRUCTOR') {
+            navigate(ROUTES.INSTRUCTOR_DASHBOARD, { replace: true })
+          } else {
+            navigate(ROUTES.DASHBOARD, { replace: true })
+          }
+        } else {
+          navigate(ROUTES.DASHBOARD, { replace: true })
+        }
+      } catch (error) {
+        navigate(ROUTES.DASHBOARD, { replace: true })
+      }
     }
   }, [isAuthenticated, navigate]);
 

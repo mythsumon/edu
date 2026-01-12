@@ -55,10 +55,7 @@ public class SecurityConfig {
         http
                 .cors((cors) -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/api/v1/auth/**", "/auth/**", "/swagger-ui/**", "/sample/**").permitAll()
-                        .requestMatchers("/api/v1/user/**", "/user/**").hasAnyRole("INSTRUCTOR", "ADMIN")
-                        .requestMatchers("/api/v1/admin/**", "/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/company/**").hasRole("COMPANY")
+                        .requestMatchers("/api/v1/auth/**", "/swagger-ui/**", "/sample/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)

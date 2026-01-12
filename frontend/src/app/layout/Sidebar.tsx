@@ -1,10 +1,13 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useUiStore } from '@/shared/stores/ui.store'
-import { useAuthStore } from '@/shared/stores/auth.store'
 import { cn } from '@/shared/lib/cn'
 import { ROUTES } from '@/shared/constants/routes'
+import { STORAGE_KEYS } from '@/shared/constants/storageKeys'
+import { useLogoutMutation } from '@/modules/auth/controller/mutations'
+import type { UserResponseDto } from '@/modules/auth/model/auth.types'
+import { Button } from '@/shared/ui/button'
 import {
   Tooltip,
   TooltipContent,
@@ -20,6 +23,11 @@ import {
   Settings,
   ChevronDown,
   ChevronUp,
+  LogOut,
+  Calendar,
+  Users,
+  ClipboardList,
+  Award,
 } from 'lucide-react'
 
 interface MenuItem {
@@ -33,17 +41,62 @@ export const Sidebar = () => {
   const { t } = useTranslation()
   const location = useLocation()
   const { sidebarCollapsed, toggleSidebar, setSidebarCollapsed } = useUiStore()
-  const { user } = useAuthStore()
-  const [expandedItems, setExpandedItems] = useState<string[]>(['sidebar.dashboard'])
+  const [user, setUser] = useState<UserResponseDto | null>(null)
+  const [expandedItems, setExpandedItems] = useState<string[]>([])
   const [isHovered, setIsHovered] = useState(false)
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const logoutMutation = useLogoutMutation()
 
-  const navigation: MenuItem[] = useMemo(() => [
+  // Load user from localStorage
+  useEffect(() => {
+    const loadUser = () => {
+      try {
+        const userStr = localStorage.getItem(STORAGE_KEYS.USER)
+        if (userStr) {
+          setUser(JSON.parse(userStr))
+        }
+      } catch (error) {
+        console.error('Failed to load user from localStorage:', error)
+      }
+    }
+    loadUser()
+
+    // Listen for storage changes (in case user is updated elsewhere)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEYS.USER) {
+        loadUser()
+      }
+    }
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    if (!showUserMenu) return
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (!target.closest('[data-user-menu]')) {
+        setShowUserMenu(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showUserMenu])
+
+  // Get user role
+  const userRole = user?.roleName?.toUpperCase()
+
+  // Admin navigation menu
+  const adminNavigation: MenuItem[] = useMemo(() => [
     {
       nameKey: 'sidebar.dashboard',
-      href: ROUTES.DASHBOARD,
+      href: ROUTES.ADMIN_DASHBOARD,
       icon: LayoutDashboard,
       subItems: [
-        { nameKey: 'sidebar.overallProgramStatus', href: ROUTES.DASHBOARD },
+        { nameKey: 'sidebar.overallProgramStatus', href: ROUTES.ADMIN_DASHBOARD },
       ],
     },
     {
@@ -81,6 +134,55 @@ export const Sidebar = () => {
     },
   ], [])
 
+  // Instructor navigation menu
+  const instructorNavigation: MenuItem[] = useMemo(() => [
+    {
+      nameKey: 'sidebar.dashboard',
+      href: ROUTES.INSTRUCTOR_DASHBOARD,
+      icon: LayoutDashboard,
+      subItems: [
+        { nameKey: 'sidebar.myOverview', href: ROUTES.INSTRUCTOR_DASHBOARD },
+      ],
+    },
+    {
+      nameKey: 'sidebar.myClasses',
+      href: ROUTES.EDUCATION_OPERATIONS,
+      icon: BookOpen,
+    },
+    {
+      nameKey: 'sidebar.mySchedule',
+      href: ROUTES.INSTRUCTOR_ASSIGNMENT,
+      icon: Calendar,
+    },
+    {
+      nameKey: 'sidebar.myStudents',
+      href: ROUTES.REFERENCE_INFORMATION_MANAGEMENT,
+      icon: Users,
+    },
+    {
+      nameKey: 'sidebar.attendance',
+      href: ROUTES.SYSTEM_MANAGEMENT,
+      icon: ClipboardList,
+    },
+    {
+      nameKey: 'sidebar.grades',
+      href: ROUTES.SETTINGS_AND_USER_MANAGEMENT,
+      icon: Award,
+    },
+  ], [])
+
+  // Select navigation based on role
+  const navigation: MenuItem[] = useMemo(() => {
+    if (userRole === 'ADMIN') {
+      return adminNavigation
+    }
+    if (userRole === 'INSTRUCTOR') {
+      return instructorNavigation
+    }
+    // Default to admin navigation if role is not determined
+    return adminNavigation
+  }, [userRole, adminNavigation, instructorNavigation])
+
   // Determine if sidebar should appear expanded (either manually expanded or hovered)
   const isExpanded = !sidebarCollapsed || isHovered
 
@@ -115,14 +217,29 @@ export const Sidebar = () => {
 
   // Get user initials for avatar
   const getUserInitials = () => {
-    if (user?.name) {
-      const names = user.name.split(' ')
+    const userName = user?.admin?.name || user?.instructor?.name || user?.username
+    if (userName) {
+      const names = userName.split(' ')
       if (names.length >= 2) {
         return `${names[0][0]}${names[1][0]}`.toUpperCase()
       }
-      return user.name.substring(0, 2).toUpperCase()
+      return userName.substring(0, 2).toUpperCase()
     }
     return 'U'
+  }
+
+  // Get user display name
+  const getUserDisplayName = () => {
+    return user?.admin?.name || user?.instructor?.name || user?.username || t('sidebar.administrator')
+  }
+
+  const handleLogout = () => {
+    logoutMutation.mutate()
+    setShowUserMenu(false)
+  }
+
+  const toggleUserMenu = () => {
+    setShowUserMenu(!showUserMenu)
   }
 
   return (
@@ -292,35 +409,71 @@ export const Sidebar = () => {
       </nav>
 
       {/* User Profile Section */}
-      <div className={cn(
-        'border-t p-4',
-        isExpanded ? '' : 'px-2'
-      )}>
+      <div 
+        className={cn(
+          'border-t relative',
+          isExpanded ? 'p-4' : 'p-2'
+        )}
+        data-user-menu
+      >
         {!isExpanded ? (
           <div className="flex justify-center">
-            <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-sm font-medium text-primary-foreground">
-                {getUserInitials()}
-              </span>
-            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center cursor-pointer">
+                  <span className="text-sm font-medium text-primary-foreground">
+                    {getUserInitials()}
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="right" align="center">
+                {getUserDisplayName()}
+              </TooltipContent>
+            </Tooltip>
           </div>
         ) : (
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-              <span className="text-sm font-medium text-primary-foreground">
-                {getUserInitials()}
-              </span>
+          <>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                <span className="text-sm font-medium text-primary-foreground">
+                  {getUserInitials()}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">
+                  {getUserDisplayName()}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user?.username ? `@${user.username}` : ''}
+                </p>
+              </div>
+              <button
+                onClick={toggleUserMenu}
+                className="p-1 rounded hover:bg-accent transition-colors flex-shrink-0"
+                aria-label="User menu"
+                aria-expanded={showUserMenu}
+              >
+                <ChevronDown className={cn(
+                  "h-4 w-4 text-muted-foreground transition-transform",
+                  showUserMenu && "rotate-180"
+                )} />
+              </button>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate">
-                {user?.name || t('sidebar.administrator')}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">
-                Gyeonggi Future Chim...
-              </p>
-            </div>
-            <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-          </div>
+            {showUserMenu && (
+              <div className="mt-2 border rounded-md bg-popover shadow-md overflow-hidden">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-none"
+                  onClick={handleLogout}
+                  disabled={logoutMutation.isPending}
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>{logoutMutation.isPending ? t('common.loading') : t('common.logout')}</span>
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </aside>

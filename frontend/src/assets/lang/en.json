@@ -58,7 +58,13 @@
     "instructorManagement": "Instructor Management",
     "settingsAndUserManagement": "Settings and User Management",
     "educationManagementSystem": "Education Management System",
-    "administrator": "Administrator"
+    "administrator": "Administrator",
+    "myOverview": "My Overview",
+    "myClasses": "My Classes",
+    "mySchedule": "My Schedule",
+    "myStudents": "My Students",
+    "attendance": "Attendance",
+    "grades": "Grades"
   },
   "errors": {
     "generic": "An error occurred",

@@ -3,8 +3,8 @@ import type { ApiResponse } from '@/shared/http/types/common'
 import type {
   LoginRequestDto,
   LoginResponseDto,
-  RefreshTokenRequestDto,
   RefreshTokenResponseDto,
+  UserResponseDto,
 } from './auth.types'
 
 /**
@@ -26,14 +26,19 @@ export async function logout(): Promise<void> {
 }
 
 /**
- * Refresh token service
+ * Refresh token service - reads refresh_token from cookie
  */
-export async function refreshToken(
-  refreshToken: RefreshTokenRequestDto
-): Promise<RefreshTokenResponseDto> {
+export async function refreshToken(): Promise<RefreshTokenResponseDto> {
   const response = await axiosInstance.post<ApiResponse<RefreshTokenResponseDto>>(
-    '/auth/refresh',
-    refreshToken
+    '/auth/token/refresh'
   )
+  return response.data.data
+}
+
+/**
+ * Get current user info
+ */
+export async function getCurrentUser(): Promise<UserResponseDto> {
+  const response = await axiosInstance.get<ApiResponse<UserResponseDto>>('/user/me')
   return response.data.data
 }

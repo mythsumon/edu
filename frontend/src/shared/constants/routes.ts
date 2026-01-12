@@ -1,6 +1,8 @@
 export const ROUTES = {
   HOME: '/',
   DASHBOARD: '/dashboard',
+  ADMIN_DASHBOARD: '/admin/dashboard',
+  INSTRUCTOR_DASHBOARD: '/instructor/dashboard',
   // Education Operations
   EDUCATION_OPERATIONS: '/education-operations',
   // Instructor Assignment

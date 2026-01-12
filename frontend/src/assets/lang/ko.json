@@ -58,7 +58,13 @@
     "instructorManagement": "강사 관리",
     "settingsAndUserManagement": "설정 및 사용자 관리",
     "educationManagementSystem": "교육 관리 시스템",
-    "administrator": "관리자"
+    "administrator": "관리자",
+    "myOverview": "내 개요",
+    "myClasses": "내 강의",
+    "mySchedule": "내 일정",
+    "myStudents": "내 학생",
+    "attendance": "출석",
+    "grades": "성적"
   },
   "errors": {
     "generic": "오류가 발생했습니다",

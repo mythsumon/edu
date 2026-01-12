@@ -1,9 +1,10 @@
 import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { login, logout } from '../model/auth.service'
+import { login, logout, getCurrentUser } from '../model/auth.service'
 import type { LoginRequestDto } from '../model/auth.types'
 import { useAuthStore } from '@/shared/stores/auth.store'
 import { ROUTES } from '@/shared/constants/routes'
+import { STORAGE_KEYS } from '@/shared/constants/storageKeys'
 import { authQueryKeys } from './queryKeys'
 
 /**
@@ -11,14 +12,44 @@ import { authQueryKeys } from './queryKeys'
  */
 export const useLoginMutation = () => {
   const navigate = useNavigate()
-  const { setAuth } = useAuthStore()
+  const { setAuthenticated } = useAuthStore()
 
   return useMutation({
     mutationKey: authQueryKeys.login(),
-    mutationFn: (credentials: LoginRequestDto) => login(credentials),
+    mutationFn: async (credentials: LoginRequestDto) => {
+      // Login and get tokens
+      const loginData = await login(credentials)
+      
+      // Save access_token to sessionStorage
+      if (loginData.access_token) {
+        sessionStorage.setItem('access_token', loginData.access_token)
+        setAuthenticated(true)
+        
+        // Fetch user info and save to localStorage
+        try {
+          const userInfo = await getCurrentUser()
+          localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userInfo))
+          
+          // Return user info for navigation
+          return { loginData, userInfo }
+        } catch (error) {
+          console.error('Failed to fetch user info:', error)
+          return { loginData, userInfo: null }
+        }
+      }
+      
+      return { loginData, userInfo: null }
+    },
     onSuccess: (data) => {
-      setAuth(data.token, data.user)
-      navigate(ROUTES.DASHBOARD, { replace: true })
+      // Navigate to role-specific dashboard
+      const userRole = data.userInfo?.roleName?.toUpperCase()
+      if (userRole === 'ADMIN') {
+        navigate(ROUTES.ADMIN_DASHBOARD, { replace: true })
+      } else if (userRole === 'INSTRUCTOR') {
+        navigate(ROUTES.INSTRUCTOR_DASHBOARD, { replace: true })
+      } else {
+        navigate(ROUTES.DASHBOARD, { replace: true })
+      }
     },
   })
 }
@@ -34,11 +65,16 @@ export const useLogoutMutation = () => {
     mutationKey: authQueryKeys.logout(),
     mutationFn: () => logout(),
     onSuccess: () => {
+      // Clear sessionStorage and localStorage
+      sessionStorage.removeItem('access_token')
+      localStorage.removeItem(STORAGE_KEYS.USER)
       clearAuth()
       navigate(ROUTES.LOGIN, { replace: true })
     },
     onError: () => {
-      // Even if logout fails on server, clear local auth
+      // Even if logout fails on server, clear local storage
+      sessionStorage.removeItem('access_token')
+      localStorage.removeItem(STORAGE_KEYS.USER)
       clearAuth()
       navigate(ROUTES.LOGIN, { replace: true })
     },
