@@ -352,6 +352,10 @@ export function upsertAttendanceDoc(doc: AttendanceDocument): { success: boolean
   while (true) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(docsToPersist))
+      // Dispatch custom event for real-time updates
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('attendanceUpdated'))
+      }
       return { success: true }
     } catch (error) {
       if (!isQuotaError(error)) {

@@ -39,7 +39,31 @@ export default function MyScheduleListPage() {
 
   useEffect(() => {
     loadSummaries()
-  }, [])
+
+    // Listen for storage changes to update data in real-time
+    const handleStorageChange = () => {
+      loadSummaries()
+    }
+
+    // Listen for custom storage events (triggered when data is updated)
+    window.addEventListener('storage', handleStorageChange)
+    
+    // Also listen for custom events from same window
+    const handleCustomStorageChange = () => {
+      loadSummaries()
+    }
+    
+    window.addEventListener('attendanceUpdated', handleCustomStorageChange)
+    window.addEventListener('activityUpdated', handleCustomStorageChange)
+    window.addEventListener('equipmentUpdated', handleCustomStorageChange)
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('attendanceUpdated', handleCustomStorageChange)
+      window.removeEventListener('activityUpdated', handleCustomStorageChange)
+      window.removeEventListener('equipmentUpdated', handleCustomStorageChange)
+    }
+  }, [currentInstructorName])
 
   const loadSummaries = () => {
     const mySummaries = getEducationDocSummariesByInstructor(currentInstructorName)

@@ -171,6 +171,10 @@ export function upsertDoc(doc: EquipmentConfirmationDoc): void {
     docs.push(updatedDoc)
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(docs))
+  // Dispatch custom event for real-time updates
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('equipmentUpdated'))
+  }
 }
 
 export function createDocFromDefault(partialOverrides: Partial<EquipmentConfirmationDoc> = {}): EquipmentConfirmationDoc {

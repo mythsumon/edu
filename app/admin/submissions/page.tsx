@@ -3,9 +3,9 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Table, Button, Card, Tabs, Space, message } from 'antd'
+import { Table, Button, Card, Tabs, Space, message, Input } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { Eye, CheckCircle2, XCircle } from 'lucide-react'
+import { Eye, CheckCircle2, XCircle, Search } from 'lucide-react'
 import { PageHeaderSticky } from '@/components/admin/operations'
 import {
   getAllEducationDocSummaries,
@@ -24,6 +24,7 @@ import dayjs from 'dayjs'
 export default function SubmissionsPage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'rejected' | 'approved'>('pending')
+  const [searchText, setSearchText] = useState('')
   const [summaries, setSummaries] = useState<EducationDocSummary[]>([])
   const [selectedEducationId, setSelectedEducationId] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -35,6 +36,30 @@ export default function SubmissionsPage() {
       initExampleAttendanceDocs()
     }
     loadSummaries()
+
+    // Listen for storage changes to update data in real-time
+    const handleStorageChange = () => {
+      loadSummaries()
+    }
+
+    // Listen for custom storage events (triggered when data is updated)
+    window.addEventListener('storage', handleStorageChange)
+    
+    // Also listen for custom events from same window
+    const handleCustomStorageChange = () => {
+      loadSummaries()
+    }
+    
+    window.addEventListener('attendanceUpdated', handleCustomStorageChange)
+    window.addEventListener('activityUpdated', handleCustomStorageChange)
+    window.addEventListener('equipmentUpdated', handleCustomStorageChange)
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('attendanceUpdated', handleCustomStorageChange)
+      window.removeEventListener('activityUpdated', handleCustomStorageChange)
+      window.removeEventListener('equipmentUpdated', handleCustomStorageChange)
+    }
   }, [])
 
   const loadSummaries = () => {
@@ -43,23 +68,32 @@ export default function SubmissionsPage() {
   }
 
   const filteredSummaries = useMemo(() => {
-    if (activeTab === 'all') return summaries
+    let filtered = summaries
+
+    // Tab filter - 강사 페이지와 동일한 로직 사용
     if (activeTab === 'pending') {
-      return summaries.filter(s => {
-        const hasSubmitted = s.attendance?.status === 'SUBMITTED' || 
-                            s.activity?.status === 'SUBMITTED' || 
-                            s.equipment?.status === 'SUBMITTED'
-        return hasSubmitted
+      filtered = filtered.filter(s => s.overallStatus === 'ALL_SUBMITTED' || s.overallStatus === 'PARTIAL')
+    } else if (activeTab === 'rejected') {
+      filtered = filtered.filter(s => s.overallStatus === 'REJECTED')
+    } else if (activeTab === 'approved') {
+      filtered = filtered.filter(s => s.overallStatus === 'ALL_APPROVED')
+    }
+
+    // Search filter - 강사 페이지와 동일한 로직 사용
+    if (searchText) {
+      const searchLower = searchText.toLowerCase()
+      filtered = filtered.filter(s => {
+        return (
+          s.educationId.toLowerCase().includes(searchLower) ||
+          s.educationName.toLowerCase().includes(searchLower) ||
+          s.institutionName.toLowerCase().includes(searchLower) ||
+          s.instructorName.toLowerCase().includes(searchLower)
+        )
       })
     }
-    if (activeTab === 'rejected') {
-      return summaries.filter(s => s.overallStatus === 'REJECTED')
-    }
-    if (activeTab === 'approved') {
-      return summaries.filter(s => s.overallStatus === 'ALL_APPROVED')
-    }
-    return summaries
-  }, [summaries, activeTab])
+
+    return filtered
+  }, [summaries, activeTab, searchText])
 
   const handleViewDetail = (educationId: string) => {
     setSelectedEducationId(educationId)
@@ -120,16 +154,15 @@ export default function SubmissionsPage() {
           message.success('교구 확인서가 승인되었습니다.')
         }
       }
-      // Trigger storage event for other tabs/windows
+      // Trigger custom events for real-time updates
       if (typeof window !== 'undefined') {
-        const storageKey = type === 'attendance' ? 'attendance_documents' : 
-                          type === 'activity' ? 'activity_logs' : 
-                          'equipment_confirmation_docs'
-        window.dispatchEvent(new StorageEvent('storage', {
-          key: storageKey,
-          newValue: localStorage.getItem(storageKey),
-          oldValue: localStorage.getItem(storageKey),
-        }))
+        if (type === 'attendance') {
+          window.dispatchEvent(new CustomEvent('attendanceUpdated'))
+        } else if (type === 'activity') {
+          window.dispatchEvent(new CustomEvent('activityUpdated'))
+        } else if (type === 'equipment') {
+          window.dispatchEvent(new CustomEvent('equipmentUpdated'))
+        }
       }
       loadSummaries()
       setDrawerOpen(false)
@@ -189,16 +222,15 @@ export default function SubmissionsPage() {
           message.success('교구 확인서가 반려되었습니다.')
         }
       }
-      // Trigger storage event for other tabs/windows
+      // Trigger custom events for real-time updates
       if (typeof window !== 'undefined') {
-        const storageKey = type === 'attendance' ? 'attendance_documents' : 
-                          type === 'activity' ? 'activity_logs' : 
-                          'equipment_confirmation_docs'
-        window.dispatchEvent(new StorageEvent('storage', {
-          key: storageKey,
-          newValue: localStorage.getItem(storageKey),
-          oldValue: localStorage.getItem(storageKey),
-        }))
+        if (type === 'attendance') {
+          window.dispatchEvent(new CustomEvent('attendanceUpdated'))
+        } else if (type === 'activity') {
+          window.dispatchEvent(new CustomEvent('activityUpdated'))
+        } else if (type === 'equipment') {
+          window.dispatchEvent(new CustomEvent('equipmentUpdated'))
+        }
       }
       loadSummaries()
       setDrawerOpen(false)
@@ -348,12 +380,7 @@ export default function SubmissionsPage() {
     },
   ]
 
-  const pendingCount = summaries.filter(s => {
-    const hasSubmitted = s.attendance?.status === 'SUBMITTED' || 
-                        s.activity?.status === 'SUBMITTED' || 
-                        s.equipment?.status === 'SUBMITTED'
-    return hasSubmitted
-  }).length
+  const pendingCount = summaries.filter(s => s.overallStatus === 'ALL_SUBMITTED' || s.overallStatus === 'PARTIAL').length
   const approvedCount = summaries.filter(s => s.overallStatus === 'ALL_APPROVED').length
   const rejectedCount = summaries.filter(s => s.overallStatus === 'REJECTED').length
   const allCount = summaries.length
@@ -402,6 +429,18 @@ export default function SubmissionsPage() {
 
           {/* Tabs as Filters */}
           <Card className="rounded-xl">
+            {/* Search Bar */}
+            <div className="mb-4">
+              <Input
+                placeholder="교육ID, 교육명, 기관명, 강사명으로 검색"
+                prefix={<Search className="w-4 h-4 text-gray-400" />}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                allowClear
+                className="max-w-md"
+              />
+            </div>
+
             <Tabs
               activeKey={activeTab}
               onChange={(key) => setActiveTab(key as any)}

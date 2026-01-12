@@ -167,6 +167,10 @@ export function upsertActivityLog(log: ActivityLog): void {
     logs.push(log)
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(logs))
+  // Dispatch custom event for real-time updates
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('activityUpdated'))
+  }
 }
 
 export function deleteActivityLog(id: string): void {
