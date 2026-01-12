@@ -148,8 +148,7 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
     '완료': 'from-slate-400 to-slate-500'
   }
   
-  const handleAttendanceClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
+  const handleAttendanceClick = () => {
     // 교육 출석부 상세보기를 누르면 강사의 activity-logs logId page로 이동
     const activityLog = getActivityLogByEducationId(course.id)
     if (activityLog?.id) {
@@ -160,8 +159,7 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
     }
   }
   
-  const handleActivityClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
+  const handleActivityClick = () => {
     if (activityLog?.id) {
       router.push(`/instructor/activity-logs/${activityLog.id}`)
     } else {
@@ -174,8 +172,7 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
     }
   }
   
-  const handleEquipmentClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
+  const handleEquipmentClick = () => {
     if (equipmentDoc?.id) {
       router.push(`/instructor/equipment-confirmations/${equipmentDoc.id}`)
     } else {

@@ -57,10 +57,17 @@ export const DocumentStatusIndicator: React.FC<DocumentStatusIndicatorProps> = (
   const display = getStatusDisplay()
   const isClickable = onClick !== undefined
 
+  const handleClick = (e: React.MouseEvent) => {
+    if (onClick) {
+      e.stopPropagation()
+      onClick()
+    }
+  }
+
   return (
     <div 
       className={`flex items-center gap-2 ${isClickable ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
-      onClick={onClick}
+      onClick={handleClick}
     >
       <span className="text-sm">{display.text}</span>
       <span className={`text-sm font-medium ${isClickable ? 'text-blue-600 hover:underline' : 'text-gray-700'}`}>
