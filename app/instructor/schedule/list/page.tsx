@@ -135,13 +135,16 @@ export default function MyScheduleListPage() {
   }
 
   const handleViewAttendance = (educationId: string) => {
-    // 교육 출석부 상세보기를 누르면 강사의 activity-logs logId page로 이동
-    const activityLog = getActivityLogByEducationId(educationId)
-    if (activityLog?.id) {
-      router.push(`/instructor/activity-logs/${activityLog.id}`)
+    // 교육 출석부 상세보기를 누르면 /instructor/attendance/[id]로 이동
+    // 먼저 출석부 문서를 찾고, 없으면 /instructor/schedule/[educationId]/attendance로 이동
+    const { getAttendanceDocByEducationId } = require('@/app/instructor/schedule/[educationId]/attendance/storage')
+    const attendanceDoc = getAttendanceDocByEducationId(educationId)
+    
+    if (attendanceDoc?.id) {
+      router.push(`/instructor/attendance/${attendanceDoc.id}`)
     } else {
-      // activity log가 없으면 educationId를 사용하여 새로 생성하거나 찾기
-      router.push(`/instructor/activity-logs/${educationId}`)
+      // 출석부가 없으면 작성 페이지로 이동
+      router.push(`/instructor/schedule/${educationId}/attendance`)
     }
   }
 
@@ -333,7 +336,7 @@ export default function MyScheduleListPage() {
   return (
     <ProtectedRoute requiredRole="instructor">
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 transition-colors">
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="p-6">
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               내 강의 스케줄

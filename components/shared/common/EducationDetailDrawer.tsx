@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { useRouter } from 'next/navigation'
 import { Drawer, Tabs, Button, Space, Badge } from 'antd'
 import { Eye, Download, CheckCircle2, XCircle } from 'lucide-react'
 import type { EducationDocSummary } from '@/entities/submission'
@@ -33,6 +34,7 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
   onApprove,
   onReject,
 }) => {
+  const router = useRouter()
   const evidence = getEvidenceByEducationGrouped(educationId)
 
   const getStatusBadge = (status?: string) => {
@@ -117,9 +119,17 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
                             <Button
                               type="primary"
                               icon={<Eye className="w-4 h-4" />}
-                              onClick={() => onViewAttendance(summary.educationId)}
+                              onClick={() => {
+                                if (summary.attendance?.id) {
+                                  // 출석부가 있으면 상세 페이지로 이동
+                                  router.push(`/instructor/attendance/${summary.attendance.id}`)
+                                } else {
+                                  // 출석부가 없으면 작성 페이지로 이동
+                                  onViewAttendance(summary.educationId)
+                                }
+                              }}
                             >
-                              {summary.attendance.status === 'DRAFT' ? '작성하기' : '수정하기'}
+                              {summary.attendance ? '상세보기' : '작성하기'}
                             </Button>
                           )}
                           {isAdmin && onViewAttendance && (
