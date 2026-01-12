@@ -537,7 +537,7 @@ export default function AdminEquipmentConfirmationDetailPage() {
               <AttachmentUploader
                 attachments={doc.attachments}
                 onChange={() => {}}
-                readOnly={true}
+                disabled={true}
               />
             </DetailSectionCard>
           )}
