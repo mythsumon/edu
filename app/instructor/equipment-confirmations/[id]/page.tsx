@@ -48,7 +48,7 @@ export default function EquipmentConfirmationDetailPage() {
   const [inventoryCheck, setInventoryCheck] = useState<InventoryItem[]>([])
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([])
 
-  const isAdmin = userRole === 'admin' || userRole === 'manager'
+  const isAdmin = userRole === 'admin'
 
   // Load doc
   const loadDoc = async () => {
