@@ -57,6 +57,8 @@ export interface EquipmentConfirmationDoc {
   rejectReason?: string
   rejectedAt?: string
   rejectedBy?: string
+  submittedAt?: string
+  submittedBy?: string
   approvedAt?: string
   approvedBy?: string
   educationId?: string // Link to education program

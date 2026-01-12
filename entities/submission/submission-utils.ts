@@ -112,7 +112,7 @@ export function deriveEducationDocSummary(educationId: string): EducationDocSumm
     summary.equipment = {
       id: equipment.id,
       status: equipment.status,
-      submittedAt: equipment.status === 'SUBMITTED' ? equipment.createdAt : undefined,
+      submittedAt: equipment.submittedAt,
       rejectReason: equipment.rejectReason,
       count: 1,
     }
