@@ -97,6 +97,7 @@ function getDummyAttendanceDocs(): AttendanceDocument[] {
   const now = new Date().toISOString()
   const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
 
   return [
     {
@@ -254,6 +255,57 @@ function getDummyAttendanceDocs(): AttendanceDocument[] {
       status: 'DRAFT',
       createdAt: now,
       updatedAt: now
+    },
+    {
+      id: 'attendance-4',
+      educationId: 'edu-004',
+      location: '인천광역시 남동구',
+      institution: '인천중학교',
+      gradeClass: '2학년 1반',
+      programName: '로봇 교육',
+      totalSessions: 5,
+      maleCount: 16,
+      femaleCount: 14,
+      schoolContactName: '윤교장',
+      institutionContact: {
+        name: '장선생',
+        phone: '032-123-4567',
+        email: 'jang@school.com'
+      },
+      signatures: {
+        session1MainInstructor: {
+          signedByUserId: 'instructor-2',
+          signedByUserName: '이영희',
+          signedAt: twoWeeksAgo,
+          signatureImageUrl: '/mock/signatures/lee.png'
+        }
+      },
+      sessions: [
+        {
+          sessionNumber: 1,
+          date: '2024-01-05',
+          startTime: '14:00',
+          endTime: '16:00',
+          sessions: 1,
+          mainInstructor: '이영희',
+          assistantInstructor: '최민수',
+          institutionContacts: ['장선생'],
+          studentCount: 30,
+          attendanceCount: 28
+        }
+      ],
+      students: [
+        { id: 'student-8', number: 1, name: '임동욱', gender: '남', sessionAttendances: [1], completionStatus: 'O' },
+        { id: 'student-9', number: 2, name: '오지은', gender: '여', sessionAttendances: [1], completionStatus: 'O' }
+      ],
+      status: 'REJECTED',
+      submittedAt: twoWeeksAgo,
+      submittedBy: '이영희',
+      rejectedAt: twoWeeksAgo,
+      rejectedBy: '관리자',
+      rejectReason: '출석률이 기준 미달입니다.',
+      createdAt: twoWeeksAgo,
+      updatedAt: twoWeeksAgo
     }
   ]
 }

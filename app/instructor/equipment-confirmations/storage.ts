@@ -6,6 +6,7 @@ function getDummyEquipmentDocs(): EquipmentConfirmationDoc[] {
   const now = new Date().toISOString()
   const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
 
   return [
     {
@@ -127,6 +128,49 @@ function getDummyEquipmentDocs(): EquipmentConfirmationDoc[] {
       status: 'DRAFT',
       createdAt: now,
       updatedAt: now
+    },
+    {
+      id: 'equipment-4',
+      materialName: '로봇 교육',
+      organizationName: '인천중학교',
+      lectureDateText: '24. 01. 05.',
+      sessionsText: '5차시 / 5차시',
+      studentCount: 30,
+      instructorsText: '이영희 / 최민수',
+      borrowerName: '이영희',
+      plannedReturnerName: '이영희',
+      schedule: {
+        plannedBorrowText: '1월 5일 13시',
+        plannedReturnText: '1월 11일 16시'
+      },
+      items: [
+        { id: 'item-11', name: '로봇 키트', quantity: 15 },
+        { id: 'item-12', name: '센서 모듈', quantity: 30 },
+        { id: 'item-13', name: '배터리', quantity: 20 }
+      ],
+      returnConditionOk: 'N',
+      allowanceTarget: 'N',
+      createdByName: '이영희',
+      equipmentManagerName: '',
+      actualReturnerName: '',
+      signatures: {
+        borrower: {
+          signedByUserId: 'instructor-2',
+          signedByUserName: '이영희',
+          signedAt: twoWeeksAgo,
+          signatureImageUrl: '/mock/signatures/lee.png'
+        }
+      },
+      attachments: [],
+      educationId: 'edu-004',
+      status: 'REJECTED',
+      submittedAt: twoWeeksAgo,
+      submittedBy: '이영희',
+      rejectedAt: twoWeeksAgo,
+      rejectedBy: '관리자',
+      rejectReason: '교구 반납 상태가 불량합니다.',
+      createdAt: twoWeeksAgo,
+      updatedAt: twoWeeksAgo
     }
   ]
 }

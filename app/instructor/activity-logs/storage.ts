@@ -7,6 +7,7 @@ function getDummyActivityLogs(): ActivityLog[] {
   const now = new Date().toISOString()
   const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
 
   return [
     {
@@ -127,6 +128,39 @@ function getDummyActivityLogs(): ActivityLog[] {
       status: 'DRAFT',
       createdBy: '김철수',
       createdAt: now
+    },
+    {
+      id: 'activity-4',
+      logCode: 'LOG-2024-004',
+      educationType: '로봇',
+      institutionType: '중학교',
+      region: '인천',
+      institutionName: '인천중학교',
+      grade: '2학년',
+      class: '1반',
+      startDate: '2024-01-05',
+      endDate: '2024-01-10',
+      totalApplicants: 30,
+      graduateMale: 16,
+      graduateFemale: 14,
+      sessions: [
+        {
+          id: 'session-8',
+          sessionNumber: 1,
+          date: '2024-01-05',
+          time: '14:00-16:00',
+          activityName: '로봇 기초'
+        }
+      ],
+      photos: [],
+      educationId: 'edu-004',
+      status: 'REJECTED',
+      submittedAt: twoWeeksAgo,
+      submittedBy: '이영희',
+      rejectedAt: twoWeeksAgo,
+      rejectedBy: '관리자',
+      rejectReason: '활동 사진이 부족합니다.',
+      createdAt: twoWeeksAgo
     }
   ]
 }
