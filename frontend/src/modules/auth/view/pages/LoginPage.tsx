@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { User, Lock, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
@@ -37,7 +37,7 @@ export const LoginPage = () => {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
     },
   });
@@ -63,7 +63,7 @@ export const LoginPage = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     loginMutation.mutate({
-      email: data.email,
+      username: data.username,
       password: data.password,
     });
   };
@@ -97,25 +97,25 @@ export const LoginPage = () => {
 
           {/* Login Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {/* Email Input */}
+            {/* Username Input */}
             <div className="space-y-2">
               <div className="flex items-center gap-2 mb-1">
-                <Mail className="h-4 w-4 text-primary" />
-                <Label htmlFor="email" className="text-foreground">
-                  {t("auth.userIdEmail")}
+                <User className="h-4 w-4 text-primary" />
+                <Label htmlFor="username" className="text-foreground">
+                  {t("auth.username")}
                 </Label>
               </div>
               <Input
-                id="email"
-                type="email"
-                placeholder={t("auth.emailPlaceholder")}
-                {...register("email")}
-                className={errors.email ? "border-destructive" : ""}
+                id="username"
+                type="text"
+                placeholder={t("auth.usernamePlaceholder")}
+                {...register("username")}
+                className={errors.username ? "border-destructive" : ""}
                 disabled={loginMutation.isPending}
               />
-              {errors.email && (
+              {errors.username && (
                 <p className="text-sm text-destructive">
-                  {errors.email.message}
+                  {errors.username.message}
                 </p>
               )}
             </div>

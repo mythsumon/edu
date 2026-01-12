@@ -2,7 +2,7 @@
  * Login request DTO
  */
 export interface LoginRequestDto {
-  email: string
+  username: string
   password: string
 }
 
