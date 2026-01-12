@@ -29,7 +29,9 @@ import { InstructorCourse, instructorCourses, instructorCalendarEvents, Instruct
 import { getAttendanceDocByEducationId } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import { getActivityLogByEducationId } from '@/app/instructor/activity-logs/storage'
 import { getDocByEducationId as getEquipmentDocByEducationId } from '@/app/instructor/equipment-confirmations/storage'
+import { getEducationDocSummariesByInstructor, type EducationDocSummary } from '@/entities/submission'
 import { dataStore } from '@/lib/dataStore'
+import { useAuth } from '@/contexts/AuthContext'
 import dayjs from 'dayjs'
 
 // Modern Status Badge Component
@@ -469,6 +471,7 @@ const DailyCalendarView = ({
 
 export default function InstructorDashboard() {
   const router = useRouter()
+  const { userProfile } = useAuth()
   const [activeFilter, setActiveFilter] = useState<'all' | 'scheduled' | 'ongoing' | 'completed' | 'applicable'>('all')
   const [currentMonth, setCurrentMonth] = useState(new Date(2025, 2))
   const [calendarView, setCalendarView] = useState<'monthly' | 'weekly' | 'daily'>('monthly')
@@ -487,6 +490,25 @@ export default function InstructorDashboard() {
   
   const listContainerRef = useRef<HTMLDivElement>(null)
   const [maxHeight, setMaxHeight] = useState<string>('none')
+  
+  // Get current instructor name
+  const currentInstructorName = userProfile?.name || '홍길동'
+  
+  // Get actual document summaries
+  const documentSummaries = useMemo(() => {
+    return getEducationDocSummariesByInstructor(currentInstructorName)
+  }, [currentInstructorName])
+  
+  // Map document summaries to courses (matching by educationId)
+  const coursesWithDocuments = useMemo(() => {
+    return instructorCourses.map(course => {
+      const summary = documentSummaries.find(s => s.educationId === course.id)
+      return {
+        ...course,
+        summary, // Attach document summary to course
+      }
+    })
+  }, [documentSummaries])
   
   // Get open educations (applicable educations) - same logic as /instructor/apply/open
   const openEducations = useMemo(() => {
@@ -509,7 +531,7 @@ export default function InstructorDashboard() {
     })
   }, [])
   
-  const filteredCourses = instructorCourses.filter(course => {
+  const filteredCourses = coursesWithDocuments.filter(course => {
     if (course.educationStatus && 
         course.educationStatus !== 'OPEN' && 
         course.educationStatus !== '신청 중') {
@@ -524,9 +546,9 @@ export default function InstructorDashboard() {
     return true
   })
 
-  const scheduledCount = instructorCourses.filter(c => c.status === '예정').length
-  const ongoingCount = instructorCourses.filter(c => c.status === '진행중').length
-  const completedCount = instructorCourses.filter(c => c.status === '완료').length
+  const scheduledCount = coursesWithDocuments.filter(c => c.status === '예정').length
+  const ongoingCount = coursesWithDocuments.filter(c => c.status === '진행중').length
+  const completedCount = coursesWithDocuments.filter(c => c.status === '완료').length
 
   // Measure content height and set max-height for animation
   useEffect(() => {
@@ -696,7 +718,7 @@ export default function InstructorDashboard() {
   return (
     <ProtectedRoute requiredRole="instructor">
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 transition-colors">
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="p-6">
           {/* Modern Header */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
@@ -731,7 +753,7 @@ export default function InstructorDashboard() {
             <ModernKPICard 
               icon={<Play className="w-6 h-6" />}
               title="내 출강 리스트"
-              count={instructorCourses.length}
+              count={coursesWithDocuments.length}
               trend="전체 교육"
               gradient="#3b82f6, #2563eb"
               isActive={activeFilter === 'all'}
@@ -796,7 +818,11 @@ export default function InstructorDashboard() {
               >
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-gray-100 flex items-center gap-3">
                   <BookOpen className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                  내 출강 리스트
+                  {activeFilter === 'all' ? '내 출강 리스트' : 
+                   activeFilter === 'scheduled' ? '오픈 예정' :
+                   activeFilter === 'ongoing' ? '진행 중' :
+                   activeFilter === 'completed' ? '완료' :
+                   activeFilter === 'applicable' ? '신청 가능' : '내 출강 리스트'}
                 </h2>
                 <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-gray-400 group-hover:text-slate-700 dark:group-hover:text-gray-300 transition-colors">
                   {isCollapsed ? (
