@@ -40,7 +40,7 @@ function getDummyEquipmentDocs(): EquipmentConfirmationDoc[] {
           signedAt: weekAgo,
           signatureImageUrl: '/mock/signatures/hong.png'
         },
-        equipmentManager: {
+        manager: {
           signedByUserId: 'manager-1',
           signedByUserName: '김관리',
           signedAt: weekAgo,
