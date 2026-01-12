@@ -306,7 +306,7 @@ export default function InstructorAttendancePage() {
       const docToSave: AttendanceDocument = {
         id: `attendance-${educationId}`,
         educationId: educationId!,
-        assignmentId: assignment?.id,
+        assignmentId: assignment?.key,
         ...headerData,
         institutionContact,
         signatures,
@@ -347,7 +347,7 @@ export default function InstructorAttendancePage() {
           const docToSubmit: AttendanceDocument = {
             id: `attendance-${educationId}`,
             educationId: educationId!,
-            assignmentId: assignment?.id,
+            assignmentId: assignment?.key,
             ...headerData,
             institutionContact,
             signatures,
