@@ -42,9 +42,9 @@ public class SecurityConfig {
                                                    CustomJwtAuthenticationConverter jwtAuthenticationConverter) throws Exception {
         http
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/auth/**", "/swagger-ui/**", "/sample/**").permitAll()
-                        .requestMatchers("/user/**").hasRole("USER")
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/auth/**", "/auth/**", "/swagger-ui/**", "/sample/**").permitAll()
+                        .requestMatchers("/api/v1/user/**", "/user/**").hasAnyRole("INSTRUCTOR", "ADMIN")
+                        .requestMatchers("/api/v1/admin/**", "/admin/**").hasRole("ADMIN")
                         .requestMatchers("/company/**").hasRole("COMPANY")
                         .anyRequest().authenticated()
                 )
