@@ -6,7 +6,7 @@ import { ArrowLeft, Save, FileText } from 'lucide-react'
 interface PageHeaderStickyProps {
   mode: 'create' | 'edit'
   onCancel: () => void
-  onTempSave: () => void
+  onTempSave?: () => void
   onSave: () => void
   saveDisabled?: boolean
 }
@@ -26,13 +26,15 @@ export function PageHeaderSticky({ mode, onCancel, onTempSave, onSave, saveDisab
 
         {/* Right: Actions */}
         <Space>
-          <Button
-            icon={<FileText className="w-4 h-4" />}
-            onClick={onTempSave}
-            className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
-          >
-            임시저장
-          </Button>
+          {onTempSave && (
+            <Button
+              icon={<FileText className="w-4 h-4" />}
+              onClick={onTempSave}
+              className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
+            >
+              임시저장
+            </Button>
+          )}
           <Button
             type="primary"
             icon={<Save className="w-4 h-4 text-white" />}
