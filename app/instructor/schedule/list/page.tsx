@@ -38,6 +38,37 @@ export default function MyScheduleListPage() {
   const currentInstructorName = userProfile?.name || '홍길동' // Mock instructor name
 
   useEffect(() => {
+    // Initialize dummy data in development mode
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      // Check if we need to reset localStorage (if old data exists)
+      const attendanceKey = 'attendance_documents'
+      const activityKey = 'activity_logs'
+      const equipmentKey = 'equipment_confirmation_docs'
+      
+      const attendanceStored = localStorage.getItem(attendanceKey)
+      const activityStored = localStorage.getItem(activityKey)
+      const equipmentStored = localStorage.getItem(equipmentKey)
+      
+      // If stored data exists, check if it has old educationId format (edu-001, etc.)
+      // If so, reset to new dummy data
+      if (attendanceStored || activityStored || equipmentStored) {
+        try {
+          const attendanceData = attendanceStored ? JSON.parse(attendanceStored) : []
+          const hasOldFormat = attendanceData.some((doc: any) => doc.educationId?.startsWith('edu-'))
+          
+          if (hasOldFormat) {
+            // Reset all storage to new dummy data
+            localStorage.removeItem(attendanceKey)
+            localStorage.removeItem(activityKey)
+            localStorage.removeItem(equipmentKey)
+            console.log('Reset localStorage to new dummy data format')
+          }
+        } catch (e) {
+          console.warn('Failed to check localStorage format', e)
+        }
+      }
+    }
+    
     loadSummaries()
 
     // Listen for storage changes to update data in real-time

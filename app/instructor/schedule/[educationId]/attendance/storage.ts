@@ -97,15 +97,16 @@ function getDummyAttendanceDocs(): AttendanceDocument[] {
   const now = new Date().toISOString()
   const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
 
   return [
     {
       id: 'attendance-1',
-      educationId: 'edu-001',
-      location: '서울특별시 강남구',
-      institution: '평성중학교',
-      gradeClass: '3학년 1반',
-      programName: '생성형 AI / 챗봇 교육',
+      educationId: '1', // 블록코딩 기초 프로그램
+      location: '서울특별시',
+      institution: '서울초등학교',
+      gradeClass: '3학년 2반',
+      programName: '블록코딩 기초 프로그램',
       totalSessions: 4,
       maleCount: 15,
       femaleCount: 15,
@@ -170,11 +171,11 @@ function getDummyAttendanceDocs(): AttendanceDocument[] {
     },
     {
       id: 'attendance-2',
-      educationId: 'edu-002',
-      location: '서울특별시 서초구',
-      institution: '서초고등학교',
-      gradeClass: '2학년 3반',
-      programName: '메타버스 교육',
+      educationId: '2', // AI 체험 워크숍
+      location: '경기도',
+      institution: '경기중학교',
+      gradeClass: '2학년 1반',
+      programName: 'AI 체험 워크숍',
       totalSessions: 6,
       maleCount: 12,
       femaleCount: 18,
@@ -218,11 +219,11 @@ function getDummyAttendanceDocs(): AttendanceDocument[] {
     },
     {
       id: 'attendance-3',
-      educationId: 'edu-003',
-      location: '부산광역시 해운대구',
-      institution: '부산중학교',
-      gradeClass: '1학년 2반',
-      programName: '코딩 교육',
+      educationId: '3', // 로봇 공학 입문
+      location: '인천광역시',
+      institution: '인천고등학교',
+      gradeClass: '1학년 3반',
+      programName: '로봇 공학 입문',
       totalSessions: 8,
       maleCount: 14,
       femaleCount: 16,
@@ -240,7 +241,7 @@ function getDummyAttendanceDocs(): AttendanceDocument[] {
           startTime: '10:00',
           endTime: '12:00',
           sessions: 1,
-          mainInstructor: '홍길동',
+          mainInstructor: '김철수',
           assistantInstructor: '박영희',
           institutionContacts: ['한선생'],
           studentCount: 30,
@@ -252,43 +253,37 @@ function getDummyAttendanceDocs(): AttendanceDocument[] {
         { id: 'student-7', number: 2, name: '송미나', gender: '여', sessionAttendances: [1], completionStatus: 'O' }
       ],
       status: 'DRAFT',
+      submittedBy: '홍길동',
       createdAt: now,
       updatedAt: now
     },
     {
       id: 'attendance-4',
-      educationId: 'edu-004',
-      location: '경기도 성남시',
-      institution: '성남중학교',
-      gradeClass: '2학년 1반',
-      programName: '로봇 교육',
-      totalSessions: 5,
+      educationId: '4', // 창의적 문제 해결 프로그램
+      location: '부산광역시',
+      institution: '부산초등학교',
+      gradeClass: '4학년 1반',
+      programName: '창의적 문제 해결 프로그램',
+      totalSessions: 4,
       maleCount: 16,
       femaleCount: 14,
-      schoolContactName: '윤교장',
+      schoolContactName: '정교장',
       institutionContact: {
-        name: '장선생',
-        phone: '031-123-4567',
-        email: 'jang@school.com'
+        name: '한선생',
+        phone: '051-123-4567',
+        email: 'han@school.com'
       },
-      signatures: {
-        session1MainInstructor: {
-          signedByUserId: 'instructor-1',
-          signedByUserName: '홍길동',
-          signedAt: weekAgo,
-          signatureImageUrl: '/mock/signatures/hong.png'
-        }
-      },
+      signatures: {},
       sessions: [
         {
           sessionNumber: 1,
-          date: '2024-01-25',
-          startTime: '14:00',
-          endTime: '16:00',
+          date: '2025-03-20',
+          startTime: '13:00',
+          endTime: '15:00',
           sessions: 1,
           mainInstructor: '홍길동',
-          assistantInstructor: '최민수',
-          institutionContacts: ['장선생'],
+          assistantInstructor: '박영희',
+          institutionContacts: ['한선생'],
           studentCount: 30,
           attendanceCount: 28
         }
@@ -308,86 +303,136 @@ function getDummyAttendanceDocs(): AttendanceDocument[] {
     },
     {
       id: 'attendance-5',
-      educationId: 'edu-005',
-      location: '인천광역시 남동구',
-      institution: '인천중학교',
-      gradeClass: '1학년 3반',
-      programName: '드론 교육',
+      educationId: '5', // 디지털 리터러시 기초
+      location: '대구광역시',
+      institution: '대구중학교',
+      gradeClass: '1학년 2반',
+      programName: '디지털 리터러시 기초',
       totalSessions: 4,
-      maleCount: 18,
-      femaleCount: 12,
+      maleCount: 15,
+      femaleCount: 15,
       schoolContactName: '강교장',
       institutionContact: {
         name: '신선생',
-        phone: '032-123-4567',
+        phone: '053-123-4567',
         email: 'shin@school.com'
       },
-      signatures: {
-        session1MainInstructor: {
-          signedByUserId: 'instructor-1',
-          signedByUserName: '홍길동',
-          signedAt: yesterday,
-          signatureImageUrl: '/mock/signatures/hong.png'
-        }
-      },
-      sessions: [
-        {
-          sessionNumber: 1,
-          date: '2024-01-22',
-          startTime: '10:00',
-          endTime: '12:00',
-          sessions: 1,
-          mainInstructor: '홍길동',
-          assistantInstructor: '박영희',
-          institutionContacts: ['신선생'],
-          studentCount: 30,
-          attendanceCount: 29
-        }
-      ],
-      students: [
-        { id: 'student-10', number: 1, name: '조민준', gender: '남', sessionAttendances: [1], completionStatus: 'O' },
-        { id: 'student-11', number: 2, name: '한소영', gender: '여', sessionAttendances: [1], completionStatus: 'O' }
-      ],
-      status: 'SUBMITTED',
-      submittedAt: yesterday,
+      signatures: {},
+      sessions: [],
+      students: [],
+      status: 'DRAFT',
       submittedBy: '홍길동',
-      createdAt: yesterday,
-      updatedAt: yesterday
+      createdAt: now,
+      updatedAt: now
     },
     {
       id: 'attendance-6',
-      educationId: 'edu-006',
-      location: '대전광역시 유성구',
-      institution: '대전고등학교',
-      gradeClass: '3학년 2반',
-      programName: '3D 프린팅 교육',
-      totalSessions: 6,
-      maleCount: 13,
-      femaleCount: 17,
+      educationId: '6', // 미디어 아트 창작
+      location: '광주광역시',
+      institution: '광주고등학교',
+      gradeClass: '2학년 3반',
+      programName: '미디어 아트 창작',
+      totalSessions: 4,
+      maleCount: 14,
+      femaleCount: 16,
       schoolContactName: '송교장',
       institutionContact: {
         name: '윤선생',
-        phone: '042-123-4567',
+        phone: '062-123-4567',
         email: 'yoon@school.com'
       },
       signatures: {
         session1MainInstructor: {
           signedByUserId: 'instructor-1',
           signedByUserName: '홍길동',
-          signedAt: yesterday,
+          signedAt: weekAgo,
           signatureImageUrl: '/mock/signatures/hong.png'
         }
       },
       sessions: [
         {
           sessionNumber: 1,
-          date: '2024-01-18',
-          startTime: '13:00',
-          endTime: '15:00',
+          date: '2025-03-10',
+          startTime: '15:00',
+          endTime: '17:00',
+          sessions: 1,
+          mainInstructor: '홍길동',
+          assistantInstructor: '이영희',
+          institutionContacts: ['윤선생'],
+          studentCount: 30,
+          attendanceCount: 30
+        }
+      ],
+      students: [
+        { id: 'student-10', number: 1, name: '조민준', gender: '남', sessionAttendances: [1], completionStatus: 'O' },
+        { id: 'student-11', number: 2, name: '한소영', gender: '여', sessionAttendances: [1], completionStatus: 'O' }
+      ],
+      status: 'APPROVED',
+      submittedAt: weekAgo,
+      submittedBy: '홍길동',
+      approvedAt: weekAgo,
+      approvedBy: '관리자',
+      createdAt: weekAgo,
+      updatedAt: weekAgo
+    },
+    {
+      id: 'attendance-7',
+      educationId: '7', // 게임 디자인과 프로그래밍
+      location: '울산광역시',
+      institution: '울산초등학교',
+      gradeClass: '5학년 1반',
+      programName: '게임 디자인과 프로그래밍',
+      totalSessions: 4,
+      maleCount: 15,
+      femaleCount: 15,
+      schoolContactName: '이교장',
+      institutionContact: {
+        name: '박선생',
+        phone: '052-123-4567',
+        email: 'park@school.com'
+      },
+      signatures: {},
+      sessions: [],
+      students: [],
+      status: 'DRAFT',
+      submittedBy: '홍길동',
+      createdAt: now,
+      updatedAt: now
+    },
+    {
+      id: 'attendance-8',
+      educationId: '8', // 웹 개발 기초
+      location: '경기도 수원시',
+      institution: '수원초등학교',
+      gradeClass: '6학년 2반',
+      programName: '웹 개발 기초',
+      totalSessions: 4,
+      maleCount: 16,
+      femaleCount: 14,
+      schoolContactName: '최교장',
+      institutionContact: {
+        name: '김선생',
+        phone: '031-123-4567',
+        email: 'kim@school.com'
+      },
+      signatures: {
+        session1MainInstructor: {
+          signedByUserId: 'instructor-1',
+          signedByUserName: '홍길동',
+          signedAt: twoWeeksAgo,
+          signatureImageUrl: '/mock/signatures/hong.png'
+        }
+      },
+      sessions: [
+        {
+          sessionNumber: 1,
+          date: '2025-02-01',
+          startTime: '10:00',
+          endTime: '12:00',
           sessions: 1,
           mainInstructor: '홍길동',
           assistantInstructor: '김철수',
-          institutionContacts: ['윤선생'],
+          institutionContacts: ['김선생'],
           studentCount: 30,
           attendanceCount: 30
         }
@@ -396,11 +441,87 @@ function getDummyAttendanceDocs(): AttendanceDocument[] {
         { id: 'student-12', number: 1, name: '배수현', gender: '여', sessionAttendances: [1], completionStatus: 'O' },
         { id: 'student-13', number: 2, name: '전우진', gender: '남', sessionAttendances: [1], completionStatus: 'O' }
       ],
-      status: 'SUBMITTED',
-      submittedAt: yesterday,
+      status: 'APPROVED',
+      submittedAt: twoWeeksAgo,
       submittedBy: '홍길동',
-      createdAt: yesterday,
-      updatedAt: yesterday
+      approvedAt: twoWeeksAgo,
+      approvedBy: '관리자',
+      createdAt: twoWeeksAgo,
+      updatedAt: twoWeeksAgo
+    },
+    {
+      id: 'attendance-9',
+      educationId: '9', // 모바일 앱 만들기
+      location: '대전광역시',
+      institution: '대전중학교',
+      gradeClass: '3학년 3반',
+      programName: '모바일 앱 만들기',
+      totalSessions: 4,
+      maleCount: 15,
+      femaleCount: 15,
+      schoolContactName: '장교장',
+      institutionContact: {
+        name: '이선생',
+        phone: '042-123-4567',
+        email: 'lee2@school.com'
+      },
+      signatures: {
+        session1MainInstructor: {
+          signedByUserId: 'instructor-1',
+          signedByUserName: '홍길동',
+          signedAt: twoWeeksAgo,
+          signatureImageUrl: '/mock/signatures/hong.png'
+        }
+      },
+      sessions: [
+        {
+          sessionNumber: 1,
+          date: '2025-01-15',
+          startTime: '14:00',
+          endTime: '16:00',
+          sessions: 1,
+          mainInstructor: '홍길동',
+          assistantInstructor: '박영희',
+          institutionContacts: ['이선생'],
+          studentCount: 30,
+          attendanceCount: 29
+        }
+      ],
+      students: [
+        { id: 'student-14', number: 1, name: '윤서연', gender: '여', sessionAttendances: [1], completionStatus: 'O' },
+        { id: 'student-15', number: 2, name: '강도현', gender: '남', sessionAttendances: [1], completionStatus: 'O' }
+      ],
+      status: 'APPROVED',
+      submittedAt: twoWeeksAgo,
+      submittedBy: '홍길동',
+      approvedAt: twoWeeksAgo,
+      approvedBy: '관리자',
+      createdAt: twoWeeksAgo,
+      updatedAt: twoWeeksAgo
+    },
+    {
+      id: 'attendance-10',
+      educationId: '10', // 3D 프린팅 기초
+      location: '세종특별자치시',
+      institution: '세종고등학교',
+      gradeClass: '1학년 1반',
+      programName: '3D 프린팅 기초',
+      totalSessions: 4,
+      maleCount: 15,
+      femaleCount: 15,
+      schoolContactName: '나교장',
+      institutionContact: {
+        name: '최선생',
+        phone: '044-123-4567',
+        email: 'choi2@school.com'
+      },
+      signatures: {},
+      sessions: [],
+      students: [],
+      status: 'DRAFT',
+      submittedBy: '홍길동',
+      createdAt: now,
+      updatedAt: now
     }
   ]
 }
@@ -416,7 +537,16 @@ export function getAttendanceDocs(): AttendanceDocument[] {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dummyData))
       return dummyData
     }
-    return JSON.parse(stored)
+    const parsed = JSON.parse(stored)
+    // Check if data has old format (edu-001, etc.) and reset if needed
+    const hasOldFormat = Array.isArray(parsed) && parsed.some((doc: any) => doc.educationId?.startsWith('edu-'))
+    if (hasOldFormat && process.env.NODE_ENV === 'development') {
+      // Reset to new dummy data format
+      const dummyData = getDummyAttendanceDocs()
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dummyData))
+      return dummyData
+    }
+    return parsed
   } catch (error) {
     console.warn('Failed to read attendance documents from localStorage.', error)
     return getDummyAttendanceDocs()

@@ -113,7 +113,16 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
                           </div>
                         </div>
                         <Space>
-                          {onViewAttendance && (
+                          {!isAdmin && onViewAttendance && (
+                            <Button
+                              type="primary"
+                              icon={<Eye className="w-4 h-4" />}
+                              onClick={() => onViewAttendance(summary.educationId)}
+                            >
+                              {summary.attendance.status === 'DRAFT' ? '작성하기' : '수정하기'}
+                            </Button>
+                          )}
+                          {isAdmin && onViewAttendance && (
                             <Button
                               icon={<Eye className="w-4 h-4" />}
                               onClick={() => onViewAttendance(summary.educationId)}
@@ -210,7 +219,22 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
                           </div>
                         </div>
                         <Space>
-                          {onViewActivity && (
+                          {!isAdmin && onViewActivity && (
+                            <Button
+                              type="primary"
+                              icon={<Eye className="w-4 h-4" />}
+                              onClick={() => {
+                                if (summary.activity?.id) {
+                                  onViewActivity(summary.activity.id)
+                                } else {
+                                  onViewActivity(summary.educationId)
+                                }
+                              }}
+                            >
+                              {summary.activity.status === 'DRAFT' ? '작성하기' : '수정하기'}
+                            </Button>
+                          )}
+                          {isAdmin && onViewActivity && (
                             <Button
                               icon={<Eye className="w-4 h-4" />}
                               onClick={() => onViewActivity(summary.activity!.id)}
@@ -314,7 +338,22 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
                           </div>
                         </div>
                         <Space>
-                          {onViewEquipment && (
+                          {!isAdmin && onViewEquipment && (
+                            <Button
+                              type="primary"
+                              icon={<Eye className="w-4 h-4" />}
+                              onClick={() => {
+                                if (summary.equipment?.id) {
+                                  onViewEquipment(summary.equipment.id)
+                                } else {
+                                  onViewEquipment(summary.educationId)
+                                }
+                              }}
+                            >
+                              {summary.equipment.status === 'DRAFT' ? '작성하기' : '수정하기'}
+                            </Button>
+                          )}
+                          {isAdmin && onViewEquipment && (
                             <Button
                               icon={<Eye className="w-4 h-4" />}
                               onClick={() => onViewEquipment(summary.equipment!.id)}

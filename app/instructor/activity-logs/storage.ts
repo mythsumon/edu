@@ -7,19 +7,20 @@ function getDummyActivityLogs(): ActivityLog[] {
   const now = new Date().toISOString()
   const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
 
   return [
     {
       id: 'activity-1',
-      logCode: 'LOG-2024-001',
-      educationType: '생성형 AI / 챗봇',
-      institutionType: '중학교',
+      logCode: 'LOG-2025-001',
+      educationType: '블록코딩',
+      institutionType: '초등학교',
       region: '서울',
-      institutionName: '평성중학교',
+      institutionName: '서울초등학교',
       grade: '3학년',
-      class: '1반',
-      startDate: '2024-01-15',
-      endDate: '2024-01-18',
+      class: '2반',
+      startDate: '2025-03-01',
+      endDate: '2025-06-30',
       totalApplicants: 30,
       graduateMale: 15,
       graduateFemale: 15,
@@ -27,34 +28,13 @@ function getDummyActivityLogs(): ActivityLog[] {
         {
           id: 'session-1',
           sessionNumber: 1,
-          date: '2024-01-15',
-          time: '09:00-12:00',
-          activityName: 'AI 기본 개념 교육'
-        },
-        {
-          id: 'session-2',
-          sessionNumber: 2,
-          date: '2024-01-16',
-          time: '09:00-12:00',
-          activityName: '챗봇 실습'
-        },
-        {
-          id: 'session-3',
-          sessionNumber: 3,
-          date: '2024-01-17',
-          time: '09:00-12:00',
-          activityName: '프로젝트 발표'
-        },
-        {
-          id: 'session-4',
-          sessionNumber: 4,
-          date: '2024-01-18',
-          time: '09:00-12:00',
-          activityName: '피드백 및 마무리'
+          date: '2025-03-01',
+          time: '09:00-12:10',
+          activityName: '블록코딩 기초'
         }
       ],
       photos: [],
-      educationId: 'edu-001',
+      educationId: '1',
       status: 'APPROVED',
       submittedAt: weekAgo,
       submittedBy: '홍길동',
@@ -64,36 +44,29 @@ function getDummyActivityLogs(): ActivityLog[] {
     },
     {
       id: 'activity-2',
-      logCode: 'LOG-2024-002',
-      educationType: '메타버스',
-      institutionType: '고등학교',
-      region: '서울',
-      institutionName: '서초고등학교',
+      logCode: 'LOG-2025-002',
+      educationType: 'AI',
+      institutionType: '중학교',
+      region: '경기',
+      institutionName: '경기중학교',
       grade: '2학년',
-      class: '3반',
-      startDate: '2024-01-20',
-      endDate: '2024-01-25',
+      class: '1반',
+      startDate: '2025-03-15',
+      endDate: '2025-05-30',
       totalApplicants: 30,
-      graduateMale: 12,
-      graduateFemale: 18,
+      graduateMale: 15,
+      graduateFemale: 15,
       sessions: [
         {
-          id: 'session-5',
+          id: 'session-2',
           sessionNumber: 1,
-          date: '2024-01-20',
-          time: '13:00-17:00',
-          activityName: '메타버스 소개'
-        },
-        {
-          id: 'session-6',
-          sessionNumber: 2,
-          date: '2024-01-21',
-          time: '13:00-17:00',
-          activityName: '가상현실 체험'
+          date: '2025-03-15',
+          time: '14:00-16:00',
+          activityName: 'AI 체험'
         }
       ],
       photos: [],
-      educationId: 'edu-002',
+      educationId: '2',
       status: 'SUBMITTED',
       submittedAt: yesterday,
       submittedBy: '홍길동',
@@ -101,120 +74,213 @@ function getDummyActivityLogs(): ActivityLog[] {
     },
     {
       id: 'activity-3',
-      logCode: 'LOG-2024-003',
-      educationType: '코딩',
-      institutionType: '중학교',
-      region: '부산',
-      institutionName: '부산중학교',
+      logCode: 'LOG-2025-003',
+      educationType: '로봇',
+      institutionType: '고등학교',
+      region: '인천',
+      institutionName: '인천고등학교',
       grade: '1학년',
-      class: '2반',
-      startDate: '2024-01-10',
-      endDate: '2024-01-17',
+      class: '3반',
+      startDate: '2025-04-01',
+      endDate: '2025-07-31',
       totalApplicants: 30,
-      graduateMale: 14,
-      graduateFemale: 16,
-      sessions: [
-        {
-          id: 'session-7',
-          sessionNumber: 1,
-          date: '2024-01-10',
-          time: '10:00-12:00',
-          activityName: '코딩 기초'
-        }
-      ],
+      graduateMale: 15,
+      graduateFemale: 15,
+      sessions: [],
       photos: [],
-      educationId: 'edu-003',
+      educationId: '3',
       status: 'DRAFT',
       createdBy: '홍길동',
       createdAt: now
     },
     {
       id: 'activity-4',
-      logCode: 'LOG-2024-004',
-      educationType: '로봇',
-      institutionType: '중학교',
-      region: '경기',
-      institutionName: '성남중학교',
-      grade: '2학년',
+      logCode: 'LOG-2025-004',
+      educationType: '창의적 문제 해결',
+      institutionType: '초등학교',
+      region: '부산',
+      institutionName: '부산초등학교',
+      grade: '4학년',
       class: '1반',
-      startDate: '2024-01-25',
-      endDate: '2024-01-30',
+      startDate: '2025-03-20',
+      endDate: '2025-06-20',
       totalApplicants: 30,
       graduateMale: 16,
       graduateFemale: 14,
       sessions: [
         {
-          id: 'session-8',
+          id: 'session-3',
           sessionNumber: 1,
-          date: '2024-01-25',
-          time: '14:00-16:00',
-          activityName: '로봇 기초'
+          date: '2025-03-20',
+          time: '13:00-15:00',
+          activityName: '문제 해결 기초'
         }
       ],
       photos: [],
-      educationId: 'edu-004',
-      status: 'DRAFT',
-      createdBy: '홍길동',
-      createdAt: now
+      educationId: '4',
+      status: 'SUBMITTED',
+      submittedAt: yesterday,
+      submittedBy: '홍길동',
+      createdAt: yesterday
     },
     {
       id: 'activity-5',
-      logCode: 'LOG-2024-005',
-      educationType: '드론',
+      logCode: 'LOG-2025-005',
+      educationType: '디지털 리터러시',
       institutionType: '중학교',
-      region: '인천',
-      institutionName: '인천중학교',
+      region: '대구',
+      institutionName: '대구중학교',
       grade: '1학년',
-      class: '3반',
-      startDate: '2024-01-22',
-      endDate: '2024-01-25',
+      class: '2반',
+      startDate: '2025-04-05',
+      endDate: '2025-07-05',
       totalApplicants: 30,
-      graduateMale: 18,
-      graduateFemale: 12,
-      sessions: [
-        {
-          id: 'session-9',
-          sessionNumber: 1,
-          date: '2024-01-22',
-          time: '10:00-12:00',
-          activityName: '드론 조종 실습'
-        }
-      ],
+      graduateMale: 15,
+      graduateFemale: 15,
+      sessions: [],
       photos: [],
-      educationId: 'edu-005',
+      educationId: '5',
       status: 'DRAFT',
       createdBy: '홍길동',
       createdAt: now
     },
     {
       id: 'activity-6',
-      logCode: 'LOG-2024-006',
-      educationType: '3D 프린팅',
+      logCode: 'LOG-2025-006',
+      educationType: '미디어 아트',
       institutionType: '고등학교',
-      region: '대전',
-      institutionName: '대전고등학교',
-      grade: '3학년',
-      class: '2반',
-      startDate: '2024-01-18',
-      endDate: '2024-01-23',
+      region: '광주',
+      institutionName: '광주고등학교',
+      grade: '2학년',
+      class: '3반',
+      startDate: '2025-03-10',
+      endDate: '2025-06-10',
       totalApplicants: 30,
-      graduateMale: 13,
-      graduateFemale: 17,
+      graduateMale: 14,
+      graduateFemale: 16,
       sessions: [
         {
-          id: 'session-10',
+          id: 'session-4',
           sessionNumber: 1,
-          date: '2024-01-18',
-          time: '13:00-15:00',
-          activityName: '3D 모델링 기초'
+          date: '2025-03-10',
+          time: '15:00-17:00',
+          activityName: '미디어 아트 기초'
         }
       ],
       photos: [],
-      educationId: 'edu-006',
-      status: 'SUBMITTED',
-      submittedAt: yesterday,
+      educationId: '6',
+      status: 'APPROVED',
+      submittedAt: weekAgo,
       submittedBy: '홍길동',
-      createdAt: yesterday
+      approvedAt: weekAgo,
+      approvedBy: '관리자',
+      createdAt: weekAgo
+    },
+    {
+      id: 'activity-7',
+      logCode: 'LOG-2025-007',
+      educationType: '게임 디자인',
+      institutionType: '초등학교',
+      region: '울산',
+      institutionName: '울산초등학교',
+      grade: '5학년',
+      class: '1반',
+      startDate: '2025-04-15',
+      endDate: '2025-07-15',
+      totalApplicants: 30,
+      graduateMale: 15,
+      graduateFemale: 15,
+      sessions: [],
+      photos: [],
+      educationId: '7',
+      status: 'DRAFT',
+      createdBy: '홍길동',
+      createdAt: now
+    },
+    {
+      id: 'activity-8',
+      logCode: 'LOG-2025-008',
+      educationType: '웹 개발',
+      institutionType: '초등학교',
+      region: '수원',
+      institutionName: '수원초등학교',
+      grade: '6학년',
+      class: '2반',
+      startDate: '2025-02-01',
+      endDate: '2025-02-28',
+      totalApplicants: 30,
+      graduateMale: 16,
+      graduateFemale: 14,
+      sessions: [
+        {
+          id: 'session-5',
+          sessionNumber: 1,
+          date: '2025-02-01',
+          time: '10:00-12:00',
+          activityName: '웹 개발 기초'
+        }
+      ],
+      photos: [],
+      educationId: '8',
+      status: 'APPROVED',
+      submittedAt: twoWeeksAgo,
+      submittedBy: '홍길동',
+      approvedAt: twoWeeksAgo,
+      approvedBy: '관리자',
+      createdAt: twoWeeksAgo
+    },
+    {
+      id: 'activity-9',
+      logCode: 'LOG-2025-009',
+      educationType: '모바일 앱',
+      institutionType: '중학교',
+      region: '대전',
+      institutionName: '대전중학교',
+      grade: '3학년',
+      class: '3반',
+      startDate: '2025-01-15',
+      endDate: '2025-02-15',
+      totalApplicants: 30,
+      graduateMale: 15,
+      graduateFemale: 15,
+      sessions: [
+        {
+          id: 'session-6',
+          sessionNumber: 1,
+          date: '2025-01-15',
+          time: '14:00-16:00',
+          activityName: '모바일 앱 기초'
+        }
+      ],
+      photos: [],
+      educationId: '9',
+      status: 'APPROVED',
+      submittedAt: twoWeeksAgo,
+      submittedBy: '홍길동',
+      approvedAt: twoWeeksAgo,
+      approvedBy: '관리자',
+      createdAt: twoWeeksAgo
+    },
+    {
+      id: 'activity-10',
+      logCode: 'LOG-2025-010',
+      educationType: '3D 프린팅',
+      institutionType: '고등학교',
+      region: '세종',
+      institutionName: '세종고등학교',
+      grade: '1학년',
+      class: '1반',
+      startDate: '2025-03-25',
+      endDate: '2025-06-25',
+      totalApplicants: 30,
+      graduateMale: 15,
+      graduateFemale: 15,
+      sessions: [],
+      photos: [],
+      educationId: '10',
+      status: 'DRAFT',
+      createdBy: '홍길동',
+      createdAt: now
     }
   ]
 }
@@ -230,7 +296,16 @@ export function getActivityLogs(): ActivityLog[] {
     return dummyData
   }
   try {
-    return JSON.parse(stored)
+    const parsed = JSON.parse(stored)
+    // Check if data has old format (edu-001, etc.) and reset if needed
+    const hasOldFormat = Array.isArray(parsed) && parsed.some((log: any) => log.educationId?.startsWith('edu-'))
+    if (hasOldFormat && process.env.NODE_ENV === 'development') {
+      // Reset to new dummy data format
+      const dummyData = getDummyActivityLogs()
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dummyData))
+      return dummyData
+    }
+    return parsed
   } catch {
     return getDummyActivityLogs()
   }
