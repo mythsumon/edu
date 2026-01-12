@@ -47,7 +47,7 @@ export default function InstructorAttendancePage() {
   const searchParams = useSearchParams()
   const sessionParam = searchParams?.get('session')
   const { userRole, userProfile } = useAuth()
-  const isAdmin = userRole === 'admin' || userRole === 'manager'
+  const isAdmin = userRole === 'admin'
   
   const [isEditMode, setIsEditMode] = useState(false)
   const [loading, setLoading] = useState(false)
