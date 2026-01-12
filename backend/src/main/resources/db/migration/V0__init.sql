@@ -83,3 +83,20 @@ CREATE TABLE IF NOT EXISTS samples (
 
 -- Create index on name for faster lookups
 CREATE INDEX IF NOT EXISTS idx_samples_name ON samples(name);
+
+-- Master code table (hierarchical self-referencing table)
+CREATE TABLE IF NOT EXISTS master_code (
+    id BIGSERIAL PRIMARY KEY,
+    code INT NOT NULL,
+    code_name VARCHAR(255) NOT NULL,
+    parent_id BIGINT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP,
+    is_delete BOOLEAN NOT NULL DEFAULT FALSE,
+    CONSTRAINT fk_master_code_parent FOREIGN KEY (parent_id) REFERENCES master_code(id) ON DELETE RESTRICT
+);
+
+-- Create indexes for master_code table
+CREATE INDEX IF NOT EXISTS idx_master_code_parent_id ON master_code(parent_id);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_master_code_parent_code ON master_code(parent_id, code);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_master_code_parent_name ON master_code(parent_id, code_name);
