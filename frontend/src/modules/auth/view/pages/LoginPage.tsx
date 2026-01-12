@@ -1,33 +1,34 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useTranslation } from 'react-i18next'
-import { GraduationCap, Eye, EyeOff } from 'lucide-react'
-import { Button } from '@/shared/ui/button'
-import { Input } from '@/shared/ui/input'
-import { Label } from '@/shared/ui/label'
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslation } from "react-i18next";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/shared/ui/dialog'
-import { useAuthStore } from '@/shared/stores/auth.store'
-import { ROUTES } from '@/shared/constants/routes'
-import { loginSchema, type LoginFormData } from '../../model/auth.schema'
-import { useLoginMutation } from '../../controller/mutations'
+} from "@/shared/ui/dialog";
+import { useAuthStore } from "@/shared/stores/auth.store";
+import { ROUTES } from "@/shared/constants/routes";
+import { loginSchema, type LoginFormData } from "../../model/auth.schema";
+import { useLoginMutation } from "../../controller/mutations";
+import bgLoginImage from "@/assets/images/background/bg-login.png";
 
 export const LoginPage = () => {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
-  const { isAuthenticated } = useAuthStore()
-  const [showPassword, setShowPassword] = useState(false)
-  const [showErrorDialog, setShowErrorDialog] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuthStore();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const loginMutation = useLoginMutation()
+  const loginMutation = useLoginMutation();
 
   const {
     register,
@@ -36,17 +37,17 @@ export const LoginPage = () => {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
-  })
+  });
 
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate(ROUTES.DASHBOARD, { replace: true })
+      navigate(ROUTES.DASHBOARD, { replace: true });
     }
-  }, [isAuthenticated, navigate])
+  }, [isAuthenticated, navigate]);
 
   // Handle login errors
   useEffect(() => {
@@ -54,69 +55,89 @@ export const LoginPage = () => {
       setErrorMessage(
         loginMutation.error instanceof Error
           ? loginMutation.error.message
-          : t('auth.invalidCredentials')
-      )
-      setShowErrorDialog(true)
+          : t("auth.invalidCredentials")
+      );
+      setShowErrorDialog(true);
     }
-  }, [loginMutation.isError, loginMutation.error, t])
+  }, [loginMutation.isError, loginMutation.error, t]);
 
   const onSubmit = async (data: LoginFormData) => {
     loginMutation.mutate({
       email: data.email,
       password: data.password,
-    })
-  }
-
-  const handleForgotPassword = () => {
-    // No action - as per requirements
-  }
+    });
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100 p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          {/* Logo and Header */}
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <GraduationCap className="h-8 w-8 text-primary" />
-            <h1 className="text-2xl font-bold text-foreground">{t('auth.title')}</h1>
-          </div>
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url(${bgLoginImage})`,
+        }}
+      />
 
+      {/* Content Container */}
+      <div className="w-full max-w-md relative z-10">
+        {/* Logo above the card */}
+        <div className="flex items-center justify-center mb-8">
+          <h1 className="text-3xl font-bold text-primary">{t("auth.title")}</h1>
+        </div>
+
+        {/* Login Card */}
+        <div className="bg-card rounded-lg shadow-lg p-8">
+          {/* Header */}
           <h2 className="text-2xl font-semibold text-foreground mb-2 text-center">
-            {t('auth.loginTitle')}
+            {t("auth.loginTitle")}
           </h2>
           <p className="text-sm text-muted-foreground mb-6 text-center">
-            {t('auth.loginSubtitle')}
+            {t("auth.loginSubtitle")}
           </p>
 
           {/* Login Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Email Input */}
             <div className="space-y-2">
-              <Label htmlFor="email">{t('auth.userIdEmail')}</Label>
+              <div className="flex items-center gap-2 mb-1">
+                <Mail className="h-4 w-4 text-primary" />
+                <Label htmlFor="email" className="text-foreground">
+                  {t("auth.userIdEmail")}
+                </Label>
+              </div>
               <Input
                 id="email"
                 type="email"
-                placeholder={t('auth.emailPlaceholder')}
-                {...register('email')}
-                className={errors.email ? 'border-destructive' : ''}
+                placeholder={t("auth.emailPlaceholder")}
+                {...register("email")}
+                className={errors.email ? "border-destructive" : ""}
                 disabled={loginMutation.isPending}
               />
               {errors.email && (
-                <p className="text-sm text-destructive">{errors.email.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.email.message}
+                </p>
               )}
             </div>
 
             {/* Password Input */}
             <div className="space-y-2">
-              <Label htmlFor="password">{t('common.password')}</Label>
+              <div className="flex items-center gap-2 mb-1">
+                <Lock className="h-4 w-4 text-primary" />
+                <Label htmlFor="password" className="text-foreground">
+                  {t("common.password")}
+                </Label>
+              </div>
               <div className="relative">
                 <Input
                   id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder={t('auth.passwordPlaceholder')}
-                  {...register('password')}
+                  type={showPassword ? "text" : "password"}
+                  placeholder={t("auth.passwordPlaceholder")}
+                  {...register("password")}
                   disabled={loginMutation.isPending}
-                  className={errors.password ? 'border-destructive pr-10' : 'pr-10'}
+                  className={
+                    errors.password ? "border-destructive pr-10" : "pr-10"
+                  }
                 />
                 <button
                   type="button"
@@ -132,29 +153,21 @@ export const LoginPage = () => {
                 </button>
               </div>
               {errors.password && (
-                <p className="text-sm text-destructive">{errors.password.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.password.message}
+                </p>
               )}
-            </div>
-
-            {/* Forgot Password Link */}
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={handleForgotPassword}
-                className="text-sm text-primary hover:underline"
-                disabled={loginMutation.isPending}
-              >
-                {t('auth.forgotPassword')}
-              </button>
             </div>
 
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full"
+              className="w-full mt-6"
               disabled={loginMutation.isPending}
             >
-              {loginMutation.isPending ? t('auth.loggingIn') : t('auth.loginButton')}
+              {loginMutation.isPending
+                ? t("auth.loggingIn")
+                : t("auth.loginButton")}
             </Button>
           </form>
         </div>
@@ -164,14 +177,16 @@ export const LoginPage = () => {
       <Dialog open={showErrorDialog} onOpenChange={setShowErrorDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('auth.loginFailed')}</DialogTitle>
+            <DialogTitle>{t("auth.loginFailed")}</DialogTitle>
             <DialogDescription>{errorMessage}</DialogDescription>
           </DialogHeader>
           <div className="flex justify-end">
-            <Button onClick={() => setShowErrorDialog(false)}>{t('common.close')}</Button>
+            <Button onClick={() => setShowErrorDialog(false)}>
+              {t("common.close")}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
     </div>
-  )
-}
+  );
+};

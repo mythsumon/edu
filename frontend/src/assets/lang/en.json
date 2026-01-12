@@ -25,15 +25,15 @@
     "previous": "Previous"
   },
   "auth": {
-    "title": "EduMatrix",
-    "loginTitle": "Login",
-    "loginSubtitle": "Access the dashboard using your credentials.",
-    "userIdEmail": "User ID / Email",
-    "emailPlaceholder": "admin@example.com",
+    "title": "SWA",
+    "loginTitle": "Welcome Back",
+    "loginSubtitle": "Enter your credentials to access your account.",
+    "userIdEmail": "Email",
+    "emailPlaceholder": "Enter your email",
     "passwordPlaceholder": "Enter your password",
     "forgotPassword": "Forgot Password?",
-    "loggingIn": "Logging in...",
-    "loginButton": "Login to Dashboard",
+    "loggingIn": "Signing in...",
+    "loginButton": "Sign In",
     "loginFailed": "Login Failed",
     "invalidCredentials": "Invalid email or password. Please try again.",
     "accessDenied": "Access denied"

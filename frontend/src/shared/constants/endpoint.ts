@@ -1,3 +1,4 @@
 export const ENDPOINT = {
-    createSample: '/api/v1/sample',
+    login: '/auth/login',
+    createSample: '/sample',
 }

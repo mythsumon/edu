@@ -214,6 +214,14 @@ Forbidden:
 - Use `cn()` from `shared/lib/cn.ts` for className merging.
 - Maintain accessibility (labels, aria, keyboard navigation).
 
+### Color Palette Rules (MANDATORY)
+- **ALL colors MUST use only the palette colors defined in `src/styles/globals.css`.**
+- Use palette color classes: `bg-background`, `bg-card`, `bg-primary`, `bg-secondary`, `bg-muted`, `bg-accent`, `bg-destructive`, `text-foreground`, `text-primary`, `text-secondary`, `text-muted-foreground`, `text-destructive`, `border-border`, `border-input`, etc.
+- **FORBIDDEN:** Custom Tailwind color classes (e.g., `bg-slate-100`, `bg-gray-50`, `text-blue-500`, `border-red-300`, etc.).
+- **FORBIDDEN:** Hardcoded color values in className (e.g., `bg-[#ffffff]`, `text-[#000000]`).
+- All color values are defined via CSS variables in `globals.css` and mapped through Tailwind config.
+- This ensures consistent theming, dark mode support, and maintainability.
+
 ---
 
 ## 9) Error/Loading/Empty State Rules
