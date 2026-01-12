@@ -1,7 +1,8 @@
 'use client'
 
 import { Table, Checkbox, Dropdown, Button, Tooltip } from 'antd'
-import type { ColumnsType, MenuProps } from 'antd/es/table'
+import type { ColumnsType } from 'antd/es/table'
+import type { MenuProps } from 'antd'
 import { ChevronDown, Edit2 } from 'lucide-react'
 import { 
   getAllowedNextStatuses, 
