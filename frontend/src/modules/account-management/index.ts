@@ -1,3 +1,4 @@
 // Export public API for account-management module
-export { AccountManagementPage } from './view/pages/AccountManagementPage'
+export { AdminAccountManagementPage } from './view/pages/AdminAccountManagementPage'
+export { InstructorAccountManagementPage } from './view/pages/InstructorAccountManagementPage'
 export { useAccountManagementQuery } from './controller/queries'

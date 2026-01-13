@@ -100,12 +100,12 @@ export const Sidebar = () => {
         items: [
           {
             nameKey: "sidebar.adminAccounts",
-            href: ROUTES.ADMIN_SYSTEM_MANAGEMENT, // TODO: Adjust route as needed
+            href: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL,
             icon: Users,
           },
           {
             nameKey: "sidebar.instructorAccounts",
-            href: ROUTES.ADMIN_SYSTEM_MANAGEMENT, // TODO: Adjust route as needed
+            href: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL,
             icon: Users,
           },
         ],

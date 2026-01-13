@@ -1,4 +1,4 @@
-import { RouteObject } from 'react-router-dom'
+import { RouteObject, Navigate } from 'react-router-dom'
 import { AppShell } from '../layout/AppShell'
 import { ProtectedLayout } from '../layout/ProtectedLayout'
 import { AdminRouteGuard } from '../layout/AdminRouteGuard'
@@ -18,7 +18,10 @@ import {
   InstructorManagementPage,
 } from '@/modules/reference-information-management'
 import { SettingsAndUserManagementPage } from '@/modules/system-management'
-import { AccountManagementPage } from '@/modules/account-management'
+import {
+  AdminAccountManagementPage,
+  InstructorAccountManagementPage,
+} from '@/modules/account-management'
 
 export const protectedRoutes: RouteObject[] = [
   {
@@ -89,7 +92,20 @@ export const protectedRoutes: RouteObject[] = [
               },
               {
                 path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT,
-                element: <AccountManagementPage />,
+                children: [
+                  {
+                    index: true,
+                    element: <Navigate to={ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL} replace />,
+                  },
+                  {
+                    path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS,
+                    element: <AdminAccountManagementPage />,
+                  },
+                  {
+                    path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS,
+                    element: <InstructorAccountManagementPage />,
+                  },
+                ],
               },
             ],
           },
