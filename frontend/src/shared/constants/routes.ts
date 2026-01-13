@@ -3,6 +3,25 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
   ADMIN_DASHBOARD: '/admin/dashboard',
   INSTRUCTOR_DASHBOARD: '/instructor/dashboard',
+  // Admin routes
+  ADMIN_EDUCATION_OPERATIONS: '/admin/education-operations',
+  ADMIN_INSTRUCTOR_ASSIGNMENT: '/admin/instructor-assignment',
+  ADMIN_INSTRUCTOR_APPLICATION_MANAGEMENT: '/admin/instructor-assignment/application',
+  ADMIN_INSTRUCTOR_ALLOCATION_MANAGEMENT: '/admin/instructor-assignment/allocation',
+  ADMIN_TEACHING_CONFIRMATION_MANAGEMENT: '/admin/instructor-assignment/confirmation',
+  ADMIN_REFERENCE_INFORMATION_MANAGEMENT: '/admin/reference-information-management',
+  ADMIN_INSTITUTION_MANAGEMENT: '/admin/reference-information-management/institution',
+  ADMIN_PROGRAM_MANAGEMENT: '/admin/reference-information-management/program',
+  ADMIN_INSTRUCTOR_MANAGEMENT: '/admin/reference-information-management/instructor',
+  ADMIN_SYSTEM_MANAGEMENT: '/admin/system-management',
+  ADMIN_SETTINGS_AND_USER_MANAGEMENT: '/admin/system-management/settings',
+  // Instructor routes
+  INSTRUCTOR_EDUCATION_OPERATIONS: '/instructor/education-operations',
+  INSTRUCTOR_SCHEDULE: '/instructor/instructor-assignment',
+  INSTRUCTOR_STUDENTS: '/instructor/reference-information-management',
+  INSTRUCTOR_ATTENDANCE: '/instructor/system-management',
+  INSTRUCTOR_GRADES: '/instructor/system-management/settings',
+  // Legacy routes (for backward compatibility)
   // Education Operations
   EDUCATION_OPERATIONS: '/education-operations',
   // Instructor Assignment

@@ -1,6 +1,8 @@
 import { RouteObject } from 'react-router-dom'
 import { AppShell } from '../layout/AppShell'
 import { ProtectedLayout } from '../layout/ProtectedLayout'
+import { AdminRouteGuard } from '../layout/AdminRouteGuard'
+import { InstructorRouteGuard } from '../layout/InstructorRouteGuard'
 import { ROUTES } from '@/shared/constants/routes'
 import { HomePage } from '@/modules/home'
 import { DashboardPage } from '@/modules/dashboard'
@@ -32,45 +34,95 @@ export const protectedRoutes: RouteObject[] = [
             path: ROUTES.DASHBOARD,
             element: <DashboardPage />,
           },
+          // Admin routes grouped under /admin
           {
-            path: ROUTES.ADMIN_DASHBOARD,
-            element: <DashboardPage />,
+            path: '/admin',
+            element: <AdminRouteGuard />,
+            children: [
+              {
+                path: 'dashboard',
+                element: <DashboardPage />,
+              },
+              {
+                path: 'education-operations',
+                element: <EducationOperationsPage />,
+              },
+              {
+                path: 'instructor-assignment',
+                children: [
+                  {
+                    path: 'application',
+                    element: <InstructorApplicationManagementPage />,
+                  },
+                  {
+                    path: 'allocation',
+                    element: <InstructorAllocationManagementPage />,
+                  },
+                  {
+                    path: 'confirmation',
+                    element: <TeachingConfirmationManagementPage />,
+                  },
+                ],
+              },
+              {
+                path: 'reference-information-management',
+                children: [
+                  {
+                    path: 'institution',
+                    element: <InstitutionManagementPage />,
+                  },
+                  {
+                    path: 'program',
+                    element: <ProgramManagementPage />,
+                  },
+                  {
+                    path: 'instructor',
+                    element: <InstructorManagementPage />,
+                  },
+                ],
+              },
+              {
+                path: 'system-management',
+                children: [
+                  {
+                    path: 'settings',
+                    element: <SettingsAndUserManagementPage />,
+                  },
+                ],
+              },
+            ],
           },
+          // Instructor routes grouped under /instructor
           {
-            path: ROUTES.INSTRUCTOR_DASHBOARD,
-            element: <DashboardPage />,
-          },
-          {
-            path: ROUTES.EDUCATION_OPERATIONS,
-            element: <EducationOperationsPage />,
-          },
-          {
-            path: ROUTES.INSTRUCTOR_APPLICATION_MANAGEMENT,
-            element: <InstructorApplicationManagementPage />,
-          },
-          {
-            path: ROUTES.INSTRUCTOR_ALLOCATION_MANAGEMENT,
-            element: <InstructorAllocationManagementPage />,
-          },
-          {
-            path: ROUTES.TEACHING_CONFIRMATION_MANAGEMENT,
-            element: <TeachingConfirmationManagementPage />,
-          },
-          {
-            path: ROUTES.INSTITUTION_MANAGEMENT,
-            element: <InstitutionManagementPage />,
-          },
-          {
-            path: ROUTES.PROGRAM_MANAGEMENT,
-            element: <ProgramManagementPage />,
-          },
-          {
-            path: ROUTES.INSTRUCTOR_MANAGEMENT,
-            element: <InstructorManagementPage />,
-          },
-          {
-            path: ROUTES.SETTINGS_AND_USER_MANAGEMENT,
-            element: <SettingsAndUserManagementPage />,
+            path: '/instructor',
+            element: <InstructorRouteGuard />,
+            children: [
+              {
+                path: 'dashboard',
+                element: <DashboardPage />,
+              },
+              {
+                path: 'education-operations',
+                element: <EducationOperationsPage />,
+              },
+              {
+                path: 'instructor-assignment',
+                element: <EducationOperationsPage />,
+              },
+              {
+                path: 'reference-information-management',
+                element: <EducationOperationsPage />,
+              },
+              {
+                path: 'system-management',
+                children: [
+                  {
+                    path: 'settings',
+                    element: <SettingsAndUserManagementPage />,
+                  },
+                ],
+              },
+            ],
           },
         ],
       },
