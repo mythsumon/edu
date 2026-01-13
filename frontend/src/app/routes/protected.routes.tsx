@@ -18,6 +18,7 @@ import {
   InstructorManagementPage,
 } from '@/modules/reference-information-management'
 import { SettingsAndUserManagementPage } from '@/modules/system-management'
+import { AccountManagementPage } from '@/modules/account-management'
 
 export const protectedRoutes: RouteObject[] = [
   {
@@ -85,6 +86,10 @@ export const protectedRoutes: RouteObject[] = [
                     element: <SettingsAndUserManagementPage />,
                   },
                 ],
+              },
+              {
+                path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT,
+                element: <AccountManagementPage />,
               },
             ],
           },

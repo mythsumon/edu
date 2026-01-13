@@ -15,6 +15,7 @@ export const ROUTES = {
   ADMIN_INSTRUCTOR_MANAGEMENT: 'instructor',
   ADMIN_SYSTEM_MANAGEMENT: 'system-management',
   ADMIN_SETTINGS_AND_USER_MANAGEMENT: 'settings',
+  ADMIN_ACCOUNT_MANAGEMENT: 'account-management',
   // Instructor routes - path segments only
   INSTRUCTOR: '/instructor',
   INSTRUCTOR_DASHBOARD: 'dashboard',
@@ -36,6 +37,7 @@ export const ROUTES = {
   ADMIN_INSTRUCTOR_MANAGEMENT_FULL: '/admin/reference-information-management/instructor',
   ADMIN_SYSTEM_MANAGEMENT_FULL: '/admin/system-management',
   ADMIN_SETTINGS_AND_USER_MANAGEMENT_FULL: '/admin/system-management/settings',
+  ADMIN_ACCOUNT_MANAGEMENT_FULL: '/admin/account-management',
   INSTRUCTOR_DASHBOARD_FULL: '/instructor/dashboard',
   INSTRUCTOR_EDUCATION_OPERATIONS_FULL: '/instructor/education-operations',
   INSTRUCTOR_SCHEDULE_FULL: '/instructor/instructor-assignment',
