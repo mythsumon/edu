@@ -51,6 +51,7 @@
     "menu": "Menu",
     "system": "System",
     "academic": "Academic",
+    "accountManagement": "Account Management",
     "dashboard": "Dashboard",
     "educationOperations": "Education Operations",
     "instructorAssignment": "Instructor Assignment",
@@ -72,7 +73,9 @@
     "mySchedule": "My Schedule",
     "myStudents": "My Students",
     "attendance": "Attendance",
-    "grades": "Grades"
+    "grades": "Grades",
+    "adminAccounts": "Admin Accounts",
+    "instructorAccounts": "Instructor Accounts"
   },
   "errors": {
     "generic": "An error occurred",

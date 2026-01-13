@@ -93,6 +93,21 @@ export const Sidebar = () => {
         ],
       },
       {
+        titleKey: "sidebar.accountManagement",
+        items: [
+          {
+            nameKey: "sidebar.adminAccounts",
+            href: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL,
+            icon: Users,
+          },
+          {
+            nameKey: "sidebar.instructorAccounts",
+            href: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL,
+            icon: Users,
+          },
+        ],
+      },
+      {
         titleKey: "sidebar.system",
         items: [
           {
