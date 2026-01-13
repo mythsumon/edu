@@ -1,8 +1,11 @@
 package com.itwizard.swaedu.modules.region.mapper;
 
 import com.itwizard.swaedu.modules.region.dto.request.RegionRequestDto;
+import com.itwizard.swaedu.modules.region.dto.response.RegionDetailResponseDto;
+import com.itwizard.swaedu.modules.region.dto.response.RegionListItemDto;
 import com.itwizard.swaedu.modules.region.dto.response.RegionResponseDto;
 import com.itwizard.swaedu.modules.region.entity.RegionEntity;
+import com.itwizard.swaedu.modules.zone.dto.response.ZoneInfoDto;
 import com.itwizard.swaedu.modules.zone.entity.ZoneEntity;
 
 import java.util.Collections;
@@ -52,5 +55,44 @@ public class RegionMapper {
         }
         entity.setName(requestDto.getName());
         entity.setZone(zone);
+    }
+
+    public static RegionListItemDto toListItemDto(RegionEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+        return RegionListItemDto.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .zoneId(entity.getZoneId())
+                .build();
+    }
+
+    public static RegionDetailResponseDto toDetailDto(RegionEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+        ZoneInfoDto zoneInfo = null;
+        if (entity.getZone() != null) {
+            zoneInfo = ZoneInfoDto.builder()
+                    .id(entity.getZone().getId())
+                    .name(entity.getZone().getName())
+                    .build();
+        }
+        
+        return RegionDetailResponseDto.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .zone(zoneInfo)
+                .build();
+    }
+
+    public static List<RegionListItemDto> toListItemDtoList(List<RegionEntity> entities) {
+        if (entities == null) {
+            return Collections.emptyList();
+        }
+        return entities.stream()
+                .map(RegionMapper::toListItemDto)
+                .collect(Collectors.toList());
     }
 }

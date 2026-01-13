@@ -14,8 +14,11 @@ public interface RegionRepository extends JpaRepository<RegionEntity, Long> {
     Optional<RegionEntity> findByName(String name);
     boolean existsByName(String name);
 
-    @Query("SELECT r FROM RegionEntity r WHERE r.zoneId = :zoneId")
+    @Query("SELECT r FROM RegionEntity r JOIN FETCH r.zone WHERE r.zoneId = :zoneId")
     List<RegionEntity> findByZoneId(@Param("zoneId") Long zoneId);
+
+    @Query("SELECT r FROM RegionEntity r JOIN FETCH r.zone WHERE r.id = :id")
+    Optional<RegionEntity> findByIdWithZone(@Param("id") Long id);
 
     boolean existsByNameAndZoneId(String name, Long zoneId);
 }

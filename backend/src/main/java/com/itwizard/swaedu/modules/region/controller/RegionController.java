@@ -1,6 +1,8 @@
 package com.itwizard.swaedu.modules.region.controller;
 
 import com.itwizard.swaedu.modules.region.dto.request.RegionRequestDto;
+import com.itwizard.swaedu.modules.region.dto.response.RegionDetailResponseDto;
+import com.itwizard.swaedu.modules.region.dto.response.RegionListItemDto;
 import com.itwizard.swaedu.modules.region.dto.response.RegionResponseDto;
 import com.itwizard.swaedu.modules.region.service.RegionService;
 import com.itwizard.swaedu.util.ApiResponse;
@@ -27,14 +29,14 @@ public class RegionController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse> getRegionById(@PathVariable Long id) {
-        RegionResponseDto dto = regionService.getRegionById(id);
+        RegionDetailResponseDto dto = regionService.getRegionById(id);
         return ResponseUtil.success("Region retrieved successfully", dto);
     }
 
     @GetMapping
     public ResponseEntity<ApiResponse> getAllRegions(
             @RequestParam(required = false) Long zoneId) {
-        List<RegionResponseDto> dtoList;
+        List<RegionListItemDto> dtoList;
         if (zoneId != null) {
             dtoList = regionService.getRegionsByZoneId(zoneId);
         } else {

@@ -1,5 +1,8 @@
 package com.itwizard.swaedu.modules.zone.mapper;
 
+import com.itwizard.swaedu.modules.region.dto.response.RegionResponseDto;
+import com.itwizard.swaedu.modules.region.entity.RegionEntity;
+import com.itwizard.swaedu.modules.region.mapper.RegionMapper;
 import com.itwizard.swaedu.modules.zone.dto.request.ZoneRequestDto;
 import com.itwizard.swaedu.modules.zone.dto.response.ZoneResponseDto;
 import com.itwizard.swaedu.modules.zone.entity.ZoneEntity;
@@ -47,5 +50,22 @@ public class ZoneMapper {
             return;
         }
         entity.setName(requestDto.getName());
+    }
+
+    public static ZoneResponseDto toDtoWithRegions(ZoneEntity entity, List<RegionEntity> regions) {
+        if (entity == null) {
+            return null;
+        }
+        List<RegionResponseDto> regionDtos = regions != null 
+                ? regions.stream()
+                    .map(RegionMapper::toDto)
+                    .collect(Collectors.toList())
+                : Collections.emptyList();
+        
+        return ZoneResponseDto.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .regions(regionDtos)
+                .build();
     }
 }

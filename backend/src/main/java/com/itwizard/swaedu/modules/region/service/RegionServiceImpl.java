@@ -3,6 +3,8 @@ package com.itwizard.swaedu.modules.region.service;
 import com.itwizard.swaedu.exception.ResourceNotFoundException;
 import com.itwizard.swaedu.exception.ValidationException;
 import com.itwizard.swaedu.modules.region.dto.request.RegionRequestDto;
+import com.itwizard.swaedu.modules.region.dto.response.RegionDetailResponseDto;
+import com.itwizard.swaedu.modules.region.dto.response.RegionListItemDto;
 import com.itwizard.swaedu.modules.region.dto.response.RegionResponseDto;
 import com.itwizard.swaedu.modules.region.entity.RegionEntity;
 import com.itwizard.swaedu.modules.region.mapper.RegionMapper;
@@ -14,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,26 +42,22 @@ public class RegionServiceImpl implements RegionService {
     }
 
     @Override
-    public RegionResponseDto getRegionById(Long id) {
-        RegionEntity entity = regionRepository.findById(id)
+    public RegionDetailResponseDto getRegionById(Long id) {
+        RegionEntity entity = regionRepository.findByIdWithZone(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Region not found with id: " + id));
-        return RegionMapper.toDto(entity);
+        return RegionMapper.toDetailDto(entity);
     }
 
     @Override
-    public List<RegionResponseDto> getAllRegions() {
+    public List<RegionListItemDto> getAllRegions() {
         List<RegionEntity> entities = regionRepository.findAll();
-        return entities.stream()
-                .map(RegionMapper::toDto)
-                .collect(Collectors.toList());
+        return RegionMapper.toListItemDtoList(entities);
     }
 
     @Override
-    public List<RegionResponseDto> getRegionsByZoneId(Long zoneId) {
+    public List<RegionListItemDto> getRegionsByZoneId(Long zoneId) {
         List<RegionEntity> entities = regionRepository.findByZoneId(zoneId);
-        return entities.stream()
-                .map(RegionMapper::toDto)
-                .collect(Collectors.toList());
+        return RegionMapper.toListItemDtoList(entities);
     }
 
     @Override

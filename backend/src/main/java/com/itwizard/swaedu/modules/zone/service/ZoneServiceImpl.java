@@ -2,6 +2,8 @@ package com.itwizard.swaedu.modules.zone.service;
 
 import com.itwizard.swaedu.exception.ResourceNotFoundException;
 import com.itwizard.swaedu.exception.ValidationException;
+import com.itwizard.swaedu.modules.region.entity.RegionEntity;
+import com.itwizard.swaedu.modules.region.repository.RegionRepository;
 import com.itwizard.swaedu.modules.zone.dto.request.ZoneRequestDto;
 import com.itwizard.swaedu.modules.zone.dto.response.ZoneResponseDto;
 import com.itwizard.swaedu.modules.zone.entity.ZoneEntity;
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 public class ZoneServiceImpl implements ZoneService {
 
     private final ZoneRepository zoneRepository;
+    private final RegionRepository regionRepository;
 
     @Override
     @Transactional
@@ -36,7 +39,11 @@ public class ZoneServiceImpl implements ZoneService {
     public ZoneResponseDto getZoneById(Long id) {
         ZoneEntity entity = zoneRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Zone not found with id: " + id));
-        return ZoneMapper.toDto(entity);
+        
+        // Fetch regions for this zone
+        List<RegionEntity> regions = regionRepository.findByZoneId(id);
+        
+        return ZoneMapper.toDtoWithRegions(entity, regions);
     }
 
     @Override
