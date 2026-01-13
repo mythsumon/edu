@@ -377,8 +377,8 @@ export default function ApplyForEducationPage() {
       }
     }
     
-    // 3. Check if status is 마감
-    if (education.status === '신청마감' || education.educationStatus === '신청 마감') {
+    // 3. Check if educationStatus is 마감
+    if (education.educationStatus === '신청 마감') {
       return { 
         canApply: false, 
         reason: `교육 마감: 교육이 마감되었습니다.` 
