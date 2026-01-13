@@ -37,21 +37,28 @@ INSERT INTO regions (name, zone_id) VALUES
 ON CONFLICT DO NOTHING;
 
 -- Insert master codes for instructor status
+-- First insert the parent
 INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
-    (100, 'Instructor Status', NULL, NOW(), FALSE),
+    (100, 'Instructor Status', NULL, NOW(), FALSE)
+ON CONFLICT DO NOTHING;
+
+-- Then insert the children
+INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
     (101, 'Active', (SELECT id FROM master_code WHERE code = 100 AND parent_id IS NULL), NOW(), FALSE),
-    (102, 'Inactive', (SELECT id FROM master_code WHERE code = 100 AND parent_id IS NULL), NOW(), FALSE),
-    (103, 'Pending', (SELECT id FROM master_code WHERE code = 100 AND parent_id IS NULL), NOW(), FALSE),
-    (104, 'Suspended', (SELECT id FROM master_code WHERE code = 100 AND parent_id IS NULL), NOW(), FALSE)
+    (102, 'Inactive', (SELECT id FROM master_code WHERE code = 100 AND parent_id IS NULL), NOW(), FALSE)
 ON CONFLICT DO NOTHING;
 
 -- Insert master codes for instructor classification
+-- First insert the parent
 INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
-    (200, 'Instructor Classification', NULL, NOW(), FALSE),
-    (201, 'Senior Instructor', (SELECT id FROM master_code WHERE code = 200 AND parent_id IS NULL), NOW(), FALSE),
-    (202, 'Junior Instructor', (SELECT id FROM master_code WHERE code = 200 AND parent_id IS NULL), NOW(), FALSE),
-    (203, 'Associate Instructor', (SELECT id FROM master_code WHERE code = 200 AND parent_id IS NULL), NOW(), FALSE),
-    (204, 'Guest Instructor', (SELECT id FROM master_code WHERE code = 200 AND parent_id IS NULL), NOW(), FALSE)
+    (200, 'Instructor Classification', NULL, NOW(), FALSE)
+ON CONFLICT DO NOTHING;
+
+-- Then insert the children
+INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
+    (201, 'Basic', (SELECT id FROM master_code WHERE code = 200 AND parent_id IS NULL), NOW(), FALSE),
+    (202, 'Intermediate', (SELECT id FROM master_code WHERE code = 200 AND parent_id IS NULL), NOW(), FALSE),
+    (203, 'Advanced', (SELECT id FROM master_code WHERE code = 200 AND parent_id IS NULL), NOW(), FALSE)
 ON CONFLICT DO NOTHING;
 
 -- Insert admin user
