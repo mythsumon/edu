@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
-import { User, Lock, Eye, EyeOff } from "lucide-react";
+import { User, Lock, Eye, EyeOff, Check } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import {
@@ -13,22 +13,45 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
 import { useAuthStore } from "@/shared/stores/auth.store";
+import { useUiStore } from "@/shared/stores/ui.store";
 import { ROUTES } from "@/shared/constants/routes";
 import { STORAGE_KEYS } from "@/shared/constants/storageKeys";
 import { loginSchema, type LoginFormData } from "../../model/auth.schema";
 import { useLoginMutation } from "../../controller/mutations";
 import bgLoginImage from "@/assets/images/background/bg-login.png";
+import logoImage from "@/assets/images/logo/logo.png";
+import i18n from "@/app/config/i18n";
+
+const languages = [
+  { code: "en", name: "English", flag: "🇺🇸" },
+  { code: "ko", name: "한국어", flag: "🇰🇷" },
+];
 
 export const LoginPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
+  const { language, setLanguage } = useUiStore();
   const [showPassword, setShowPassword] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const loginMutation = useLoginMutation();
+
+  const handleLanguageChange = (langCode: "en" | "ko") => {
+    setLanguage(langCode);
+    i18n.changeLanguage(langCode);
+  };
+
+  const currentLanguage =
+    languages.find((lang) => lang.code === language) || languages[0];
 
   const {
     register,
@@ -47,22 +70,22 @@ export const LoginPage = () => {
     if (isAuthenticated) {
       // Get user role from localStorage to determine dashboard route
       try {
-        const userStr = localStorage.getItem(STORAGE_KEYS.USER)
+        const userStr = localStorage.getItem(STORAGE_KEYS.USER);
         if (userStr) {
-          const user = JSON.parse(userStr)
-          const userRole = user?.roleName?.toUpperCase()
-          if (userRole === 'ADMIN') {
-            navigate(ROUTES.ADMIN_DASHBOARD, { replace: true })
-          } else if (userRole === 'INSTRUCTOR') {
-            navigate(ROUTES.INSTRUCTOR_DASHBOARD, { replace: true })
+          const user = JSON.parse(userStr);
+          const userRole = user?.roleName?.toUpperCase();
+          if (userRole === "ADMIN") {
+            navigate(ROUTES.ADMIN_DASHBOARD, { replace: true });
+          } else if (userRole === "INSTRUCTOR") {
+            navigate(ROUTES.INSTRUCTOR_DASHBOARD, { replace: true });
           } else {
-            navigate(ROUTES.DASHBOARD, { replace: true })
+            navigate(ROUTES.DASHBOARD, { replace: true });
           }
         } else {
-          navigate(ROUTES.DASHBOARD, { replace: true })
+          navigate(ROUTES.DASHBOARD, { replace: true });
         }
       } catch (error) {
-        navigate(ROUTES.DASHBOARD, { replace: true })
+        navigate(ROUTES.DASHBOARD, { replace: true });
       }
     }
   }, [isAuthenticated, navigate]);
@@ -96,18 +119,61 @@ export const LoginPage = () => {
         }}
       />
 
+      {/* Language Switcher - Top Right */}
+      <div className="absolute top-4 right-4 z-20">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-x-2 "
+            >
+              <span className="hidden sm:inline">{currentLanguage.flag}</span>
+              <span className="hidden sm:inline">{currentLanguage.name}</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            className="min-w-[150px] backdrop-blur-xl bg-gradient-to-b from-card/80 via-card/70 to-card/90 border border-secondary/50 shadow-lg"
+            style={{
+              background:
+                "linear-gradient(to bottom, hsl(var(--card) / 0.8), hsl(var(--card) / 0.7), hsl(var(--card) / 0.9))",
+            }}
+          >
+            {languages.map((lang) => (
+              <DropdownMenuItem
+                key={lang.code}
+                onClick={() => handleLanguageChange(lang.code as "en" | "ko")}
+                className="cursor-pointer hover:bg-accent/50"
+              >
+                <span className="mr-2">{lang.flag}</span>
+                <span className="flex-1">{lang.name}</span>
+                {language === lang.code && (
+                  <Check className="h-4 w-4 text-primary" />
+                )}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       {/* Content Container */}
       <div className="w-full max-w-md relative z-10">
         {/* Logo above the card */}
-        <div className="flex items-center justify-center mb-8">
-          <h1 className="text-3xl font-bold text-primary">{t("auth.title")}</h1>
+        <div className="flex items-center justify-center mb-0">
+          <img
+            src={logoImage}
+            alt={t("auth.title")}
+            className="w-48 h-auto"
+          />
         </div>
 
         {/* Login Card - Glassmorphism Effect */}
         <div
           className="relative rounded-3xl p-8 backdrop-blur-xl bg-gradient-to-b from-card/80 via-card/70 to-card/90 border border-secondary/50 shadow-lg"
           style={{
-            background: "linear-gradient(to bottom, hsl(var(--card) / 0.8), hsl(var(--card) / 0.7), hsl(var(--card) / 0.9))",
+            background:
+              "linear-gradient(to bottom, hsl(var(--card) / 0.8), hsl(var(--card) / 0.7), hsl(var(--card) / 0.9))",
           }}
         >
           {/* Header */}
@@ -148,9 +214,7 @@ export const LoginPage = () => {
                   icon={<Lock className="h-4 w-4" />}
                   {...register("password")}
                   className={
-                    errors.password
-                      ? "ring-2 ring-destructive pr-12"
-                      : "pr-12"
+                    errors.password ? "ring-2 ring-destructive pr-12" : "pr-12"
                   }
                   disabled={loginMutation.isPending}
                 />

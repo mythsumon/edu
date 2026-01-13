@@ -26,7 +26,7 @@
   },
   "auth": {
     "title": "SWA",
-    "loginTitle": "Welcome Back",
+    "loginTitle": "Login",
     "loginSubtitle": "Enter your credentials to access your account.",
     "userIdEmail": "Email",
     "emailPlaceholder": "Enter your email",
@@ -41,9 +41,14 @@
     "accessDenied": "Access denied"
   },
   "header": {
-    "title": "Management Dashboard"
+    "title": "Management Dashboard",
+    "welcome": "Welcome",
+    "searchPlaceholder": "Search courses, learn here..."
   },
   "sidebar": {
+    "menu": "Menu",
+    "system": "System",
+    "academic": "Academic",
     "dashboard": "Dashboard",
     "educationOperations": "Education Operations",
     "instructorAssignment": "Instructor Assignment",
@@ -59,6 +64,7 @@
     "settingsAndUserManagement": "Settings and User Management",
     "educationManagementSystem": "Education Management System",
     "administrator": "Administrator",
+    "instructor": "Instructor",
     "myOverview": "My Overview",
     "myClasses": "My Classes",
     "mySchedule": "My Schedule",
