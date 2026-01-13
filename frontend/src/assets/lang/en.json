@@ -45,6 +45,7 @@
     "welcome": "Welcome",
     "profileSettings": "Profile Settings",
     "logout": "Logout",
+    "theme": "Theme",
     "searchPlaceholder": "Search courses, learn here..."
   },
   "sidebar": {
@@ -75,7 +76,8 @@
     "attendance": "Attendance",
     "grades": "Grades",
     "adminAccounts": "Admin Accounts",
-    "instructorAccounts": "Instructor Accounts"
+    "instructorAccounts": "Instructor Accounts",
+    "masterCodeSetup": "Master Code Setup"
   },
   "errors": {
     "generic": "An error occurred",

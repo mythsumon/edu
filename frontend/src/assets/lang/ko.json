@@ -44,6 +44,7 @@
     "title": "관리 대시보드",
     "profileSettings": "프로필 설정",
     "logout": "로그아웃",
+    "theme": "테마",
     "welcome": "환영합니다",
     "searchPlaceholder": "과정 검색, 여기서 학습하세요..."
   },
@@ -75,7 +76,8 @@
     "attendance": "출석",
     "grades": "성적",
     "adminAccounts": "관리자 계정",
-    "instructorAccounts": "강사 계정"
+    "instructorAccounts": "강사 계정",
+    "masterCodeSetup": "마스터 코드 설정"
   },
   "errors": {
     "generic": "오류가 발생했습니다",

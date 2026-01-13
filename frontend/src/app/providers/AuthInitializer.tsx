@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { refreshToken, getCurrentUser } from '@/modules/auth/model/auth.service'
 import { useAuthStore } from '@/shared/stores/auth.store'
 import { STORAGE_KEYS } from '@/shared/constants/storageKeys'
@@ -9,8 +9,16 @@ import { STORAGE_KEYS } from '@/shared/constants/storageKeys'
  */
 export const AuthInitializer = () => {
   const { setAuthenticated, clearAuth } = useAuthStore()
+  const hasInitialized = useRef(false)
 
   useEffect(() => {
+    // Prevent duplicate initialization (especially in React StrictMode)
+    if (hasInitialized.current) {
+      return
+    }
+
+    hasInitialized.current = true
+
     const initializeAuth = async () => {
       try {
         // Attempt to refresh token (reads refresh_token from HttpOnly cookie)
@@ -39,7 +47,8 @@ export const AuthInitializer = () => {
     }
 
     initializeAuth()
-  }, [setAuthenticated, clearAuth])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Empty deps - Zustand functions are stable and we only want to run once
 
   return null
 }

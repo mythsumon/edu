@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useUiStore } from "@/shared/stores/ui.store";
@@ -6,17 +6,14 @@ import { cn } from "@/shared/lib/cn";
 import { ROUTES } from "@/shared/constants/routes";
 import { STORAGE_KEYS } from "@/shared/constants/storageKeys";
 import type { UserResponseDto } from "@/modules/auth/model/auth.types";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/shared/ui/tooltip";
 import {
   LayoutDashboard,
   BookOpen,
-  GraduationCap,
-  FileStack,
-  Settings,
   Calendar,
   Users,
   ClipboardList,
   Award,
+  Code2,
 } from "lucide-react";
 import logoImage from "@/assets/images/logo/logo.png";
 
@@ -34,8 +31,10 @@ interface MenuSection {
 export const Sidebar = () => {
   const { t } = useTranslation();
   const location = useLocation();
-  const { sidebarCollapsed } = useUiStore();
+  const { sidebarCollapsed, sidebarOpen, setSidebarOpen, setSidebarCollapsed } = useUiStore();
   const [user, setUser] = useState<UserResponseDto | null>(null);
+  const [wasCollapsedBeforeHover, setWasCollapsedBeforeHover] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
 
   // Load user from localStorage
   useEffect(() => {
@@ -72,23 +71,8 @@ export const Sidebar = () => {
         items: [
           {
             nameKey: "sidebar.dashboard",
-            href: ROUTES.ADMIN_DASHBOARD,
+            href: ROUTES.ADMIN_DASHBOARD_FULL,
             icon: LayoutDashboard,
-          },
-          {
-            nameKey: "sidebar.educationOperations",
-            href: ROUTES.EDUCATION_OPERATIONS,
-            icon: BookOpen,
-          },
-          {
-            nameKey: "sidebar.instructorAssignment",
-            href: ROUTES.INSTRUCTOR_ASSIGNMENT,
-            icon: GraduationCap,
-          },
-          {
-            nameKey: "sidebar.referenceInformationManagement",
-            href: ROUTES.REFERENCE_INFORMATION_MANAGEMENT,
-            icon: FileStack,
           },
         ],
       },
@@ -111,9 +95,9 @@ export const Sidebar = () => {
         titleKey: "sidebar.system",
         items: [
           {
-            nameKey: "sidebar.systemManagement",
-            href: ROUTES.SYSTEM_MANAGEMENT,
-            icon: Settings,
+            nameKey: "sidebar.masterCodeSetup",
+            href: ROUTES.ADMIN_MASTER_CODE_SETUP_FULL,
+            icon: Code2,
           },
         ],
       },
@@ -179,110 +163,163 @@ export const Sidebar = () => {
     return adminSections;
   }, [userRole, adminSections, instructorSections]);
 
-  const isActiveRoute = (href: string) => location.pathname === href;
+  const isActiveRoute = (href: string) => {
+    // Exact match
+    if (location.pathname === href) return true;
+    // Check if current path starts with the menu item href (for child routes)
+    // Only match if it's a path segment boundary (not just a substring)
+    return location.pathname.startsWith(href + "/") || location.pathname.startsWith(href + "?");
+  };
+
+  // Close drawer when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        sidebarOpen &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node)
+      ) {
+        setSidebarOpen(false);
+      }
+    };
+
+    if (sidebarOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      // Prevent body scroll when drawer is open on mobile
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.body.style.overflow = "unset";
+    };
+  }, [sidebarOpen, setSidebarOpen]);
+
+  // Close drawer when route changes (mobile/tablet)
+  useEffect(() => {
+    if (sidebarOpen) {
+      setSidebarOpen(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   return (
-    <aside
-      className={cn(
-        "bg-background transition-all duration-300 flex flex-col overflow-hidden border-r border-secondary/50 py-4",
-        sidebarCollapsed ? "w-16 min-w-16 max-w-24" : "w-64 min-w-52 max-w-72"
-      )}
-    >
-      {/* Sidebar Header with Logo */}
-      <div className="h-16 flex items-center px-4">
-        <div className="flex items-center justify-center gap-3 w-full">
-          {!sidebarCollapsed && (
+    <>
+      {/* Overlay for mobile/tablet */}
+      <div
+        className={cn(
+          "fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300",
+          sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}
+        onClick={() => setSidebarOpen(false)}
+        aria-hidden="true"
+      />
+
+      {/* Sidebar */}
+      <aside
+        ref={sidebarRef}
+        onMouseEnter={() => {
+          // On desktop: if collapsed, expand on hover
+          if (sidebarCollapsed) {
+            setWasCollapsedBeforeHover(true);
+            setSidebarCollapsed(false);
+          }
+        }}
+        onMouseLeave={() => {
+          // On desktop: if it was collapsed before hover, collapse again
+          if (wasCollapsedBeforeHover) {
+            setSidebarCollapsed(true);
+            setWasCollapsedBeforeHover(false);
+          }
+        }}
+        className={cn(
+          "bg-background flex flex-col overflow-hidden py-4",
+          // Border (right border since sidebar is on the left)
+          "border-r border-secondary/50",
+          // Width based on collapsed state with smooth transition
+          sidebarCollapsed
+            ? "w-16 min-w-16 max-w-24"
+            : "w-64 min-w-52 max-w-72",
+          "transition-all duration-300 ease-in-out",
+          // Mobile/Tablet: fixed drawer from left with smooth slide animation
+          "fixed left-0 top-0 h-full z-50",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full",
+          // Disable pointer events when off-screen on mobile
+          !sidebarOpen && "pointer-events-none lg:pointer-events-auto",
+          // Desktop: always visible, relative positioning, no transform, always flex
+          "lg:relative lg:translate-x-0 lg:flex"
+        )}
+      >
+        {/* Sidebar Header with Logo */}
+        <div className="h-16 flex items-center px-4">
+          <div className="flex items-center justify-center gap-3 w-full">
             <img
               src={logoImage}
               alt={t("sidebar.educationManagementSystem")}
-              className="w-40 h-auto object-contain"
+              className={cn(
+                "h-auto object-contain transition-opacity duration-300 ease-in-out",
+                sidebarCollapsed ? "w-0 opacity-0" : "w-40 opacity-100"
+              )}
             />
-          )}
+          </div>
         </div>
-      </div>
-      {/* Navigation Menu */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3">
-        <div className="space-y-4">
-          {sections.map((section) => (
-            <div key={section.titleKey}>
-              {!sidebarCollapsed && (
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1 px-1">
+        {/* Navigation Menu */}
+        <nav className="flex-1 overflow-y-auto py-4 px-3">
+          <div className="space-y-4">
+            {sections.map((section) => (
+              <div key={section.titleKey} className="space-y-2">
+                <p
+                  className={cn(
+                    "text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1 px-1 transition-opacity duration-300 ease-in-out",
+                    sidebarCollapsed
+                      ? "opacity-0 h-0 overflow-hidden"
+                      : "opacity-100"
+                  )}
+                >
                   {t(section.titleKey)}
                 </p>
-              )}
-              <ul className="space-y-1">
-                {section.items.map((item) => {
-                  const isActive = isActiveRoute(item.href);
-                  const itemName = t(item.nameKey);
+                <ul className="space-y-1">
+                  {section.items.map((item) => {
+                    const isActive = isActiveRoute(item.href);
+                    const itemName = t(item.nameKey);
 
-                  return (
-                    <li key={item.nameKey}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Link
-                            to={item.href}
+                    return (
+                      <li key={item.nameKey}>
+                        <Link
+                          to={item.href}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors",
+                            sidebarCollapsed ? "justify-center" : "",
+                            isActive
+                              ? "bg-primary text-primary-foreground"
+                              : "text-foreground hover:bg-muted"
+                          )}
+                        >
+                          <item.icon
+                            className={`h-4 w-4 flex-shrink-0  ${
+                              sidebarCollapsed ? "ml-2.5" : "ml-0"
+                            }`}
+                          />
+                          <span
                             className={cn(
-                              "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors",
-                              sidebarCollapsed ? "justify-center" : "",
-                              isActive
-                                ? "bg-primary text-primary-foreground"
-                                : "text-foreground hover:bg-muted"
+                              "text-sm font-normal truncate transition-opacity duration-300 ease-in-out",
+                              sidebarCollapsed
+                                ? "opacity-0 w-0 overflow-hidden"
+                                : "opacity-100"
                             )}
                           >
-                            <item.icon className="h-4 w-4 flex-shrink-0" />
-                            {!sidebarCollapsed && (
-                              <span className="text-sm font-medium text-secondary-foreground truncate">
-                                {itemName}
-                              </span>
-                            )}
-                          </Link>
-                        </TooltipTrigger>
-                        <TooltipContent
-                          side="right"
-                          sideOffset={12}
-                          className="z-[100] border-border/30 shadow-sm"
-                        >
-                          <p className="text-xs">{itemName}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </nav>
-
-      {/* Logout Card - Sticky at Bottom */}
-      {/* <div className="sticky bottom-0 p-2 bg-background">
-        <div className="bg-card rounded-lg p-3 shadow-sm">
-          {!sidebarCollapsed ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground hover:bg-muted"
-              onClick={handleLogout}
-              disabled={logoutMutation.isPending}
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="text-sm">
-                {logoutMutation.isPending ? t("common.loading") : t("common.logout")}
-              </span>
-            </Button>
-          ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full justify-center p-2 text-muted-foreground hover:text-foreground hover:bg-muted"
-              onClick={handleLogout}
-              disabled={logoutMutation.isPending}
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      </div> */}
-    </aside>
+                            {itemName}
+                          </span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </nav>
+      </aside>
+    </>
   );
 };

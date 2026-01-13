@@ -18,6 +18,7 @@ import {
   InstructorManagementPage,
 } from '@/modules/reference-information-management'
 import { SettingsAndUserManagementPage } from '@/modules/system-management'
+import { MasterCodeSetupPage, MasterCodeCreatePage } from '@/modules/master-code-setup'
 import {
   AdminAccountManagementPage,
   InstructorAccountManagementPage,
@@ -87,6 +88,19 @@ export const protectedRoutes: RouteObject[] = [
                   {
                     path: ROUTES.ADMIN_SETTINGS_AND_USER_MANAGEMENT,
                     element: <SettingsAndUserManagementPage />,
+                  },
+                ],
+              },
+              {
+                path: ROUTES.ADMIN_MASTER_CODE_SETUP,
+                children: [
+                  {
+                    index: true,
+                    element: <MasterCodeSetupPage />,
+                  },
+                  {
+                    path: ROUTES.ADMIN_MASTER_CODE_SETUP_CREATE,
+                    element: <MasterCodeCreatePage />,
                   },
                 ],
               },
