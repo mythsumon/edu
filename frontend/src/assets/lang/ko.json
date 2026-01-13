@@ -49,6 +49,7 @@
     "menu": "메뉴",
     "system": "시스템",
     "academic": "학술",
+    "accountManagement": "계정 관리",
     "dashboard": "대시보드",
     "educationOperations": "교육 운영",
     "instructorAssignment": "강사 배정",
@@ -70,7 +71,9 @@
     "mySchedule": "내 일정",
     "myStudents": "내 학생",
     "attendance": "출석",
-    "grades": "성적"
+    "grades": "성적",
+    "adminAccounts": "관리자 계정",
+    "instructorAccounts": "강사 계정"
   },
   "errors": {
     "generic": "오류가 발생했습니다",
