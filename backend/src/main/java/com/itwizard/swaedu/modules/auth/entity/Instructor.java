@@ -1,5 +1,7 @@
 package com.itwizard.swaedu.modules.auth.entity;
 
+import com.itwizard.swaedu.modules.mastercode.entity.MasterCodeEntity;
+import com.itwizard.swaedu.modules.region.entity.RegionEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -18,8 +20,11 @@ public class Instructor {
     @MapsId
     private User user;
 
-    @Column(nullable = false)
-    private String name;
+    @Column(name = "first_name", nullable = false)
+    private String firstName;
+
+    @Column(name = "last_name", nullable = false)
+    private String lastName;
 
     @Column
     private String email;
@@ -33,6 +38,13 @@ public class Instructor {
     @Column
     private LocalDate dob;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "region_id", foreignKey = @ForeignKey(name = "fk_instructors_region"))
+    private RegionEntity region;
+
+    @Column(name = "region_id", insertable = false, updatable = false)
+    private Long regionId;
+
     @Column
     private String city;
 
@@ -41,4 +53,24 @@ public class Instructor {
 
     @Column(name = "detail_address")
     private String detailAddress;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "status_id", foreignKey = @ForeignKey(name = "fk_instructors_status"))
+    private MasterCodeEntity status;
+
+    @Column(name = "status_id", insertable = false, updatable = false)
+    private Long statusId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "classification_id", foreignKey = @ForeignKey(name = "fk_instructors_classification"))
+    private MasterCodeEntity classification;
+
+    @Column(name = "classification_id", insertable = false, updatable = false)
+    private Long classificationId;
+
+    @Column
+    private String signature;
+
+    @Column(name = "profile_photo")
+    private String profilePhoto;
 }

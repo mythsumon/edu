@@ -50,41 +50,29 @@ CREATE TABLE refresh_tokens (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_refresh_token_lookup_hash ON refresh_tokens(lookup_hash);
 CREATE INDEX IF NOT EXISTS idx_refresh_token_user_id ON refresh_tokens(user_id);
 
--- Admins table
-CREATE TABLE IF NOT EXISTS admins (
-    user_id BIGINT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    CONSTRAINT fk_admins_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- Instructors table
-CREATE TABLE IF NOT EXISTS instructors (
-    user_id BIGINT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255),
-    phone VARCHAR(50),
-    gender VARCHAR(20),
-    dob DATE,
-    city VARCHAR(255),
-    street VARCHAR(255),
-    detail_address VARCHAR(500),
-    CONSTRAINT fk_instructors_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- Create indexes for instructors table
-CREATE INDEX IF NOT EXISTS idx_instructors_email ON instructors(email);
-CREATE INDEX IF NOT EXISTS idx_instructors_phone ON instructors(phone);
-
--- Samples table
-CREATE TABLE IF NOT EXISTS samples (
+-- Zones table
+CREATE TABLE IF NOT EXISTS zones (
     id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(255) UNIQUE
+    name VARCHAR(255) NOT NULL
 );
 
--- Create index on name for faster lookups
-CREATE INDEX IF NOT EXISTS idx_samples_name ON samples(name);
+-- Create index on zone name for faster lookups
+CREATE INDEX IF NOT EXISTS idx_zones_name ON zones(name);
+
+-- Regions table
+CREATE TABLE IF NOT EXISTS regions (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    zone_id BIGINT NOT NULL,
+    CONSTRAINT fk_regions_zone FOREIGN KEY (zone_id) REFERENCES zones(id) ON DELETE RESTRICT
+);
+
+-- Create indexes for regions table
+CREATE INDEX IF NOT EXISTS idx_regions_name ON regions(name);
+CREATE INDEX IF NOT EXISTS idx_regions_zone_id ON regions(zone_id);
 
 -- Master code table (hierarchical self-referencing table)
+-- Must be created before instructors table as instructors reference master_code
 CREATE TABLE IF NOT EXISTS master_code (
     id BIGSERIAL PRIMARY KEY,
     code INT NOT NULL,
@@ -100,3 +88,57 @@ CREATE TABLE IF NOT EXISTS master_code (
 CREATE INDEX IF NOT EXISTS idx_master_code_parent_id ON master_code(parent_id);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_master_code_parent_code ON master_code(parent_id, code);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_master_code_parent_name ON master_code(parent_id, code_name);
+
+-- Admins table
+CREATE TABLE IF NOT EXISTS admins (
+    user_id BIGINT PRIMARY KEY,
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    phone VARCHAR(50),
+    profile_photo VARCHAR(500),
+    CONSTRAINT fk_admins_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Create indexes for admins table
+CREATE INDEX IF NOT EXISTS idx_admins_email ON admins(email);
+CREATE INDEX IF NOT EXISTS idx_admins_phone ON admins(phone);
+
+-- Instructors table
+CREATE TABLE IF NOT EXISTS instructors (
+    user_id BIGINT PRIMARY KEY,
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    phone VARCHAR(50),
+    gender VARCHAR(20),
+    dob DATE,
+    region_id BIGINT,
+    city VARCHAR(255),
+    street VARCHAR(255),
+    detail_address VARCHAR(500),
+    status_id BIGINT,
+    classification_id BIGINT,
+    signature VARCHAR(500),
+    profile_photo VARCHAR(500),
+    CONSTRAINT fk_instructors_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_instructors_region FOREIGN KEY (region_id) REFERENCES regions(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_instructors_status FOREIGN KEY (status_id) REFERENCES master_code(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_instructors_classification FOREIGN KEY (classification_id) REFERENCES master_code(id) ON DELETE RESTRICT
+);
+
+-- Create indexes for instructors table
+CREATE INDEX IF NOT EXISTS idx_instructors_email ON instructors(email);
+CREATE INDEX IF NOT EXISTS idx_instructors_phone ON instructors(phone);
+CREATE INDEX IF NOT EXISTS idx_instructors_region_id ON instructors(region_id);
+CREATE INDEX IF NOT EXISTS idx_instructors_status_id ON instructors(status_id);
+CREATE INDEX IF NOT EXISTS idx_instructors_classification_id ON instructors(classification_id);
+
+-- Samples table
+CREATE TABLE IF NOT EXISTS samples (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) UNIQUE
+);
+
+-- Create index on name for faster lookups
+CREATE INDEX IF NOT EXISTS idx_samples_name ON samples(name);

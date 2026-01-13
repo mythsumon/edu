@@ -56,7 +56,8 @@ public class AuthService {
         // Create instructor profile
         Instructor instructor = new Instructor();
         instructor.setUser(savedUser);
-        instructor.setName(request.getName());
+        instructor.setFirstName(request.getFirstName());
+        instructor.setLastName(request.getLastName());
         instructor.setEmail(request.getEmail());
         instructor.setPhone(request.getPhone());
         instructor.setGender(request.getGender());
@@ -91,7 +92,10 @@ public class AuthService {
         // Create admin profile
         Admin admin = new Admin();
         admin.setUser(savedUser);
-        admin.setName(request.getName());
+        admin.setFirstName(request.getFirstName());
+        admin.setLastName(request.getLastName());
+        admin.setEmail(request.getEmail());
+        admin.setPhone(request.getPhone());
         adminRepository.save(admin);
 
         return savedUser;
