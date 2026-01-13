@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import { User, Lock, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -104,36 +103,36 @@ export const LoginPage = () => {
           <h1 className="text-3xl font-bold text-primary">{t("auth.title")}</h1>
         </div>
 
-        {/* Login Card */}
-        <div className="bg-card rounded-lg shadow-lg p-8">
+        {/* Login Card - Glassmorphism Effect */}
+        <div
+          className="relative rounded-3xl p-8 backdrop-blur-xl bg-gradient-to-b from-card/80 via-card/70 to-card/90 border border-secondary/50 shadow-lg"
+          style={{
+            background: "linear-gradient(to bottom, hsl(var(--card) / 0.8), hsl(var(--card) / 0.7), hsl(var(--card) / 0.9))",
+          }}
+        >
           {/* Header */}
           <h2 className="text-2xl font-semibold text-foreground mb-2 text-center">
             {t("auth.loginTitle")}
           </h2>
-          <p className="text-sm text-muted-foreground mb-6 text-center">
+          <p className="text-sm text-muted-foreground mb-8 text-center">
             {t("auth.loginSubtitle")}
           </p>
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {/* Username Input */}
             <div className="space-y-2">
-              <div className="flex items-center gap-2 mb-1">
-                <User className="h-4 w-4 text-primary" />
-                <Label htmlFor="username" className="text-foreground">
-                  {t("auth.username")}
-                </Label>
-              </div>
               <Input
                 id="username"
                 type="text"
                 placeholder={t("auth.usernamePlaceholder")}
+                icon={<User className="h-4 w-4" />}
                 {...register("username")}
-                className={errors.username ? "border-destructive" : ""}
+                className={errors.username ? "ring-2 ring-destructive" : ""}
                 disabled={loginMutation.isPending}
               />
               {errors.username && (
-                <p className="text-sm text-destructive">
+                <p className="text-sm text-destructive px-1">
                   {errors.username.message}
                 </p>
               )}
@@ -141,27 +140,24 @@ export const LoginPage = () => {
 
             {/* Password Input */}
             <div className="space-y-2">
-              <div className="flex items-center gap-2 mb-1">
-                <Lock className="h-4 w-4 text-primary" />
-                <Label htmlFor="password" className="text-foreground">
-                  {t("common.password")}
-                </Label>
-              </div>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder={t("auth.passwordPlaceholder")}
+                  icon={<Lock className="h-4 w-4" />}
                   {...register("password")}
-                  disabled={loginMutation.isPending}
                   className={
-                    errors.password ? "border-destructive pr-10" : "pr-10"
+                    errors.password
+                      ? "ring-2 ring-destructive pr-12"
+                      : "pr-12"
                   }
+                  disabled={loginMutation.isPending}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   disabled={loginMutation.isPending}
                 >
                   {showPassword ? (
@@ -172,7 +168,7 @@ export const LoginPage = () => {
                 </button>
               </div>
               {errors.password && (
-                <p className="text-sm text-destructive">
+                <p className="text-sm text-destructive px-1">
                   {errors.password.message}
                 </p>
               )}
@@ -181,7 +177,8 @@ export const LoginPage = () => {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full mt-6"
+              className="w-full mt-8"
+              size="default"
               disabled={loginMutation.isPending}
             >
               {loginMutation.isPending
