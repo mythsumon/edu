@@ -4,8 +4,8 @@ import { refreshToken } from '@/modules/auth/model/auth.service'
 
 let isRefreshing = false
 let failedQueue: Array<{
-  resolve: (value?: any) => void
-  reject: (error?: any) => void
+  resolve: (value?: unknown) => void
+  reject: (error?: unknown) => void
 }> = []
 
 const processQueue = (error: AxiosError | null, token: string | null = null) => {
@@ -49,8 +49,13 @@ export function setupInterceptors(instance: AxiosInstance): void {
     async (error: AxiosError) => {
       const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
-      // If error is 401 and we haven't already retried
-      if (error.response?.status === 401 && !originalRequest._retry) {
+      // Skip token refresh for auth endpoints (login, logout, refresh)
+      const isAuthEndpoint = originalRequest.url?.includes('/auth/login') || 
+                            originalRequest.url?.includes('/auth/logout') ||
+                            originalRequest.url?.includes('/auth/token/refresh')
+
+      // If error is 401 and we haven't already retried, and it's not an auth endpoint
+      if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
         if (isRefreshing) {
           // If already refreshing, queue this request
           return new Promise((resolve, reject) => {
@@ -106,9 +111,18 @@ export function setupInterceptors(instance: AxiosInstance): void {
         }
       }
 
-      // For other errors, normalize and reject
-      const normalizedError = normalizeError(error)
-      return Promise.reject(normalizedError)
+      // For other errors, convert to Error instance and reject
+      // This ensures React Query can properly handle the error
+      const apiError = normalizeError(error)
+      const errorInstance = new Error(apiError.message)
+      // Attach additional properties for debugging
+      if (apiError.statusCode) {
+        (errorInstance as any).statusCode = apiError.statusCode
+      }
+      if (apiError.code) {
+        (errorInstance as any).code = apiError.code
+      }
+      return Promise.reject(errorInstance)
     }
   )
 }
