@@ -93,43 +93,43 @@ export const Sidebar = () => {
   const adminNavigation: MenuItem[] = useMemo(() => [
     {
       nameKey: 'sidebar.dashboard',
-      href: ROUTES.ADMIN_DASHBOARD,
+      href: ROUTES.ADMIN_DASHBOARD_FULL,
       icon: LayoutDashboard,
       subItems: [
-        { nameKey: 'sidebar.overallProgramStatus', href: ROUTES.ADMIN_DASHBOARD },
+        { nameKey: 'sidebar.overallProgramStatus', href: ROUTES.ADMIN_DASHBOARD_FULL },
       ],
     },
     {
       nameKey: 'sidebar.educationOperations',
-      href: ROUTES.EDUCATION_OPERATIONS,
+      href: ROUTES.ADMIN_EDUCATION_OPERATIONS_FULL,
       icon: BookOpen,
     },
     {
       nameKey: 'sidebar.instructorAssignment',
-      href: ROUTES.INSTRUCTOR_ASSIGNMENT,
+      href: ROUTES.ADMIN_INSTRUCTOR_ASSIGNMENT_FULL,
       icon: GraduationCap,
       subItems: [
-        { nameKey: 'sidebar.instructorApplicationManagement', href: ROUTES.INSTRUCTOR_APPLICATION_MANAGEMENT },
-        { nameKey: 'sidebar.instructorAllocationManagement', href: ROUTES.INSTRUCTOR_ALLOCATION_MANAGEMENT },
-        { nameKey: 'sidebar.teachingConfirmationManagement', href: ROUTES.TEACHING_CONFIRMATION_MANAGEMENT },
+        { nameKey: 'sidebar.instructorApplicationManagement', href: ROUTES.ADMIN_INSTRUCTOR_APPLICATION_MANAGEMENT_FULL },
+        { nameKey: 'sidebar.instructorAllocationManagement', href: ROUTES.ADMIN_INSTRUCTOR_ALLOCATION_MANAGEMENT_FULL },
+        { nameKey: 'sidebar.teachingConfirmationManagement', href: ROUTES.ADMIN_TEACHING_CONFIRMATION_MANAGEMENT_FULL },
       ],
     },
     {
       nameKey: 'sidebar.referenceInformationManagement',
-      href: ROUTES.REFERENCE_INFORMATION_MANAGEMENT,
+      href: ROUTES.ADMIN_REFERENCE_INFORMATION_MANAGEMENT_FULL,
       icon: FileStack,
       subItems: [
-        { nameKey: 'sidebar.institutionManagement', href: ROUTES.INSTITUTION_MANAGEMENT },
-        { nameKey: 'sidebar.programManagement', href: ROUTES.PROGRAM_MANAGEMENT },
-        { nameKey: 'sidebar.instructorManagement', href: ROUTES.INSTRUCTOR_MANAGEMENT },
+        { nameKey: 'sidebar.institutionManagement', href: ROUTES.ADMIN_INSTITUTION_MANAGEMENT_FULL },
+        { nameKey: 'sidebar.programManagement', href: ROUTES.ADMIN_PROGRAM_MANAGEMENT_FULL },
+        { nameKey: 'sidebar.instructorManagement', href: ROUTES.ADMIN_INSTRUCTOR_MANAGEMENT_FULL },
       ],
     },
     {
       nameKey: 'sidebar.systemManagement',
-      href: ROUTES.SYSTEM_MANAGEMENT,
+      href: ROUTES.ADMIN_SYSTEM_MANAGEMENT_FULL,
       icon: Settings,
       subItems: [
-        { nameKey: 'sidebar.settingsAndUserManagement', href: ROUTES.SETTINGS_AND_USER_MANAGEMENT },
+        { nameKey: 'sidebar.settingsAndUserManagement', href: ROUTES.ADMIN_SETTINGS_AND_USER_MANAGEMENT_FULL },
       ],
     },
   ], [])
@@ -138,35 +138,35 @@ export const Sidebar = () => {
   const instructorNavigation: MenuItem[] = useMemo(() => [
     {
       nameKey: 'sidebar.dashboard',
-      href: ROUTES.INSTRUCTOR_DASHBOARD,
+      href: ROUTES.INSTRUCTOR_DASHBOARD_FULL,
       icon: LayoutDashboard,
       subItems: [
-        { nameKey: 'sidebar.myOverview', href: ROUTES.INSTRUCTOR_DASHBOARD },
+        { nameKey: 'sidebar.myOverview', href: ROUTES.INSTRUCTOR_DASHBOARD_FULL },
       ],
     },
     {
       nameKey: 'sidebar.myClasses',
-      href: ROUTES.EDUCATION_OPERATIONS,
+      href: ROUTES.INSTRUCTOR_EDUCATION_OPERATIONS_FULL,
       icon: BookOpen,
     },
     {
       nameKey: 'sidebar.mySchedule',
-      href: ROUTES.INSTRUCTOR_ASSIGNMENT,
+      href: ROUTES.INSTRUCTOR_SCHEDULE_FULL,
       icon: Calendar,
     },
     {
       nameKey: 'sidebar.myStudents',
-      href: ROUTES.REFERENCE_INFORMATION_MANAGEMENT,
+      href: ROUTES.INSTRUCTOR_STUDENTS_FULL,
       icon: Users,
     },
     {
       nameKey: 'sidebar.attendance',
-      href: ROUTES.SYSTEM_MANAGEMENT,
+      href: ROUTES.INSTRUCTOR_ATTENDANCE_FULL,
       icon: ClipboardList,
     },
     {
       nameKey: 'sidebar.grades',
-      href: ROUTES.SETTINGS_AND_USER_MANAGEMENT,
+      href: ROUTES.INSTRUCTOR_GRADES_FULL,
       icon: Award,
     },
   ], [])

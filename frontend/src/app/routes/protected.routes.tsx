@@ -30,62 +30,58 @@ export const protectedRoutes: RouteObject[] = [
             path: ROUTES.HOME,
             element: <HomePage />,
           },
-          {
-            path: ROUTES.DASHBOARD,
-            element: <DashboardPage />,
-          },
           // Admin routes grouped under /admin
           {
-            path: '/admin',
+            path: ROUTES.ADMIN,
             element: <AdminRouteGuard />,
             children: [
               {
-                path: 'dashboard',
+                path: ROUTES.ADMIN_DASHBOARD,
                 element: <DashboardPage />,
               },
               {
-                path: 'education-operations',
+                path: ROUTES.ADMIN_EDUCATION_OPERATIONS,
                 element: <EducationOperationsPage />,
               },
               {
-                path: 'instructor-assignment',
+                path: ROUTES.ADMIN_INSTRUCTOR_ASSIGNMENT,
                 children: [
                   {
-                    path: 'application',
+                    path: ROUTES.ADMIN_INSTRUCTOR_APPLICATION_MANAGEMENT,
                     element: <InstructorApplicationManagementPage />,
                   },
                   {
-                    path: 'allocation',
+                    path: ROUTES.ADMIN_INSTRUCTOR_ALLOCATION_MANAGEMENT,
                     element: <InstructorAllocationManagementPage />,
                   },
                   {
-                    path: 'confirmation',
+                    path: ROUTES.ADMIN_TEACHING_CONFIRMATION_MANAGEMENT,
                     element: <TeachingConfirmationManagementPage />,
                   },
                 ],
               },
               {
-                path: 'reference-information-management',
+                path: ROUTES.ADMIN_REFERENCE_INFORMATION_MANAGEMENT,
                 children: [
                   {
-                    path: 'institution',
+                    path: ROUTES.ADMIN_INSTITUTION_MANAGEMENT,
                     element: <InstitutionManagementPage />,
                   },
                   {
-                    path: 'program',
+                    path: ROUTES.ADMIN_PROGRAM_MANAGEMENT,
                     element: <ProgramManagementPage />,
                   },
                   {
-                    path: 'instructor',
+                    path: ROUTES.ADMIN_INSTRUCTOR_MANAGEMENT,
                     element: <InstructorManagementPage />,
                   },
                 ],
               },
               {
-                path: 'system-management',
+                path: ROUTES.ADMIN_SYSTEM_MANAGEMENT,
                 children: [
                   {
-                    path: 'settings',
+                    path: ROUTES.ADMIN_SETTINGS_AND_USER_MANAGEMENT,
                     element: <SettingsAndUserManagementPage />,
                   },
                 ],
@@ -94,30 +90,30 @@ export const protectedRoutes: RouteObject[] = [
           },
           // Instructor routes grouped under /instructor
           {
-            path: '/instructor',
+            path: ROUTES.INSTRUCTOR,
             element: <InstructorRouteGuard />,
             children: [
               {
-                path: 'dashboard',
+                path: ROUTES.INSTRUCTOR_DASHBOARD,
                 element: <DashboardPage />,
               },
               {
-                path: 'education-operations',
+                path: ROUTES.INSTRUCTOR_EDUCATION_OPERATIONS,
                 element: <EducationOperationsPage />,
               },
               {
-                path: 'instructor-assignment',
+                path: ROUTES.INSTRUCTOR_SCHEDULE,
                 element: <EducationOperationsPage />,
               },
               {
-                path: 'reference-information-management',
+                path: ROUTES.INSTRUCTOR_STUDENTS,
                 element: <EducationOperationsPage />,
               },
               {
-                path: 'system-management',
+                path: ROUTES.INSTRUCTOR_ATTENDANCE,
                 children: [
                   {
-                    path: 'settings',
+                    path: ROUTES.INSTRUCTOR_GRADES,
                     element: <SettingsAndUserManagementPage />,
                   },
                 ],
