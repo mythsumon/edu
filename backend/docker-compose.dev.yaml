@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  swaedu0_postgres:
+    image: postgres:18
+    container_name: swaedu0_postgres_container
+    environment:
+       - POSTGRES_USER=postgres
+       - POSTGRES_PASSWORD=postgres
+       - POSTGRES_DB=swaedu
+       - POSTGRES_PORT=5432
+    volumes:
+      - swaedu0_postgres:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"  # Bind to localhost only
+    networks:
+      - swaedu0_network
+
+volumes:
+  swaedu0_postgres:
+    driver: local
+
+networks:
+  swaedu0_network:
+    driver: bridge

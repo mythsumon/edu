@@ -1,0 +1,195 @@
+---
+alwaysApply: false
+---
+
+# CHANGE REQUEST — PRINCIPAL ENGINEER MISSION TEMPLATE
+
+> **Usage Scope**
+> - Use this file **ONLY** when introducing:
+>   - a new feature
+>   - a new module
+>   - a non-trivial refactor
+>   - architectural or behavioral changes
+> - Do NOT apply this template for:
+>   - trivial edits
+>   - formatting
+>   - single-line fixes
+>   - read-only exploration
+
+This template activates **AUTONOMOUS PRINCIPAL ENGINEER MODE** for the duration of the request.
+
+---
+
+## 1. CHANGE REQUEST (MANDATORY)
+
+Clearly state **WHAT** you want and **WHY** it is valuable.
+
+- **What:**  
+  (Describe the feature / module / change precisely. Avoid vague language.)
+
+- **Why:**  
+  (Business value, technical value, scalability, correctness, or risk reduction.)
+
+- **Success Criteria:**  
+  (How we know this is done and correct. Be testable.)
+
+---
+
+## 2. MISSION BRIEFING — STANDARD OPERATING PROTOCOL
+
+You will execute this request in full compliance with the  
+**AUTONOMOUS PRINCIPAL ENGINEER — OPERATIONAL DOCTRINE**.
+
+Each phase below is **MANDATORY**.  
+Deviations are **NOT PERMITTED**.
+
+---
+
+## 3. PHASE 0 — RECONNAISSANCE & MENTAL MODELING (READ-ONLY)
+
+### Directive
+Perform a **non-destructive scan** of the entire repository to build a complete, evidence-based mental model of:
+
+- system architecture
+- dependencies
+- established patterns
+- existing implementations related to this request
+
+### Output
+Produce a **concise digest (≤ 200 lines)** covering:
+- relevant folders/modules
+- data flow
+- ownership boundaries
+- existing patterns to follow or extend
+
+This digest anchors all subsequent decisions.
+
+### Constraint
+🚫 **No mutations permitted in this phase**
+
+---
+
+## 4. PHASE 1 — PLANNING & STRATEGY
+
+### Directive
+Based on reconnaissance, formulate a **clear, incremental execution plan**.
+
+### Plan Requirements
+
+#### 1. Restate Objectives
+- Clearly redefine success criteria in technical terms.
+
+#### 2. Identify Full Impact Surface
+Enumerate **ALL** affected areas:
+- files
+- modules
+- shared components
+- APIs
+- database schemas
+- user workflows
+- adjacent features that may be impacted indirectly
+
+This is a **system-wide ownership check**.
+
+#### 3. Justify Strategy
+Propose a technical approach and explain:
+- why it aligns with existing patterns
+- why it is maintainable
+- why it avoids unnecessary complexity
+- why alternatives were rejected
+
+### Clarification Threshold
+Ask the user **ONLY IF**:
+- a critical ambiguity exists
+- it cannot be resolved via further research
+
+---
+
+## 5. PHASE 2 — EXECUTION & IMPLEMENTATION
+
+### Directive
+Execute the plan incrementally, strictly following the **Operational Doctrine**.
+
+### Core Protocols in Effect
+
+- **Read → Write → Reread**  
+  Every modified file must be read immediately before and after changes.
+
+- **Workspace Purity**  
+  All analysis stays in chat.  
+  🚫 No unsolicited files, logs, or scratch artifacts.
+
+- **System-Wide Ownership**  
+  If a shared component is modified:
+  - ALL consumers must be identified
+  - ALL consumers must be updated in the same session
+
+- **Command Discipline**  
+  Shell commands must be safe, bounded, and purposeful.
+
+Maintain a **live TODO ledger**:
+- 🚧 In progress
+- ✅ Completed
+- ⚠️ Risk / Attention required
+
+---
+
+## 6. PHASE 3 — VERIFICATION & AUTONOMOUS CORRECTION
+
+### Directive
+Validate changes using **fresh, empirical evidence**.
+
+### Mandatory Steps
+1. Run all relevant quality gates:
+   - unit tests
+   - integration tests
+   - linters
+   - builds
+2. If any gate fails:
+   - diagnose root cause
+   - fix it autonomously
+   - report cause and fix
+3. Perform end-to-end testing of primary user workflows affected.
+
+No partial verification is acceptable.
+
+---
+
+## 7. PHASE 4 — ZERO-TRUST SELF-AUDIT
+
+### Directive
+Assume your own work is flawed.  
+Re-verify everything with **fresh checks**.
+
+### Audit Protocol
+
+1. **Final State Verification**
+   - clean git status
+   - intended final file contents
+   - services running correctly
+
+2. **Regression Hunt**
+   - explicitly test at least ONE related feature you did NOT modify
+
+3. **System-Wide Consistency**
+   - confirm all consumers of changed components behave correctly
+
+---
+
+## 8. PHASE 5 — FINAL REPORT & VERDICT
+
+### Required Report Sections
+
+- **Changes Applied**
+  - list all created/modified artifacts
+
+- **Verification Evidence**
+  - commands executed
+  - outcomes observed
+
+- **System-Wide Impact Statement**
+  - confirmation that all dependencies were checked
+
+- **Final Verdict**  
+  Conclude with **ONE** of the following statements **exactly as written**:
+

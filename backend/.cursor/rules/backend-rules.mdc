@@ -1,0 +1,645 @@
+---
+globs: *
+alwaysApply: false
+---
+# RulesBE.md — Backend (Cursor Context)
+Stack: Spring Boot 4.0.1 + Java 21 + Spring Security + Spring Data JPA + PostgreSQL + Flyway  
+Architecture: Feature Modules with Layered Architecture per module  
+- Controller = REST endpoints (API layer)
+- Service = Business logic layer
+- Repository = Data access layer (JPA)
+- DTO = Data Transfer Objects (request/response)
+- Entity = JPA persistence entities
+- Mapper = Entity ↔ DTO conversion utilities
+
+---
+
+## 0) Non-negotiables
+- Do NOT expose JPA entities directly in API responses; always use DTOs.
+- All API responses must use `ApiResponse` wrapper via `ResponseUtil`.
+- All exceptions must be handled by `GlobalExceptionHandler` or throw custom exceptions from `exception/` package.
+- Keep strict layer boundaries: Controller → Service → Repository (never skip layers).
+- Use Java 21 features where appropriate (records, pattern matching, text blocks).
+- Use Lombok for boilerplate reduction (@Data, @Builder, @RequiredArgsConstructor).
+- All REST endpoints must use `@Valid` for request DTOs.
+- Keep modules self-contained; avoid cross-module dependencies.
+
+---
+
+## 1) Recommended Full Structure (MANDATORY)
+Place files in these locations. Avoid "misc" or ad-hoc folders.
+
+backend/
+├── pom.xml
+├── docker-compose.dev.yaml
+└── src/
+    ├── main/
+    │   ├── java/com/itwizard/starter/
+    │   │   ├── StarterApplication.java
+    │   │
+    │   │   ├── config/
+    │   │   │   ├── SecurityConfig.java
+    │   │   │   └── security/
+    │   │   │       ├── CustomBearerTokenAccessDeniedHandler.java
+    │   │   │       ├── CustomBearerTokenAuthenticationEntryPoint.java
+    │   │   │       ├── CustomJwtAuthenticationConverter.java
+    │   │   │       └── UserEnabledValidator.java
+    │   │   │
+    │   │   ├── exception/
+    │   │   │   ├── GlobalExceptionHandler.java
+    │   │   │   ├── ResourceNotFoundException.java
+    │   │   │   ├── UnauthorizedException.java
+    │   │   │   └── ValidationException.java
+    │   │   │
+    │   │   ├── util/
+    │   │   │   ├── ApiResponse.java
+    │   │   │   ├── ResponseUtil.java
+    │   │   │   ├── JwtUtil.java
+    │   │   │   ├── RefreshTokenUtil.java
+    │   │   │   ├── HttpUtil.java
+    │   │   │   └── SecretGenerator.java
+    │   │   │
+    │   │   └── modules/
+    │   │       └── <feature>/
+    │   │           ├── controller/
+    │   │           ├── service/
+    │   │           ├── repository/
+    │   │           ├── dto/
+    │   │           │   ├── request/
+    │   │           │   └── response/
+    │   │           ├── entity/
+    │   │           └── mapper/
+    │   │
+    │   └── resources/
+    │       ├── application.yml
+    │       └── db/migration/
+    │           └── V0__init.sql
+    │
+    └── test/
+        └── java/com/itwizard/starter/
+
+
+---
+
+## 2) Architecture Rules (Layered Architecture per Module)
+
+### Controller Layer (modules/<feature>/controller/**)
+- Contains REST endpoints only (`@RestController`, `@RequestMapping`).
+- Handles HTTP request/response mapping.
+- Delegates business logic to Service layer.
+- Uses `ResponseUtil` to build standardized `ApiResponse` responses.
+- Validates request DTOs with `@Valid` annotation.
+- Maps path variables, query parameters, request bodies to method parameters.
+
+FORBIDDEN in Controller:
+- Business logic (move to Service)
+- Direct database access (use Repository via Service)
+- Complex data transformations (use Mapper)
+- Exception handling logic (throw custom exceptions, let GlobalExceptionHandler handle)
+
+Example:
+```java
+@RestController
+@RequestMapping("/api/v1/sample")
+@RequiredArgsConstructor
+public class SampleController {
+    private final SampleService sampleService;
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse> getSampleById(@PathVariable Long id) {
+        SampleResponseDto dto = sampleService.getSampleById(id);
+        return ResponseUtil.success("Sample retrieved successfully", dto);
+    }
+
+    @PostMapping
+    public ResponseEntity<ApiResponse> createSample(
+            @Valid @RequestBody SampleRequestDto request) {
+        SampleResponseDto dto = sampleService.createSample(request);
+        return ResponseUtil.created("Sample created successfully", dto);
+    }
+}
+```
+
+### Service Layer (modules/<feature>/service/**)
+- Contains all business logic.
+- Transaction management (`@Transactional` where needed).
+- Orchestrates Repository calls and Mapper conversions.
+- Throws custom exceptions from `exception/` package for error cases.
+- Returns DTOs, never entities.
+- May call other services (within same module or cross-module if needed).
+
+FORBIDDEN in Service:
+- HTTP-specific code (request/response handling)
+- Direct JPA queries (use Repository methods)
+- DTO → Entity mapping in service methods (use Mapper)
+
+Example:
+```java
+@Service
+@RequiredArgsConstructor
+public class SampleService {
+    private final SampleRepository repository;
+    private final SampleMapper mapper;
+
+    @Transactional
+    public SampleResponseDto createSample(SampleRequestDto request) {
+        // Business validation
+        if (repository.existsByName(request.getName())) {
+            throw new ValidationException("Sample with this name already exists");
+        }
+
+        // Convert DTO to Entity
+        SampleEntity entity = mapper.toEntity(request);
+        
+        // Persist
+        SampleEntity saved = repository.save(entity);
+        
+        // Convert Entity to DTO
+        return mapper.toDto(saved);
+    }
+}
+```
+
+### Repository Layer (modules/<feature>/repository/**)
+- Extends `JpaRepository<Entity, ID>` or `CrudRepository<Entity, ID>`.
+- Defines custom query methods using Spring Data JPA conventions.
+- Use `@Query` annotation for complex queries (JPQL or native SQL).
+- Returns Entities only (never DTOs directly from Repository).
+
+Example:
+```java
+@Repository
+public interface SampleRepository extends JpaRepository<SampleEntity, Long> {
+    Optional<SampleEntity> findByName(String name);
+    boolean existsByName(String name);
+    
+    @Query("SELECT s FROM SampleEntity s WHERE s.status = :status")
+    List<SampleEntity> findByStatus(@Param("status") String status);
+}
+```
+
+### DTO Layer (modules/<feature>/dto/**)
+- Request DTOs in `dto/request/`: incoming API payloads.
+- Response DTOs in `dto/response/`: outgoing API payloads.
+- Use Lombok annotations: `@Data`, `@Builder`, `@AllArgsConstructor`, `@NoArgsConstructor`.
+- Add validation annotations: `@NotNull`, `@NotBlank`, `@Email`, `@Size`, `@Min`, `@Max`, etc.
+- DTOs should be immutable when possible (use `@Builder` pattern).
+
+Example:
+```java
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class SampleRequestDto {
+    @NotBlank(message = "Name is required")
+    @Size(min = 1, max = 100, message = "Name must be between 1 and 100 characters")
+    private String name;
+    
+    @Email(message = "Email must be valid")
+    private String email;
+}
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class SampleResponseDto {
+    private Long id;
+    private String name;
+    private String email;
+    private LocalDateTime createdAt;
+}
+```
+
+### Entity Layer (modules/<feature>/entity/**)
+- JPA entities annotated with `@Entity`, `@Table`.
+- Use Lombok for getters/setters: `@Data` or `@Getter`/`@Setter`.
+- Primary key: `@Id`, `@GeneratedValue`.
+- Relationships: `@OneToMany`, `@ManyToOne`, `@ManyToMany`, `@OneToOne`.
+- Timestamps: `@CreatedDate`, `@LastModifiedDate` (with `@EntityListeners(AuditingEntityListener.class)`).
+- Never expose entities in API responses (convert to DTOs).
+
+Example:
+```java
+@Entity
+@Table(name = "samples")
+@Data
+@EntityListeners(AuditingEntityListener.class)
+public class SampleEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(nullable = false, length = 100)
+    private String name;
+    
+    @Column(nullable = false, unique = true)
+    private String email;
+    
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+    
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
+}
+```
+
+### Mapper Layer (modules/<feature>/mapper/**)
+- Static utility class for converting Entity ↔ DTO.
+- Use `private constructor` to prevent instantiation.
+- Methods: `toDto(Entity)`, `toEntity(DTO)`, `toDtoList(List<Entity>)`.
+- Handle null checks.
+- Use `@Builder` pattern for DTO construction when available.
+
+Example:
+```java
+public class SampleMapper {
+    private SampleMapper() {
+        // Utility class - prevent instantiation
+    }
+
+    public static SampleResponseDto toDto(SampleEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+        return SampleResponseDto.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .email(entity.getEmail())
+                .createdAt(entity.getCreatedAt())
+                .build();
+    }
+
+    public static SampleEntity toEntity(SampleRequestDto dto) {
+        if (dto == null) {
+            return null;
+        }
+        SampleEntity entity = new SampleEntity();
+        entity.setName(dto.getName());
+        entity.setEmail(dto.getEmail());
+        return entity;
+    }
+
+    public static List<SampleResponseDto> toDtoList(List<SampleEntity> entities) {
+        if (entities == null) {
+            return Collections.emptyList();
+        }
+        return entities.stream()
+                .map(SampleMapper::toDto)
+                .collect(Collectors.toList());
+    }
+}
+```
+
+---
+
+## 3) REST API Rules
+
+### URL Patterns
+- **Base path**: `/api/v1/` prefix for all REST endpoints.
+- **Resource naming**: Use singular nouns for resource names: `/api/v1/sample`, `/api/v1/product`, `/api/v1/category`.
+- **URL format**: Use kebab-case for multi-word resources: `/api/v1/purchase-orders`, `/api/v1/sales-orders`.
+- **Consistency**: All endpoints must follow the same base path pattern.
+
+### HTTP Methods & Endpoint Patterns
+
+#### Standard CRUD Operations
+- `POST /api/v1/{resource}` - Create new resource
+- `GET /api/v1/{resource}` - List resources (with pagination/search)
+- `GET /api/v1/{resource}/{id}` - Get resource by ID
+- `PUT /api/v1/{resource}/{id}` - Full update of resource
+- `PATCH /api/v1/{resource}/{id}` - Partial update (optional)
+- `DELETE /api/v1/{resource}/{id}` - Delete resource
+
+#### Nested Resources
+- `POST /api/v1/{resource}/{id}/items` - Add item to resource
+- `GET /api/v1/{resource}/{id}/items` - Get items of resource
+- `PUT /api/v1/{resource}/{id}/items/{itemId}` - Update nested item
+- `DELETE /api/v1/{resource}/{id}/items/{itemId}` - Remove nested item
+
+#### Action Endpoints
+- `POST /api/v1/{resource}/{id}/confirm` - Confirm/activate resource
+- `POST /api/v1/{resource}/{id}/cancel` - Cancel resource
+- `POST /api/v1/{resource}/{id}/receive` - Receive stock (for purchase orders)
+- `POST /api/v1/{resource}/{id}/ship` - Ship/deduct stock (for sales orders)
+- `PATCH /api/v1/{resource}/{id}/activate` - Activate/deactivate resource
+
+#### Sub-Resources & Reports
+- `GET /api/v1/inventory/stocks` - Get inventory stocks
+- `GET /api/v1/inventory/stocks/warehouse/{warehouseId}` - Stocks by warehouse
+- `GET /api/v1/inventory/stocks/product/{productId}` - Stocks by product
+- `GET /api/v1/inventory/stocks/low` - Low stock report
+- `GET /api/v1/reports/{report-type}` - Generate reports
+
+### Query Parameters
+
+#### Pagination (Standard)
+- `page` - Page number (default: 0 or 1)
+- `size` - Page size (default: 10 or 20)
+- `sort` - Sort field and direction (e.g., `name,asc` or `createdAt,desc`)
+
+#### Search & Filtering
+- `q` - General search query (searches across relevant fields)
+- `{fieldId}` - Filter by specific field (e.g., `categoryId`, `supplierId`, `warehouseId`)
+- `{status}` - Filter by status (e.g., `active`, `status`)
+- `from` - Start date/time for date range filters
+- `to` - End date/time for date range filters
+- `type` - Filter by type (e.g., `IN/OUT/ADJUST/TRANSFER` for movements)
+- `lowStock` - Boolean filter for low stock items
+
+#### Query Parameter Usage Example
+```java
+@GetMapping
+public ResponseEntity<ApiResponse> listSamples(
+    @RequestParam(required = false) String q,
+    @RequestParam(required = false, defaultValue = "0") int page,
+    @RequestParam(required = false, defaultValue = "20") int size,
+    @RequestParam(required = false) String sort) {
+    // Implementation
+}
+```
+
+### HTTP Status Codes
+
+#### Success Responses
+- `200 OK` - Successful GET, PUT, PATCH, DELETE operations
+- `201 Created` - Successful POST operations creating new resources
+
+#### Error Responses
+- `400 Bad Request` - Invalid request data or validation errors
+- `401 Unauthorized` - Authentication required or failed
+- `403 Forbidden` - Authenticated but not authorized
+- `404 Not Found` - Resource not found
+- `500 Internal Server Error` - Server-side errors
+
+### Response Format
+- **All responses** must be wrapped in `ApiResponse`:
+  ```java
+  {
+    "success": true,
+    "message": "Operation successful",
+    "data": { ... }
+  }
+  ```
+- **Use `ResponseUtil` helper methods**:
+  - `ResponseUtil.success(message, data)` - 200 OK
+  - `ResponseUtil.created(message, data)` - 201 Created
+  - `ResponseUtil.notFound(message)` - 404 Not Found
+  - `ResponseUtil.unauthorized(message)` - 401 Unauthorized
+  - `ResponseUtil.error(message)` - 400 Bad Request
+  - `ResponseUtil.error(status, message)` - Custom status code
+
+### Request Validation
+- Always use `@Valid` on request body parameters.
+- Use Jakarta Bean Validation annotations in DTOs (`@NotNull`, `@NotBlank`, `@Size`, `@Email`, etc.).
+- Validation errors are automatically handled by `GlobalExceptionHandler`.
+- Provide clear, user-friendly validation error messages.
+
+### Request Body Patterns
+
+#### Create Request
+```java
+@PostMapping
+public ResponseEntity<ApiResponse> create(
+    @Valid @RequestBody CreateResourceDto request) {
+    ResourceResponseDto dto = service.create(request);
+    return ResponseUtil.created("Resource created successfully", dto);
+}
+```
+
+#### Update Request (PUT - Full Update)
+```java
+@PutMapping("/{id}")
+public ResponseEntity<ApiResponse> update(
+    @PathVariable Long id,
+    @Valid @RequestBody UpdateResourceDto request) {
+    ResourceResponseDto dto = service.update(id, request);
+    return ResponseUtil.success("Resource updated successfully", dto);
+}
+```
+
+#### List with Pagination
+```java
+@GetMapping
+public ResponseEntity<ApiResponse> list(
+    @RequestParam(required = false) String q,
+    @RequestParam(required = false, defaultValue = "0") int page,
+    @RequestParam(required = false, defaultValue = "20") int size,
+    @RequestParam(required = false) String sort) {
+    PageResponse<ResourceResponseDto> result = service.list(q, page, size, sort);
+    return ResponseUtil.success("Resources retrieved successfully", result);
+}
+```
+
+#### Action Endpoints
+```java
+@PostMapping("/{id}/confirm")
+public ResponseEntity<ApiResponse> confirm(@PathVariable Long id) {
+    service.confirm(id);
+    return ResponseUtil.success("Resource confirmed successfully");
+}
+```
+
+### Soft Delete Pattern
+- Use soft delete for critical resources (categories, products, etc.).
+- Add `deleted` or `deletedAt` field to entity.
+- Filter out soft-deleted records in queries unless explicitly requested.
+- Provide option to restore soft-deleted resources if needed.
+
+### Best Practices
+- Keep endpoint URLs concise and meaningful.
+- Use HTTP methods correctly (GET for retrieval, POST for creation, etc.).
+- Return appropriate HTTP status codes.
+- Include meaningful success/error messages.
+- Support pagination for list endpoints to handle large datasets.
+- Use query parameters for filtering, not path parameters.
+- Implement consistent error handling across all endpoints.
+- Document all query parameters and their expected values.
+
+---
+
+## 4) Exception Handling Rules
+
+### Custom Exceptions
+- Create custom exceptions in `exception/` package extending `RuntimeException`.
+- Exceptions: `ResourceNotFoundException`, `ValidationException`, `UnauthorizedException`.
+- Always provide meaningful error messages.
+
+### Global Exception Handler
+- `GlobalExceptionHandler` in `exception/` package handles all exceptions.
+- Annotated with `@RestControllerAdvice`.
+- Returns standardized `ApiResponse` format.
+- Maps exceptions to appropriate HTTP status codes.
+
+### Exception Usage Pattern
+```java
+// In Service layer
+if (entity == null) {
+    throw new ResourceNotFoundException("Sample not found with id: " + id);
+}
+
+if (invalidCondition) {
+    throw new ValidationException("Invalid operation: reason");
+}
+
+if (!authorized) {
+    throw new UnauthorizedException("Access denied");
+}
+```
+
+### DO NOT
+- Catch exceptions in Controller and manually build error responses (let GlobalExceptionHandler handle).
+- Throw generic `Exception` or `RuntimeException` (use custom exceptions).
+
+---
+
+## 5) Security Rules
+
+### Authentication
+- JWT-based authentication using Spring Security OAuth2 Resource Server.
+- Bearer token authentication for protected endpoints.
+- Token utilities in `util/JwtUtil.java`.
+
+### Authorization
+- Use `@PreAuthorize`, `@PostAuthorize`, or `@Secured` annotations.
+- Role-based access control: check user roles in service layer.
+- Security configuration in `config/SecurityConfig.java`.
+
+### Protected Endpoints
+```java
+@PreAuthorize("hasRole('ADMIN')")
+@GetMapping("/admin-only")
+public ResponseEntity<ApiResponse> adminEndpoint() {
+    // ...
+}
+
+@PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+@GetMapping("/user-or-admin")
+public ResponseEntity<ApiResponse> userEndpoint() {
+    // ...
+}
+```
+
+---
+
+## 6) Utility Classes Rules
+
+### Location
+- Shared utilities in `util/` package at root level.
+- Module-specific utilities in module's `util/` subpackage (if needed).
+
+### Common Utilities
+- `ApiResponse`: Standard API response wrapper.
+- `ResponseUtil`: Helper methods for building ResponseEntity.
+- `JwtUtil`: JWT token generation and validation.
+- `HttpUtil`: HTTP-related utilities (IP extraction, etc.).
+
+### Utility Class Pattern
+- Use static methods.
+- Private constructor to prevent instantiation.
+- Document with JavaDoc.
+
+---
+
+## 7) Configuration Rules
+
+### Configuration Classes
+- All configuration in `config/` package at root level.
+- Security configuration: `config/SecurityConfig.java`.
+- Additional config classes for beans, properties, etc.
+
+### Properties
+- Use `application.properties` or `application.yml`.
+- Environment-specific properties via profiles.
+- Never hardcode configuration values.
+
+---
+
+## 8) Testing Structure
+
+### Test Location
+- Mirror source structure: `src/test/java/com/itwizard/starter/`.
+- Test class naming: `*Test.java` or `*Tests.java`.
+- Package structure matches source packages.
+
+### Test Types
+- Unit tests: Test individual components in isolation.
+- Integration tests: Test component integration.
+- Use `@SpringBootTest` for integration tests.
+- Use `@WebMvcTest` for controller tests.
+
+---
+
+## 9) Import Boundaries (Critical)
+- `modules/**` should not directly import from other modules' implementation details.
+- `util/`, `exception/`, `config/` are shared across modules.
+- Prefer service interfaces when cross-module dependencies are needed.
+- Keep modules loosely coupled.
+
+---
+
+## 10) Feature Delivery Checklist (Backend)
+For any new feature endpoint:
+- [ ] Entity: Create/update `modules/<feature>/entity/*.java`
+- [ ] Repository: Create/update `modules/<feature>/repository/*.java`
+- [ ] DTOs: Create `modules/<feature>/dto/request/*.java` and `response/*.java`
+- [ ] Mapper: Create/update `modules/<feature>/mapper/*.java`
+- [ ] Service: Create/update `modules/<feature>/service/*.java` with business logic
+- [ ] Controller: Create/update `modules/<feature>/controller/*.java` with REST endpoints
+- [ ] Validation: Add `@Valid` annotations and validation constraints in DTOs
+- [ ] Exception handling: Throw appropriate custom exceptions from service
+- [ ] Security: Add authorization annotations if needed
+
+---
+
+## 11) Coding Conventions
+
+### Naming
+- Classes: PascalCase (`SampleController`, `SampleService`).
+- Methods: camelCase (`getSampleById`, `createSample`).
+- Constants: UPPER_SNAKE_CASE (`MAX_SIZE`, `DEFAULT_TIMEOUT`).
+- Packages: lowercase with dots (`com.itwizard.starter.modules.auth`).
+
+### Annotations
+- Use `@RequiredArgsConstructor` (Lombok) instead of manual constructor injection.
+- Use `@Service`, `@Repository`, `@Controller`/`@RestController` appropriately.
+- Use `@Transactional` on service methods that modify data.
+
+### Code Style
+- Use Java 21 features when appropriate (records, pattern matching, text blocks).
+- Prefer `Optional` for nullable return values.
+- Use streams for collection operations when it improves readability.
+
+---
+
+## 12) Absolute Don'ts
+- ❌ Expose JPA entities in API responses (always use DTOs)
+- ❌ Put business logic in controllers
+- ❌ Skip service layer (controller → repository)
+- ❌ Hardcode configuration values
+- ❌ Use raw SQL in controllers or services (use repositories)
+- ❌ Create utility classes in random locations
+- ❌ Duplicate code across modules (extract to shared utilities)
+- ❌ Ignore validation annotations
+- ❌ Return `null` when an entity is not found (throw `ResourceNotFoundException`)
+
+---
+
+## 13) Module Independence
+- Each module should be as self-contained as possible.
+- Module-specific entities, DTOs, repositories, services, and controllers stay within the module.
+- Only share utilities, exceptions, and configuration at the root level.
+- Cross-module communication should go through service interfaces when possible.
+
+---
+
+## 14) Coding Rules. You must always:
+- Think before coding
+- Follow existing project rules and folder structures strictly
+- Respect layer boundaries and architectural decisions
+- Use DTOs for all API interactions
+- Handle exceptions properly using custom exceptions
+- Validate all incoming request data
+- Prioritize maintainability, readability, and scalability

@@ -1,0 +1,347 @@
+---
+globs: *
+alwaysApply: false
+---
+# RulesFE.md — Frontend (Cursor Context)
+Stack: React + TypeScript + TailwindCSS + shadcn/ui + Axios + TanStack React Query + Zustand + React-Hook-Form + Zod  
+Routing: React Router (latest)  
+Architecture: Feature Modules with MVC-like separation per module  
+- View = UI/pages/components
+- Controller = React Query hooks (bridge)
+- Model = Axios services + DTO/types + mappers
+- Store = Zustand (client/app state only)
+
+---
+
+## 0) Non-negotiables
+- Do NOT change UI design/styling unless explicitly requested.
+- No direct `axios` calls in UI components.
+- All server data must be managed by React Query (not Zustand).
+- Zustand is only for client/global state (auth session, UI prefs).
+- Keep a strict import direction: `modules/*` → `shared/*` allowed; `shared/*` → `modules/*` forbidden.
+- Use TypeScript everywhere; avoid `any`.
+- Keep APIs typed end-to-end: DTO types in model, clean models in view via mapper when needed.
+
+---
+
+## 1) Recommended Full Structure (MANDATORY)
+Place files in these locations. Avoid “misc” folders.
+
+frontend/
+├── RulesFE.md
+├── components.json                 # shadcn config
+├── .env.example
+└── src/
+    ├── main.tsx
+    ├── styles/
+    │   └── globals.css
+    │
+    ├── app/                        # app shell: routing, providers, layouts, config
+    │   ├── routes/
+    │   │   ├── index.tsx           # createBrowserRouter + RouterProvider
+    │   │   ├── public.routes.tsx
+    │   │   ├── protected.routes.tsx     # optional
+    │   │   └── notFound.routes.tsx
+    │   ├── providers/
+    │   │   ├── AppProviders.tsx    # composes all providers
+    │   │   └── QueryProvider.tsx
+    │   ├── layout/
+    │   │   ├── AppShell.tsx
+    │   │   ├── Header.tsx
+    │   │   ├── Sidebar.tsx
+    │   │   └── ProtectedLayout.tsx      # optional
+    │   └── config/
+    │       ├── env.ts              # reads VITE_API_BASE_URL safely
+    │       └── queryClient.ts      # QueryClient config
+    │
+    ├── shared/                     # cross-cutting, reusable code only
+    │   ├── ui/                     # shadcn generated components ONLY
+    │   ├── lib/                    # small helpers (no business logic)
+    │   │   ├── cn.ts               # className merge helper
+    │   │   ├── format.ts
+    │   │   ├── date.ts
+    │   │   └── debounce.ts
+    │   ├── constants/
+    │   │   ├── routes.ts
+    │   │   ├── roles.ts
+    │   │   ├── storageKeys.ts
+    │   │   └── regex.ts
+    │   ├── http/                   # Axios platform layer
+    │   │   ├── axios/
+    │   │   │   ├── instance.ts     # axios.create + base config
+    │   │   │   ├── interceptors.ts # auth header + error handling
+    │   │   │   └── errors.ts       # AxiosError -> AppError normalize
+    │   │   └── types/
+    │   │       ├── common.ts       # ApiResponse<T>, ApiError, PageResponse<T>
+    │   │       └── params.ts       # PaginationParams, SortParams, FilterParams
+    │   ├── components/             # generic UI helpers (optional)
+    │   │   ├── LoadingState.tsx
+    │   │   ├── EmptyState.tsx
+    │   │   └── ErrorState.tsx
+    │   └── stores/                 # truly global Zustand stores only
+    │       ├── ui.store.ts
+    │       └── auth.store.ts        # only if auth/session is needed
+    │
+    └── modules/                    # feature modules (MVC inside each module)
+        ├── auth/
+        │   ├── view/
+        │   │   ├── pages/
+        │   │   └── components/
+        │   ├── controller/
+        │   │   ├── queryKeys.ts
+        │   │   ├── queries.ts
+        │   │   └── mutations.ts
+        │   ├── model/
+        │   │   ├── auth.service.ts
+        │   │   ├── auth.types.ts
+        │   │   └── mapper.ts        # optional
+        │   └── index.ts
+        ├── bookings/
+        │   ├── view/
+        │   │   ├── pages/
+        │   │   └── components/
+        │   ├── controller/
+        │   │   ├── queryKeys.ts
+        │   │   ├── queries.ts
+        │   │   └── mutations.ts
+        │   ├── model/
+        │   │   ├── bookings.service.ts
+        │   │   ├── bookings.types.ts
+        │   │   └── mapper.ts
+        │   ├── store/               # only if module-scoped UI state needed
+        │   │   └── bookingUi.store.ts
+        │   └── index.ts
+        └── ...more features
+
+---
+
+## 2) Architecture Rules (Module MVC)
+### View (modules/<feature>/view/**)
+- Contains pages + UI components only.
+- May use local state for UI (open dialogs, selected rows, inputs).
+- Must call server through Controller hooks only.
+
+FORBIDDEN in View:
+- `axios` usage
+- raw URLs
+- React Query client cache manipulation (except via hook results)
+
+### Controller (modules/<feature>/controller/**)
+- React Query hooks only: queries & mutations.
+- Each endpoint must have a matching hook.
+- Invalidate queries on mutation success.
+- Query keys must be centralized in module `queryKeys.ts`.
+
+### Model (modules/<feature>/model/**)
+- Axios service functions and DTO types.
+- Services use shared axios instance only.
+- No UI logic, no React Query here.
+
+### Mapper (modules/<feature>/model/mapper.ts)
+- Converts DTO → UI-friendly model (camelCase, Date parsing, derived fields).
+- Update mapper when backend changes; avoid fixing UI everywhere.
+
+---
+
+## 3) React Router Rules (Latest)
+- All routes defined in `src/app/routes/**`.
+- Pages/components must NOT define routes.
+- Use nested routes with layouts (AppShell).
+- Guards live in routing/layout (ProtectedLayout), not scattered in pages.
+
+Suggested route ownership:
+- `app/routes/index.tsx` composes route trees.
+- `app/layout/AppShell.tsx` provides sidebar/header layout.
+
+---
+
+## 4) Axios Rules (shared/http)
+### Location
+- `shared/http/axios/instance.ts` contains the ONLY axios instance creation.
+- `shared/http/axios/interceptors.ts` registers interceptors.
+- `shared/http/axios/errors.ts` normalizes errors.
+
+### Requirements
+- baseURL from env (`VITE_API_BASE_URL`).
+- Request interceptor attaches auth token (if store exists).
+- Response interceptor converts AxiosError to a consistent AppError shape.
+
+NO:
+- creating multiple axios instances per module
+- hardcoding base URL
+- using fetch()
+
+---
+
+## 5) React Query Rules (Controller Layer)
+- Queries: use `useQuery`.
+- Mutations: use `useMutation`.
+- Use module query keys: include params (page/filter/sort) in queryKey.
+- Mutations must invalidate related queries on success.
+- Keep staleTime/retry defaults in `app/config/queryClient.ts`.
+
+Naming conventions:
+- Query: `use<Thing>Query`, `use<Thing>ListQuery`
+- Mutation: `useCreate<Thing>`, `useUpdate<Thing>`, `useDelete<Thing>`
+
+---
+
+## 6) Zustand Rules (Global Client State Only)
+Allowed:
+- auth session (token, user minimal)
+- UI preferences (theme, language)
+- cross-route UI state (sidebar collapsed)
+
+Forbidden:
+- caching lists/entities from server
+- duplicating React Query cache
+- API calls inside store
+
+---
+
+## 7) Types Rules
+- Shared API wrappers only in `shared/http/types/**`:
+  - ApiResponse<T>, ApiError, PageResponse<T>, PaginationParams...
+- Feature DTO types in `modules/<feature>/model/*.types.ts`
+  - Request DTOs, Response DTOs, and domain types if mapped.
+- Never use any type. If need to use type we don't know, use unknown instead. But if we need to use any types without other types choice, use any with reasoning comment.
+
+---
+
+## 8) shadcn/ui + Tailwind Rules
+- shadcn generated components live in `shared/ui/**` only.
+- Do not edit shadcn generated files unless required; prefer wrapping them.
+- Use `cn()` from `shared/lib/cn.ts` for className merging.
+- Maintain accessibility (labels, aria, keyboard navigation).
+
+### Color Palette Rules (MANDATORY)
+- **ALL colors MUST use only the palette colors defined in `src/styles/globals.css`.**
+- Use palette color classes: `bg-background`, `bg-card`, `bg-primary`, `bg-secondary`, `bg-muted`, `bg-accent`, `bg-destructive`, `text-foreground`, `text-primary`, `text-secondary`, `text-muted-foreground`, `text-destructive`, `border-border`, `border-input`, etc.
+- **FORBIDDEN:** Custom Tailwind color classes (e.g., `bg-slate-100`, `bg-gray-50`, `text-blue-500`, `border-red-300`, etc.).
+- **FORBIDDEN:** Hardcoded color values in className (e.g., `bg-[#ffffff]`, `text-[#000000]`).
+- All color values are defined via CSS variables in `globals.css` and mapped through Tailwind config.
+- This ensures consistent theming, dark mode support, and maintainability.
+
+---
+
+## 9) Error/Loading/Empty State Rules
+Every route page must support:
+- Loading state (skeleton/spinner)
+- Empty state (no data)
+- Error state (normalized error message)
+
+Prefer shared UI helpers:
+- `shared/components/LoadingState.tsx`
+- `shared/components/EmptyState.tsx`
+- `shared/components/ErrorState.tsx`
+
+---
+
+## 10) Environment Variables
+- Use `VITE_API_BASE_URL` only.
+- Provide `.env.example`.
+- Never commit secrets.
+
+---
+
+## 11) Import Boundaries (Critical)
+- `shared/**` MUST NOT import from `modules/**`.
+- `modules/**` may import from `shared/**`.
+- `app/**` may import from both `modules/**` and `shared/**`.
+- Do not deep-import between modules; expose module APIs via `modules/<feature>/index.ts`.
+
+---
+
+## 12) Feature Delivery Checklist (Frontend)
+For any new feature endpoint + UI:
+- [ ] Model: create/update `modules/<feature>/model/*.service.ts`
+- [ ] Types: create/update `modules/<feature>/model/*.types.ts`
+- [ ] Mapper: add if DTO != UI model or dates/derived fields needed
+- [ ] Controller: add hooks in `modules/<feature>/controller/*`
+- [ ] View: page/component in `modules/<feature>/view/*`
+- [ ] Routing: register route in `app/routes/*`
+- [ ] Ensure loading/empty/error states exist
+
+---
+
+## 13) Absolute Don’ts
+- ❌ Direct axios in components
+- ❌ Server state in Zustand
+- ❌ Random folder creation (e.g., “utils2”, “temp”, “misc”)
+- ❌ Hardcoded URLs
+- ❌ Bypassing module boundaries
+
+---
+
+## 14) Component Rules
+- All component must use arrow function not including shadCN UI components.
+
+## 15) Form Validation Rules (React-Hook-Form + Zod)
+### Mandatory Usage
+- **ALL forms MUST use react-hook-form with zod validation.**
+- Raw validation logic (manual useState, onChange handlers, custom validation functions) is **FORBIDDEN**.
+- Use `@hookform/resolvers/zod` to integrate zod schemas with react-hook-form.
+
+### Schema Location
+- Zod schemas belong in `modules/<feature>/model/*.schema.ts` (or `*.types.ts` if combined).
+- Export both the schema and the inferred TypeScript type:
+  ```typescript
+  export const myFormSchema = z.object({ ... })
+  export type MyFormData = z.infer<typeof myFormSchema>
+  ```
+
+### Form Implementation Pattern
+```typescript
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { myFormSchema, type MyFormData } from '../../model/my.schema'
+
+const MyForm = () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<MyFormData>({
+    resolver: zodResolver(myFormSchema),
+    defaultValues: { ... },
+  })
+
+  const onSubmit = async (data: MyFormData) => {
+    // Handle submission
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Input {...register('fieldName')} />
+      {errors.fieldName && <p>{errors.fieldName.message}</p>}
+    </form>
+  )
+}
+```
+
+### Validation Rules
+- Use zod's built-in validators (`.email()`, `.min()`, `.max()`, `.regex()`, etc.).
+- Provide clear, user-friendly error messages in zod schema.
+- Display errors using `formState.errors` from react-hook-form.
+- Never duplicate validation logic in component code.
+
+### Forbidden Patterns
+- ❌ Manual `useState` for form fields
+- ❌ Custom `onChange`/`onBlur` validation handlers
+- ❌ Manual validation functions outside zod schemas
+- ❌ Direct DOM manipulation for validation
+- ❌ Using `REGEX` constants directly in components (use zod `.regex()` instead)
+
+### Best Practices
+- Keep schemas reusable and composable (use `.extend()`, `.pick()`, `.omit()` when needed).
+- Use zod's `.refine()` for complex cross-field validation.
+- Leverage react-hook-form's `formState` for loading states (`isSubmitting`, `isValid`, etc.).
+- Use `defaultValues` in `useForm` for initial form state.
+
+---
+
+## 16) Coding Rules. You must always:
+- Think before coding
+- Follow existing project rules and folder structures strictly
+- Respect module boundaries and architectural decisions
+- Prioritize maintainability, readability, and scalability
