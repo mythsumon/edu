@@ -16,6 +16,18 @@ public class Admin {
     @MapsId
     private User user;
 
-    @Column(nullable = false)
-    private String name;
+    @Column(name = "first_name", nullable = false)
+    private String firstName;
+
+    @Column(name = "last_name", nullable = false)
+    private String lastName;
+
+    @Column
+    private String email;
+
+    @Column
+    private String phone;
+
+    @Column(name = "profile_photo")
+    private String profilePhoto;
 }
