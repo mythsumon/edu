@@ -15,11 +15,7 @@ export const AdminRouteGuard = () => {
     const userRole = user?.roleName?.toUpperCase()
 
     if (userRole !== 'ADMIN') {
-      // Redirect to home or instructor dashboard if they're an instructor
-      if (userRole === 'INSTRUCTOR') {
-        return <Navigate to={ROUTES.INSTRUCTOR_DASHBOARD_FULL} replace />
-      }
-      return <Navigate to={ROUTES.HOME} replace />
+      return <Navigate to={ROUTES.UNAUTHORIZED} replace />
     }
 
     return <Outlet />

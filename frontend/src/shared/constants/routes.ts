@@ -61,5 +61,6 @@ export const ROUTES = {
   // Auth
   LOGIN: '/login',
   NOT_FOUND: '/404',
+  UNAUTHORIZED: '/403',
 } as const
 
