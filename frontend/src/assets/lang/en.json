@@ -43,6 +43,8 @@
   "header": {
     "title": "Management Dashboard",
     "welcome": "Welcome",
+    "profileSettings": "Profile Settings",
+    "logout": "Logout",
     "searchPlaceholder": "Search courses, learn here..."
   },
   "sidebar": {

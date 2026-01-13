@@ -28,6 +28,8 @@ export const useUiStore = create<UiState>()(
       setLanguage: (language) => set({ language }),
     }),
     {
+      // Note: Storage key name is 'sidebar_collapsed' for backward compatibility,
+      // but it actually stores multiple UI state values (sidebar, theme, language)
       name: STORAGE_KEYS.SIDEBAR_COLLAPSED,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ 
