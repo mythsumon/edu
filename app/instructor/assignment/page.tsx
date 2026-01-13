@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Table, Button, Card, Input, Select, Space, DatePicker, Badge, Modal, Collapse } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { ChevronRight, ArrowLeft, RotateCcw, RefreshCw, Copy, Trash2, UserPlus, CheckCircle2, Eye } from 'lucide-react'
@@ -457,9 +456,7 @@ export default function InstructorAssignmentPage() {
   )
 
   return (
-    <ProtectedRoute requiredRole="instructor">
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 transition-colors">
-        <div className="max-w-7xl mx-auto px-6 py-8">
+    <div className="p-6">
       {viewMode === 'list' ? (
         <>
           {/* Page Header */}
@@ -1058,8 +1055,6 @@ export default function InstructorAssignmentPage() {
         >
           <p>정말 이 강사를 삭제하시겠습니까?</p>
         </Modal>
-        </div>
-      </div>
-    </ProtectedRoute>
+    </div>
   )
 }

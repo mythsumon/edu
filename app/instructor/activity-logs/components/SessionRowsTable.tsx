@@ -40,7 +40,7 @@ export function SessionRowsTable({ sessions, onChange, disabled = false }: Sessi
 
   const columns: ColumnsType<ActivityLogSessionRow> = [
     {
-      title: '회차',
+      title: '차시',
       dataIndex: 'sessionNumber',
       key: 'sessionNumber',
       width: 80,
@@ -124,7 +124,7 @@ export function SessionRowsTable({ sessions, onChange, disabled = false }: Sessi
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-          회차 목록
+          차시 목록
         </h3>
         {!disabled && (
           <Button
@@ -132,7 +132,7 @@ export function SessionRowsTable({ sessions, onChange, disabled = false }: Sessi
             icon={<Plus className="w-4 h-4" />}
             onClick={handleAddRow}
           >
-            회차 추가
+            차시 추가
           </Button>
         )}
       </div>

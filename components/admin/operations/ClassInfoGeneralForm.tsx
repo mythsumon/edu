@@ -19,6 +19,8 @@ interface ClassInfoGeneralFormProps {
   onLessonCountChange: (count: number) => void
   onLessonsChange: (lessons: LessonData[]) => void
   form: any
+  periodStart?: Dayjs | null
+  periodEnd?: Dayjs | null
 }
 
 export function ClassInfoGeneralForm({
@@ -27,6 +29,8 @@ export function ClassInfoGeneralForm({
   onLessonCountChange,
   onLessonsChange,
   form,
+  periodStart,
+  periodEnd,
 }: ClassInfoGeneralFormProps) {
   const [expandedSessions, setExpandedSessions] = useState<Set<number>>(
     new Set(Array.from({ length: lessonCount }, (_, i) => i))
@@ -180,13 +184,62 @@ export function ClassInfoGeneralForm({
                         </span>
                       }
                       name={['lessons', index, 'date']}
-                      rules={[{ required: true, message: '일자를 선택해주세요' }]}
+                      rules={[
+                        { required: true, message: '일자를 선택해주세요' },
+                        ({ getFieldValue }) => ({
+                          validator(_, value) {
+                            if (!value) {
+                              return Promise.resolve()
+                            }
+
+                            // Check if session date is within education period
+                            const startDate = getFieldValue('startDate') || periodStart
+                            const endDate = getFieldValue('endDate') || periodEnd
+
+                            if (startDate && endDate) {
+                              const sessionDate = dayjs(value)
+                              const periodStartDate = dayjs(startDate)
+                              const periodEndDate = dayjs(endDate)
+
+                              if (sessionDate.isBefore(periodStartDate, 'day')) {
+                                return Promise.reject(
+                                  new Error(`세션 일자는 교육 시작일(${periodStartDate.format('YYYY.MM.DD')}) 이후여야 합니다`)
+                                )
+                              }
+
+                              if (sessionDate.isAfter(periodEndDate, 'day')) {
+                                return Promise.reject(
+                                  new Error(`세션 일자는 교육 종료일(${periodEndDate.format('YYYY.MM.DD')}) 이전이어야 합니다`)
+                                )
+                              }
+                            }
+
+                            return Promise.resolve()
+                          },
+                        }),
+                      ]}
                       className="mb-0"
                     >
                       <DatePicker
                         className="w-full h-11 rounded-xl"
                         placeholder="일자 선택"
                         format="YYYY.MM.DD"
+                        disabledDate={(current) => {
+                          if (!current) return false
+                          
+                          const startDate = form.getFieldValue('startDate') || periodStart
+                          const endDate = form.getFieldValue('endDate') || periodEnd
+
+                          if (startDate && endDate) {
+                            const periodStartDate = dayjs(startDate)
+                            const periodEndDate = dayjs(endDate)
+                            
+                            // Disable dates outside the period
+                            return current.isBefore(periodStartDate, 'day') || current.isAfter(periodEndDate, 'day')
+                          }
+
+                          return false
+                        }}
                       />
                     </Form.Item>
 

@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useMemo, useEffect, useRef } from 'react'
-import { Table, Button, Card, Form, Select, DatePicker, InputNumber, TimePicker, Checkbox, Space, Input } from 'antd'
+import { Table, Button, Card, Form, Select, DatePicker, InputNumber, TimePicker, Checkbox, Space, Input, message } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { ChevronRight, Download, ArrowLeft, Save, FileText, Trash2, RotateCcw, School, BookOpen, Book, Filter, Search, Eye } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
@@ -251,7 +251,36 @@ export default function EducationManagementPage() {
 
   const handleFormSubmit = (values: any) => {
     console.log('Form values:', values)
+    
+    // Validate that all session dates are within the education period
+    const startDate = values.startDate ? dayjs(values.startDate) : null
+    const endDate = values.endDate ? dayjs(values.endDate) : null
+    
+    if (startDate && endDate && values.lessons) {
+      const invalidSessions: number[] = []
+      
+      values.lessons.forEach((lesson: any, index: number) => {
+        if (lesson.date) {
+          const sessionDate = dayjs(lesson.date)
+          
+          if (sessionDate.isBefore(startDate, 'day')) {
+            invalidSessions.push(index + 1)
+          } else if (sessionDate.isAfter(endDate, 'day')) {
+            invalidSessions.push(index + 1)
+          }
+        }
+      })
+      
+      if (invalidSessions.length > 0) {
+        message.error(
+          `${invalidSessions.join(', ')}차시 수업의 일자가 교육 기간(${startDate.format('YYYY.MM.DD')} ~ ${endDate.format('YYYY.MM.DD')}) 안에 있지 않습니다.`
+        )
+        return
+      }
+    }
+    
     // Handle form submission
+    message.success('교육이 저장되었습니다.')
   }
 
   const handleTempSave = () => {
@@ -783,6 +812,8 @@ export default function EducationManagementPage() {
                               form.setFieldsValue({ lessons })
                             }}
                             form={form}
+                            periodStart={form.getFieldValue('startDate')}
+                            periodEnd={form.getFieldValue('endDate')}
                           />
                         ) : (
                           <ClassInfoExcelImport

@@ -27,7 +27,9 @@ interface InstructorItem {
   account: string
   affiliation: string
   region: string
+  assignmentZone?: string
   type: string
+  category?: '신규강사' | '재채용' | '재고용'
   registeredAt: string
 }
 
@@ -41,6 +43,7 @@ const dummyData: InstructorItem[] = [
     affiliation: '서울교육청',
     region: '서울시',
     type: '일반',
+    category: '신규강사',
     registeredAt: '2025.01.15 10:30',
   },
   {
@@ -52,6 +55,7 @@ const dummyData: InstructorItem[] = [
     affiliation: '인천교육청',
     region: '인천시',
     type: '고급',
+    category: '재채용',
     registeredAt: '2025.01.10 14:20',
   },
   {
@@ -63,6 +67,7 @@ const dummyData: InstructorItem[] = [
     affiliation: '경기교육청',
     region: '경기도',
     type: '예비',
+    category: '재고용',
     registeredAt: '2025.01.05 09:15',
   },
 ]
@@ -527,6 +532,22 @@ export default function InstructorManagementPage() {
                     </span>
                   )
                 },
+                { 
+                  label: '강사 카테고리 (2026년용)', 
+                  value: selectedInstructor.category ? (
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                      selectedInstructor.category === '신규강사'
+                        ? 'bg-green-50 text-green-700'
+                        : selectedInstructor.category === '재채용'
+                          ? 'bg-blue-50 text-blue-700'
+                          : 'bg-orange-50 text-orange-700'
+                    }`}>
+                      {selectedInstructor.category}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400">미설정</span>
+                  )
+                },
                 { label: '등록일시', value: selectedInstructor.registeredAt },
               ].map((item) => (
                 <div key={item.label} className="space-y-1">
@@ -650,6 +671,29 @@ export default function InstructorManagementPage() {
                   >
                     <Input placeholder="생년월일을 입력하세요 (YYYY-MM-DD)" className="h-11 rounded-xl" />
                   </Form.Item>
+
+                  <Form.Item
+                    label={
+                      <span>
+                        강사 카테고리 <span className="text-red-500">*</span>
+                        <span className="text-xs text-gray-500 ml-2">(2026년용)</span>
+                      </span>
+                    }
+                    name="category"
+                    rules={[{ required: true, message: '강사 카테고리를 선택해주세요' }]}
+                    className="mb-0"
+                    help="강사 수수료 차이에 사용됩니다"
+                  >
+                    <Select
+                      placeholder="강사 카테고리를 선택하세요"
+                      options={[
+                        { value: '신규강사', label: '신규강사' },
+                        { value: '재채용', label: '재채용' },
+                        { value: '재고용', label: '재고용' },
+                      ]}
+                      className="h-11 rounded-xl"
+                    />
+                  </Form.Item>
                 </div>
               </Card>
 
@@ -675,10 +719,15 @@ export default function InstructorManagementPage() {
                   </Form.Item>
 
                   <Form.Item
-                    label="지역(시/군)"
+                    label={
+                      <span>
+                        지역(시/군) <span className="text-red-500">*</span>
+                      </span>
+                    }
                     name="region"
                     rules={[{ required: true, message: '지역을 선택해주세요' }]}
                     className="mb-0"
+                    help="강사 배정 지역을 선택하세요"
                   >
                     <Select
                       placeholder="지역을 선택하세요"
@@ -686,6 +735,39 @@ export default function InstructorManagementPage() {
                         { value: '서울시', label: '서울시' },
                         { value: '인천시', label: '인천시' },
                         { value: '경기도', label: '경기도' },
+                        { value: '강원도', label: '강원도' },
+                        { value: '충청북도', label: '충청북도' },
+                        { value: '충청남도', label: '충청남도' },
+                        { value: '전라북도', label: '전라북도' },
+                        { value: '전라남도', label: '전라남도' },
+                        { value: '경상북도', label: '경상북도' },
+                        { value: '경상남도', label: '경상남도' },
+                        { value: '제주도', label: '제주도' },
+                      ]}
+                      className="h-11 rounded-xl"
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    label={
+                      <span>
+                        배정 권역 <span className="text-red-500">*</span>
+                      </span>
+                    }
+                    name="assignmentZone"
+                    rules={[{ required: true, message: '배정 권역을 선택해주세요' }]}
+                    className="mb-0"
+                    help="부분 규칙 배정에 사용됩니다 (1권역~6권역)"
+                  >
+                    <Select
+                      placeholder="배정 권역을 선택하세요"
+                      options={[
+                        { value: '1권역', label: '1권역' },
+                        { value: '2권역', label: '2권역' },
+                        { value: '3권역', label: '3권역' },
+                        { value: '4권역', label: '4권역' },
+                        { value: '5권역', label: '5권역' },
+                        { value: '6권역', label: '6권역' },
                       ]}
                       className="h-11 rounded-xl"
                     />

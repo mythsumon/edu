@@ -68,13 +68,6 @@ const adminMenuConfig: MenuGroup[] = [
     ],
   },
   {
-    labelKey: 'sidebar.documentManagement',
-    icon: Save,
-    items: [
-      { labelKey: 'sidebar.submissions', href: '/admin/submissions' },
-    ],
-  },
-  {
     labelKey: 'sidebar.systemManagement',
     icon: Settings,
     items: [

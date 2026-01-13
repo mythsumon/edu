@@ -674,8 +674,8 @@ export default function ActivityLogDetailPage() {
             </div>
           </DetailSectionCard>
 
-          {/* SECTION 2: 회차 목록 */}
-          <DetailSectionCard title="회차 목록" className="mb-6">
+          {/* SECTION 2: 차시 목록 */}
+          <DetailSectionCard title="차시 목록" className="mb-6">
             <SessionRowsTable
               sessions={formData.sessions}
               onChange={(sessions) => setFormData({ ...formData, sessions })}

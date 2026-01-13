@@ -499,34 +499,34 @@ export default function AdminEquipmentConfirmationDetailPage() {
           <DetailSectionCard title="서명" className="mb-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {doc.signatures.manager && (
-                <SignatureSlot
+                  <SignatureSlot
                   label="담당자"
-                  signature={doc.signatures.manager}
+                    signature={doc.signatures.manager}
                   signerName={doc.equipmentManagerName || ''}
-                  onApply={() => {}}
-                  onDelete={() => {}}
+                    onApply={() => {}}
+                    onDelete={() => {}}
                   disabled={true}
-                />
+                  />
               )}
               {doc.signatures.borrower && (
-                <SignatureSlot
+                  <SignatureSlot
                   label="대여자"
-                  signature={doc.signatures.borrower}
+                    signature={doc.signatures.borrower}
                   signerName={doc.borrowerName || ''}
-                  onApply={() => {}}
-                  onDelete={() => {}}
+                    onApply={() => {}}
+                    onDelete={() => {}}
                   disabled={true}
-                />
+                  />
               )}
               {doc.signatures.returner && (
-                <SignatureSlot
+                  <SignatureSlot
                   label="반납자"
-                  signature={doc.signatures.returner}
+                    signature={doc.signatures.returner}
                   signerName={doc.actualReturnerName || doc.plannedReturnerName || ''}
-                  onApply={() => {}}
-                  onDelete={() => {}}
+                    onApply={() => {}}
+                    onDelete={() => {}}
                   disabled={true}
-                />
+                  />
               )}
             </div>
           </DetailSectionCard>
