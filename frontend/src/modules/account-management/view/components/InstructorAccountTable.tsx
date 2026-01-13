@@ -4,18 +4,18 @@ import { Checkbox } from '@/shared/ui/checkbox'
 import { Button } from '@/shared/ui/button'
 import { MoreHorizontal } from 'lucide-react'
 import { DataTable } from '@/shared/components/DataTable'
-import type { AdminAccount } from '../../model/account-management.types'
+import type { InstructorAccount } from '../../model/account-management.types'
 
-interface AdminAccountTableProps {
-  data: AdminAccount[]
-  onDetailClick?: (admin: AdminAccount) => void
+interface InstructorAccountTableProps {
+  data: InstructorAccount[]
+  onDetailClick?: (instructor: InstructorAccount) => void
 }
 
-export const AdminAccountTable = ({
+export const InstructorAccountTable = ({
   data,
   onDetailClick,
-}: AdminAccountTableProps) => {
-  const columns = React.useMemo<ColumnDef<AdminAccount>[]>(
+}: InstructorAccountTableProps) => {
+  const columns = React.useMemo<ColumnDef<InstructorAccount>[]>(
     () => [
       {
         id: 'select',
@@ -41,7 +41,7 @@ export const AdminAccountTable = ({
       },
       {
         accessorKey: 'id',
-        header: 'Admin ID',
+        header: 'Instructor ID',
         cell: ({ row }) => (
           <div className="font-medium">{row.getValue('id')}</div>
         ),
@@ -55,19 +55,27 @@ export const AdminAccountTable = ({
         header: 'Username',
       },
       {
-        accessorKey: 'email',
-        header: 'Email',
+        accessorKey: 'affiliation',
+        header: 'Affiliation',
         cell: ({ row }) => {
-          const email = row.getValue('email') as string | undefined
-          return <div>{email || '-'}</div>
+          const affiliation = row.getValue('affiliation') as string | undefined
+          return <div>{affiliation || '-'}</div>
         },
       },
       {
-        accessorKey: 'phoneNumber',
-        header: 'Phone Number',
+        accessorKey: 'region',
+        header: 'Region',
         cell: ({ row }) => {
-          const phoneNumber = row.getValue('phoneNumber') as string | undefined
-          return <div>{phoneNumber || '-'}</div>
+          const region = row.getValue('region') as string | undefined
+          return <div>{region || '-'}</div>
+        },
+      },
+      {
+        accessorKey: 'instructorClassification',
+        header: 'Instructor Classification',
+        cell: ({ row }) => {
+          const classification = row.getValue('instructorClassification') as string | undefined
+          return <div>{classification || '-'}</div>
         },
       },
       {
@@ -94,7 +102,7 @@ export const AdminAccountTable = ({
     <DataTable
       data={data}
       columns={columns}
-      emptyMessage="No admin accounts found."
+      emptyMessage="No instructor accounts found."
       enableRowSelection={true}
     />
   )

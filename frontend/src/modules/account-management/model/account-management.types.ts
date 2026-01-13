@@ -14,3 +14,15 @@ export interface AdminAccount {
   email?: string
   phoneNumber?: string
 }
+
+/**
+ * Instructor account data for table display
+ */
+export interface InstructorAccount {
+  id: number
+  name: string
+  username: string
+  affiliation?: string
+  region?: string // city/country
+  instructorClassification?: string
+}

@@ -2,7 +2,43 @@ import { AdminAccountTable } from '../components/AdminAccountTable'
 import type { AdminAccount } from '../../model/account-management.types'
 
 // Placeholder data - to be replaced with API data
-const mockAdminAccounts: AdminAccount[] = []
+const mockAdminAccounts: AdminAccount[] = [
+  {
+    id: 1,
+    name: 'John Smith',
+    username: 'john.smith',
+    email: 'john.smith@example.com',
+    phoneNumber: '+1-555-0101',
+  },
+  {
+    id: 2,
+    name: 'Sarah Johnson',
+    username: 'sarah.j',
+    email: 'sarah.j@example.com',
+    phoneNumber: '+1-555-0102',
+  },
+  {
+    id: 3,
+    name: 'Michael Chen',
+    username: 'michael.chen',
+    email: 'michael.chen@example.com',
+    phoneNumber: '+1-555-0103',
+  },
+  {
+    id: 4,
+    name: 'Emily Davis',
+    username: 'emily.davis',
+    email: 'emily.davis@example.com',
+    phoneNumber: '+1-555-0104',
+  },
+  {
+    id: 5,
+    name: 'David Wilson',
+    username: 'david.w',
+    email: 'david.w@example.com',
+    phoneNumber: '+1-555-0105',
+  },
+]
 
 export const AdminAccountManagementPage = () => {
   const handleDetailClick = (admin: AdminAccount) => {

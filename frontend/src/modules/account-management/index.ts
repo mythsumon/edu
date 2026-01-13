@@ -2,3 +2,4 @@
 export { AdminAccountManagementPage } from './view/pages/AdminAccountManagementPage'
 export { InstructorAccountManagementPage } from './view/pages/InstructorAccountManagementPage'
 export { useAccountManagementQuery } from './controller/queries'
+export type { AdminAccount, InstructorAccount } from './model/account-management.types'
