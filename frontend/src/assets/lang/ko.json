@@ -26,7 +26,7 @@
   },
   "auth": {
     "title": "SWA",
-    "loginTitle": "다시 오신 것을 환영합니다",
+    "loginTitle": "로그인",
     "loginSubtitle": "계정에 액세스하려면 자격 증명을 입력하세요.",
     "userIdEmail": "이메일",
     "emailPlaceholder": "이메일을 입력하세요",
@@ -41,9 +41,14 @@
     "accessDenied": "접근 거부됨"
   },
   "header": {
-    "title": "관리 대시보드"
+    "title": "관리 대시보드",
+    "welcome": "환영합니다",
+    "searchPlaceholder": "과정 검색, 여기서 학습하세요..."
   },
   "sidebar": {
+    "menu": "메뉴",
+    "system": "시스템",
+    "academic": "학술",
     "dashboard": "대시보드",
     "educationOperations": "교육 운영",
     "instructorAssignment": "강사 배정",
@@ -59,6 +64,7 @@
     "settingsAndUserManagement": "설정 및 사용자 관리",
     "educationManagementSystem": "교육 관리 시스템",
     "administrator": "관리자",
+    "instructor": "강사",
     "myOverview": "내 개요",
     "myClasses": "내 강의",
     "mySchedule": "내 일정",
