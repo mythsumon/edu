@@ -1,22 +1,35 @@
 import { useNavigate } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useEffect } from 'react'
 import { User, Lock, Mail, Phone, UserCircle, MapPin, Calendar } from 'lucide-react'
 import { PageLayout } from '@/app/layout/PageLayout'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select'
 import { ROUTES } from '@/shared/constants/routes'
 import { useCreateInstructor } from '../../controller/mutations'
 import { createInstructorSchema, type CreateInstructorFormData } from '../../model/account-management.schema'
+import { useZonesQuery, useRegionsQuery } from '../../controller/zone-region.queries'
 
 export const AddInstructorPage = () => {
   const navigate = useNavigate()
   const createInstructorMutation = useCreateInstructor()
+  const { data: zones = [] } = useZonesQuery()
 
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<CreateInstructorFormData>({
     resolver: zodResolver(createInstructorSchema),
@@ -29,6 +42,7 @@ export const AddInstructorPage = () => {
       phone: '',
       gender: '',
       dob: '',
+      zoneId: '',
       regionId: '',
       city: '',
       street: '',
@@ -37,6 +51,22 @@ export const AddInstructorPage = () => {
       classificationId: '',
     },
   })
+
+  const { data: regions = [], isLoading: isLoadingRegions } = useRegionsQuery()
+  const selectedRegionId = watch('regionId')
+
+  // Auto-select zone when region is selected
+  useEffect(() => {
+    if (selectedRegionId) {
+      const selectedRegion = regions.find((r) => String(r.id) === selectedRegionId)
+      if (selectedRegion && selectedRegion.zoneId) {
+        setValue('zoneId', String(selectedRegion.zoneId))
+      }
+    } else {
+      // Clear zone when region is cleared
+      setValue('zoneId', '')
+    }
+  }, [selectedRegionId, regions, setValue])
 
   const onSubmit = async (data: CreateInstructorFormData) => {
     try {
@@ -211,38 +241,91 @@ export const AddInstructorPage = () => {
               )}
             </div>
 
-            {/* Region ID */}
-            <div className="space-y-2">
-              <Label htmlFor="regionId">Region ID</Label>
-              <Input
-                id="regionId"
-                type="number"
-                placeholder="Enter region ID (optional)"
-                icon={<MapPin className="h-4 w-4" />}
-                {...register('regionId')}
-                className={errors.regionId ? 'ring-2 ring-destructive' : ''}
-                disabled={isSubmitting}
-              />
-              {errors.regionId && (
-                <p className="text-sm text-destructive">{errors.regionId.message}</p>
-              )}
-            </div>
+            {/* City, Zone, Region - One row on lg+ screens */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 col-span-1 lg:col-span-2">
+              {/* City */}
+              <div className="space-y-2">
+                <Label htmlFor="city">City</Label>
+                <Input
+                  id="city"
+                  type="text"
+                  placeholder="Enter city (optional)"
+                  icon={<MapPin className="h-4 w-4" />}
+                  {...register('city')}
+                  className={errors.city ? 'ring-2 ring-destructive' : ''}
+                  disabled={isSubmitting}
+                />
+                {errors.city && (
+                  <p className="text-sm text-destructive">{errors.city.message}</p>
+                )}
+              </div>
 
-            {/* City */}
-            <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
-              <Input
-                id="city"
-                type="text"
-                placeholder="Enter city (optional)"
-                icon={<MapPin className="h-4 w-4" />}
-                {...register('city')}
-                className={errors.city ? 'ring-2 ring-destructive' : ''}
-                disabled={isSubmitting}
-              />
-              {errors.city && (
-                <p className="text-sm text-destructive">{errors.city.message}</p>
-              )}
+              {/* Zone */}
+              <div className="space-y-2">
+                <Label htmlFor="zoneId">Zone</Label>
+                <Controller
+                  name="zoneId"
+                  control={control}
+                  render={({ field }) => {
+                    const selectedZone = field.value
+                      ? zones.find((z) => String(z.id) === field.value)
+                      : null
+
+                    return (
+                      <Select
+                        value={field.value || undefined}
+                        onValueChange={() => {}} // Disabled - auto-selected
+                        disabled={true}
+                      >
+                        <SelectTrigger
+                          icon={<MapPin className="h-4 w-4" />}
+                          className={errors.zoneId ? 'ring-2 ring-destructive' : ''}
+                        >
+                          <SelectValue placeholder="Zone (auto-selected)">
+                            {selectedZone ? selectedZone.name : 'Zone (auto-selected)'}
+                          </SelectValue>
+                        </SelectTrigger>
+                      </Select>
+                    )
+                  }}
+                />
+                {errors.zoneId && (
+                  <p className="text-sm text-destructive">{errors.zoneId.message}</p>
+                )}
+              </div>
+
+              {/* Region */}
+              <div className="space-y-2">
+                <Label htmlFor="regionId">Region</Label>
+                <Controller
+                  name="regionId"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value || undefined}
+                      onValueChange={(value) => field.onChange(value || '')}
+                      disabled={isSubmitting || isLoadingRegions}
+                    >
+                      <SelectTrigger
+                        icon={<MapPin className="h-4 w-4" />}
+                        className={errors.regionId ? 'ring-2 ring-destructive' : ''}
+                      >
+                        <SelectValue placeholder="Select region (optional)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {regions.map((region) => (
+                          <SelectItem key={region.id} value={String(region.id)}>
+                            {region.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.regionId && (
+                  <p className="text-sm text-destructive">{errors.regionId.message}</p>
+                )}
+              </div>
             </div>
 
             {/* Street */}

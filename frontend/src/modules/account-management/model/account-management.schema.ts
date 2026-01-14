@@ -60,6 +60,9 @@ export const createInstructorSchema = z.object({
   dob: z
     .string()
     .optional(),
+  zoneId: z
+    .string()
+    .optional(),
   regionId: z
     .string()
     .optional(),
