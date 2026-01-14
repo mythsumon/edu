@@ -293,7 +293,7 @@ export default function EducationManagementPage() {
     console.log('Form values:', values)
     
     // Get program name from selected program
-    const selectedProgram = programOptions?.find(p => p.value === values.program)
+    const selectedProgram = programOptions?.find((p: { value: string; label: string }) => p.value === values.program)
     const programName = selectedProgram?.label || values.program || ''
     
     // Validate that all session dates are within the education period
