@@ -335,6 +335,7 @@ export function validateBulkUploadRow(
     subCategory2: subCategory2Match.key.value,
     subCategory2Name: subCategory2Match.key.label,
     schoolLevelType: schoolLevelTypeMatch ? schoolLevelTypeMatch.value : null,
+    educationLevelMix: schoolLevelTypeMatch ? schoolLevelTypeMatch.value : null,
   }
 
   return { valid: true, row: validatedRow, errors: [] }

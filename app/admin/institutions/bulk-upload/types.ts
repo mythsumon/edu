@@ -13,6 +13,7 @@ export interface BulkUploadRow {
   subCategory2: string
   subCategory2Name: string
   schoolLevelType?: string | null
+  educationLevelMix?: string | null
 }
 
 export interface BulkUploadError {
