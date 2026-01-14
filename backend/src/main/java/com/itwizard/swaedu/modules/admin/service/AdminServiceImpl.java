@@ -8,7 +8,7 @@ import com.itwizard.swaedu.modules.admin.dto.request.RegisterAdminRequestDto;
 import com.itwizard.swaedu.modules.admin.dto.response.AdminResponseDto;
 import com.itwizard.swaedu.modules.admin.mapper.AdminMapper;
 import com.itwizard.swaedu.modules.admin.repository.AdminRepository;
-import com.itwizard.swaedu.modules.auth.entity.Admin;
+import com.itwizard.swaedu.modules.admin.entity.Admin;
 import com.itwizard.swaedu.modules.auth.entity.Role;
 import com.itwizard.swaedu.modules.auth.entity.User;
 import com.itwizard.swaedu.modules.auth.repository.RoleRepository;

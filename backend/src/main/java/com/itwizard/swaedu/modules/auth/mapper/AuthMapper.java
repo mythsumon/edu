@@ -1,8 +1,8 @@
 package com.itwizard.swaedu.modules.auth.mapper;
 
+import com.itwizard.swaedu.modules.admin.dto.response.AdminProfileDto;
+import com.itwizard.swaedu.modules.instructor.dto.response.InstructorProfileDto;
 import com.itwizard.swaedu.modules.auth.dto.JwtPayload;
-import com.itwizard.swaedu.modules.auth.dto.response.AdminProfileDto;
-import com.itwizard.swaedu.modules.auth.dto.response.InstructorProfileDto;
 import com.itwizard.swaedu.modules.auth.dto.response.UserResponseDto;
 import com.itwizard.swaedu.modules.auth.entity.User;
 

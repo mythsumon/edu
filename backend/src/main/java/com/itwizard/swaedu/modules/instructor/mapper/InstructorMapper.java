@@ -3,7 +3,7 @@ package com.itwizard.swaedu.modules.instructor.mapper;
 import com.itwizard.swaedu.modules.instructor.dto.request.InstructorPatchDto;
 import com.itwizard.swaedu.modules.instructor.dto.request.InstructorUpdateDto;
 import com.itwizard.swaedu.modules.instructor.dto.response.InstructorResponseDto;
-import com.itwizard.swaedu.modules.auth.entity.Instructor;
+import com.itwizard.swaedu.modules.instructor.entity.Instructor;
 import com.itwizard.swaedu.modules.auth.entity.User;
 
 import java.util.Collections;

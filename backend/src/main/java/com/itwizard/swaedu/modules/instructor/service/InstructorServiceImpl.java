@@ -8,7 +8,7 @@ import com.itwizard.swaedu.modules.instructor.dto.request.RegisterInstructorRequ
 import com.itwizard.swaedu.modules.instructor.dto.response.InstructorResponseDto;
 import com.itwizard.swaedu.modules.instructor.mapper.InstructorMapper;
 import com.itwizard.swaedu.modules.instructor.repository.InstructorRepository;
-import com.itwizard.swaedu.modules.auth.entity.Instructor;
+import com.itwizard.swaedu.modules.instructor.entity.Instructor;
 import com.itwizard.swaedu.modules.auth.entity.Role;
 import com.itwizard.swaedu.modules.auth.entity.User;
 import com.itwizard.swaedu.modules.auth.repository.RoleRepository;

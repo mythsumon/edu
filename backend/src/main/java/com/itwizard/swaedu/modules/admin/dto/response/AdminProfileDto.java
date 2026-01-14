@@ -1,4 +1,4 @@
-package com.itwizard.swaedu.modules.auth.dto.response;
+package com.itwizard.swaedu.modules.admin.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,5 +1,6 @@
-package com.itwizard.swaedu.modules.auth.entity;
+package com.itwizard.swaedu.modules.instructor.entity;
 
+import com.itwizard.swaedu.modules.auth.entity.User;
 import com.itwizard.swaedu.modules.mastercode.entity.MasterCodeEntity;
 import com.itwizard.swaedu.modules.region.entity.RegionEntity;
 import jakarta.persistence.*;

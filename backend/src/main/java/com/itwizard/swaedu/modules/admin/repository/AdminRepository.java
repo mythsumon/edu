@@ -1,6 +1,6 @@
 package com.itwizard.swaedu.modules.admin.repository;
 
-import com.itwizard.swaedu.modules.auth.entity.Admin;
+import com.itwizard.swaedu.modules.admin.entity.Admin;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

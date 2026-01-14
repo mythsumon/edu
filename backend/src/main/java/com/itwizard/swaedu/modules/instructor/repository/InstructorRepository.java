@@ -1,6 +1,6 @@
 package com.itwizard.swaedu.modules.instructor.repository;
 
-import com.itwizard.swaedu.modules.auth.entity.Instructor;
+import com.itwizard.swaedu.modules.instructor.entity.Instructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

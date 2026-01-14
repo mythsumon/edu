@@ -3,7 +3,7 @@ package com.itwizard.swaedu.modules.admin.mapper;
 import com.itwizard.swaedu.modules.admin.dto.request.AdminPatchDto;
 import com.itwizard.swaedu.modules.admin.dto.request.AdminUpdateDto;
 import com.itwizard.swaedu.modules.admin.dto.response.AdminResponseDto;
-import com.itwizard.swaedu.modules.auth.entity.Admin;
+import com.itwizard.swaedu.modules.admin.entity.Admin;
 import com.itwizard.swaedu.modules.auth.entity.User;
 
 import java.util.Collections;

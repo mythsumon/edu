@@ -1,5 +1,6 @@
-package com.itwizard.swaedu.modules.auth.entity;
+package com.itwizard.swaedu.modules.admin.entity;
 
+import com.itwizard.swaedu.modules.auth.entity.User;
 import jakarta.persistence.*;
 import lombok.Data;
 
