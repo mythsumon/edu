@@ -62,6 +62,18 @@ export interface InstructorResponseDto {
 }
 
 /**
+ * Request DTO for creating admin
+ */
+export interface CreateAdminRequestDto {
+  username: string
+  password: string
+  firstName: string
+  lastName: string
+  email?: string
+  phone?: string
+}
+
+/**
  * Query parameters for listing accounts
  */
 export interface ListAccountsParams {

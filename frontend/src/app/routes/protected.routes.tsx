@@ -21,6 +21,7 @@ import { SettingsAndUserManagementPage } from '@/modules/system-management'
 import { MasterCodeSetupPage, MasterCodeCreatePage } from '@/modules/master-code-setup'
 import {
   AdminAccountManagementPage,
+  AddAdminPage,
   InstructorAccountManagementPage,
 } from '@/modules/account-management'
 
@@ -113,7 +114,16 @@ export const protectedRoutes: RouteObject[] = [
                   },
                   {
                     path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS,
-                    element: <AdminAccountManagementPage />,
+                    children: [
+                      {
+                        index: true,
+                        element: <AdminAccountManagementPage />,
+                      },
+                      {
+                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_ADD,
+                        element: <AddAdminPage />,
+                      },
+                    ],
                   },
                   {
                     path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS,

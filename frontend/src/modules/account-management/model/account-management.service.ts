@@ -4,7 +4,21 @@ import type {
   AdminResponseDto,
   InstructorResponseDto,
   ListAccountsParams,
+  CreateAdminRequestDto,
 } from './account-management.types'
+
+/**
+ * Create a new admin
+ */
+export async function createAdmin(
+  data: CreateAdminRequestDto
+): Promise<AdminResponseDto> {
+  const response = await axiosInstance.post<ApiResponse<AdminResponseDto>>(
+    '/admin/register',
+    data
+  )
+  return response.data.data
+}
 
 /**
  * List admins with pagination and filters

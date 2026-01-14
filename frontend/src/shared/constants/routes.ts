@@ -19,6 +19,7 @@ export const ROUTES = {
   ADMIN_MASTER_CODE_SETUP_CREATE: 'create',
   ADMIN_ACCOUNT_MANAGEMENT: 'account-management',
   ADMIN_ACCOUNT_MANAGEMENT_ADMINS: 'admins',
+  ADMIN_ACCOUNT_MANAGEMENT_ADMINS_ADD: 'add',
   ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS: 'instructors',
   // Instructor routes - path segments only
   INSTRUCTOR: '/instructor',
@@ -45,6 +46,7 @@ export const ROUTES = {
   ADMIN_MASTER_CODE_SETUP_CREATE_FULL: '/admin/master-code-setup/create',
   ADMIN_ACCOUNT_MANAGEMENT_FULL: '/admin/account-management',
   ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL: '/admin/account-management/admins',
+  ADMIN_ACCOUNT_MANAGEMENT_ADMINS_ADD_FULL: '/admin/account-management/admins/add',
   ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL: '/admin/account-management/instructors',
   INSTRUCTOR_DASHBOARD_FULL: '/instructor/dashboard',
   INSTRUCTOR_EDUCATION_OPERATIONS_FULL: '/instructor/education-operations',
