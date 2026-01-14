@@ -238,6 +238,16 @@ export default function EducationManagementPage() {
   const [searchText, setSearchText] = useState<string>('')
   const [filterDropdownOpen, setFilterDropdownOpen] = useState<boolean>(false)
   const filterDropdownRef = useRef<HTMLDivElement>(null)
+  
+  // Get program options from program management
+  const programOptions = useMemo(() => {
+    try {
+      return getProgramOptions() || []
+    } catch (error) {
+      console.error('Error loading program options:', error)
+      return []
+    }
+  }, [])
 
   // Close filter dropdown when clicking outside
   useEffect(() => {
