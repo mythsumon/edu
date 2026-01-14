@@ -7,7 +7,6 @@ import com.itwizard.swaedu.exception.ValidationException;
 import com.itwizard.swaedu.modules.auth.dto.request.LoginRequestDto;
 import com.itwizard.swaedu.modules.auth.dto.response.LoginResponseDto;
 import com.itwizard.swaedu.modules.auth.dto.request.RegisterRequestDto;
-import com.itwizard.swaedu.modules.auth.dto.request.RegisterAdminRequestDto;
 import com.itwizard.swaedu.modules.auth.repository.*;
 import com.itwizard.swaedu.modules.auth.mapper.AuthMapper;
 import com.itwizard.swaedu.util.TokenGenerateParam;
@@ -23,7 +22,6 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final AdminRepository adminRepository;
     private final InstructorRepository instructorRepository;
     private final TokenService tokenService;
     private final PasswordEncoder passwordEncoder;
@@ -66,37 +64,6 @@ public class AuthService {
         instructor.setStreet(request.getStreet());
         instructor.setDetailAddress(request.getDetailAddress());
         instructorRepository.save(instructor);
-
-        return savedUser;
-    }
-
-    @Transactional
-    public User registerAdmin(RegisterAdminRequestDto request) {
-        // Check if user already exists
-        if (userRepository.findByUsername(request.getUsername()) != null) {
-            throw new ValidationException("User already exists");
-        }
-
-        // Get ADMIN role
-        Role adminRole = roleRepository.findByName("ADMIN")
-                .orElseThrow(() -> new ResourceNotFoundException("ADMIN role not found"));
-
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(adminRole);
-        user.setEnabled(true);
-
-        User savedUser = userRepository.save(user);
-
-        // Create admin profile
-        Admin admin = new Admin();
-        admin.setUser(savedUser);
-        admin.setFirstName(request.getFirstName());
-        admin.setLastName(request.getLastName());
-        admin.setEmail(request.getEmail());
-        admin.setPhone(request.getPhone());
-        adminRepository.save(admin);
 
         return savedUser;
     }
