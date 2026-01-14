@@ -102,7 +102,7 @@ export const AddInstructorPage = () => {
       title="Add New Instructor"
       customBreadcrumbRoot={{ path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL, label: 'Instructors' }}
     >
-      <div className="max-w-4xl p-6 mx-auto">
+      <div className="max-w-4xl p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Username */}
