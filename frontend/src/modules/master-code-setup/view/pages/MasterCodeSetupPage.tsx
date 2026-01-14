@@ -22,7 +22,6 @@ export const MasterCodeSetupPage = () => {
   return (
     <PageLayout
       title="Master Code Setup"
-      description="Manage and configure master codes for the system"
       breadcrumbRoot="master-code-setup"
       actions={
         <Button onClick={() => navigate(ROUTES.ADMIN_MASTER_CODE_SETUP_CREATE_FULL)}>

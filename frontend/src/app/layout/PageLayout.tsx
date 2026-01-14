@@ -10,6 +10,7 @@ import {
 } from "@/shared/ui/breadcrumb";
 import { Button } from "@/shared/ui/button";
 import { cn } from "@/shared/lib/cn";
+import { ROUTES } from "@/shared/constants/routes";
 
 // Route segment to display name mapping
 const routeSegmentMap: Record<string, string> = {
@@ -34,21 +35,26 @@ const routeSegmentMap: Record<string, string> = {
   instructors: "Instructors",
 };
 
+interface CustomBreadcrumbRoot {
+  path: string;
+  label: string;
+}
+
 interface PageLayoutProps {
   title: string;
-  description?: string;
   actions?: ReactNode;
   badge?: ReactNode;
-  breadcrumbRoot?: string; // Root segment for breadcrumb (e.g., "master-code-setup")
+  breadcrumbRoot?: string; // Root segment for breadcrumb (e.g., "master-code-setup") or "/" for "Home > [last segment]"
+  customBreadcrumbRoot?: CustomBreadcrumbRoot; // Custom root path and label (e.g., { path: "/admin/dashboard", label: "Dashboard" })
   children?: ReactNode;
 }
 
 export const PageLayout = ({
   title,
-  description,
   actions,
   badge,
   breadcrumbRoot,
+  customBreadcrumbRoot,
   children,
 }: PageLayoutProps) => {
   const location = useLocation();
@@ -56,6 +62,89 @@ export const PageLayout = ({
 
   // Build breadcrumb items from current path
   const breadcrumbItems = useMemo(() => {
+    // Custom breadcrumb root takes precedence
+    if (customBreadcrumbRoot) {
+      const pathSegments = location.pathname
+        .split("/")
+        .filter(
+          (segment) =>
+            segment !== "" && segment !== "admin" && segment !== "instructor"
+        );
+
+      if (pathSegments.length === 0) {
+        return [];
+      }
+
+      const lastSegment = pathSegments[pathSegments.length - 1];
+      const displayName =
+        routeSegmentMap[lastSegment] ||
+        lastSegment
+          .split("-")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+
+      return [
+        {
+          segment: "custom-root",
+          displayName: customBreadcrumbRoot.label,
+          path: customBreadcrumbRoot.path,
+          isLast: false,
+          key: "custom-root",
+        },
+        {
+          segment: lastSegment,
+          displayName,
+          path: location.pathname,
+          isLast: true,
+          key: lastSegment,
+        },
+      ];
+    }
+
+    // Special case: "/" as breadcrumbRoot means "Home > [last segment]"
+    if (breadcrumbRoot === "/") {
+      const pathSegments = location.pathname
+        .split("/")
+        .filter(
+          (segment) =>
+            segment !== "" && segment !== "admin" && segment !== "instructor"
+        );
+
+      if (pathSegments.length === 0) {
+        return [];
+      }
+
+      const lastSegment = pathSegments[pathSegments.length - 1];
+      const displayName =
+        routeSegmentMap[lastSegment] ||
+        lastSegment
+          .split("-")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+
+      // Determine dashboard path based on route
+      const dashboardPath = location.pathname.startsWith("/admin")
+        ? ROUTES.ADMIN_DASHBOARD_FULL
+        : ROUTES.INSTRUCTOR_DASHBOARD_FULL;
+
+      return [
+        {
+          segment: "home",
+          displayName: "Home",
+          path: dashboardPath,
+          isLast: false,
+          key: "home",
+        },
+        {
+          segment: lastSegment,
+          displayName,
+          path: location.pathname,
+          isLast: true,
+          key: lastSegment,
+        },
+      ];
+    }
+
     const pathSegments = location.pathname
       .split("/")
       .filter(
@@ -107,7 +196,7 @@ export const PageLayout = ({
         key: `${segment}-${index}`,
       };
     });
-  }, [location.pathname, breadcrumbRoot]);
+  }, [location.pathname, breadcrumbRoot, customBreadcrumbRoot]);
 
   // Determine if this is a nested page (has more than one breadcrumb item)
   const isNestedPage = breadcrumbItems.length > 1;
@@ -119,7 +208,7 @@ export const PageLayout = ({
 
   return (
     <div className="space-y-2">
-      {/* Back Button - Only show on nested pages */}
+      {/* Back Button - Only show on nested pages and when not hidden */}
       {isNestedPage && parentRoute && (
         <Button
           variant="link"
@@ -131,9 +220,9 @@ export const PageLayout = ({
           Back
         </Button>
       )}
-      {/* Header Section: Title, Description, Badge, and Actions */}
+      {/* Header Section: Title, Badge, and Actions */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        {/* Left Side: Title, Description, Badge */}
+        {/* Left Side: Title, Badge */}
         <div className="space-y-1 flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-xl font-semibold">{title}</h1>
