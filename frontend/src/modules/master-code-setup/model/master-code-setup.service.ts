@@ -46,3 +46,17 @@ export async function updateMasterCode(
   )
   return response.data.data
 }
+
+/**
+ * Get children of a master code by parent code
+ */
+export async function getMasterCodeChildrenByCode(
+  parentCode: number,
+  params?: { q?: string; page?: number; size?: number; sort?: string }
+): Promise<PageResponse<MasterCodeResponseDto>> {
+  const response = await axiosInstance.get<ApiResponse<PageResponse<MasterCodeResponseDto>>>(
+    `/mastercode/${parentCode}/children`,
+    { params }
+  )
+  return response.data.data
+}

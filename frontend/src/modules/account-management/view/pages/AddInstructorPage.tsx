@@ -18,6 +18,8 @@ import { ROUTES } from '@/shared/constants/routes'
 import { useCreateInstructor } from '../../controller/mutations'
 import { createInstructorSchema, type CreateInstructorFormData } from '../../model/account-management.schema'
 import { useZonesQuery, useRegionsQuery } from '../../controller/zone-region.queries'
+import { useMasterCodeChildrenByCodeQuery } from '@/modules/master-code-setup/controller/queries'
+import { MASTER_CODE_PARENT_CODES } from '@/shared/constants/master-code'
 
 export const AddInstructorPage = () => {
   const navigate = useNavigate()
@@ -54,6 +56,17 @@ export const AddInstructorPage = () => {
 
   const { data: regions = [], isLoading: isLoadingRegions } = useRegionsQuery()
   const selectedRegionId = watch('regionId')
+  
+  // Fetch status master codes (parent code 100)
+  const { data: statusMasterCodesData, isLoading: isLoadingStatusCodes } = useMasterCodeChildrenByCodeQuery(
+    MASTER_CODE_PARENT_CODES.STATUS
+  )
+  const statusMasterCodes = statusMasterCodesData?.items || []
+
+  // Fetch classification master codes (parent code 200)
+  const { data: classificationMasterCodesData, isLoading: isLoadingClassificationCodes } =
+    useMasterCodeChildrenByCodeQuery(MASTER_CODE_PARENT_CODES.INSTRUCTOR_CLASSIFICATION)
+  const classificationMasterCodes = classificationMasterCodesData?.items || []
 
   // Auto-select zone when region is selected
   useEffect(() => {
@@ -362,34 +375,66 @@ export const AddInstructorPage = () => {
               )}
             </div>
 
-            {/* Status ID */}
+            {/* Status */}
             <div className="space-y-2">
-              <Label htmlFor="statusId">Status ID</Label>
-              <Input
-                id="statusId"
-                type="number"
-                placeholder="Enter status ID (optional)"
-                icon={<UserCircle className="h-4 w-4" />}
-                {...register('statusId')}
-                className={errors.statusId ? 'ring-2 ring-destructive' : ''}
-                disabled={isSubmitting}
+              <Label htmlFor="statusId">Status</Label>
+              <Controller
+                name="statusId"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value || undefined}
+                    onValueChange={(value) => field.onChange(value || '')}
+                    disabled={isSubmitting || isLoadingStatusCodes}
+                  >
+                    <SelectTrigger
+                      icon={<UserCircle className="h-4 w-4" />}
+                      className={errors.statusId ? 'ring-2 ring-destructive' : ''}
+                    >
+                      <SelectValue placeholder="Select status (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusMasterCodes.map((status) => (
+                        <SelectItem key={status.id} value={String(status.id)}>
+                          {status.codeName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               />
               {errors.statusId && (
                 <p className="text-sm text-destructive">{errors.statusId.message}</p>
               )}
             </div>
 
-            {/* Classification ID */}
+            {/* Classification */}
             <div className="space-y-2">
-              <Label htmlFor="classificationId">Classification ID</Label>
-              <Input
-                id="classificationId"
-                type="number"
-                placeholder="Enter classification ID (optional)"
-                icon={<UserCircle className="h-4 w-4" />}
-                {...register('classificationId')}
-                className={errors.classificationId ? 'ring-2 ring-destructive' : ''}
-                disabled={isSubmitting}
+              <Label htmlFor="classificationId">Classification</Label>
+              <Controller
+                name="classificationId"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value || undefined}
+                    onValueChange={(value) => field.onChange(value || '')}
+                    disabled={isSubmitting || isLoadingClassificationCodes}
+                  >
+                    <SelectTrigger
+                      icon={<UserCircle className="h-4 w-4" />}
+                      className={errors.classificationId ? 'ring-2 ring-destructive' : ''}
+                    >
+                      <SelectValue placeholder="Select classification (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {classificationMasterCodes.map((classification) => (
+                        <SelectItem key={classification.id} value={String(classification.id)}>
+                          {classification.codeName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               />
               {errors.classificationId && (
                 <p className="text-sm text-destructive">{errors.classificationId.message}</p>
