@@ -2,8 +2,8 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useMemo } from 'react'
-import { Table, Button, Card, Input, Select, Space, Form, Descriptions, Tag, Checkbox } from 'antd'
+import { useState, useMemo, useEffect } from 'react'
+import { Table, Button, Card, Input, Select, Space, Form, Descriptions, Tag, Checkbox, Modal, message } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { 
   ChevronRight, 
@@ -13,7 +13,9 @@ import {
   Eye, 
   ArrowLeft,
   Trash2,
-  Save
+  Save,
+  Key,
+  UserSearch
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
@@ -92,6 +94,36 @@ const typeOptions = [
   { value: '고급', label: '고급' },
 ]
 
+// 지역(시/군)과 배정권역 매핑
+const cityToRegionMap: Record<string, string> = {
+  '수원시': '1권역',
+  '성남시': '2권역',
+  '고양시': '3권역',
+  '용인시': '4권역',
+  '부천시': '5권역',
+  '안산시': '5권역',
+  '안양시': '1권역',
+  '평택시': '6권역',
+  '시흥시': '5권역',
+  '김포시': '3권역',
+  '의정부시': '1권역',
+  '광명시': '5권역',
+  '하남시': '2권역',
+  '오산시': '6권역',
+  '이천시': '4권역',
+  '구리시': '2권역',
+  '안성시': '6권역',
+  '포천시': '1권역',
+  '의왕시': '1권역',
+  '양주시': '1권역',
+  '여주시': '4권역',
+  '양평군': '4권역',
+  '동두천시': '1권역',
+  '과천시': '1권역',
+  '가평군': '4권역',
+  '연천군': '1권역',
+}
+
 export default function InstructorManagementPage() {
   const [viewMode, setViewMode] = useState<'list' | 'register' | 'detail'>('list')
   const [currentPage, setCurrentPage] = useState(1)
@@ -106,6 +138,10 @@ export default function InstructorManagementPage() {
   const [selectedInstructor, setSelectedInstructor] = useState<InstructorItem | null>(null)
   const [detailTab, setDetailTab] = useState<'basic'>('basic')
   const sectionRefs = useState<{ [key: string]: HTMLDivElement | null }>({})[0]
+  const [findIdModalOpen, setFindIdModalOpen] = useState(false)
+  const [findPasswordModalOpen, setFindPasswordModalOpen] = useState(false)
+  const [findIdForm] = Form.useForm()
+  const [findPasswordForm] = Form.useForm()
 
   const router = useRouter()
 
@@ -123,6 +159,32 @@ export default function InstructorManagementPage() {
   const handleFormSubmit = (values: any) => {
     console.log('Form values:', values)
     handleBackToList()
+  }
+
+  // 지역(시/군) 변경 시 배정권역 자동 설정
+  const handleRegionChange = (region: string) => {
+    const assignmentZone = cityToRegionMap[region] || ''
+    if (assignmentZone) {
+      form.setFieldsValue({ assignmentZone })
+    }
+  }
+
+  // ID 찾기
+  const handleFindId = (values: any) => {
+    console.log('Find ID:', values)
+    // TODO: 실제 ID 찾기 로직 구현
+    message.success('ID 찾기 요청이 처리되었습니다. 이메일을 확인해주세요.')
+    setFindIdModalOpen(false)
+    findIdForm.resetFields()
+  }
+
+  // 비밀번호 찾기
+  const handleFindPassword = (values: any) => {
+    console.log('Find Password:', values)
+    // TODO: 실제 비밀번호 찾기 로직 구현
+    message.success('비밀번호 재설정 링크가 이메일로 전송되었습니다.')
+    setFindPasswordModalOpen(false)
+    findPasswordForm.resetFields()
   }
 
   const handleDelete = () => {
@@ -173,6 +235,18 @@ export default function InstructorManagementPage() {
       return matchesStatus && matchesRegion && matchesType && matchesName
     })
   }, [statusFilter, regionFilter, typeFilter, nameSearch])
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [statusFilter, regionFilter, typeFilter, nameSearch])
+
+  // Paginated data
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize
+    const endIndex = startIndex + pageSize
+    return filteredData.slice(startIndex, endIndex)
+  }, [filteredData, currentPage, pageSize])
 
   const columns: ColumnsType<InstructorItem> = useMemo(() => [
     {
@@ -315,6 +389,20 @@ export default function InstructorManagementPage() {
             >
               강사 등록
             </Button>
+            <Button
+              icon={<UserSearch className="w-4 h-4" />}
+              onClick={() => setFindIdModalOpen(true)}
+              className="h-11 px-4 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+            >
+              ID 찾기
+            </Button>
+            <Button
+              icon={<Key className="w-4 h-4" />}
+              onClick={() => setFindPasswordModalOpen(true)}
+              className="h-11 px-4 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+            >
+              비밀번호 찾기
+            </Button>
           </Space>
         ) : viewMode === 'register' ? (
           <Space>
@@ -421,7 +509,7 @@ export default function InstructorManagementPage() {
           <Card className="rounded-xl shadow-sm border border-gray-200">
             <Table
               columns={columns}
-              dataSource={filteredData}
+              dataSource={paginatedData}
               pagination={{
                 current: currentPage,
                 pageSize: pageSize,
@@ -430,6 +518,10 @@ export default function InstructorManagementPage() {
                 showTotal: (total) => `총 ${total}건`,
                 onChange: (page, size) => {
                   setCurrentPage(page)
+                  setPageSize(size)
+                },
+                onShowSizeChange: (current, size) => {
+                  setCurrentPage(1)
                   setPageSize(size)
                 },
               }}
@@ -731,18 +823,34 @@ export default function InstructorManagementPage() {
                   >
                     <Select
                       placeholder="지역을 선택하세요"
+                      onChange={handleRegionChange}
                       options={[
-                        { value: '서울시', label: '서울시' },
-                        { value: '인천시', label: '인천시' },
-                        { value: '경기도', label: '경기도' },
-                        { value: '강원도', label: '강원도' },
-                        { value: '충청북도', label: '충청북도' },
-                        { value: '충청남도', label: '충청남도' },
-                        { value: '전라북도', label: '전라북도' },
-                        { value: '전라남도', label: '전라남도' },
-                        { value: '경상북도', label: '경상북도' },
-                        { value: '경상남도', label: '경상남도' },
-                        { value: '제주도', label: '제주도' },
+                        { value: '수원시', label: '수원시' },
+                        { value: '성남시', label: '성남시' },
+                        { value: '고양시', label: '고양시' },
+                        { value: '용인시', label: '용인시' },
+                        { value: '부천시', label: '부천시' },
+                        { value: '안산시', label: '안산시' },
+                        { value: '안양시', label: '안양시' },
+                        { value: '평택시', label: '평택시' },
+                        { value: '시흥시', label: '시흥시' },
+                        { value: '김포시', label: '김포시' },
+                        { value: '의정부시', label: '의정부시' },
+                        { value: '광명시', label: '광명시' },
+                        { value: '하남시', label: '하남시' },
+                        { value: '오산시', label: '오산시' },
+                        { value: '이천시', label: '이천시' },
+                        { value: '구리시', label: '구리시' },
+                        { value: '안성시', label: '안성시' },
+                        { value: '포천시', label: '포천시' },
+                        { value: '의왕시', label: '의왕시' },
+                        { value: '양주시', label: '양주시' },
+                        { value: '여주시', label: '여주시' },
+                        { value: '양평군', label: '양평군' },
+                        { value: '동두천시', label: '동두천시' },
+                        { value: '과천시', label: '과천시' },
+                        { value: '가평군', label: '가평군' },
+                        { value: '연천군', label: '연천군' },
                       ]}
                       className="h-11 rounded-xl"
                     />
@@ -757,10 +865,11 @@ export default function InstructorManagementPage() {
                     name="assignmentZone"
                     rules={[{ required: true, message: '배정 권역을 선택해주세요' }]}
                     className="mb-0"
-                    help="부분 규칙 배정에 사용됩니다 (1권역~6권역)"
+                    help="지역(시/군) 선택 시 자동으로 설정됩니다"
                   >
                     <Select
-                      placeholder="배정 권역을 선택하세요"
+                      placeholder="배정 권역 (자동 설정)"
+                      disabled
                       options={[
                         { value: '1권역', label: '1권역' },
                         { value: '2권역', label: '2권역' },
@@ -851,6 +960,112 @@ export default function InstructorManagementPage() {
           </div>
         </div>
       )}
+
+      {/* ID 찾기 모달 */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <UserSearch className="w-5 h-5" />
+            <span>ID 찾기</span>
+          </div>
+        }
+        open={findIdModalOpen}
+        onCancel={() => {
+          setFindIdModalOpen(false)
+          findIdForm.resetFields()
+        }}
+        footer={null}
+        width={500}
+      >
+        <Form
+          form={findIdForm}
+          layout="vertical"
+          onFinish={handleFindId}
+          className="mt-4"
+        >
+          <Form.Item
+            label="이메일"
+            name="email"
+            rules={[
+              { required: true, message: '이메일을 입력해주세요' },
+              { type: 'email', message: '올바른 이메일 형식이 아닙니다' },
+            ]}
+          >
+            <Input placeholder="등록된 이메일을 입력하세요" className="h-11 rounded-xl" />
+          </Form.Item>
+          <Form.Item
+            label="강사명"
+            name="name"
+            rules={[{ required: true, message: '강사명을 입력해주세요' }]}
+          >
+            <Input placeholder="등록된 강사명을 입력하세요" className="h-11 rounded-xl" />
+          </Form.Item>
+          <div className="flex justify-end gap-2 mt-6">
+            <Button onClick={() => {
+              setFindIdModalOpen(false)
+              findIdForm.resetFields()
+            }}>
+              취소
+            </Button>
+            <Button type="primary" htmlType="submit" className="bg-slate-900 hover:bg-slate-800">
+              찾기
+            </Button>
+          </div>
+        </Form>
+      </Modal>
+
+      {/* 비밀번호 찾기 모달 */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <Key className="w-5 h-5" />
+            <span>비밀번호 찾기</span>
+          </div>
+        }
+        open={findPasswordModalOpen}
+        onCancel={() => {
+          setFindPasswordModalOpen(false)
+          findPasswordForm.resetFields()
+        }}
+        footer={null}
+        width={500}
+      >
+        <Form
+          form={findPasswordForm}
+          layout="vertical"
+          onFinish={handleFindPassword}
+          className="mt-4"
+        >
+          <Form.Item
+            label="ID (사용자명)"
+            name="username"
+            rules={[{ required: true, message: 'ID를 입력해주세요' }]}
+          >
+            <Input placeholder="등록된 ID를 입력하세요" className="h-11 rounded-xl" />
+          </Form.Item>
+          <Form.Item
+            label="이메일"
+            name="email"
+            rules={[
+              { required: true, message: '이메일을 입력해주세요' },
+              { type: 'email', message: '올바른 이메일 형식이 아닙니다' },
+            ]}
+          >
+            <Input placeholder="등록된 이메일을 입력하세요" className="h-11 rounded-xl" />
+          </Form.Item>
+          <div className="flex justify-end gap-2 mt-6">
+            <Button onClick={() => {
+              setFindPasswordModalOpen(false)
+              findPasswordForm.resetFields()
+            }}>
+              취소
+            </Button>
+            <Button type="primary" htmlType="submit" className="bg-slate-900 hover:bg-slate-800">
+              비밀번호 재설정 링크 전송
+            </Button>
+          </div>
+        </Form>
+      </Modal>
     </div>
   )
 }

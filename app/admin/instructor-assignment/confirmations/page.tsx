@@ -228,6 +228,18 @@ export default function InstructorConfirmationPage() {
     })
   }, [searchText, statusFilter, assignedLessonsFilter, dateRange])
 
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchText, statusFilter, assignedLessonsFilter, dateRange])
+
+  // Paginated data
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize
+    const endIndex = startIndex + pageSize
+    return filteredData.slice(startIndex, endIndex)
+  }, [filteredData, currentPage, pageSize])
+
   const columns: ColumnsType<InstructorConfirmationItem> = useMemo(
     () => [
       {
@@ -439,7 +451,7 @@ export default function InstructorConfirmationPage() {
             </div>
             <Table
               columns={columns}
-              dataSource={filteredData}
+              dataSource={paginatedData}
               pagination={{
                 current: currentPage,
                 pageSize: pageSize,
@@ -448,6 +460,10 @@ export default function InstructorConfirmationPage() {
                 showTotal: (total) => `총 ${total}건`,
                 onChange: (page, size) => {
                   setCurrentPage(page)
+                  setPageSize(size)
+                },
+                onShowSizeChange: (current, size) => {
+                  setCurrentPage(1)
                   setPageSize(size)
                 },
               }}

@@ -12,7 +12,7 @@ export interface BulkUploadRow {
   subCategory1Name: string
   subCategory2: string
   subCategory2Name: string
-  educationLevelMix?: '초중' | '중고' | '초중고' | null
+  schoolLevelType?: string | null
 }
 
 export interface BulkUploadError {

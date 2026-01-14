@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { Table, Button, Card, Input, Select, Space, Form, Descriptions, Tag, Checkbox } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { 
@@ -155,6 +155,18 @@ export default function ProgramManagementPage() {
       return matchesStatus && matchesName
     })
   }, [statusFilter, nameSearch])
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [statusFilter, nameSearch])
+
+  // Paginated data
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize
+    const endIndex = startIndex + pageSize
+    return filteredData.slice(startIndex, endIndex)
+  }, [filteredData, currentPage, pageSize])
 
   const columns: ColumnsType<ProgramItem> = useMemo(() => [
     {
@@ -381,7 +393,7 @@ export default function ProgramManagementPage() {
           <Card className="rounded-xl shadow-sm border border-gray-200">
             <Table
               columns={columns}
-              dataSource={filteredData}
+              dataSource={paginatedData}
               pagination={{
                 current: currentPage,
                 pageSize: pageSize,
@@ -390,6 +402,10 @@ export default function ProgramManagementPage() {
                 showTotal: (total) => `총 ${total}건`,
                 onChange: (page, size) => {
                   setCurrentPage(page)
+                  setPageSize(size)
+                },
+                onShowSizeChange: (current, size) => {
+                  setCurrentPage(1)
                   setPageSize(size)
                 },
               }}

@@ -79,6 +79,8 @@
     "instructor": "강사 관리",
     "systemManagement": "시스템 관리",
     "settings": "설정",
-    "systemSettings": "시스템 설정"
+    "systemSettings": "시스템 설정",
+    "userManagement": "사용자 관리",
+    "commonCode": "공통 코드"
   }
 }

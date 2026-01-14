@@ -79,6 +79,8 @@
     "instructor": "Instructor Management",
     "systemManagement": "System Management",
     "settings": "Settings",
-    "systemSettings": "System Settings"
+    "systemSettings": "System Settings",
+    "userManagement": "User Management",
+    "commonCode": "Common Code"
   }
 }

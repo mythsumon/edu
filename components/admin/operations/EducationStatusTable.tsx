@@ -22,6 +22,8 @@ export interface EducationStatusItem {
   mainInstructorsRequired?: number // 필요 수
   assistantInstructorsCount: number
   assistantInstructorsRequired?: number // 필요 수
+  mainInstructorNames?: string[] // 주강사 이름 목록
+  assistantInstructorNames?: string[] // 보조강사 이름 목록
   periodStart?: string
   periodEnd?: string
   period?: string
@@ -217,45 +219,49 @@ export function EducationStatusTable({
       render: (text: string) => <span className="text-base font-medium text-gray-900">{text}</span>,
     },
     {
-      title: '주강사수',
-      dataIndex: 'mainInstructorsCount',
-      key: 'mainInstructorsCount',
-      width: 140,
-      render: (count: number, record: EducationStatusItem) => {
-        const required = record.mainInstructorsRequired || count
-        const isComplete = count >= required && required > 0
-        return (
-          <div className="flex items-center gap-2">
-            {isComplete ? (
-              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded text-sm font-medium bg-green-100 text-green-600 min-w-[48px]">
-                {count}/{required}
-              </span>
-            ) : (
-              <span className="text-base font-medium text-gray-600">{count}/{required}</span>
-            )}
-          </div>
-        )
+      title: '주강사',
+      dataIndex: 'mainInstructorNames',
+      key: 'mainInstructorNames',
+      width: 200,
+      render: (names: string[] | undefined, record: EducationStatusItem) => {
+        if (names && names.length > 0) {
+          return (
+            <div className="flex flex-wrap gap-1">
+              {names.map((name, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-blue-50 text-blue-700"
+                >
+                  {name}
+                </span>
+              ))}
+            </div>
+          )
+        }
+        return <span className="text-base font-medium text-gray-400">-</span>
       },
     },
     {
-      title: '보조강사수',
-      dataIndex: 'assistantInstructorsCount',
-      key: 'assistantInstructorsCount',
-      width: 140,
-      render: (count: number, record: EducationStatusItem) => {
-        const required = record.assistantInstructorsRequired || count
-        const isComplete = count >= required && required > 0
-        return (
-          <div className="flex items-center gap-2">
-            {isComplete ? (
-              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded text-sm font-medium bg-green-100 text-green-600 min-w-[48px]">
-                {count}/{required}
-              </span>
-            ) : (
-              <span className="text-base font-medium text-gray-600">{count}/{required}</span>
-            )}
-          </div>
-        )
+      title: '보조강사',
+      dataIndex: 'assistantInstructorNames',
+      key: 'assistantInstructorNames',
+      width: 200,
+      render: (names: string[] | undefined, record: EducationStatusItem) => {
+        if (names && names.length > 0) {
+          return (
+            <div className="flex flex-wrap gap-1">
+              {names.map((name, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-purple-50 text-purple-700"
+                >
+                  {name}
+                </span>
+              ))}
+            </div>
+          )
+        }
+        return <span className="text-base font-medium text-gray-400">-</span>
       },
     },
     {

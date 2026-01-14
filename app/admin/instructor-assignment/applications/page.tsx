@@ -714,6 +714,18 @@ export default function InstructorApplicationPage() {
     })
   }, [data, searchText, statusFilter, roleFilter])
 
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchText, statusFilter, roleFilter])
+
+  // Paginated data
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize
+    const endIndex = startIndex + pageSize
+    return filteredData.slice(startIndex, endIndex)
+  }, [filteredData, currentPage, pageSize])
+
   // Clear selection when filtered data changes significantly (e.g., new search)
   useEffect(() => {
     // Only clear if selection contains keys that no longer exist in filtered data
@@ -1092,7 +1104,7 @@ export default function InstructorApplicationPage() {
             </div>
             <Table
               columns={columns}
-              dataSource={filteredData}
+              dataSource={paginatedData}
               pagination={{
                 current: currentPage,
                 pageSize: pageSize,
@@ -1101,6 +1113,10 @@ export default function InstructorApplicationPage() {
                 showTotal: (total) => `총 ${total}건`,
                 onChange: (page, size) => {
                   setCurrentPage(page)
+                  setPageSize(size)
+                },
+                onShowSizeChange: (current, size) => {
+                  setCurrentPage(1)
                   setPageSize(size)
                 },
               }}

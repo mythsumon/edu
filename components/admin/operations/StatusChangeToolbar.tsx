@@ -27,24 +27,14 @@ export function StatusChangeToolbar({
   assignmentMode,
   onAssignmentModeChange,
 }: StatusChangeToolbarProps) {
-  // Calculate valid statuses for bulk change
+  // Calculate valid statuses for bulk change - allow any status regardless of current status
   const getValidBulkStatuses = (): EducationStatus[] => {
-    if (selectedRows.length === 0) return []
-    
-    // Get unique current statuses
-    const uniqueStatuses = new Set(selectedRows.map(r => r.status))
-    
-    // If mixed statuses, return empty (can't bulk change)
-    if (uniqueStatuses.size > 1) return []
-    
-    // Get allowed next statuses for the common status
-    const commonStatus = Array.from(uniqueStatuses)[0] as EducationStatus
-    return getAllowedNextStatuses(commonStatus)
+    // Return all possible statuses for bulk change (no restriction)
+    return ['대기', '오픈예정', '강사공개', '신청마감', '확정', '진행중', '완료', '종료', '중지', '취소'] as EducationStatus[]
   }
 
   const validBulkStatuses = getValidBulkStatuses()
-  const hasMixedStatuses = selectedRows.length > 0 && new Set(selectedRows.map(r => r.status)).size > 1
-  const canApplyStatusChange = selectedCount > 0 && statusValue && !hasMixedStatuses && validBulkStatuses.includes(statusValue as EducationStatus)
+  const canApplyStatusChange = selectedCount > 0 && statusValue
 
   const handlePartialClick = () => {
     if (onAssignmentModeChange) {
@@ -96,10 +86,6 @@ export function StatusChangeToolbar({
             title={
               selectedCount === 0 
                 ? "교육을 선택하면 일괄 변경이 가능합니다"
-                : hasMixedStatuses
-                ? "선택한 교육의 상태가 서로 달라 일괄 변경할 수 없습니다"
-                : validBulkStatuses.length === 0
-                ? "선택한 교육은 더 이상 상태를 변경할 수 없습니다"
                 : undefined
             }
           >
@@ -108,7 +94,7 @@ export function StatusChangeToolbar({
                 value={statusValue}
                 onChange={onStatusChange}
                 placeholder="상태 선택"
-                disabled={selectedCount === 0 || hasMixedStatuses || validBulkStatuses.length === 0}
+                disabled={selectedCount === 0}
                 allowedStatuses={validBulkStatuses}
               />
             </div>

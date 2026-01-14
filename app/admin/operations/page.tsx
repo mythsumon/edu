@@ -169,11 +169,41 @@ const statusStyle: Record<string, { bg: string; text: string }> = {
   완료: { bg: 'bg-emerald-100', text: 'text-emerald-700' },
 }
 
-const programOptions = [
-  { value: 'program1', label: '도서벽지 프로그램' },
-  { value: 'program2', label: '50차시 프로그램' },
-  { value: 'program3', label: '특수학급 프로그램' },
-]
+// Get programs from program management page (localStorage or dummyData)
+function getProgramOptions() {
+  if (typeof window === 'undefined') return []
+  
+  try {
+    // Try to get from localStorage (if programs are stored there)
+    const stored = localStorage.getItem('programs')
+    if (stored) {
+      const programs = JSON.parse(stored)
+      return programs
+        .filter((p: any) => p.status === '활성' || p.status === '대기')
+        .map((p: any) => ({
+          value: p.programId || p.key,
+          label: p.programDisplayName || p.name,
+        }))
+    }
+  } catch (e) {
+    console.warn('Failed to load programs from localStorage', e)
+  }
+  
+  // Fallback to dummy data from program management page
+  const dummyPrograms = [
+    { key: '1', programId: 'PROG-2025-001', name: '도서벽지 프로그램', status: '활성' },
+    { key: '2', programId: 'PROG-2025-002', name: '50차시 프로그램', status: '활성' },
+    { key: '3', programId: 'PROG-2025-003', name: '특수학급 프로그램', status: '대기' },
+    { key: '4', programId: 'PROG-2025-004', name: '온라인 교육 프로그램', status: '활성' },
+  ]
+  
+  return dummyPrograms
+    .filter(p => p.status === '활성' || p.status === '대기')
+    .map(p => ({
+      value: p.programId,
+      label: p.name,
+    }))
+}
 
 const institutionOptions = [
   { value: '경기교육청', label: '경기교육청' },
@@ -208,6 +238,16 @@ export default function EducationManagementPage() {
   const [form] = Form.useForm()
   const [lessonCount, setLessonCount] = useState<number>(1)
   const [searchText, setSearchText] = useState<string>('')
+  
+  // Get program options from program management
+  const programOptions = useMemo(() => {
+    try {
+      return getProgramOptions() || []
+    } catch (error) {
+      console.error('Error loading program options:', error)
+      return []
+    }
+  }, [])
   const [programFilter, setProgramFilter] = useState<string>('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null)
@@ -252,6 +292,10 @@ export default function EducationManagementPage() {
   const handleFormSubmit = (values: any) => {
     console.log('Form values:', values)
     
+    // Get program name from selected program
+    const selectedProgram = programOptions?.find(p => p.value === values.program)
+    const programName = selectedProgram?.label || values.program || ''
+    
     // Validate that all session dates are within the education period
     const startDate = values.startDate ? dayjs(values.startDate) : null
     const endDate = values.endDate ? dayjs(values.endDate) : null
@@ -279,6 +323,16 @@ export default function EducationManagementPage() {
       }
     }
     
+    // Build education data with program name as education name and status as '대기'
+    const educationData = {
+      ...values,
+      name: programName, // Use program name as education name
+      gradeClass: values.grade && values.class ? `${values.grade} ${values.class}` : (values.grade || values.class || ''),
+      status: '대기', // Always set to '대기' (대기) status on save
+    }
+    
+    console.log('Education data:', educationData)
+    
     // Handle form submission
     message.success('교육이 저장되었습니다.')
   }
@@ -295,13 +349,17 @@ export default function EducationManagementPage() {
     setFormMode('edit')
     const lessonLen = selectedEducation.lessons?.length || 1
     setLessonCount(lessonLen)
+    // Parse grade and class from gradeClass (format: "1학년 3반" or "1 3")
+    const gradeClassMatch = selectedEducation.gradeClass?.match(/(\S+)\s+(\S+)/)
+    const grade = gradeClassMatch ? gradeClassMatch[1] : selectedEducation.gradeClass?.split('학년')[0] || ''
+    const classValue = gradeClassMatch ? gradeClassMatch[2] : selectedEducation.gradeClass?.split('학년')[1]?.trim() || ''
+    
     form.setFieldsValue({
-      name: selectedEducation.name,
-      program: programOptions[0]?.value,
+      program: selectedEducation.programTitle || (programOptions.length > 0 ? programOptions[0].value : ''),
       institution: selectedEducation.institution,
       region: selectedEducation.region,
-      gradeClass: selectedEducation.gradeClass,
-      status: selectedEducation.status,
+      grade: grade,
+      class: classValue,
       lessonCount: lessonLen,
       lessons: selectedEducation.lessons?.map((lesson) => ({
         date: lesson.date ? dayjs(lesson.date) : null,
@@ -352,6 +410,18 @@ export default function EducationManagementPage() {
       return matchesSearch && matchesProgram && matchesStatus && matchesDateRange
     })
   }, [searchText, programFilter, statusFilter, dateRange])
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchText, programFilter, statusFilter, dateRange])
+
+  // Paginated data
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize
+    const endIndex = startIndex + pageSize
+    return filteredData.slice(startIndex, endIndex)
+  }, [filteredData, currentPage, pageSize])
 
   const columns: ColumnsType<EducationItem> = [
     {
@@ -601,20 +671,6 @@ export default function EducationManagementPage() {
                         </Form.Item>
 
                         <Form.Item
-                          label={
-                            <span>
-                              교육명 <span className="text-red-500">*</span>
-                            </span>
-                          }
-                          name="name"
-                          rules={[{ required: true, message: '교육명을 입력해주세요' }]}
-                          className="mb-0 md:col-span-2"
-                          help="교육 프로그램의 이름을 입력하세요"
-                        >
-                          <Input placeholder="교육명을 입력하세요" className="h-11 rounded-xl" />
-                        </Form.Item>
-
-                        <Form.Item
                           label="설명"
                           name="description"
                           className="mb-0 md:col-span-2"
@@ -664,24 +720,6 @@ export default function EducationManagementPage() {
                         </Form.Item>
 
                         <Form.Item
-                          label={
-                            <span>
-                              상태 <span className="text-red-500">*</span>
-                            </span>
-                          }
-                          name="status"
-                          rules={[{ required: true, message: '상태를 선택해주세요' }]}
-                          className="mb-0"
-                          help="교육의 현재 상태를 선택하세요"
-                        >
-                          <Select
-                            placeholder="상태를 선택하세요"
-                            options={educationStatusOptions}
-                            className="h-11 rounded-xl"
-                          />
-                        </Form.Item>
-
-                        <Form.Item
                           label="비고"
                           name="note"
                           className="mb-0 md:col-span-2"
@@ -712,13 +750,11 @@ export default function EducationManagementPage() {
                           name="grade"
                           rules={[{ required: true, message: '학년을 입력해주세요' }]}
                           className="mb-0"
-                          help="교육 대상 학년을 입력하세요"
+                          help="교육 대상 학년을 입력하세요 (예: 1학년, 특수학급 등)"
                         >
-                          <InputNumber
+                          <Input
                             className="w-full h-11 rounded-xl"
-                            placeholder="학년"
-                            min={1}
-                            max={6}
+                            placeholder="학년 (예: 1학년, 특수학급 등)"
                           />
                         </Form.Item>
 
@@ -731,12 +767,11 @@ export default function EducationManagementPage() {
                           name="class"
                           rules={[{ required: true, message: '반을 입력해주세요' }]}
                           className="mb-0"
-                          help="교육 대상 반을 입력하세요"
+                          help="교육 대상 반을 입력하세요 (예: 1반, A반 등)"
                         >
-                          <InputNumber
+                          <Input
                             className="w-full h-11 rounded-xl"
-                            placeholder="반"
-                            min={1}
+                            placeholder="반 (예: 1반, A반 등)"
                           />
                         </Form.Item>
 
@@ -998,7 +1033,7 @@ export default function EducationManagementPage() {
             </div>
             <Table
               columns={columns}
-              dataSource={filteredData}
+              dataSource={paginatedData}
               onRow={(record) => ({
                 onClick: () => handleViewDetail(record),
                 className: 'cursor-pointer',
@@ -1011,6 +1046,10 @@ export default function EducationManagementPage() {
                 showTotal: (total) => `총 ${total}건`,
                 onChange: (page, size) => {
                   setCurrentPage(page)
+                  setPageSize(size)
+                },
+                onShowSizeChange: (current, size) => {
+                  setCurrentPage(1)
                   setPageSize(size)
                 },
               }}

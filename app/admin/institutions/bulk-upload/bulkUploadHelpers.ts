@@ -1,5 +1,5 @@
 import type { Group, GroupKey } from '@/components/admin/common-code/types'
-import { getKeysByGroupId } from '@/lib/commonCodeStore'
+import { getKeysByGroupId, getSchoolLevelTypeCodes } from '@/lib/commonCodeStore'
 import type { BulkUploadRow, BulkUploadError } from './types'
 
 /**
@@ -50,7 +50,9 @@ export function parseCSV(text: string): Record<string, string>[] {
     '대분류': 'mainCategory',
     '1분류': 'subCategory1',
     '2분류': 'subCategory2',
-    '학교급혼합': 'educationLevelMix',
+    '학교급혼합': 'schoolLevelType',
+    '학교급 구분': 'schoolLevelType',
+    '학교급_구분': 'schoolLevelType',
   }
 
   // Normalize headers
@@ -206,7 +208,12 @@ export function validateBulkUploadRow(
   const mainCategoryText = normalizeText(row.mainCategory || row['대분류'])
   const subCategory1Text = normalizeText(row.subCategory1 || row['1분류'])
   const subCategory2Text = normalizeText(row.subCategory2 || row['2분류'])
-  const educationLevelMix = normalizeText(row.educationLevelMix || row['학교급혼합'])
+  const schoolLevelTypeText = normalizeText(
+    row.schoolLevelType || 
+    row['학교급 구분'] || 
+    row['학교급_구분'] || 
+    row['학교급혼합']
+  )
 
   // Validate zone
   if (!zoneText) {
@@ -287,23 +294,24 @@ export function validateBulkUploadRow(
     }
   }
 
-  // Validate education level mix (if required)
-  const requiresEducationLevelMix = subCategory2Match && [
-    'SPECIAL_SCHOOL',
-    'CHILDREN_CENTER',
-    'OTHER',
-    'OTHER_RURAL',
-    'OTHER_HUB',
-    'OTHER_CARE',
-    'OTHER_LIBRARY',
-  ].includes(subCategory2Match.key.value)
-
-  if (requiresEducationLevelMix && !educationLevelMix) {
-    errors.push({ rowIndex, message: '학교급 혼합이 필요합니다' })
-  }
-
-  if (educationLevelMix && !['초중', '중고', '초중고'].includes(educationLevelMix)) {
-    errors.push({ rowIndex, message: '학교급 혼합은 초중, 중고, 초중고 중 하나여야 합니다' })
+  // Validate school level type (required when subCategory2 is selected)
+  let schoolLevelTypeMatch: GroupKey | null = null
+  if (subCategory2Match) {
+    if (!schoolLevelTypeText) {
+      errors.push({ rowIndex, message: '2분류 선택 시 학교급 구분이 필요합니다' })
+    } else {
+      const schoolLevelTypeCodes = getSchoolLevelTypeCodes()
+      schoolLevelTypeMatch = schoolLevelTypeCodes.find(
+        (key: GroupKey) => 
+          key.label.toLowerCase() === schoolLevelTypeText.toLowerCase() ||
+          key.value.toLowerCase() === schoolLevelTypeText.toLowerCase() ||
+          schoolLevelTypeText.toLowerCase().includes(key.label.toLowerCase())
+      ) || null
+      
+      if (!schoolLevelTypeMatch) {
+        errors.push({ rowIndex, message: '학교급 구분을 찾을 수 없습니다' })
+      }
+    }
   }
 
   // If there are errors, return early
@@ -326,9 +334,7 @@ export function validateBulkUploadRow(
     subCategory1Name: subCategory1Match.key.label,
     subCategory2: subCategory2Match.key.value,
     subCategory2Name: subCategory2Match.key.label,
-    educationLevelMix: educationLevelMix 
-      ? (educationLevelMix as '초중' | '중고' | '초중고')
-      : null,
+    schoolLevelType: schoolLevelTypeMatch ? schoolLevelTypeMatch.value : null,
   }
 
   return { valid: true, row: validatedRow, errors: [] }

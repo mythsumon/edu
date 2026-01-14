@@ -31,7 +31,9 @@
     "educationApplication": "교육 신청",
     "educationAssignment": "교육 배정",
     "documentManagement": "문서 제출 관리",
-    "submissions": "제출 대기 목록"
+    "submissions": "제출 대기 목록",
+    "userManagement": "사용자 관리",
+    "commonCode": "공통 코드"
   },
   "pageHeader": {
     "breadcrumbHome": "홈",

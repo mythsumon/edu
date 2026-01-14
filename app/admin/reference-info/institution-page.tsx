@@ -15,6 +15,12 @@ import {
   DefinitionListGrid,
   SectionAccordion
 } from '@/components/admin/operations'
+import {
+  getInstitutionMainCategoryCodes,
+  getInstitutionSubCategory1Codes,
+  getInstitutionSubCategory2Codes,
+  getSchoolLevelTypeCodes,
+} from '@/lib/commonCodeStore'
 
 const { TextArea } = Input
 
@@ -28,6 +34,10 @@ interface InstitutionItem {
   phone: string
   manager: string
   email?: string
+  classMain?: string // 대분류 code
+  classLv1?: string // 1분류 code
+  classLv2?: string // 2분류 code
+  schoolLevelType?: string | null // 학교급 구분 code
 }
 
 const dummyData: InstitutionItem[] = [
@@ -206,6 +216,38 @@ export default function InstitutionManagementPage() {
   const [selectedInstitution, setSelectedInstitution] = useState<InstitutionItem | null>(null)
   const [detailTab, setDetailTab] = useState<'basic' | 'manager'>('basic')
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
+  
+  // Classification options from Common Code
+  const mainCategoryOptions = useMemo(() => {
+    return getInstitutionMainCategoryCodes().map(key => ({
+      label: key.label,
+      value: key.value,
+    }))
+  }, [])
+  
+  const subCategory1Options = useMemo(() => {
+    return getInstitutionSubCategory1Codes().map(key => ({
+      label: key.label,
+      value: key.value,
+    }))
+  }, [])
+  
+  const subCategory2Options = useMemo(() => {
+    return getInstitutionSubCategory2Codes().map(key => ({
+      label: key.label,
+      value: key.value,
+    }))
+  }, [])
+  
+  const schoolLevelTypeOptions = useMemo(() => {
+    return getSchoolLevelTypeCodes().map(key => ({
+      label: key.label,
+      value: key.value,
+    }))
+  }, [])
+  
+  // Watch classLv2 to show/hide schoolLevelType
+  const classLv2Value = Form.useWatch('classLv2', form)
 
   // 시/군 선택 시 권역 자동 설정
   const handleCityChange = (city: string) => {
@@ -279,6 +321,10 @@ export default function InstitutionManagementPage() {
       address: selectedInstitution.address,
       detailAddress: selectedInstitution.detailAddress,
       manager: selectedInstitution.manager,
+      classMain: selectedInstitution.classMain,
+      classLv1: selectedInstitution.classLv1,
+      classLv2: selectedInstitution.classLv2,
+      schoolLevelType: selectedInstitution.schoolLevelType,
     })
   }
 
@@ -410,6 +456,18 @@ export default function InstitutionManagementPage() {
     })
   }, [regionFilter, nameSearch, managerSearch])
 
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [regionFilter, nameSearch, managerSearch])
+
+  // Paginated data
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize
+    const endIndex = startIndex + pageSize
+    return filteredData.slice(startIndex, endIndex)
+  }, [filteredData, currentPage, pageSize])
+
   return (
     <ProtectedRoute requiredRole="admin">
       <div className="admin-page">
@@ -451,6 +509,30 @@ export default function InstitutionManagementPage() {
                   { label: '주소', value: selectedInstitution.address },
                   { label: '상세 주소', value: selectedInstitution.detailAddress },
                   { label: '전화번호', value: selectedInstitution.phone },
+                  { 
+                    label: '대분류', 
+                    value: selectedInstitution.classMain 
+                      ? mainCategoryOptions.find(opt => opt.value === selectedInstitution.classMain)?.label || selectedInstitution.classMain
+                      : '-' 
+                  },
+                  { 
+                    label: '1분류', 
+                    value: selectedInstitution.classLv1 
+                      ? subCategory1Options.find(opt => opt.value === selectedInstitution.classLv1)?.label || selectedInstitution.classLv1
+                      : '-' 
+                  },
+                  { 
+                    label: '2분류', 
+                    value: selectedInstitution.classLv2 
+                      ? subCategory2Options.find(opt => opt.value === selectedInstitution.classLv2)?.label || selectedInstitution.classLv2
+                      : '-' 
+                  },
+                  { 
+                    label: '학교급 구분', 
+                    value: selectedInstitution.schoolLevelType 
+                      ? schoolLevelTypeOptions.find(opt => opt.value === selectedInstitution.schoolLevelType)?.label || selectedInstitution.schoolLevelType
+                      : '-' 
+                  },
                 ]}
               />
             </DetailSectionCard>
@@ -613,6 +695,80 @@ export default function InstitutionManagementPage() {
                 >
                   <Input placeholder="상세주소를 입력하세요" className="h-11 rounded-xl" />
                 </Form.Item>
+
+                <Form.Item
+                  label={
+                    <span>
+                      대분류 <span className="text-red-500">*</span>
+                    </span>
+                  }
+                  name="classMain"
+                  rules={[{ required: true, message: '대분류를 선택해주세요' }]}
+                  className="mb-0"
+                >
+                  <Select
+                    placeholder="대분류를 선택하세요"
+                    options={mainCategoryOptions}
+                    className="h-11 rounded-xl"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label={
+                    <span>
+                      1분류 <span className="text-red-500">*</span>
+                    </span>
+                  }
+                  name="classLv1"
+                  rules={[{ required: true, message: '1분류를 선택해주세요' }]}
+                  className="mb-0"
+                >
+                  <Select
+                    placeholder="1분류를 선택하세요"
+                    options={subCategory1Options}
+                    className="h-11 rounded-xl"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label={
+                    <span>
+                      2분류 <span className="text-red-500">*</span>
+                    </span>
+                  }
+                  name="classLv2"
+                  rules={[{ required: true, message: '2분류를 선택해주세요' }]}
+                  className="mb-0"
+                >
+                  <Select
+                    placeholder="2분류를 선택하세요"
+                    options={subCategory2Options}
+                    className="h-11 rounded-xl"
+                    onChange={() => {
+                      // Reset schoolLevelType when classLv2 changes
+                      form.setFieldsValue({ schoolLevelType: null })
+                    }}
+                  />
+                </Form.Item>
+
+                {classLv2Value && (
+                  <Form.Item
+                    label={
+                      <span>
+                        학교급 구분 <span className="text-red-500">*</span>
+                      </span>
+                    }
+                    name="schoolLevelType"
+                    rules={[{ required: true, message: '학교급 구분을 선택해주세요' }]}
+                    className="mb-0"
+                  >
+                    <Select
+                      placeholder="학교급 구분을 선택하세요"
+                      options={schoolLevelTypeOptions}
+                      className="h-11 rounded-xl"
+                    />
+                  </Form.Item>
+                )}
 
                 <Form.Item
                   label="비고"
@@ -821,7 +977,7 @@ export default function InstitutionManagementPage() {
 
               <Table
                 columns={columns}
-                dataSource={filteredData}
+                dataSource={paginatedData}
                 rowSelection={{
                   selectedRowKeys,
                   onChange: (selectedKeys) => {
@@ -840,6 +996,10 @@ export default function InstitutionManagementPage() {
                   showTotal: (total) => `총 ${total}건`,
                   onChange: (page, size) => {
                     setCurrentPage(page)
+                    setPageSize(size)
+                  },
+                  onShowSizeChange: (current, size) => {
+                    setCurrentPage(1)
                     setPageSize(size)
                   },
                 }}

@@ -29,7 +29,9 @@
     "institution": "Institution Management",
     "program": "Program Management",
     "instructor": "Instructor Management",
-    "systemSettings": "System Settings"
+    "systemSettings": "System Settings",
+    "userManagement": "User Management",
+    "commonCode": "Common Code"
   },
   "pageHeader": {
     "breadcrumbHome": "Home",

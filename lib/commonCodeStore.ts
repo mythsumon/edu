@@ -194,5 +194,117 @@ export function getProgramTypeByValue(value: string): GroupKey | undefined {
   return codes.find((key) => key.value === value)
 }
 
+/**
+ * Get institution main category codes (대분류)
+ * @returns Array of enabled main category keys sorted by sortOrder
+ */
+export function getInstitutionMainCategoryCodes(): GroupKey[] {
+  const title = store.titles.find((t) => t.name === '교육기관_대분류' && t.status === 'Active')
+  if (!title) return []
+
+  const group = store.groups.find(
+    (g) => g.titleId === title.id && g.status === 'Active'
+  )
+  if (!group) return []
+
+  return store.groupKeys
+    .filter((key) => key.groupId === group.id && key.enabled)
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+}
+
+/**
+ * Get institution sub category 1 codes (1분류)
+ * @returns Array of enabled sub category 1 keys sorted by sortOrder
+ */
+export function getInstitutionSubCategory1Codes(): GroupKey[] {
+  const title = store.titles.find((t) => t.name === '교육기관_1분류' && t.status === 'Active')
+  if (!title) return []
+
+  const group = store.groups.find(
+    (g) => g.titleId === title.id && g.status === 'Active'
+  )
+  if (!group) return []
+
+  return store.groupKeys
+    .filter((key) => key.groupId === group.id && key.enabled)
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+}
+
+/**
+ * Get institution sub category 2 codes (2분류)
+ * @returns Array of enabled sub category 2 keys sorted by sortOrder
+ */
+export function getInstitutionSubCategory2Codes(): GroupKey[] {
+  const title = store.titles.find((t) => t.name === '교육기관_2분류' && t.status === 'Active')
+  if (!title) return []
+
+  const group = store.groups.find(
+    (g) => g.titleId === title.id && g.status === 'Active'
+  )
+  if (!group) return []
+
+  return store.groupKeys
+    .filter((key) => key.groupId === group.id && key.enabled)
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+}
+
+/**
+ * Get school level type codes (학교급_구분)
+ * @returns Array of enabled school level type keys sorted by sortOrder
+ */
+export function getSchoolLevelTypeCodes(): GroupKey[] {
+  const title = store.titles.find((t) => t.name === '학교급_구분' && t.status === 'Active')
+  if (!title) return []
+
+  const group = store.groups.find(
+    (g) => g.titleId === title.id && g.status === 'Active'
+  )
+  if (!group) return []
+
+  return store.groupKeys
+    .filter((key) => key.groupId === group.id && key.enabled)
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+}
+
+/**
+ * Get institution main category key by value
+ * @param value - The value to search for
+ * @returns GroupKey or undefined
+ */
+export function getInstitutionMainCategoryByValue(value: string): GroupKey | undefined {
+  const codes = getInstitutionMainCategoryCodes()
+  return codes.find((key) => key.value === value || key.label === value)
+}
+
+/**
+ * Get institution sub category 1 key by value
+ * @param value - The value to search for
+ * @returns GroupKey or undefined
+ */
+export function getInstitutionSubCategory1ByValue(value: string): GroupKey | undefined {
+  const codes = getInstitutionSubCategory1Codes()
+  return codes.find((key) => key.value === value || key.label === value)
+}
+
+/**
+ * Get institution sub category 2 key by value
+ * @param value - The value to search for
+ * @returns GroupKey or undefined
+ */
+export function getInstitutionSubCategory2ByValue(value: string): GroupKey | undefined {
+  const codes = getInstitutionSubCategory2Codes()
+  return codes.find((key) => key.value === value || key.label === value)
+}
+
+/**
+ * Get school level type key by value
+ * @param value - The value to search for
+ * @returns GroupKey or undefined
+ */
+export function getSchoolLevelTypeByValue(value: string): GroupKey | undefined {
+  const codes = getSchoolLevelTypeCodes()
+  return codes.find((key) => key.value === value || key.label === value)
+}
+
 
 

@@ -37,6 +37,8 @@ const dummyData: EducationStatusItem[] = [
     mainInstructorsRequired: 2,
     assistantInstructorsCount: 1,
     assistantInstructorsRequired: 1,
+    mainInstructorNames: ['홍길동', '최주강'],
+    assistantInstructorNames: ['김보조'],
     periodStart: '2025.01.15',
     periodEnd: '2025.02.28',
     period: '2025.01.15 ~ 2025.02.28',
@@ -52,6 +54,8 @@ const dummyData: EducationStatusItem[] = [
     mainInstructorsRequired: 2,
     assistantInstructorsCount: 0,
     assistantInstructorsRequired: 1,
+    mainInstructorNames: ['우수정'],
+    assistantInstructorNames: [],
     periodStart: '2025.01.10',
     periodEnd: '2025.03.10',
     period: '2025.01.10 ~ 2025.03.10',
@@ -67,6 +71,8 @@ const dummyData: EducationStatusItem[] = [
     mainInstructorsRequired: 1,
     assistantInstructorsCount: 2,
     assistantInstructorsRequired: 2,
+    mainInstructorNames: ['강주강'],
+    assistantInstructorNames: ['이보조', '정보조'],
     periodStart: '2024.12.01',
     periodEnd: '2025.01.31',
     period: '2024.12.01 ~ 2025.01.31',
@@ -82,6 +88,8 @@ const dummyData: EducationStatusItem[] = [
     mainInstructorsRequired: 3,
     assistantInstructorsCount: 2,
     assistantInstructorsRequired: 2,
+    mainInstructorNames: ['홍길동', '최주강', '강주강'],
+    assistantInstructorNames: ['김보조', '박보조'],
     periodStart: '2025.02.01',
     periodEnd: '2025.04.30',
     period: '2025.02.01 ~ 2025.04.30',
@@ -97,6 +105,8 @@ const dummyData: EducationStatusItem[] = [
     mainInstructorsRequired: 2,
     assistantInstructorsCount: 1,
     assistantInstructorsRequired: 1,
+    mainInstructorNames: ['우수정', '최주강'],
+    assistantInstructorNames: ['윤보조'],
     periodStart: '2025.01.20',
     periodEnd: '2025.02.20',
     period: '2025.01.20 ~ 2025.02.20',
@@ -112,6 +122,8 @@ const dummyData: EducationStatusItem[] = [
     mainInstructorsRequired: 1,
     assistantInstructorsCount: 1,
     assistantInstructorsRequired: 1,
+    mainInstructorNames: ['홍길동'],
+    assistantInstructorNames: ['이보조'],
     periodStart: '2025.03.01',
     periodEnd: '2025.03.31',
     period: '2025.03.01 ~ 2025.03.31',
@@ -127,6 +139,8 @@ const dummyData: EducationStatusItem[] = [
     mainInstructorsRequired: 2,
     assistantInstructorsCount: 1,
     assistantInstructorsRequired: 1,
+    mainInstructorNames: ['박정아', '홍길동'],
+    assistantInstructorNames: ['김윤미'],
     periodStart: '2024.11.01',
     periodEnd: '2024.12.15',
     period: '2024.11.01 ~ 2024.12.15',
@@ -142,6 +156,8 @@ const dummyData: EducationStatusItem[] = [
     mainInstructorsRequired: 2,
     assistantInstructorsCount: 0,
     assistantInstructorsRequired: 1,
+    mainInstructorNames: ['우수정'],
+    assistantInstructorNames: [],
     periodStart: '2025.01.05',
     periodEnd: '2025.02.05',
     period: '2025.01.05 ~ 2025.02.05',
@@ -158,7 +174,7 @@ export default function EducationStatusPage() {
   const [searchText, setSearchText] = useState<string>('')
   const filterDropdownRef = useRef<HTMLDivElement>(null)
   const [assignmentModalOpen, setAssignmentModalOpen] = useState(false)
-  const [assignmentMode, setAssignmentMode] = useState<'partial' | 'full' | null>(null)
+  const [assignmentMode, setAssignmentMode] = useState<'partial' | 'full' | null>('partial')
   const [statusChangeModalVisible, setStatusChangeModalVisible] = useState(false)
   const [pendingStatusChange, setPendingStatusChange] = useState<{
     id: string
@@ -234,13 +250,10 @@ export default function EducationStatusPage() {
   // Filter data based on filters and search
   const filteredData = useMemo(() => {
     return data.filter((item) => {
-      // Search filter
+      // Search filter - 교육 기관명 검색만
       if (searchText) {
         const searchLower = searchText.toLowerCase()
-        const matchesSearch = 
-          item.name.toLowerCase().includes(searchLower) ||
-          item.educationId.toLowerCase().includes(searchLower) ||
-          item.institution.toLowerCase().includes(searchLower)
+        const matchesSearch = item.institution.toLowerCase().includes(searchLower)
         if (!matchesSearch) {
           return false
         }
@@ -377,24 +390,7 @@ export default function EducationStatusPage() {
       return
     }
 
-    // Check if all selected rows can transition to the new status
     const selectedRows = data.filter(item => selectedIds.includes(item.key))
-    const allCanTransition = selectedRows.every(row => {
-      const allowed = getAllowedNextStatuses(row.status as EducationStatus)
-      return allowed.includes(statusValue as EducationStatus)
-    })
-
-    if (!allCanTransition) {
-      message.warning('선택한 교육 중 일부는 해당 상태로 변경할 수 없습니다.')
-      return
-    }
-
-    // Check if statuses are mixed
-    const uniqueStatuses = new Set(selectedRows.map(r => r.status))
-    if (uniqueStatuses.size > 1) {
-      message.warning('선택한 교육의 상태가 서로 달라 일괄 변경할 수 없습니다.')
-      return
-    }
 
     // Show confirmation modal
     const isIrreversible = selectedRows.some(row => 
@@ -540,7 +536,7 @@ export default function EducationStatusPage() {
               {/* Search Input - Left Side */}
               <div className="w-full max-w-[420px]">
                 <Input
-                  placeholder="검색어를 입력하세요..."
+                  placeholder="교육 기관명 검색"
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   allowClear

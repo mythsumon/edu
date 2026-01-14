@@ -165,11 +165,41 @@ const statusStyle: Record<string, { bg: string; text: string }> = {
   완료: { bg: 'bg-emerald-100', text: 'text-emerald-700' },
 }
 
-const programOptions = [
-  { value: 'program1', label: '도서벽지 프로그램' },
-  { value: 'program2', label: '50차시 프로그램' },
-  { value: 'program3', label: '특수학급 프로그램' },
-]
+// Get programs from program management page (localStorage or dummyData)
+function getProgramOptions() {
+  if (typeof window === 'undefined') return []
+  
+  try {
+    // Try to get from localStorage (if programs are stored there)
+    const stored = localStorage.getItem('programs')
+    if (stored) {
+      const programs = JSON.parse(stored)
+      return programs
+        .filter((p: any) => p.status === '활성' || p.status === '대기')
+        .map((p: any) => ({
+          value: p.programId || p.key,
+          label: p.programDisplayName || p.name,
+        }))
+    }
+  } catch (e) {
+    console.warn('Failed to load programs from localStorage', e)
+  }
+  
+  // Fallback to dummy data from program management page
+  const dummyPrograms = [
+    { key: '1', programId: 'PROG-2025-001', name: '도서벽지 프로그램', status: '활성' },
+    { key: '2', programId: 'PROG-2025-002', name: '50차시 프로그램', status: '활성' },
+    { key: '3', programId: 'PROG-2025-003', name: '특수학급 프로그램', status: '대기' },
+    { key: '4', programId: 'PROG-2025-004', name: '온라인 교육 프로그램', status: '활성' },
+  ]
+  
+  return dummyPrograms
+    .filter(p => p.status === '활성' || p.status === '대기')
+    .map(p => ({
+      value: p.programId,
+      label: p.name,
+    }))
+}
 
 const institutionOptions = [
   { value: '경기교육청', label: '경기교육청' },
@@ -255,6 +285,10 @@ export default function EducationManagementPage() {
 
   const handleFormSubmit = (values: any) => {
     try {
+      // Get program name from selected program
+      const selectedProgram = programOptions.find(p => p.value === values.program)
+      const programName = selectedProgram?.label || values.program || ''
+      
       // Generate education ID if creating new
       const educationId = formMode === 'create' 
         ? `EDU-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`
@@ -277,22 +311,22 @@ export default function EducationManagementPage() {
 
       const educationData: Education = {
         key: formMode === 'edit' && selectedEducation ? selectedEducation.key : educationId,
-        status: values.status || '신청 중',
+        status: '대기', // Always set to '대기' (대기) status on save
         educationId,
-        name: values.name || '',
+        name: programName, // Use program name as education name
         institution: values.institution || '',
         region: values.region || '',
-        gradeClass: values.grade ? `${values.grade}학년 ${values.class}반` : '',
+        gradeClass: values.grade && values.class ? `${values.grade} ${values.class}` : (values.grade || values.class || ''),
         period,
         periodStart,
         periodEnd,
         requestOrg: values.requestOrg,
         schoolName: values.schoolName,
         programTitle: values.program,
-        courseName: values.name,
+        courseName: programName,
         totalSessions: values.lessonCount || lessons.length,
         note: values.note,
-        educationStatus: values.status === '신청 마감' ? '신청 마감' : (values.status === 'OPEN' ? 'OPEN' : '신청 중'),
+        educationStatus: '대기', // Always set to '대기' (대기) status on save
         applicationDeadline: values.applicationDeadline ? dayjs(values.applicationDeadline).format('YYYY-MM-DD') : undefined,
         lessons,
       }
@@ -334,6 +368,10 @@ export default function EducationManagementPage() {
       const periodEnd = values.periodEnd ? dayjs(values.periodEnd).format('YYYY-MM-DD') : undefined
       const period = periodStart && periodEnd ? `${periodStart} ~ ${periodEnd}` : periodStart || ''
 
+      // Get program name from selected program
+      const selectedProgram = programOptions.find(p => p.value === values.program)
+      const programName = selectedProgram?.label || values.program || ''
+      
       // Format lessons
       const lessons = values.lessons?.map((lesson: any, index: number) => ({
         title: `${index + 1}차시`,
@@ -346,22 +384,22 @@ export default function EducationManagementPage() {
 
       const educationData: Education = {
         key: formMode === 'edit' && selectedEducation ? selectedEducation.key : educationId,
-        status: values.status || '신청 중',
+        status: '대기', // Always set to '대기' (대기) status on save
         educationId,
-        name: values.name || '',
+        name: programName, // Use program name as education name
         institution: values.institution || '',
         region: values.region || '',
-        gradeClass: values.grade ? `${values.grade}학년 ${values.class}반` : '',
+        gradeClass: values.grade && values.class ? `${values.grade} ${values.class}` : (values.grade || values.class || ''),
         period,
         periodStart,
         periodEnd,
         requestOrg: values.requestOrg,
         schoolName: values.schoolName,
         programTitle: values.program,
-        courseName: values.name,
+        courseName: programName,
         totalSessions: values.lessonCount || lessons.length,
         note: values.note,
-        educationStatus: values.status === '신청 마감' ? '신청 마감' : (values.status === 'OPEN' ? 'OPEN' : '신청 중'),
+        educationStatus: '대기', // Always set to '대기' (대기) status on save
         applicationDeadline: values.applicationDeadline ? dayjs(values.applicationDeadline).format('YYYY-MM-DD') : undefined,
         lessons,
       }
@@ -387,13 +425,17 @@ export default function EducationManagementPage() {
     setFormMode('edit')
     const lessonLen = selectedEducation.lessons?.length || 1
     setLessonCount(lessonLen)
+    // Parse grade and class from gradeClass (format: "1학년 3반" or "1 3")
+    const gradeClassMatch = selectedEducation.gradeClass?.match(/(\S+)\s+(\S+)/)
+    const grade = gradeClassMatch ? gradeClassMatch[1] : selectedEducation.gradeClass?.split('학년')[0] || ''
+    const classValue = gradeClassMatch ? gradeClassMatch[2] : selectedEducation.gradeClass?.split('학년')[1]?.trim() || ''
+    
     form.setFieldsValue({
-      name: selectedEducation.name,
-      program: programOptions[0]?.value,
+      program: selectedEducation.programTitle || programOptions[0]?.value,
       institution: selectedEducation.institution,
       region: selectedEducation.region,
-      gradeClass: selectedEducation.gradeClass,
-      status: selectedEducation.status,
+      grade: grade,
+      class: classValue,
       lessonCount: lessonLen,
       lessons: selectedEducation.lessons?.map((lesson) => ({
         date: lesson.date ? dayjs(lesson.date) : null,
@@ -487,6 +529,18 @@ export default function EducationManagementPage() {
       return matchesSearch && matchesStatus && matchesDateRange
     })
   }, [searchText, statusFilter, dateRange, getAllEducations])
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchText, statusFilter, dateRange])
+
+  // Paginated data
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize
+    const endIndex = startIndex + pageSize
+    return filteredData.slice(startIndex, endIndex)
+  }, [filteredData, currentPage, pageSize])
 
   const columns: ColumnsType<EducationItem> = useMemo(() => [
     {
@@ -768,7 +822,7 @@ export default function EducationManagementPage() {
             </div>
             <Table
               columns={columns}
-              dataSource={filteredData}
+              dataSource={paginatedData}
               rowSelection={rowSelection}
               pagination={{
                 current: currentPage,
@@ -778,6 +832,10 @@ export default function EducationManagementPage() {
                 showTotal: (total) => `총 ${total}건`,
                 onChange: (page, size) => {
                   setCurrentPage(page)
+                  setPageSize(size)
+                },
+                onShowSizeChange: (current, size) => {
+                  setCurrentPage(1)
                   setPageSize(size)
                 },
               }}
@@ -1036,15 +1094,6 @@ export default function EducationManagementPage() {
                     </Form.Item>
 
                     <Form.Item
-                      label="교육명"
-                      name="name"
-                      rules={[{ required: true, message: '교육명을 입력해주세요' }]}
-                      className="mb-0 md:col-span-2"
-                    >
-                      <Input placeholder="교육명을 입력하세요" className="h-11 rounded-xl" />
-                    </Form.Item>
-
-                    <Form.Item
                       label="설명"
                       name="description"
                       className="mb-0 md:col-span-2"
@@ -1083,19 +1132,6 @@ export default function EducationManagementPage() {
                     </Form.Item>
 
                     <Form.Item
-                      label="상태"
-                      name="status"
-                      rules={[{ required: true, message: '상태를 선택해주세요' }]}
-                      className="mb-0"
-                    >
-                      <Select
-                        placeholder="상태를 선택하세요"
-                        options={educationStatusOptions}
-                        className="h-11 rounded-xl"
-                      />
-                    </Form.Item>
-
-                    <Form.Item
                       label="비고"
                       name="note"
                       className="mb-0"
@@ -1123,11 +1159,9 @@ export default function EducationManagementPage() {
                       rules={[{ required: true, message: '학년을 입력해주세요' }]}
                       className="mb-0"
                     >
-                      <InputNumber
+                      <Input
                         className="w-full h-11 rounded-xl"
-                        placeholder="학년"
-                        min={1}
-                        max={6}
+                        placeholder="학년 (예: 1학년, 특수학급 등)"
                       />
                     </Form.Item>
 
@@ -1137,10 +1171,9 @@ export default function EducationManagementPage() {
                       rules={[{ required: true, message: '반을 입력해주세요' }]}
                       className="mb-0"
                     >
-                      <InputNumber
+                      <Input
                         className="w-full h-11 rounded-xl"
-                        placeholder="반"
-                        min={1}
+                        placeholder="반 (예: 1반, A반 등)"
                       />
                     </Form.Item>
 
