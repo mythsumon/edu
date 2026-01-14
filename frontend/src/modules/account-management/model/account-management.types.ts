@@ -26,3 +26,47 @@ export interface InstructorAccount {
   region?: string // city/country
   instructorClassification?: string
 }
+
+/**
+ * Backend DTOs
+ */
+export interface AdminResponseDto {
+  userId: number
+  username: string
+  firstName: string
+  lastName: string
+  email?: string
+  phone?: string
+  profilePhoto?: string
+  enabled?: boolean
+}
+
+export interface InstructorResponseDto {
+  userId: number
+  username: string
+  firstName: string
+  lastName: string
+  email?: string
+  phone?: string
+  gender?: string
+  dob?: string
+  regionId?: number
+  city?: string
+  street?: string
+  detailAddress?: string
+  statusId?: number
+  classificationId?: number
+  signature?: string
+  profilePhoto?: string
+  enabled?: boolean
+}
+
+/**
+ * Query parameters for listing accounts
+ */
+export interface ListAccountsParams {
+  q?: string
+  page?: number
+  size?: number
+  sort?: string
+}

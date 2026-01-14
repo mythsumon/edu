@@ -1,13 +1,46 @@
 import { useQuery } from '@tanstack/react-query'
 import { accountManagementQueryKeys } from './queryKeys'
+import { listAdmins, listInstructors } from '../model/account-management.service'
+import {
+  mapAdminAccountList,
+  mapInstructorAccountList,
+} from '../model/mapper'
+import type { ListAccountsParams } from '../model/account-management.types'
 
-// Placeholder queries - to be implemented when API is available
-export const useAccountManagementQuery = () => {
+/**
+ * Query hook for listing admin accounts
+ */
+export const useAdminAccountsQuery = (params?: ListAccountsParams) => {
   return useQuery({
-    queryKey: accountManagementQueryKeys.lists(),
+    queryKey: accountManagementQueryKeys.adminList(params),
     queryFn: async () => {
-      // Placeholder - replace with actual API call
-      return null
+      const pageResponse = await listAdmins(params)
+      return {
+        items: mapAdminAccountList(pageResponse.items),
+        total: pageResponse.total,
+        page: pageResponse.page,
+        size: pageResponse.size,
+        totalPages: pageResponse.totalPages,
+      }
+    },
+  })
+}
+
+/**
+ * Query hook for listing instructor accounts
+ */
+export const useInstructorAccountsQuery = (params?: ListAccountsParams) => {
+  return useQuery({
+    queryKey: accountManagementQueryKeys.instructorList(params),
+    queryFn: async () => {
+      const pageResponse = await listInstructors(params)
+      return {
+        items: mapInstructorAccountList(pageResponse.items),
+        total: pageResponse.total,
+        page: pageResponse.page,
+        size: pageResponse.size,
+        totalPages: pageResponse.totalPages,
+      }
     },
   })
 }

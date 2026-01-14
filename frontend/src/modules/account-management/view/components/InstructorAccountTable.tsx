@@ -55,14 +55,6 @@ export const InstructorAccountTable = ({
         header: 'Username',
       },
       {
-        accessorKey: 'affiliation',
-        header: 'Affiliation',
-        cell: ({ row }) => {
-          const affiliation = row.getValue('affiliation') as string | undefined
-          return <div>{affiliation || '-'}</div>
-        },
-      },
-      {
         accessorKey: 'region',
         header: 'Region',
         cell: ({ row }) => {

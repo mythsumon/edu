@@ -1,63 +1,26 @@
 import { InstructorAccountTable } from '../components/InstructorAccountTable'
 import type { InstructorAccount } from '../../model/account-management.types'
-
-// Placeholder data - to be replaced with API data
-const mockInstructorAccounts: InstructorAccount[] = [
-  {
-    id: 101,
-    name: 'Robert Anderson',
-    username: 'robert.anderson',
-    affiliation: 'University of Technology',
-    region: 'Seoul, South Korea',
-    instructorClassification: 'Senior Instructor',
-  },
-  {
-    id: 102,
-    name: 'Lisa Park',
-    username: 'lisa.park',
-    affiliation: 'Seoul National University',
-    region: 'Seoul, South Korea',
-    instructorClassification: 'Associate Instructor',
-  },
-  {
-    id: 103,
-    name: 'James Kim',
-    username: 'james.kim',
-    affiliation: 'Korea University',
-    region: 'Busan, South Korea',
-    instructorClassification: 'Instructor',
-  },
-  {
-    id: 104,
-    name: 'Maria Garcia',
-    username: 'maria.garcia',
-    affiliation: 'Yonsei University',
-    region: 'Seoul, South Korea',
-    instructorClassification: 'Senior Instructor',
-  },
-  {
-    id: 105,
-    name: 'Thomas Lee',
-    username: 'thomas.lee',
-    affiliation: 'Sungkyunkwan University',
-    region: 'Incheon, South Korea',
-    instructorClassification: 'Associate Instructor',
-  },
-  {
-    id: 106,
-    name: 'Jennifer Brown',
-    username: 'jennifer.brown',
-    affiliation: 'Hanyang University',
-    region: 'Seoul, South Korea',
-    instructorClassification: 'Instructor',
-  },
-]
+import { useInstructorAccountsQuery } from '../../controller/queries'
+import { LoadingState } from '@/shared/components/LoadingState'
+import { ErrorState } from '@/shared/components/ErrorState'
 
 export const InstructorAccountManagementPage = () => {
+  const { data, isLoading, error } = useInstructorAccountsQuery()
+
   const handleDetailClick = (instructor: InstructorAccount) => {
     // TODO: Implement detail view/navigation
     console.log('View details for instructor:', instructor)
   }
+
+  if (isLoading) {
+    return <LoadingState />
+  }
+
+  if (error) {
+    return <ErrorState error={error} />
+  }
+
+  const instructorAccounts = data?.items ?? []
 
   return (
     <div className="space-y-4">
@@ -65,7 +28,7 @@ export const InstructorAccountManagementPage = () => {
         <h1 className="text-3xl font-bold mb-4">Instructor Account Management</h1>
         <p className="text-muted-foreground">Manage instructor accounts</p>
       </div>
-      <InstructorAccountTable data={mockInstructorAccounts} onDetailClick={handleDetailClick} />
+      <InstructorAccountTable data={instructorAccounts} onDetailClick={handleDetailClick} />
     </div>
   )
 }
