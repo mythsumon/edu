@@ -24,6 +24,11 @@ const { Dragger } = Upload
 
 const { TextArea } = Input
 
+interface ProgramOption {
+  value: string
+  label: string
+}
+
 interface EducationItem {
   key: string
   status: string
@@ -240,7 +245,7 @@ export default function EducationManagementPage() {
   const filterDropdownRef = useRef<HTMLDivElement>(null)
   
   // Get program options from program management
-  const programOptions = useMemo(() => {
+  const programOptions = useMemo<ProgramOption[]>(() => {
     try {
       return getProgramOptions() || []
     } catch (error) {
@@ -296,7 +301,7 @@ export default function EducationManagementPage() {
   const handleFormSubmit = (values: any) => {
     try {
       // Get program name from selected program
-      const selectedProgram = programOptions.find(p => p.value === values.program)
+      const selectedProgram = programOptions.find((p) => p.value === values.program)
       const programName = selectedProgram?.label || values.program || ''
       
       // Generate education ID if creating new
@@ -379,7 +384,7 @@ export default function EducationManagementPage() {
       const period = periodStart && periodEnd ? `${periodStart} ~ ${periodEnd}` : periodStart || ''
 
       // Get program name from selected program
-      const selectedProgram = programOptions.find(p => p.value === values.program)
+      const selectedProgram = programOptions.find((p) => p.value === values.program)
       const programName = selectedProgram?.label || values.program || ''
       
       // Format lessons
