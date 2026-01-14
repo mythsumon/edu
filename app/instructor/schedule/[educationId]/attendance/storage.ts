@@ -522,6 +522,131 @@ function getDummyAttendanceDocs(): AttendanceDocument[] {
       submittedBy: '홍길동',
       createdAt: now,
       updatedAt: now
+    },
+    // 평택안일초등학교 출석부 데이터
+    {
+      id: 'attendance-11',
+      educationId: 'EDU-2025-101',
+      location: '평택시',
+      institution: '평택안일초등학교',
+      gradeClass: '5학년 6반',
+      programName: '8차시 블록코딩과 엔트리 기초 및 인공지능',
+      totalSessions: 8,
+      maleCount: 11,
+      femaleCount: 11,
+      schoolContactName: '박지민',
+      institutionContact: {
+        name: '박지민',
+        phone: '010-1234-5678',
+        email: 'park@school.com'
+      },
+      signatures: {},
+      sessions: [
+        {
+          sessionNumber: 1,
+          date: '2025-11-03',
+          startTime: '09:00',
+          endTime: '12:10',
+          sessions: 4,
+          mainInstructor: '박정아',
+          assistantInstructor: '김윤미',
+          institutionContacts: ['박지민'],
+          studentCount: 22,
+          attendanceCount: 21
+        },
+        {
+          sessionNumber: 2,
+          date: '2025-11-10',
+          startTime: '09:00',
+          endTime: '12:10',
+          sessions: 4,
+          mainInstructor: '박정아',
+          assistantInstructor: '김윤미',
+          institutionContacts: ['박지민'],
+          studentCount: 22,
+          attendanceCount: 22
+        }
+      ],
+      students: [
+        { id: 'student-1', number: 1, name: '강준', gender: '남', sessionAttendances: [4, 4], completionStatus: 'O' },
+        { id: 'student-2', number: 2, name: '김리', gender: '여', sessionAttendances: [4, 4], completionStatus: 'O' },
+        { id: 'student-3', number: 3, name: '김연', gender: '남', sessionAttendances: [4, 4], completionStatus: 'O' },
+        { id: 'student-4', number: 4, name: '김아', gender: '여', sessionAttendances: [4, 4], completionStatus: 'O' },
+        { id: 'student-5', number: 5, name: '김현', gender: '남', sessionAttendances: [4, 4], completionStatus: 'O' },
+        { id: 'student-6', number: 6, name: '김후', gender: '남', sessionAttendances: [4, 4], completionStatus: 'O' },
+        { id: 'student-7', number: 7, name: '김연', gender: '여', sessionAttendances: [4, 4], completionStatus: 'O' },
+        { id: 'student-8', number: 8, name: '배은', gender: '여', sessionAttendances: [4, 4], completionStatus: 'O' },
+        { id: 'student-9', number: 9, name: '서원', gender: '여', sessionAttendances: [4, 4], completionStatus: 'O' },
+        { id: 'student-10', number: 10, name: '서호', gender: '남', sessionAttendances: [4, 4], completionStatus: 'O' },
+        { id: 'student-11', number: 11, name: '승연', gender: '여', sessionAttendances: [4, 4], completionStatus: 'O' },
+        { id: 'student-12', number: 12, name: '양지', gender: '여', sessionAttendances: [4, 4], completionStatus: 'O' },
+        { id: 'student-13', number: 13, name: '(전학)', gender: '남', sessionAttendances: [0, 0], completionStatus: 'X', isTransferred: true },
+        { id: 'student-14', number: 14, name: '이윤', gender: '남', sessionAttendances: [4, 4], completionStatus: 'O' },
+        { id: 'student-15', number: 15, name: '이균', gender: '남', sessionAttendances: [4, 4], completionStatus: 'O' },
+        { id: 'student-16', number: 16, name: '(전학)', gender: '여', sessionAttendances: [0, 0], completionStatus: 'X', isTransferred: true },
+        { id: 'student-17', number: 17, name: '전서', gender: '여', sessionAttendances: [4, 4], completionStatus: 'O' },
+        { id: 'student-18', number: 18, name: '조연', gender: '여', sessionAttendances: [4, 4], completionStatus: 'O' },
+        { id: 'student-19', number: 19, name: '조성', gender: '남', sessionAttendances: [4, 4], completionStatus: 'O' },
+        { id: 'student-20', number: 20, name: '최혁', gender: '남', sessionAttendances: [4, 4], completionStatus: 'O' },
+        { id: 'student-21', number: 21, name: '하윤', gender: '여', sessionAttendances: [4, 4], completionStatus: 'O' },
+        { id: 'student-22', number: 22, name: '황영', gender: '남', sessionAttendances: [4, 4], completionStatus: 'O' },
+        { id: 'student-23', number: 23, name: '안은', gender: '여', sessionAttendances: [4, 4], completionStatus: 'O' },
+        { id: 'student-24', number: 24, name: '김주우', gender: '남', sessionAttendances: [0, 4], completionStatus: 'X' },
+      ],
+      status: 'DRAFT',
+      submittedBy: '홍길동',
+      createdAt: weekAgo,
+      updatedAt: weekAgo
+    },
+    {
+      id: 'attendance-12',
+      educationId: 'EDU-2024-201',
+      location: '평택시',
+      institution: '평택안일초등학교',
+      gradeClass: '5학년 1반',
+      programName: '2024년 하반기 블록코딩 교육',
+      totalSessions: 8,
+      maleCount: 15,
+      femaleCount: 15,
+      schoolContactName: '박지민',
+      institutionContact: {
+        name: '박지민',
+        phone: '010-1234-5678',
+        email: 'park@school.com'
+      },
+      signatures: {
+        school: {
+          signedByUserId: 'teacher-1',
+          signedByUserName: '박지민',
+          signedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+          signatureImageUrl: '/mock/signatures/park.png'
+        }
+      },
+      sessions: [
+        {
+          sessionNumber: 1,
+          date: '2024-09-01',
+          startTime: '09:00',
+          endTime: '12:00',
+          sessions: 4,
+          mainInstructor: '홍길동',
+          assistantInstructor: '김철수',
+          institutionContacts: ['박지민'],
+          studentCount: 30,
+          attendanceCount: 28
+        }
+      ],
+      students: [
+        { id: 'student-25', number: 1, name: '김민수', gender: '남', sessionAttendances: [4], completionStatus: 'O' },
+        { id: 'student-26', number: 2, name: '이영희', gender: '여', sessionAttendances: [4], completionStatus: 'O' },
+      ],
+      status: 'APPROVED',
+      submittedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+      submittedBy: '홍길동',
+      approvedAt: new Date(Date.now() - 29 * 24 * 60 * 60 * 1000).toISOString(),
+      approvedBy: '관리자',
+      createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+      updatedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
     }
   ]
 }

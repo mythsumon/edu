@@ -31,6 +31,8 @@ import type {
   InventoryItem,
   AuditLogEntry,
 } from '../types'
+import { dataStore } from '@/lib/dataStore'
+import type { InstructorAssignment } from '@/lib/dataStore'
 import dayjs from 'dayjs'
 
 const { TextArea } = Input
@@ -50,6 +52,56 @@ export default function EquipmentConfirmationDetailPage() {
 
   const isAdmin = userRole === 'admin'
 
+  // Load education data and auto-fill
+  const loadEducationData = (educationId: string | undefined) => {
+    if (!educationId) return null
+    
+    const assignment = dataStore.getInstructorAssignmentByEducationId(educationId)
+    const education = dataStore.getEducationById(educationId)
+    
+    if (!assignment && !education) return null
+    
+    // Get instructor names from assignment
+    let instructorsText = ''
+    if (assignment?.lessons && assignment.lessons.length > 0) {
+      const allInstructors = new Set<string>()
+      assignment.lessons.forEach(lesson => {
+        if (Array.isArray(lesson.mainInstructors)) {
+          lesson.mainInstructors.forEach(inst => allInstructors.add(inst.name))
+        }
+        if (Array.isArray(lesson.assistantInstructors)) {
+          lesson.assistantInstructors.forEach(inst => allInstructors.add(inst.name))
+        }
+      })
+      instructorsText = Array.from(allInstructors).join(' / ')
+    }
+    
+    // Format lecture date
+    let lectureDateText = ''
+    if (assignment?.periodStart) {
+      const date = dayjs(assignment.periodStart)
+      lectureDateText = `${date.format('YY')}. ${date.format('MM')}. ${date.format('DD')}.`
+    }
+    
+    // Format sessions
+    let sessionsText = ''
+    if (assignment?.lessons && assignment.lessons.length > 0) {
+      const totalSessions = assignment.lessons.length
+      sessionsText = `${totalSessions}차시 / ${totalSessions}차시`
+    }
+    
+    return {
+      materialName: assignment?.educationName || education?.name || '',
+      organizationName: assignment?.institution || education?.institution || '',
+      lectureDateText,
+      sessionsText,
+      studentCount: 0, // Will be filled manually
+      instructorsText,
+      borrowerName: instructorsText.split(' / ')[0] || userProfile?.name || '',
+      plannedReturnerName: instructorsText.split(' / ')[0] || userProfile?.name || '',
+    }
+  }
+
   // Load doc
   const loadDoc = async () => {
     if (!id) {
@@ -67,6 +119,19 @@ export default function EquipmentConfirmationDetailPage() {
         })
         upsertDoc(loadedDoc)
       }
+      
+      // Auto-load education data if educationId exists and fields are empty
+      if (loadedDoc.educationId && (!loadedDoc.materialName || !loadedDoc.organizationName)) {
+        const educationData = loadEducationData(loadedDoc.educationId)
+        if (educationData) {
+          loadedDoc = {
+            ...loadedDoc,
+            ...educationData,
+          }
+          upsertDoc(loadedDoc)
+        }
+      }
+      
       setDoc(loadedDoc)
       
       // Load inventory check and audit logs
@@ -371,9 +436,42 @@ export default function EquipmentConfirmationDetailPage() {
     return <Badge status={status.color as any} text={status.text} />
   }
 
-  // Calculate allowance
-  const ratePerVisit = 0 // From localStorage config (default 0)
-  const visitCount = doc.status === 'RETURNED' ? 2 : 1
+  // Calculate allowance (교구 대여 수당: 1인 기준 1일 방문횟수)
+  const getAllowanceRate = (): number => {
+    if (typeof window === 'undefined') return 0
+    const rate = localStorage.getItem('equipment_allowance_rate')
+    return rate ? parseFloat(rate) : 0
+  }
+
+  const calculateVisitCount = (): number => {
+    let count = 0
+    
+    // 대여 방문: 1회 (대여자가 센터 방문)
+    if (doc.schedule.actualBorrowAt || doc.status === 'BORROWED' || doc.status === 'RETURNED') {
+      count += 1
+    }
+    
+    // 반납 방문: 1회 (반납자가 센터 방문, 반납예정자와 다를 수 있음)
+    if (doc.schedule.actualReturnAt || doc.status === 'RETURNED') {
+      // 반납예정자와 실제 반납자가 다르면 별도 방문으로 계산
+      if (doc.plannedReturnerName && doc.actualReturnerName && 
+          doc.plannedReturnerName !== doc.actualReturnerName) {
+        count += 1
+      } else if (doc.borrowerName && doc.actualReturnerName && 
+                 doc.borrowerName !== doc.actualReturnerName) {
+        // 대여자와 반납자가 다르면 별도 방문
+        count += 1
+      } else if (doc.status === 'RETURNED') {
+        // 반납 완료된 경우 반납 방문 1회
+        count += 1
+      }
+    }
+    
+    return count || 1 // 최소 1회 (대여 방문)
+  }
+
+  const ratePerVisit = getAllowanceRate()
+  const visitCount = calculateVisitCount()
   const totalAllowance = ratePerVisit * visitCount
 
   return (

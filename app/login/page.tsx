@@ -12,12 +12,14 @@ export default function LoginPage() {
   const router = useRouter()
   const { login } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
-  const [loginType, setLoginType] = useState<'instructor' | 'admin'>('instructor')
+  const [loginType, setLoginType] = useState<'instructor' | 'admin' | 'teacher'>('instructor')
 
   // Set default values for ID and password based on login type
   useEffect(() => {
     const defaultValues = loginType === 'admin'
       ? { email: 'admin@example.com', password: 'Admin@1234' }
+      : loginType === 'teacher'
+      ? { email: 'teacher@example.com', password: 'Teacher@1234' }
       : { email: 'instructor@example.com', password: 'Instructor@1234' }
     form.setFieldsValue(defaultValues)
   }, [form, loginType])
@@ -67,6 +69,16 @@ export default function LoginPage() {
         // Add small delay before redirect to show success message
         await new Promise(resolve => setTimeout(resolve, 500))
         router.push('/admin')
+        return
+      }
+
+      // Teacher credentials
+      if (email === 'teacher@example.com' && password === 'Teacher@1234') {
+        login('teacher')
+        message.success('학교 선생님으로 로그인되었습니다.')
+        // Add small delay before redirect to show success message
+        await new Promise(resolve => setTimeout(resolve, 500))
+        router.push('/teacher/dashboard')
         return
       }
       
@@ -164,30 +176,48 @@ export default function LoginPage() {
               <div className="text-center mb-3">
                 <span className="text-sm font-medium text-slate-600 dark:text-gray-400">로그인 유형 선택</span>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 <div
-                  className={`cursor-pointer rounded-lg border-2 p-4 text-center transition-all duration-200 ${
+                  className={`cursor-pointer rounded-lg border-2 p-3 text-center transition-all duration-200 ${
                     loginType === 'instructor'
                       ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:border-blue-400 dark:text-blue-300'
                       : 'border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700'
                   }`}
                   onClick={() => setLoginType('instructor')}
                 >
-                  <User size={20} className="mx-auto mb-2" />
-                  <div className="font-medium text-sm">강사</div>
-                  <div className="text-xs opacity-75 mt-1">수업 및 문서 관리</div>
+                  <User size={18} className="mx-auto mb-1" />
+                  <div className="font-medium text-xs">강사</div>
                 </div>
                 <div
-                  className={`cursor-pointer rounded-lg border-2 p-4 text-center transition-all duration-200 ${
+                  className={`cursor-pointer rounded-lg border-2 p-3 text-center transition-all duration-200 ${
                     loginType === 'admin'
                       ? 'border-green-500 bg-green-50 text-green-700 dark:bg-green-900/20 dark:border-green-400 dark:text-green-300'
                       : 'border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700'
                   }`}
                   onClick={() => setLoginType('admin')}
                 >
-                  <Shield size={20} className="mx-auto mb-2" />
-                  <div className="font-medium text-sm">관리자</div>
-                  <div className="text-xs opacity-75 mt-1">전체 시스템 관리</div>
+                  <Shield size={18} className="mx-auto mb-1" />
+                  <div className="font-medium text-xs">관리자</div>
+                </div>
+                <div
+                  className={`cursor-pointer rounded-lg border-2 p-3 text-center transition-all duration-200 ${
+                    loginType === 'teacher'
+                      ? 'border-purple-500 bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:border-purple-400 dark:text-purple-300'
+                      : 'border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700'
+                  }`}
+                  onClick={() => setLoginType('teacher')}
+                >
+                  <GraduationCap size={18} className="mx-auto mb-1" />
+                  <div className="font-medium text-xs">학교 선생님</div>
+                </div>
+              </div>
+              
+              {/* Account Info Display */}
+              <div className="mt-3 p-3 bg-slate-50 dark:bg-gray-800 rounded-lg">
+                <div className="text-xs text-slate-600 dark:text-gray-400 mb-1">
+                  {loginType === 'instructor' && '기본 계정: instructor@example.com / Instructor@1234'}
+                  {loginType === 'admin' && '기본 계정: admin@example.com / Admin@1234'}
+                  {loginType === 'teacher' && '기본 계정: teacher@example.com / Teacher@1234'}
                 </div>
               </div>
             </div>

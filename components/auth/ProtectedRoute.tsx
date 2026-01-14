@@ -38,6 +38,8 @@ export function ProtectedRoute({
           router.push('/admin')
         } else if (userRole === 'instructor') {
           router.push('/instructor/dashboard')
+        } else if (userRole === 'teacher') {
+          router.push('/teacher/dashboard')
         } else {
           router.push(redirectTo)
         }

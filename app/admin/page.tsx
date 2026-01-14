@@ -234,8 +234,24 @@ export default function AdminDashboardPage() {
   const loadSummaries = () => {
     // Initialize example data if needed (only in development)
     if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-      const { initExampleAttendanceDocs } = require('@/app/instructor/schedule/[educationId]/attendance/initExampleData')
-      initExampleAttendanceDocs()
+      try {
+        const { initExampleAttendanceDocs } = require('@/app/instructor/schedule/[educationId]/attendance/initExampleData')
+        initExampleAttendanceDocs()
+      } catch (error) {
+        console.error('Failed to initialize attendance docs:', error)
+      }
+      try {
+        const { initExampleActivityLogs } = require('@/app/instructor/activity-logs/initExampleData')
+        initExampleActivityLogs()
+      } catch (error) {
+        console.error('Failed to initialize activity logs:', error)
+      }
+      try {
+        const { initExampleEquipmentDocs } = require('@/app/instructor/equipment-confirmations/initExampleData')
+        initExampleEquipmentDocs()
+      } catch (error) {
+        console.error('Failed to initialize equipment docs:', error)
+      }
     }
     const allSummaries = getAllEducationDocSummaries()
     setSummaries(allSummaries)

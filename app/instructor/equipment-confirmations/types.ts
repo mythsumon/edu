@@ -7,8 +7,12 @@ export interface EquipmentItem {
 }
 
 export interface EquipmentSchedule {
-  plannedBorrowText: string // "1일 13시"
-  plannedReturnText: string // "2일 00분"
+  plannedBorrowDate?: string // ISO date string for date calculation
+  plannedBorrowTime?: string // "13:00"
+  plannedReturnDate?: string // ISO date string
+  plannedReturnTime?: string // "17:00"
+  plannedBorrowText: string // "1일 13시" (display format)
+  plannedReturnText: string // "2일 00분" (display format)
   actualBorrowAt?: string // ISO date string
   actualReturnAt?: string // ISO date string
 }

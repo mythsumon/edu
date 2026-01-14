@@ -86,7 +86,7 @@ const ModernKPICard = ({
       isActive 
         ? 'shadow-2xl scale-105' 
         : 'shadow-lg hover:shadow-2xl hover:scale-[1.02]'
-    } dark:bg-gray-800 dark:border-gray-700`}
+    }`}
     onClick={onClick}
     style={{
       background: isActive 
@@ -101,21 +101,21 @@ const ModernKPICard = ({
           <div className={`w-14 h-14 rounded-xl flex items-center justify-center shadow-lg ${
             isActive 
               ? 'bg-white/20 backdrop-blur-sm' 
-              : 'bg-gradient-to-br from-slate-100 to-slate-200 dark:from-gray-700 dark:to-gray-600'
+              : 'bg-gradient-to-br from-slate-100 to-slate-200'
           }`}>
-            <div className={isActive ? 'text-white' : 'text-slate-700 dark:text-gray-300'}>
+            <div className={isActive ? 'text-white' : 'text-slate-700'}>
               {icon}
             </div>
           </div>
           <div>
-            <p className={`text-sm font-medium mb-1 ${isActive ? 'text-white/90' : 'text-slate-600 dark:text-gray-400'}`}>
+            <p className={`text-sm font-medium mb-1 ${isActive ? 'text-white/90' : 'text-slate-600'}`}>
               {title}
             </p>
-            <p className={`text-3xl font-bold ${isActive ? 'text-white' : 'text-slate-900 dark:text-gray-100'}`}>
+            <p className={`text-3xl font-bold ${isActive ? 'text-white' : 'text-slate-900'}`}>
               {count}
             </p>
             {trend && (
-              <p className={`text-xs mt-1 ${isActive ? 'text-white/80' : 'text-slate-500 dark:text-gray-500'}`}>
+              <p className={`text-xs mt-1 ${isActive ? 'text-white/80' : 'text-slate-500'}`}>
                 {trend}
               </p>
             )}
@@ -192,34 +192,34 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
   
   return (
     <Card 
-      className="rounded-xl border-0 shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer group overflow-hidden dark:bg-gray-800 dark:border-gray-700"
+      className="rounded-xl border-0 shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer group overflow-hidden"
       onClick={() => router.push(`/instructor/assignment/${course.id}`)}
     >
       <div className="relative">
         <div className={`absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r ${statusColors[course.status]}`}></div>
         <div className="pt-3 space-y-2.5">
           <div>
-            <h3 className="font-bold text-sm text-slate-900 dark:text-gray-100 line-clamp-2 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+            <h3 className="font-bold text-sm text-slate-900 line-clamp-2 mb-1 group-hover:text-blue-600 transition-colors">
               {course.educationName}
             </h3>
-            <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-gray-400">
+            <div className="flex items-center gap-1.5 text-xs text-slate-600">
               <School className="w-3 h-3" />
               <span className="line-clamp-1">{course.institutionName}</span>
             </div>
           </div>
           
-          <div className="flex items-center justify-between p-2 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-gray-700 dark:to-gray-600 rounded-lg">
+          <div className="flex items-center justify-between p-2 bg-gradient-to-r from-slate-50 to-slate-100 rounded-lg">
             <div className="flex items-center gap-1.5">
-              <Calendar className="w-3 h-3 text-slate-500 dark:text-gray-400" />
-              <span className="text-xs font-medium text-slate-700 dark:text-gray-300">
+              <Calendar className="w-3 h-3 text-slate-500" />
+              <span className="text-xs font-medium text-slate-700">
                 {course.startDate} ~ {course.endDate}
               </span>
             </div>
           </div>
           
           {/* Document Submission Status */}
-          <div className="space-y-1.5 pt-1.5 border-t border-slate-200 dark:border-gray-700">
-            <div className="text-xs font-semibold text-slate-500 dark:text-gray-400 mb-0.5">문서 제출 상태</div>
+          <div className="space-y-1.5 pt-1.5 border-t border-slate-200">
+            <div className="text-xs font-semibold text-slate-500 mb-0.5">문서 제출 상태</div>
             <div className="flex flex-col gap-1.5">
               <DocumentStatusIndicator
                 status={attendanceStatus as any}
@@ -250,7 +250,7 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
           
           <div className="flex items-center justify-between pt-1">
             <StatusBadge status={course.status} />
-            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-gray-400">
+            <div className="flex items-center gap-2 text-xs text-slate-500">
               <div className="flex items-center gap-1">
                 <User className="w-3 h-3" />
                 <span>{course.classInfo}</span>
@@ -308,19 +308,19 @@ const WeeklyCalendarView = ({
               }}
               className={`rounded-2xl border-2 transition-all duration-300 cursor-pointer overflow-hidden ${
                 isToday 
-                  ? 'border-blue-400 bg-gradient-to-br from-blue-50 via-blue-100/50 to-white dark:from-blue-900/30 dark:via-blue-800/20 dark:to-gray-800 shadow-xl ring-4 ring-blue-200/50 dark:ring-blue-700/30 scale-105' 
-                  : 'border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-slate-300 dark:hover:border-gray-600 hover:shadow-lg'
+                  ? 'border-blue-400 bg-gradient-to-br from-blue-50 via-blue-100/50 to-white shadow-xl ring-4 ring-blue-200/50 scale-105' 
+                  : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-lg'
               }`}
             >
               <div className={`py-4 text-center border-b-2 ${
                 isToday 
-                  ? 'border-blue-300 dark:border-blue-600 bg-gradient-to-r from-blue-500 to-blue-600 text-white' 
+                  ? 'border-blue-300 bg-gradient-to-r from-blue-500 to-blue-600 text-white' 
                   : isWeekend
-                    ? 'border-slate-200 dark:border-gray-700 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-gray-700 dark:to-gray-600'
-                    : 'border-slate-200 dark:border-gray-700 bg-gradient-to-r from-slate-50 to-white dark:from-gray-700 dark:to-gray-800'
+                    ? 'border-slate-200 bg-gradient-to-r from-slate-100 to-slate-50'
+                    : 'border-slate-200 bg-gradient-to-r from-slate-50 to-white'
               }`}>
                 <div className={`text-xs font-bold mb-1 ${
-                  isToday ? 'text-white' : isWeekend ? 'text-slate-500 dark:text-gray-400' : 'text-slate-700 dark:text-gray-300'
+                  isToday ? 'text-white' : isWeekend ? 'text-slate-500' : 'text-slate-700'
                 }`}>
                   {['일', '월', '화', '수', '목', '금', '토'][day.getDay()]}
                 </div>
@@ -328,8 +328,8 @@ const WeeklyCalendarView = ({
                   isToday 
                     ? 'text-white' 
                     : isWeekend 
-                      ? 'text-slate-600 dark:text-gray-400' 
-                      : 'text-slate-800 dark:text-gray-200'
+                      ? 'text-slate-600' 
+                      : 'text-slate-800'
                 }`}>
                   {day.getDate()}
                 </div>
@@ -349,10 +349,10 @@ const WeeklyCalendarView = ({
                         }}
                         className={`text-xs px-3 py-2.5 rounded-xl font-semibold border-2 transition-all hover:shadow-md cursor-pointer ${
                           event.status === '예정'
-                            ? 'bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700 hover:from-blue-100 hover:to-blue-200'
+                            ? 'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 border-blue-200 hover:from-blue-100 hover:to-blue-200'
                             : event.status === '진행중'
-                              ? 'bg-gradient-to-r from-emerald-50 to-green-100 dark:from-emerald-900/30 dark:to-green-800/20 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-700 hover:from-emerald-100 hover:to-green-200'
-                              : 'bg-gradient-to-r from-slate-50 to-slate-100 dark:from-gray-700 dark:to-gray-600 text-slate-600 dark:text-gray-400 border-slate-200 dark:border-gray-600'
+                              ? 'bg-gradient-to-r from-emerald-50 to-green-100 text-emerald-700 border-emerald-200 hover:from-emerald-100 hover:to-green-200'
+                              : 'bg-gradient-to-r from-slate-50 to-slate-100 text-slate-600 border-slate-200'
                         }`}
                       >
                         <div className="font-bold truncate mb-1">{event.title}</div>
@@ -367,7 +367,7 @@ const WeeklyCalendarView = ({
                   })
                 ) : (
                   <div className="text-center py-12">
-                    <div className="text-slate-300 dark:text-gray-600 text-xs">일정 없음</div>
+                    <div className="text-slate-300 text-xs">일정 없음</div>
                   </div>
                 )}
               </div>
@@ -397,17 +397,17 @@ const DailyCalendarView = ({
     <div className="space-y-6">
       <div className={`text-center py-8 rounded-2xl border-2 ${
         isWeekend 
-          ? 'border-blue-300 dark:border-blue-600 bg-gradient-to-br from-blue-50 via-blue-100/50 to-white dark:from-blue-900/30 dark:via-blue-800/20 dark:to-gray-800' 
-          : 'border-slate-200 dark:border-gray-700 bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800'
+          ? 'border-blue-300 bg-gradient-to-br from-blue-50 via-blue-100/50 to-white' 
+          : 'border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-50'
       }`}>
-        <div className="text-5xl font-bold text-slate-900 dark:text-gray-100 mb-3">
+        <div className="text-5xl font-bold text-slate-900 mb-3">
           {currentDate.getDate()}
         </div>
-        <div className="text-xl font-semibold text-slate-700 dark:text-gray-300 mb-2">
+        <div className="text-xl font-semibold text-slate-700 mb-2">
           {currentDate.getFullYear()}년 {currentDate.getMonth() + 1}월
         </div>
         <div className={`inline-flex items-center px-5 py-2 rounded-full text-sm font-bold ${
-          isWeekend ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg' : 'bg-gradient-to-r from-slate-200 to-slate-300 dark:from-gray-600 dark:to-gray-700 text-slate-700 dark:text-gray-300'
+          isWeekend ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg' : 'bg-gradient-to-r from-slate-200 to-slate-300 text-slate-700'
         }`}>
           {['일', '월', '화', '수', '목', '금', '토'][dayOfWeek]}요일
         </div>
@@ -425,21 +425,21 @@ const DailyCalendarView = ({
               }}
               className={`p-6 rounded-2xl border-2 transition-all hover:shadow-2xl cursor-pointer ${
                 event.status === '예정'
-                  ? 'border-blue-300 dark:border-blue-600 bg-gradient-to-br from-blue-50 via-white to-blue-50/50 dark:from-blue-900/30 dark:via-gray-800 dark:to-blue-800/20 hover:border-blue-400'
+                  ? 'border-blue-300 bg-gradient-to-br from-blue-50 via-white to-blue-50/50 hover:border-blue-400'
                   : event.status === '진행중'
-                    ? 'border-emerald-300 dark:border-emerald-600 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/50 dark:from-emerald-900/30 dark:via-gray-800 dark:to-emerald-800/20 hover:border-emerald-400'
-                    : 'border-slate-200 dark:border-gray-700 bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 hover:border-slate-300'
+                    ? 'border-emerald-300 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/50 hover:border-emerald-400'
+                    : 'border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-50 hover:border-slate-300'
               }`}
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
-                  <h4 className="text-xl font-bold text-slate-900 dark:text-gray-100 mb-2">{event.title}</h4>
+                  <h4 className="text-xl font-bold text-slate-900 mb-2">{event.title}</h4>
                   {event.timeRange && (
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
                         <Clock className="w-5 h-5 text-white" />
                       </div>
-                      <span className="text-base font-bold text-slate-700 dark:text-gray-300">{event.timeRange}</span>
+                      <span className="text-base font-bold text-slate-700">{event.timeRange}</span>
                     </div>
                   )}
                   <StatusBadge status={event.status} />
@@ -458,11 +458,11 @@ const DailyCalendarView = ({
           ))}
         </div>
       ) : (
-        <div className="text-center py-20 rounded-2xl border-2 border-dashed border-slate-300 dark:border-gray-600 bg-gradient-to-br from-slate-50 to-white dark:from-gray-800 dark:to-gray-700">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center shadow-lg">
-            <Calendar className="w-10 h-10 text-slate-400 dark:text-gray-500" />
+        <div className="text-center py-20 rounded-2xl border-2 border-dashed border-slate-300 bg-gradient-to-br from-slate-50 to-white">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center shadow-lg">
+            <Calendar className="w-10 h-10 text-slate-400" />
           </div>
-          <p className="text-slate-500 dark:text-gray-400 font-semibold text-lg">이 날짜에는 일정이 없습니다</p>
+          <p className="text-slate-500 font-semibold text-lg">이 날짜에는 일정이 없습니다</p>
         </div>
       )}
     </div>
@@ -585,6 +585,30 @@ export default function InstructorDashboard() {
       localStorage.setItem('dispatchListCollapsed', String(isCollapsed))
     }
   }, [isCollapsed])
+
+  // Initialize example data if needed (only in development)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      try {
+        const { initExampleAttendanceDocs } = require('@/app/instructor/schedule/[educationId]/attendance/initExampleData')
+        initExampleAttendanceDocs()
+      } catch (error) {
+        console.error('Failed to initialize attendance docs:', error)
+      }
+      try {
+        const { initExampleActivityLogs } = require('@/app/instructor/activity-logs/initExampleData')
+        initExampleActivityLogs()
+      } catch (error) {
+        console.error('Failed to initialize activity logs:', error)
+      }
+      try {
+        const { initExampleEquipmentDocs } = require('@/app/instructor/equipment-confirmations/initExampleData')
+        initExampleEquipmentDocs()
+      } catch (error) {
+        console.error('Failed to initialize equipment docs:', error)
+      }
+    }
+  }, [])
   
   // Toggle collapse function
   const toggleCollapse = () => {
@@ -717,7 +741,7 @@ export default function InstructorDashboard() {
 
   return (
     <ProtectedRoute requiredRole="instructor">
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 transition-colors">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 transition-colors">
         <div className="p-6">
           {/* Modern Header */}
           <div className="mb-8">
@@ -728,10 +752,10 @@ export default function InstructorDashboard() {
                     <User className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-lg font-semibold text-slate-900 dark:text-gray-100">
+                    <p className="text-lg font-semibold text-slate-900">
                       홍길동 강사님 안녕하세요!
                     </p>
-                    <p className="text-sm text-slate-600 dark:text-gray-400">
+                    <p className="text-sm text-slate-600">
                       오늘도 좋은 수업 부탁드립니다.
                     </p>
                   </div>
@@ -816,20 +840,20 @@ export default function InstructorDashboard() {
                 aria-label={isCollapsed ? '목록 펼치기' : '목록 접기'}
                 className="flex items-center gap-3 group cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg px-2 -ml-2"
               >
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-gray-100 flex items-center gap-3">
-                  <BookOpen className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
+                  <BookOpen className="w-6 h-6 text-blue-600" />
                   {activeFilter === 'all' ? '내 출강 리스트' : 
                    activeFilter === 'scheduled' ? '오픈 예정' :
                    activeFilter === 'ongoing' ? '진행 중' :
                    activeFilter === 'completed' ? '완료' :
                    activeFilter === 'applicable' ? '신청 가능' : '내 출강 리스트'}
                 </h2>
-                <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-gray-400 group-hover:text-slate-700 dark:group-hover:text-gray-300 transition-colors">
+                <div className="flex items-center gap-2 text-sm text-slate-500 group-hover:text-slate-700 transition-colors">
                   {isCollapsed ? (
                     <>
                       <ChevronDown className="w-5 h-5" />
-                      <span className="text-xs">목록 숨김 (클릭하여 펼치기)</span>
-                    </>
+                  <span className="text-xs">목록 숨김 (클릭하여 펼치기)</span>
+                    </> 
                   ) : (
                     <ChevronUp className="w-5 h-5" />
                   )}
@@ -842,7 +866,7 @@ export default function InstructorDashboard() {
                     className={`px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${
                       activeFilter === filter 
                         ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg scale-105' 
-                        : 'bg-white dark:bg-gray-800 text-slate-700 dark:text-gray-300 border-2 border-slate-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md'
+                        : 'bg-white text-slate-700 border-2 border-slate-200 hover:border-blue-400 hover:shadow-md'
                     }`}
                     onClick={() => setActiveFilter(filter)}
                   >
@@ -893,11 +917,11 @@ export default function InstructorDashboard() {
                       return (
                         <Card
                           key={education.key}
-                          className="rounded-2xl border-0 shadow-lg hover:shadow-2xl transition-all duration-300 dark:bg-gray-800 dark:border-gray-700"
+                          className="rounded-2xl border-0 shadow-lg hover:shadow-2xl transition-all duration-300"
                         >
                           <div className="space-y-4">
                             <div>
-                              <h3 className="font-bold text-lg text-slate-900 dark:text-gray-100 mb-2">
+                              <h3 className="font-bold text-lg text-slate-900 mb-2">
                                 {education.name}
                               </h3>
                               {education.applicationDeadline && (
@@ -914,7 +938,7 @@ export default function InstructorDashboard() {
                               )}
                             </div>
                             
-                            <div className="space-y-2 text-sm text-slate-600 dark:text-gray-400">
+                            <div className="space-y-2 text-sm text-slate-600">
                               <div className="flex items-center gap-2">
                                 <MapPin className="w-4 h-4" />
                                 <span>{education.institution}</span>
@@ -935,7 +959,7 @@ export default function InstructorDashboard() {
                               </div>
                             </div>
                             
-                            <div className="pt-4 border-t border-slate-200 dark:border-gray-700">
+                            <div className="pt-4 border-t border-slate-200">
                               <Button
                                 type="primary"
                                 className="w-full"
@@ -950,11 +974,11 @@ export default function InstructorDashboard() {
                     })}
                   </div>
                 ) : (
-                  <Card className="rounded-2xl border-0 shadow-lg text-center py-16 dark:bg-gray-800">
-                    <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center shadow-lg">
-                      <Calendar className="w-10 h-10 text-slate-400 dark:text-gray-500" />
+                  <Card className="rounded-2xl border-0 shadow-lg text-center py-16">
+                    <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center shadow-lg">
+                      <Calendar className="w-10 h-10 text-slate-400" />
                     </div>
-                    <p className="text-slate-500 dark:text-gray-400 font-semibold text-lg">신청 가능한 교육이 없습니다.</p>
+                    <p className="text-slate-500 font-semibold text-lg">신청 가능한 교육이 없습니다.</p>
                   </Card>
                 )
               ) : filteredCourses.length > 0 ? (
@@ -964,11 +988,11 @@ export default function InstructorDashboard() {
                   ))}
                 </div>
               ) : (
-                <Card className="rounded-2xl border-0 shadow-lg text-center py-16 dark:bg-gray-800">
-                  <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center shadow-lg">
-                    <BookOpen className="w-10 h-10 text-slate-400 dark:text-gray-500" />
+                <Card className="rounded-2xl border-0 shadow-lg text-center py-16">
+                  <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center shadow-lg">
+                    <BookOpen className="w-10 h-10 text-slate-400" />
                   </div>
-                  <p className="text-slate-500 dark:text-gray-400 font-semibold text-lg">해당하는 출강이 없습니다.</p>
+                  <p className="text-slate-500 font-semibold text-lg">해당하는 출강이 없습니다.</p>
                 </Card>
               )}
             </div>
@@ -977,12 +1001,12 @@ export default function InstructorDashboard() {
           {/* Modern Calendar Section */}
           <div>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-gray-100 flex items-center gap-3">
-                <Calendar className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
+                <Calendar className="w-6 h-6 text-blue-600" />
                 캘린더
               </h2>
             </div>
-            <Card className="rounded-2xl border-0 shadow-xl dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+            <Card className="rounded-2xl border-0 shadow-xl overflow-hidden">
               <div className="p-6">
                 {/* Calendar View Controls */}
                 <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
@@ -993,7 +1017,7 @@ export default function InstructorDashboard() {
                         className={`px-5 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
                           calendarView === view
                             ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg scale-105'
-                            : 'bg-white dark:bg-gray-700 text-slate-700 dark:text-gray-300 border-2 border-slate-200 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md'
+                            : 'bg-white text-slate-700 border-2 border-slate-200 hover:border-blue-400 hover:shadow-md'
                         }`}
                         onClick={() => setCalendarView(view)}
                       >
@@ -1004,7 +1028,7 @@ export default function InstructorDashboard() {
                   
                   <div className="flex items-center gap-2">
                     <Button 
-                      className="px-4 py-2 rounded-xl border-2 border-slate-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500"
+                      className="px-4 py-2 rounded-xl border-2 border-slate-200 hover:border-blue-400"
                       onClick={goToPreviousPeriod}
                     >
                       이전
@@ -1016,7 +1040,7 @@ export default function InstructorDashboard() {
                       오늘
                     </Button>
                     <Button 
-                      className="px-4 py-2 rounded-xl border-2 border-slate-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500"
+                      className="px-4 py-2 rounded-xl border-2 border-slate-200 hover:border-blue-400"
                       onClick={goToNextPeriod}
                     >
                       다음
@@ -1026,7 +1050,7 @@ export default function InstructorDashboard() {
                 
                 {/* Calendar Header */}
                 <div className="text-center mb-8">
-                  <h3 className="text-3xl font-bold text-slate-900 dark:text-gray-100 mb-2">
+                  <h3 className="text-3xl font-bold text-slate-900 mb-2">
                     {calendarView === 'monthly' && formatMonthName(currentMonth)}
                     {calendarView === 'weekly' && formatWeekRange(selectedDate)}
                     {calendarView === 'daily' && formatDailyDate(selectedDate)}
@@ -1034,15 +1058,15 @@ export default function InstructorDashboard() {
                   <div className="flex items-center justify-center gap-6 mt-6">
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg"></div>
-                      <span className="text-sm text-slate-600 dark:text-gray-400 font-medium">오늘</span>
+                      <span className="text-sm text-slate-600 font-medium">오늘</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 rounded-full bg-gradient-to-r from-emerald-500 to-green-600 shadow-lg"></div>
-                      <span className="text-sm text-slate-600 dark:text-gray-400 font-medium">출강 예정</span>
+                      <span className="text-sm text-slate-600 font-medium">출강 예정</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 rounded-full bg-gradient-to-r from-slate-400 to-slate-500 shadow-lg"></div>
-                      <span className="text-sm text-slate-600 dark:text-gray-400 font-medium">완료</span>
+                      <span className="text-sm text-slate-600 font-medium">완료</span>
                     </div>
                   </div>
                 </div>
@@ -1055,7 +1079,7 @@ export default function InstructorDashboard() {
                         <div 
                           key={day} 
                           className={`text-center text-sm font-bold py-3 rounded-xl ${
-                            idx === 0 ? 'text-red-500 dark:text-red-400' : idx === 6 ? 'text-blue-500 dark:text-blue-400' : 'text-slate-600 dark:text-gray-400'
+                            idx === 0 ? 'text-red-500' : idx === 6 ? 'text-blue-500' : 'text-slate-600'
                           }`}
                         >
                           {day}
@@ -1081,22 +1105,22 @@ export default function InstructorDashboard() {
                             }}
                             className={`min-h-[120px] flex flex-col rounded-2xl border-2 transition-all duration-300 cursor-pointer group overflow-hidden ${
                               !day.isCurrentMonth 
-                                ? 'border-slate-100 dark:border-gray-800 bg-slate-50/50 dark:bg-gray-800/50' 
+                                ? 'border-slate-100 bg-slate-50/50' 
                                 : isToday
-                                  ? 'border-blue-400 dark:border-blue-600 bg-gradient-to-br from-blue-50 via-blue-100/50 to-white dark:from-blue-900/30 dark:via-blue-800/20 dark:to-gray-800 shadow-xl ring-4 ring-blue-200/50 dark:ring-blue-700/30 scale-105'
+                                  ? 'border-blue-400 bg-gradient-to-br from-blue-50 via-blue-100/50 to-white shadow-xl ring-4 ring-blue-200/50 scale-105'
                                   : hasEvent
-                                    ? 'border-emerald-300 dark:border-emerald-600 bg-gradient-to-br from-emerald-50/80 via-white to-emerald-50/50 dark:from-emerald-900/20 dark:via-gray-800 dark:to-emerald-800/10 hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-lg'
-                                    : 'border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-slate-300 dark:hover:border-gray-600 hover:shadow-md'
+                                    ? 'border-emerald-300 bg-gradient-to-br from-emerald-50/80 via-white to-emerald-50/50 hover:border-emerald-400 hover:shadow-lg'
+                                    : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-md'
                             }`}
                           >
                             <div className={`flex items-center justify-center p-2 ${
                               !day.isCurrentMonth 
-                                ? 'text-slate-300 dark:text-gray-700' 
+                                ? 'text-slate-300' 
                                 : isToday
-                                  ? 'text-blue-700 dark:text-blue-300 font-bold'
+                                  ? 'text-blue-700 font-bold'
                                   : isWeekend
-                                    ? 'text-slate-500 dark:text-gray-400'
-                                    : 'text-slate-700 dark:text-gray-300'
+                                    ? 'text-slate-500'
+                                    : 'text-slate-700'
                             }`}>
                               <span className={`text-sm font-bold ${
                                 isToday ? 'w-8 h-8 flex items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg' : ''
@@ -1110,17 +1134,17 @@ export default function InstructorDashboard() {
                                   key={eventIndex}
                                   className={`text-[10px] px-2 py-1.5 rounded-lg font-bold truncate ${
                                     event.status === '예정'
-                                      ? 'bg-gradient-to-r from-blue-100 to-blue-200 dark:from-blue-900/40 dark:to-blue-800/30 text-blue-700 dark:text-blue-300'
+                                      ? 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700'
                                       : event.status === '진행중'
-                                        ? 'bg-gradient-to-r from-emerald-100 to-green-200 dark:from-emerald-900/40 dark:to-green-800/30 text-emerald-700 dark:text-emerald-300'
-                                        : 'bg-gradient-to-r from-slate-100 to-slate-200 dark:from-gray-700 dark:to-gray-600 text-slate-600 dark:text-gray-400'
+                                        ? 'bg-gradient-to-r from-emerald-100 to-green-200 text-emerald-700'
+                                        : 'bg-gradient-to-r from-slate-100 to-slate-200 text-slate-600'
                                   }`}
                                 >
                                   {event.title}
                                 </div>
                               ))}
                               {events.length > 2 && (
-                                <div className="text-[10px] text-slate-500 dark:text-gray-500 font-bold px-2">
+                                <div className="text-[10px] text-slate-500 font-bold px-2">
                                   +{events.length - 2}개
                                 </div>
                               )}
@@ -1173,13 +1197,13 @@ export default function InstructorDashboard() {
         {selectedDateForModal && (
           <div className="p-8">
             <div className="mb-8">
-              <h3 className="text-3xl font-bold text-slate-900 dark:text-gray-100 mb-2">
+              <h3 className="text-3xl font-bold text-slate-900 mb-2">
                 {(() => {
                   const date = new Date(selectedDateForModal)
                   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`
                 })()}
               </h3>
-              <p className="text-slate-500 dark:text-gray-400 text-lg">
+              <p className="text-slate-500 text-lg">
                 {(() => {
                   const date = new Date(selectedDateForModal)
                   return ['일', '월', '화', '수', '목', '금', '토'][date.getDay()] + '요일'
@@ -1194,15 +1218,15 @@ export default function InstructorDashboard() {
                     key={index}
                     className={`p-6 rounded-2xl border-2 ${
                       event.status === '예정'
-                        ? 'border-blue-300 dark:border-blue-600 bg-gradient-to-br from-blue-50 via-white to-blue-50/50 dark:from-blue-900/30 dark:via-gray-800 dark:to-blue-800/20'
+                        ? 'border-blue-300 bg-gradient-to-br from-blue-50 via-white to-blue-50/50'
                         : event.status === '진행중'
-                          ? 'border-emerald-300 dark:border-emerald-600 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/50 dark:from-emerald-900/30 dark:via-gray-800 dark:to-emerald-800/20'
-                          : 'border-slate-200 dark:border-gray-700 bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800'
+                          ? 'border-emerald-300 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/50'
+                          : 'border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-50'
                     }`}
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
-                        <h4 className="text-2xl font-bold text-slate-900 dark:text-gray-100 mb-4">{event.title}</h4>
+                        <h4 className="text-2xl font-bold text-slate-900 mb-4">{event.title}</h4>
                         <div className="space-y-3">
                           {event.timeRange && (
                             <div className="flex items-center gap-4">
@@ -1210,8 +1234,8 @@ export default function InstructorDashboard() {
                                 <Clock className="w-6 h-6 text-white" />
                               </div>
                               <div>
-                                <div className="text-xs text-slate-500 dark:text-gray-400 mb-1">시간</div>
-                                <div className="text-lg font-bold text-slate-900 dark:text-gray-100">{event.timeRange}</div>
+                                <div className="text-xs text-slate-500 mb-1">시간</div>
+                                <div className="text-lg font-bold text-slate-900">{event.timeRange}</div>
                               </div>
                             </div>
                           )}
@@ -1221,8 +1245,8 @@ export default function InstructorDashboard() {
                                 <School className="w-6 h-6 text-white" />
                               </div>
                               <div>
-                                <div className="text-xs text-slate-500 dark:text-gray-400 mb-1">기관명</div>
-                                <div className="text-lg font-bold text-slate-900 dark:text-gray-100">{event.institutionName}</div>
+                                <div className="text-xs text-slate-500 mb-1">기관명</div>
+                                <div className="text-lg font-bold text-slate-900">{event.institutionName}</div>
                               </div>
                             </div>
                           )}
@@ -1232,8 +1256,8 @@ export default function InstructorDashboard() {
                                 <User className="w-6 h-6 text-white" />
                               </div>
                               <div>
-                                <div className="text-xs text-slate-500 dark:text-gray-400 mb-1">학급</div>
-                                <div className="text-lg font-bold text-slate-900 dark:text-gray-100">{event.classInfo}</div>
+                                <div className="text-xs text-slate-500 mb-1">학급</div>
+                                <div className="text-lg font-bold text-slate-900">{event.classInfo}</div>
                               </div>
                             </div>
                           )}
@@ -1248,10 +1272,10 @@ export default function InstructorDashboard() {
               </div>
             ) : (
               <div className="text-center py-16">
-                <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center shadow-lg">
-                  <Calendar className="w-10 h-10 text-slate-400 dark:text-gray-500" />
+                <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center shadow-lg">
+                  <Calendar className="w-10 h-10 text-slate-400" />
                 </div>
-                <p className="text-slate-500 dark:text-gray-400 font-semibold text-lg">이 날짜에는 일정이 없습니다</p>
+                <p className="text-slate-500 font-semibold text-lg">이 날짜에는 일정이 없습니다</p>
               </div>
             )}
           </div>

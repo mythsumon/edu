@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button, Table, Card, Input, InputNumber, Space, message, Modal, Badge } from 'antd'
+import { Button, Table, Card, Input, InputNumber, Space, message, Modal, Badge, DatePicker, Select } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { Plus, Trash2, Edit, Save, X, ArrowLeft } from 'lucide-react'
+import { Plus, Trash2, Edit, Save, X, ArrowLeft, Calendar, Search } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { DetailSectionCard } from '@/components/admin/operations'
 import {
@@ -13,8 +13,10 @@ import {
   addInventoryItem,
   updateInventoryItem,
   deleteInventoryItem,
+  getInventoryByDate,
 } from '@/app/instructor/equipment-confirmations/admin-helpers'
 import type { InventoryItem } from '@/app/instructor/equipment-confirmations/types'
+import dayjs, { Dayjs } from 'dayjs'
 
 export default function TeachingAidsInventoryPage() {
   const router = useRouter()
@@ -24,6 +26,9 @@ export default function TeachingAidsInventoryPage() {
   const [addModalVisible, setAddModalVisible] = useState(false)
   const [newItem, setNewItem] = useState({ name: '', totalQty: 0, brokenQty: 0 })
   const [searchText, setSearchText] = useState('')
+  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null)
+  const [selectedEquipment, setSelectedEquipment] = useState<string | undefined>(undefined)
+  const [viewMode, setViewMode] = useState<'current' | 'date'>('current')
 
   // Load inventory
   useEffect(() => {
@@ -37,12 +42,30 @@ export default function TeachingAidsInventoryPage() {
     setInventory(loaded)
   }
 
-  // Filter inventory by search text
-  const filteredInventory = useMemo(() => {
-    if (!searchText) return inventory
-    const lowerSearch = searchText.toLowerCase()
-    return inventory.filter(item => item.name.toLowerCase().includes(lowerSearch))
-  }, [inventory, searchText])
+  // Get inventory based on view mode
+  const displayInventory = useMemo(() => {
+    if (viewMode === 'date' && selectedDate) {
+      // Get inventory for specific date
+      const dateInventory = getInventoryByDate(selectedDate.toDate(), selectedEquipment)
+      // Filter by search text if provided
+      if (searchText) {
+        const lowerSearch = searchText.toLowerCase()
+        return dateInventory.filter(item => item.name.toLowerCase().includes(lowerSearch))
+      }
+      return dateInventory
+    }
+    // Current inventory (default)
+    if (searchText) {
+      const lowerSearch = searchText.toLowerCase()
+      return inventory.filter(item => item.name.toLowerCase().includes(lowerSearch))
+    }
+    return inventory
+  }, [inventory, searchText, viewMode, selectedDate, selectedEquipment])
+
+  // Get unique equipment names for filter
+  const equipmentNames = useMemo(() => {
+    return Array.from(new Set(inventory.map(item => item.name))).sort()
+  }, [inventory])
 
   const handleEdit = (item: InventoryItem) => {
     setEditingId(item.id)
@@ -288,24 +311,69 @@ export default function TeachingAidsInventoryPage() {
         <div className="max-w-7xl mx-auto px-6 py-8">
           <DetailSectionCard title="재고 목록">
             <div className="space-y-4">
-              {/* Search */}
-              <div className="flex items-center gap-4">
+              {/* Filters */}
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">조회 모드:</span>
+                  <Select
+                    value={viewMode}
+                    onChange={setViewMode}
+                    style={{ width: 120 }}
+                    options={[
+                      { value: 'current', label: '현재 재고' },
+                      { value: 'date', label: '날짜별 조회' },
+                    ]}
+                  />
+                </div>
+                
+                {viewMode === 'date' && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-gray-500" />
+                      <DatePicker
+                        value={selectedDate}
+                        onChange={(date) => setSelectedDate(date)}
+                        placeholder="날짜 선택"
+                        format="YYYY-MM-DD"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">교구 종류:</span>
+                      <Select
+                        value={selectedEquipment}
+                        onChange={setSelectedEquipment}
+                        style={{ width: 200 }}
+                        allowClear
+                        placeholder="전체"
+                        options={equipmentNames.map(name => ({ value: name, label: name }))}
+                      />
+                    </div>
+                  </>
+                )}
+                
                 <Input
                   placeholder="품명으로 검색..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   className="max-w-xs"
                   allowClear
+                  prefix={<Search className="w-4 h-4 text-gray-400" />}
                 />
+                
                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                  총 {filteredInventory.length}개 항목
+                  총 {displayInventory.length}개 항목
+                  {viewMode === 'date' && selectedDate && (
+                    <span className="ml-2 text-blue-600 dark:text-blue-400">
+                      ({selectedDate.format('YYYY-MM-DD')} 기준)
+                    </span>
+                  )}
                 </div>
               </div>
 
               {/* Table */}
               <Table
                 columns={columns}
-                dataSource={filteredInventory}
+                dataSource={displayInventory}
                 rowKey="id"
                 pagination={{
                   pageSize: 20,

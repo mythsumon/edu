@@ -5,7 +5,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { Button, Card, Input, Select, Space, Table, InputNumber, message, Upload, Modal, DatePicker } from 'antd'
 import { UploadOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
-import { ArrowLeft, Save, Edit, X, UserPlus } from 'lucide-react'
+import { ArrowLeft, Save, Edit, X, UserPlus, CheckCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { DetailSectionCard, DefinitionListGrid } from '@/components/admin/operations'
@@ -14,6 +14,8 @@ import type { InstitutionContact, AttendanceSignatures, Signature } from '@/comp
 import { dataStore } from '@/lib/dataStore'
 import type { InstructorAssignment } from '@/lib/dataStore'
 import { upsertAttendanceDoc, getAttendanceDocByEducationId, type AttendanceDocument } from './storage'
+import { teacherEducationInfoStore, attendanceInfoRequestStore } from '@/lib/teacherStore'
+import type { TeacherEducationInfo } from '@/lib/teacherStore'
 import dayjs from 'dayjs'
 
 const { TextArea } = Input
@@ -78,6 +80,9 @@ export default function InstructorAttendancePage() {
   const [schoolSignatureModalVisible, setSchoolSignatureModalVisible] = useState(false)
   const [schoolSignatureUrl, setSchoolSignatureUrl] = useState<string>('')
   const [schoolSignatureName, setSchoolSignatureName] = useState<string>('')
+  const [teacherEducationInfo, setTeacherEducationInfo] = useState<TeacherEducationInfo | null>(null)
+  const [requestModalVisible, setRequestModalVisible] = useState(false)
+  const [requestMessage, setRequestMessage] = useState('')
   
   const educationId = params?.educationId as string
   const currentInstructorName = '홍길동' // TODO: Get from auth context
@@ -236,6 +241,57 @@ export default function InstructorAttendancePage() {
 
   const [attendanceStatus, setAttendanceStatus] = useState<'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'>('DRAFT')
 
+  // Load teacher education info
+  const loadTeacherEducationInfo = () => {
+    if (educationId) {
+      const teacherInfo = teacherEducationInfoStore.getByEducationId(educationId)
+      setTeacherEducationInfo(teacherInfo)
+      
+      if (teacherInfo) {
+        // Auto-load teacher data into header and students
+        if (teacherInfo.grade && teacherInfo.className) {
+          setHeaderData(prev => ({
+            ...prev,
+            gradeClass: `${teacherInfo.grade}학년 ${teacherInfo.className}`,
+          }))
+        }
+        
+        if (teacherInfo.teacherName && teacherInfo.teacherContact) {
+          setInstitutionContact({
+            name: teacherInfo.teacherName,
+            phone: teacherInfo.teacherContact,
+            email: '',
+          })
+        }
+        
+        // Load students from teacher info
+        if (teacherInfo.students && teacherInfo.students.length > 0) {
+          const teacherStudents: StudentAttendance[] = teacherInfo.students.map((student, index) => ({
+            id: `student-${student.no}`,
+            number: student.no,
+            name: student.name,
+            gender: '남' as const, // Default, will be updated if available
+            sessionAttendances: sessions.map(() => 0), // Initialize with zeros
+            completionStatus: 'X' as const,
+            isTransferred: false,
+          }))
+          
+          // Merge with existing students (preserve attendance data)
+          setStudents(prev => {
+            const merged = teacherStudents.map(ts => {
+              const existing = prev.find(s => s.number === ts.number && s.name === ts.name)
+              if (existing) {
+                return existing // Keep existing attendance data
+              }
+              return ts
+            })
+            return merged.length > 0 ? merged : prev
+          })
+        }
+      }
+    }
+  }
+
   // Load attendance document
   const loadAttendanceDoc = () => {
     if (educationId) {
@@ -258,11 +314,28 @@ export default function InstructorAttendancePage() {
         setSessions(savedDoc.sessions)
         setStudents(savedDoc.students)
       }
+      
+      // Load teacher education info after loading saved doc
+      loadTeacherEducationInfo()
     }
   }
 
   useEffect(() => {
     loadAttendanceDoc()
+  }, [educationId])
+
+  // Listen for teacher education info updates
+  useEffect(() => {
+    if (typeof window === 'undefined' || !educationId) return
+
+    const handleTeacherInfoUpdate = () => {
+      loadTeacherEducationInfo()
+    }
+
+    window.addEventListener('teacherEducationInfoUpdated', handleTeacherInfoUpdate)
+    return () => {
+      window.removeEventListener('teacherEducationInfoUpdated', handleTeacherInfoUpdate)
+    }
   }, [educationId])
 
   // Listen for localStorage changes (when admin updates status)
@@ -295,6 +368,23 @@ export default function InstructorAttendancePage() {
       window.removeEventListener('storage', handleStorageChange)
     }
   }, [educationId])
+
+  // Request attendance info from teacher
+  const handleRequestAttendanceInfo = () => {
+    if (!educationId) return
+    
+    attendanceInfoRequestStore.create({
+      educationId,
+      requesterInstructorId: userProfile?.userId || 'instructor-1',
+      requesterInstructorName: userProfile?.name || currentInstructorName,
+      status: 'OPEN',
+      message: requestMessage || '출석부 정보 입력을 요청드립니다.',
+    })
+    
+    message.success('출석부 정보 요청이 전송되었습니다.')
+    setRequestModalVisible(false)
+    setRequestMessage('')
+  }
 
   const handleSave = async () => {
     try {
@@ -890,6 +980,39 @@ export default function InstructorAttendancePage() {
         </div>
 
         <div className="max-w-7xl mx-auto px-6 py-8">
+          {/* Teacher Education Info Alert */}
+          {teacherEducationInfo && (
+            <Card className="mb-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-blue-600" />
+                  <span className="font-medium text-blue-900 dark:text-blue-100">
+                    학교 선생님이 입력한 교육 정보가 자동으로 불러와졌습니다.
+                  </span>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Request Info Button */}
+          {!teacherEducationInfo && !isAdmin && (
+            <Card className="mb-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="font-medium text-yellow-900 dark:text-yellow-100">
+                    학교 선생님의 교육 정보가 아직 입력되지 않았습니다.
+                  </span>
+                </div>
+                <Button
+                  type="primary"
+                  onClick={() => setRequestModalVisible(true)}
+                >
+                  출석부 정보 요청
+                </Button>
+              </div>
+            </Card>
+          )}
+
           {/* SECTION 1: Header (교육 정보) */}
           <DetailSectionCard title="교육 정보" className="mb-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -918,12 +1041,19 @@ export default function InstructorAttendancePage() {
                 )}
               </div>
               <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">학급명</div>
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">
+                  학급명
+                  {teacherEducationInfo && (
+                    <span className="ml-2 text-xs text-blue-600">(학교 입력)</span>
+                  )}
+                </div>
                 {isEditMode ? (
                   <Input
                     value={headerData.gradeClass}
                     onChange={(e) => setHeaderData({ ...headerData, gradeClass: e.target.value })}
                     className="w-full"
+                    disabled={!!teacherEducationInfo}
+                    title={teacherEducationInfo ? '학교 선생님이 입력한 정보는 수정할 수 없습니다.' : ''}
                   />
                 ) : (
                   <div className="text-base font-medium text-gray-900 dark:text-gray-100">{headerData.gradeClass}</div>
@@ -1178,6 +1308,36 @@ export default function InstructorAttendancePage() {
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   다른 사람의 서명을 업로드할 수 있습니다.
                 </p>
+              </div>
+            </div>
+          </Modal>
+
+          {/* Request Attendance Info Modal */}
+          <Modal
+            title="출석부 정보 요청"
+            open={requestModalVisible}
+            onOk={handleRequestAttendanceInfo}
+            onCancel={() => {
+              setRequestModalVisible(false)
+              setRequestMessage('')
+            }}
+            okText="요청 전송"
+            cancelText="취소"
+          >
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                학교 선생님에게 출석부 정보 입력을 요청합니다. 요청 후 선생님의 요청함에 알림이 전송됩니다.
+              </p>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  요청 메시지 (선택)
+                </label>
+                <Input.TextArea
+                  rows={4}
+                  value={requestMessage}
+                  onChange={(e) => setRequestMessage(e.target.value)}
+                  placeholder="출석부 정보 입력을 요청드립니다."
+                />
               </div>
             </div>
           </Modal>

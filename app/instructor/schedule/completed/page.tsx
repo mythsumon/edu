@@ -42,13 +42,15 @@ export default function CompletedEducationPage() {
     })
   }, [allAssignments, currentInstructorName])
 
+  const allCount = completedAssignments.length
+
   return (
     <ProtectedRoute requiredRole="instructor">
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 transition-colors">
+        <div className="p-6">
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               완료된 교육
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
@@ -56,9 +58,18 @@ export default function CompletedEducationPage() {
             </p>
           </div>
 
+          {/* Statistics Card */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <Card className="rounded-xl">
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">전체</div>
+              <div className="text-3xl font-bold text-slate-600">{allCount}</div>
+            </Card>
+          </div>
+
           {/* Education Cards */}
-          {completedAssignments.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Card className="rounded-xl">
+            {completedAssignments.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {completedAssignments.map((assignment) => (
                 <Card
                   key={assignment.key}
@@ -111,13 +122,14 @@ export default function CompletedEducationPage() {
                   </div>
                 </Card>
               ))}
-            </div>
-          ) : (
-            <Card className="text-center py-12">
-              <Award className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">완료된 교육이 없습니다.</p>
-            </Card>
-          )}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Award className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500">완료된 교육이 없습니다.</p>
+              </div>
+            )}
+          </Card>
         </div>
       </div>
     </ProtectedRoute>

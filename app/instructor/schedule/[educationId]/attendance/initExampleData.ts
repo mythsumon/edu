@@ -1,188 +1,123 @@
 // Initialize example attendance documents for testing
 import { upsertAttendanceDoc, type AttendanceDocument } from './storage'
+import { instructorCourses } from '@/mock/instructorDashboardData'
 
 export function initExampleAttendanceDocs() {
   if (typeof window === 'undefined') return
 
   // Check if example data already exists
   const existingDocs = JSON.parse(localStorage.getItem('attendance_documents') || '[]')
-  if (existingDocs.length > 0) {
+  if (existingDocs.length >= 10) {
     console.log('Example attendance docs already exist')
     return
   }
 
-  const exampleDoc1: AttendanceDocument = {
-    id: 'attendance-1',
-    educationId: '1',
-    assignmentId: 'assignment-1',
-    location: '평택시',
-    institution: '평택안일초등학교',
-    gradeClass: '5학년 6반',
-    programName: '8차시 블록코딩과 엔트리 기초 및 인공지능',
-    totalSessions: 8,
-    maleCount: 11,
-    femaleCount: 11,
-    schoolContactName: '박지민',
-    institutionContact: {
-      name: '김담당',
-      phone: '010-1234-5678',
-      email: 'contact@school.kr',
-    },
-    signatures: {
-      school: {
-        signedByUserId: 'school-1',
-        signedByUserName: '박지민',
-        signedAt: new Date().toISOString(),
-        signatureImageUrl: '/api/placeholder/200/80',
-      },
-      session1MainInstructor: {
-        signedByUserId: 'instructor-1',
-        signedByUserName: '홍길동',
-        signedAt: new Date().toISOString(),
-        signatureImageUrl: '/api/placeholder/200/80',
-      },
-      session1AssistantInstructor: {
-        signedByUserId: 'instructor-2',
-        signedByUserName: '이보조',
-        signedAt: new Date().toISOString(),
-        signatureImageUrl: '/api/placeholder/200/80',
-      },
-      session2MainInstructor: {
-        signedByUserId: 'instructor-1',
-        signedByUserName: '홍길동',
-        signedAt: new Date().toISOString(),
-        signatureImageUrl: '/api/placeholder/200/80',
-      },
-      session2AssistantInstructor: {
-        signedByUserId: 'instructor-2',
-        signedByUserName: '이보조',
-        signedAt: new Date().toISOString(),
-        signatureImageUrl: '/api/placeholder/200/80',
-      },
-    },
-    sessions: [
-      {
-        sessionNumber: 1,
-        date: '2025-01-15',
-        startTime: '09:00',
-        endTime: '12:00',
-        sessions: 4,
-        mainInstructor: '홍길동',
-        assistantInstructor: '이보조',
-        institutionContacts: ['김담당'],
-        studentCount: 22,
-        attendanceCount: 20,
-      },
-      {
-        sessionNumber: 2,
-        date: '2025-01-22',
-        startTime: '09:00',
-        endTime: '12:00',
-        sessions: 4,
-        mainInstructor: '홍길동',
-        assistantInstructor: '이보조',
-        institutionContacts: ['김담당'],
-        studentCount: 22,
-        attendanceCount: 21,
-      },
-    ],
-    students: [
-      { id: '1', number: 1, name: '김학생', gender: '남', sessionAttendances: [4, 4], completionStatus: 'O' },
-      { id: '2', number: 2, name: '이학생', gender: '여', sessionAttendances: [4, 4], completionStatus: 'O' },
-      { id: '3', number: 3, name: '박학생', gender: '남', sessionAttendances: [3, 4], completionStatus: 'O' },
-      { id: '4', number: 4, name: '최학생', gender: '여', sessionAttendances: [4, 3], completionStatus: 'O' },
-      { id: '5', number: 5, name: '정학생', gender: '남', sessionAttendances: [2, 4], completionStatus: 'X' },
-    ],
-    status: 'SUBMITTED',
-    submittedAt: new Date().toISOString(),
-    submittedBy: '홍길동',
-    createdAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-    updatedAt: new Date().toISOString(),
-  }
+  // Generate 10 example documents based on instructorCourses
+  const exampleDocs: AttendanceDocument[] = []
 
-  const exampleDoc2: AttendanceDocument = {
-    id: 'attendance-2',
-    educationId: '2',
-    assignmentId: 'assignment-2',
-    location: '수원시',
-    institution: '수원중앙초등학교',
-    gradeClass: '4학년 3반',
-    programName: '10차시 스크래치 기초 프로그래밍',
-    totalSessions: 10,
-    maleCount: 15,
-    femaleCount: 12,
-    schoolContactName: '이담당',
-    institutionContact: {
-      name: '박담당',
-      phone: '010-9876-5432',
-      email: 'contact2@school.kr',
-    },
-    signatures: {
-      school: {
-        signedByUserId: 'school-2',
-        signedByUserName: '이담당',
-        signedAt: new Date().toISOString(),
-        signatureImageUrl: '/api/placeholder/200/80',
+  for (let i = 0; i < Math.min(10, instructorCourses.length); i++) {
+    const course = instructorCourses[i]
+    const now = new Date()
+    const daysAgo = i * 2 // Spread dates across time
+    const createdAt = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000).toISOString()
+    
+    const statuses: Array<'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'> = ['DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED']
+    const status = statuses[i % 4]
+    
+    const doc: AttendanceDocument = {
+      id: `attendance-${i + 1}`,
+      educationId: course.id,
+      assignmentId: `assignment-${i + 1}`,
+      location: course.region || '서울',
+      institution: course.institutionName,
+      gradeClass: course.classInfo,
+      programName: course.educationName,
+      totalSessions: 8 + (i % 4),
+      maleCount: 10 + (i % 10),
+      femaleCount: 10 + (i % 8),
+      schoolContactName: `담당자${i + 1}`,
+      institutionContact: {
+        name: `김담당${i + 1}`,
+        phone: `010-1234-${String(5678 + i).padStart(4, '0')}`,
+        email: `contact${i + 1}@school.kr`,
       },
-    },
-    sessions: [
-      {
-        sessionNumber: 1,
-        date: '2025-01-20',
-        startTime: '10:00',
-        endTime: '12:00',
-        sessions: 2,
-        mainInstructor: '홍길동',
-        assistantInstructor: '김보조',
-        institutionContacts: ['박담당'],
-        studentCount: 27,
-        attendanceCount: 25,
-      },
-    ],
-    students: [
-      { id: '1', number: 1, name: '강학생', gender: '남', sessionAttendances: [2], completionStatus: 'O' },
-      { id: '2', number: 2, name: '윤학생', gender: '여', sessionAttendances: [2], completionStatus: 'O' },
-      { id: '3', number: 3, name: '장학생', gender: '남', sessionAttendances: [1], completionStatus: 'X' },
-    ],
-    status: 'APPROVED',
-    submittedAt: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-    submittedBy: '홍길동',
-    approvedAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-    approvedBy: '관리자',
-    createdAt: new Date(Date.now() - 172800000).toISOString(),
-    updatedAt: new Date(Date.now() - 86400000).toISOString(),
-  }
-
-  const exampleDoc3: AttendanceDocument = {
-    id: 'attendance-3',
-    educationId: '3',
-    assignmentId: 'assignment-3',
-    location: '성남시',
-    institution: '성남서초등학교',
-    gradeClass: '6학년 2반',
-    programName: '12차시 파이썬 기초',
-    totalSessions: 12,
-    maleCount: 10,
-    femaleCount: 13,
-    schoolContactName: '최담당',
-    institutionContact: {
-      name: '정담당',
-      phone: '010-5555-6666',
-      email: 'contact3@school.kr',
-    },
-    signatures: {},
-    sessions: [],
-    students: [],
-    status: 'DRAFT',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+      signatures: i < 5 ? {
+        school: {
+          signedByUserId: `school-${i + 1}`,
+          signedByUserName: `담당자${i + 1}`,
+          signedAt: createdAt,
+          signatureImageUrl: '/api/placeholder/200/80',
+        },
+        session1MainInstructor: {
+          signedByUserId: 'instructor-1',
+          signedByUserName: '홍길동',
+          signedAt: createdAt,
+          signatureImageUrl: '/api/placeholder/200/80',
+        },
+      } : {},
+      sessions: [
+        {
+          sessionNumber: 1,
+          date: course.startDate,
+          startTime: course.timeRange.split('~')[0] || '09:00',
+          endTime: course.timeRange.split('~')[1] || '12:00',
+          sessions: 4,
+          mainInstructor: '홍길동',
+          assistantInstructor: '이보조',
+          institutionContacts: [`김담당${i + 1}`],
+          studentCount: 20 + (i % 10),
+          attendanceCount: 18 + (i % 8),
+        },
+        ...(i % 2 === 0 ? [{
+          sessionNumber: 2,
+          date: course.endDate,
+          startTime: course.timeRange.split('~')[0] || '09:00',
+          endTime: course.timeRange.split('~')[1] || '12:00',
+          sessions: 4,
+          mainInstructor: '홍길동',
+          assistantInstructor: '이보조',
+          institutionContacts: [`김담당${i + 1}`],
+          studentCount: 20 + (i % 10),
+          attendanceCount: 19 + (i % 8),
+        }] : []),
+      ],
+      students: Array.from({ length: 5 + (i % 5) }, (_, j) => ({
+        id: `student-${i}-${j + 1}`,
+        number: j + 1,
+        name: `학생${j + 1}`,
+        gender: j % 2 === 0 ? '남' as const : '여' as const,
+        sessionAttendances: [4, 4],
+        completionStatus: j < 3 ? 'O' as const : 'X' as const,
+      })),
+      status,
+      ...(status !== 'DRAFT' ? {
+        submittedAt: createdAt,
+        submittedBy: '홍길동',
+      } : {}),
+      ...(status === 'APPROVED' ? {
+        approvedAt: new Date(new Date(createdAt).getTime() + 24 * 60 * 60 * 1000).toISOString(),
+        approvedBy: '관리자',
+      } : {}),
+      ...(status === 'REJECTED' ? {
+        rejectedAt: new Date(new Date(createdAt).getTime() + 24 * 60 * 60 * 1000).toISOString(),
+        rejectedBy: '관리자',
+        rejectReason: '서명이 누락되었습니다.',
+      } : {}),
+      createdAt,
+      updatedAt: createdAt,
+    }
+    
+    exampleDocs.push(doc)
   }
 
   // Save example documents
-  upsertAttendanceDoc(exampleDoc1)
-  upsertAttendanceDoc(exampleDoc2)
-  upsertAttendanceDoc(exampleDoc3)
+  const results = exampleDocs.map(doc => upsertAttendanceDoc(doc))
 
-  console.log('Example attendance documents initialized')
+  const failedResults = results.filter(result => !result.success)
+  if (failedResults.length > 0) {
+    console.error('Failed to save some example documents:', failedResults)
+  } else {
+    console.log(`Example attendance documents initialized (${exampleDocs.length} documents)`)
+  }
 }
 

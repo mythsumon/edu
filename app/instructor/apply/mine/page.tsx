@@ -160,13 +160,18 @@ export default function MyApplicationsPage() {
     },
   ]
 
+  const allCount = enhancedApplications.length
+  const confirmedCount = enhancedApplications.filter(a => a.finalStatus === '확정됨').length
+  const pendingCount = enhancedApplications.filter(a => a.finalStatus === '대기').length
+  const rejectedCount = enhancedApplications.filter(a => a.finalStatus === '거절됨' || a.finalStatus === '삭제됨').length
+
   return (
     <ProtectedRoute requiredRole="instructor">
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 transition-colors">
+        <div className="p-6">
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               내가 신청한 교육들
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
@@ -174,26 +179,47 @@ export default function MyApplicationsPage() {
             </p>
           </div>
 
-          {/* Search */}
-          <Card className="mb-6">
-            <Input
-              placeholder="교육명, 기관명 검색"
-              prefix={<Search className="w-4 h-4 text-gray-400" />}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              className="w-full max-w-md"
-            />
-          </Card>
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <Card className="rounded-xl">
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">전체</div>
+              <div className="text-3xl font-bold text-slate-600">{allCount}</div>
+            </Card>
+            <Card className="rounded-xl">
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">확정됨</div>
+              <div className="text-3xl font-bold text-green-600">{confirmedCount}</div>
+            </Card>
+            <Card className="rounded-xl">
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">대기</div>
+              <div className="text-3xl font-bold text-blue-600">{pendingCount}</div>
+            </Card>
+            <Card className="rounded-xl">
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">거절/삭제</div>
+              <div className="text-3xl font-bold text-red-600">{rejectedCount}</div>
+            </Card>
+          </div>
 
-          {/* Table */}
-          <Card>
+          {/* Search and Table */}
+          <Card className="rounded-xl">
+            {/* Search Bar */}
+            <div className="mb-4">
+              <Input
+                placeholder="교육ID, 교육명, 기관명으로 검색"
+                prefix={<Search className="w-4 h-4 text-gray-400" />}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                allowClear
+                className="max-w-md"
+              />
+            </div>
+
             <Table
               columns={columns}
               dataSource={filteredData}
               rowKey="key"
               scroll={{ x: 'max-content' }}
               pagination={{
-                pageSize: 10,
+                pageSize: 20,
                 showSizeChanger: true,
                 showTotal: (total) => `총 ${total}건`,
               }}

@@ -480,13 +480,15 @@ export default function ApplyForEducationPage() {
     return `D-${days}`
   }
 
+  const allCount = openEducations.length + closedEducations.length
+
   return (
     <ProtectedRoute requiredRole="instructor">
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 transition-colors">
+        <div className="p-6">
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               출강 신청하기
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
@@ -494,8 +496,24 @@ export default function ApplyForEducationPage() {
             </p>
           </div>
 
+          {/* Statistics Card */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <Card className="rounded-xl">
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">전체</div>
+              <div className="text-3xl font-bold text-slate-600">{allCount}</div>
+            </Card>
+            <Card className="rounded-xl">
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">신청 가능</div>
+              <div className="text-3xl font-bold text-blue-600">{openEducations.length}</div>
+            </Card>
+            <Card className="rounded-xl">
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">마감</div>
+              <div className="text-3xl font-bold text-gray-600">{closedEducations.length}</div>
+            </Card>
+          </div>
+
           {/* Tabs */}
-          <Card className="mb-6">
+          <Card className="rounded-xl mb-6">
             <Tabs
               activeKey={activeTab}
               onChange={(key) => setActiveTab(key as 'open' | 'closed')}

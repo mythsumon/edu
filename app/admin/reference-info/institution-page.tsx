@@ -2,10 +2,19 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo, useEffect } from 'react'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Table, Button, Card, Form, Input, Select, Checkbox, Space } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { ChevronRight, Download, ArrowLeft, Save, Trash2, RotateCcw, Eye } from 'lucide-react'
+import { ChevronRight, Download, ArrowLeft, Save, Trash2, RotateCcw, Eye, Plus, Search, Filter } from 'lucide-react'
+import { 
+  PageHeaderSticky,
+  DetailPageHeaderSticky,
+  InstitutionSummaryCard,
+  DetailSectionCard,
+  DefinitionListGrid,
+  SectionAccordion
+} from '@/components/admin/operations'
 
 const { TextArea } = Input
 
@@ -114,6 +123,40 @@ const emailDomainOptions = [
   { value: 'goe.go.kr', label: 'goe.go.kr' },
 ]
 
+// 시/군별 권역 매핑
+const cityToRegionMap: Record<string, string> = {
+  '수원시': '1권역',
+  '성남시': '2권역',
+  '고양시': '3권역',
+  '용인시': '4권역',
+  '부천시': '5권역',
+  '안산시': '5권역',
+  '안양시': '1권역',
+  '평택시': '6권역',
+  '시흥시': '5권역',
+  '김포시': '3권역',
+  '광명시': '5권역',
+  '광주시': '4권역',
+  '군포시': '1권역',
+  '하남시': '2권역',
+  '오산시': '6권역',
+  '이천시': '4권역',
+  '안성시': '6권역',
+  '의정부시': '3권역',
+  '양주시': '3권역',
+  '구리시': '2권역',
+  '남양주시': '2권역',
+  '파주시': '3권역',
+  '의왕시': '1권역',
+  '화성시': '6권역',
+  '양평군': '4권역',
+  '여주시': '4권역',
+  '동두천시': '3권역',
+  '과천시': '1권역',
+  '가평군': '2권역',
+  '연천군': '3권역',
+}
+
 const cityOptions = [
   { value: '수원시', label: '수원시' },
   { value: '성남시', label: '성남시' },
@@ -163,6 +206,15 @@ export default function InstitutionManagementPage() {
   const [selectedInstitution, setSelectedInstitution] = useState<InstitutionItem | null>(null)
   const [detailTab, setDetailTab] = useState<'basic' | 'manager'>('basic')
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
+
+  // 시/군 선택 시 권역 자동 설정
+  const handleCityChange = (city: string) => {
+    const region = cityToRegionMap[city] || ''
+    form.setFieldsValue({
+      city,
+      region,
+    })
+  }
 
   const handleRegisterClick = () => {
     setViewMode('register')
@@ -315,13 +367,6 @@ export default function InstitutionManagementPage() {
     },
   ]
 
-  const filteredData = dummyData.filter((item) => {
-    const matchesRegion = regionFilter === 'all' || item.region === regionFilter
-    const matchesName = !nameSearch || item.name.toLowerCase().includes(nameSearch.toLowerCase())
-    const matchesManager = !managerSearch || item.manager.toLowerCase().includes(managerSearch.toLowerCase())
-    return matchesRegion && matchesName && matchesManager
-  })
-
   const sections = [
     { key: 'institution', label: '교육기관 정보' },
     { key: 'manager', label: '담당자 정보' },
@@ -335,260 +380,65 @@ export default function InstitutionManagementPage() {
     }
   }
 
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState<boolean>(false)
+  const filterDropdownRef = useRef<HTMLDivElement>(null)
+
+  // Close filter dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
+        setFilterDropdownOpen(false)
+      }
+    }
+
+    if (filterDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [filterDropdownOpen])
+
+  // Filtered data with useMemo
+  const filteredData = useMemo(() => {
+    return dummyData.filter((item) => {
+      const matchesRegion = regionFilter === 'all' || item.region === regionFilter
+      const matchesName = !nameSearch || item.name.toLowerCase().includes(nameSearch.toLowerCase())
+      const matchesManager = !managerSearch || item.manager.toLowerCase().includes(managerSearch.toLowerCase())
+      return matchesRegion && matchesName && matchesManager
+    })
+  }, [regionFilter, nameSearch, managerSearch])
+
   return (
-    <div className="p-6">
+    <ProtectedRoute requiredRole="admin">
+      <div className="admin-page">
+      {viewMode === 'detail' && selectedInstitution ? (
+        /* Detail View - Redesigned to match other pages */
+        <div className="bg-slate-50 min-h-screen px-6 pt-0">
+          {/* Sticky Header */}
+          <DetailPageHeaderSticky
+            onBack={handleBackToList}
+            onEdit={handleEditFromDetail}
+          />
 
-      {/* Page Header */}
-      <div className="flex items-center justify-between mb-6">
-        {viewMode === 'list' ? (
-          <>
-            <Space>
-              {selectedRowKeys.length > 0 && (
-                <Button
-                  danger
-                  icon={<Trash2 className="w-4 h-4" />}
-                  onClick={handleBulkDelete}
-                  className="h-11 px-6 rounded-xl font-medium transition-all"
-                >
-                  삭제 ({selectedRowKeys.length})
-                </Button>
-              )}
-              <Button
-                type="primary"
-                onClick={handleRegisterClick}
-                className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              >
-                + 기관 등록
-              </Button>
-            </Space>
-            <Button
-              icon={<Download className="w-4 h-4" />}
-              onClick={() => console.log('Export to Excel')}
-              className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
-            >
-              엑셀 추출
-            </Button>
-          </>
-        ) : (
-          <Space>
-            {viewMode === 'edit' && (
-              <Button
-                danger
-                icon={<Trash2 className="w-4 h-4" />}
-                onClick={handleDelete}
-                className="h-11 px-6 rounded-xl font-medium transition-all"
-              >
-                삭제
-              </Button>
-            )}
-            {viewMode === 'detail' ? (
-              <>
-                <Button
-                  type="primary"
-                  onClick={handleEditFromDetail}
-                  className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                  수정하기
-                </Button>
-                <Button
-                  icon={<ArrowLeft className="w-4 h-4" />}
-                  onClick={handleBackToList}
-                  className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
-                >
-                  목록으로
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  type="primary"
-                  icon={<Save className="w-4 h-4 text-white" />}
-                  onClick={() => form.submit()}
-                  style={{
-                    color: 'white',
-                  }}
-                  className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white hover:!text-white [&_.anticon]:!text-white [&_.anticon]:hover:!text-white [&>span]:!text-white [&>span]:hover:!text-white [&:hover>span]:!text-white [&:hover_.anticon]:!text-white [&:hover]:!text-white"
-                >
-                  저장
-                </Button>
-                <Button
-                  icon={<ArrowLeft className="w-4 h-4" />}
-                  onClick={handleBackToList}
-                  className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
-                >
-                  취소
-                </Button>
-              </>
-            )}
-          </Space>
-        )}
-      </div>
-
-      {viewMode === 'list' ? (
-        /* List View */
-        <div className="space-y-4">
-          {/* Filters */}
-          <Card className="rounded-2xl shadow-sm border border-gray-200">
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-end">
-              <div className="space-y-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Select
-                    placeholder="권역 선택"
-                    value={regionFilter}
-                    onChange={setRegionFilter}
-                    options={regionOptions}
-                    className="w-full h-11 rounded-xl"
-                  />
-                  <Input
-                    placeholder="기관명 검색"
-                    value={nameSearch}
-                    onChange={(e) => setNameSearch(e.target.value)}
-                    allowClear
-                    className="h-11 rounded-xl"
-                  />
-                </div>
-                <Input
-                  placeholder="담당자 검색"
-                  value={managerSearch}
-                  onChange={(e) => setManagerSearch(e.target.value)}
-                  allowClear
-                  className="h-11 rounded-xl"
-                />
-              </div>
-              <div className="flex gap-1 justify-end">
-                <Button
-                  type="primary"
-                  onClick={handleSearch}
-                  className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                  검색
-                </Button>
-                <Button
-                  icon={<RotateCcw className="w-4 h-4" />}
-                  onClick={handleResetFilters}
-                  className="h-11 px-4 rounded-xl border border-gray-300 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
-                >
-                  초기화
-                </Button>
-              </div>
-            </div>
-          </Card>
-
-          {/* Table */}
-          <Card className="rounded-2xl shadow-sm border border-gray-200">
-            <Table
-              columns={columns}
-              dataSource={filteredData}
-              rowSelection={{
-                selectedRowKeys,
-                onChange: (selectedKeys) => {
-                  setSelectedRowKeys(selectedKeys)
-                },
-              }}
-              onRow={(record) => ({
-                onClick: () => handleViewDetail(record),
-                className: 'cursor-pointer hover:bg-gray-50',
-              })}
-              pagination={{
-                current: currentPage,
-                pageSize: pageSize,
-                total: filteredData.length,
-                showSizeChanger: true,
-                showTotal: (total) => `총 ${total}건`,
-                onChange: (page, size) => {
-                  setCurrentPage(page)
-                  setPageSize(size)
-                },
-              }}
-              rowKey="key"
-              scroll={{ x: 'max-content' }}
-              className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:sticky [&_.ant-table-thead>tr>th]:top-0 [&_.ant-table-thead>tr>th]:z-10 [&_.ant-pagination]:!mt-4 [&_.ant-pagination]:!mb-0 [&_.ant-pagination-item]:!rounded-lg [&_.ant-pagination-item]:!border-[#E6E6EF] [&_.ant-pagination-item]:!h-9 [&_.ant-pagination-item]:!min-w-[36px] [&_.ant-pagination-item-active]:!border-[#ff8a65] [&_.ant-pagination-item-active]:!bg-[#ff8a65] [&_.ant-pagination-item-active>a]:!text-white [&_.ant-pagination-prev]:!rounded-lg [&_.ant-pagination-prev]:!border-[#E6E6EF] [&_.ant-pagination-next]:!rounded-lg [&_.ant-pagination-next]:!border-[#E6E6EF] [&_.ant-pagination-options]:!ml-4 [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-[#E6E6EF] [&_.ant-pagination-total-text]:!text-[#151827] [&_.ant-pagination-total-text]:!mr-4"
+          {/* Main Content Container */}
+          <div className="max-w-5xl mx-auto pt-6 pb-12 space-y-4">
+            {/* Summary Card */}
+            <InstitutionSummaryCard
+              institutionId={selectedInstitution.institutionId}
+              name={selectedInstitution.name}
+              region={selectedInstitution.region}
+              address={selectedInstitution.address}
+              phone={selectedInstitution.phone}
+              manager={selectedInstitution.manager}
             />
-          </Card>
-        </div>
-      ) : viewMode === 'detail' && selectedInstitution ? (
-        /* Detail View */
-        <div className="space-y-6">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-3 text-sm text-gray-500">
-              <Button
-                type="text"
-                icon={<ArrowLeft className="w-4 h-4" />}
-                onClick={handleBackToList}
-                className="text-gray-600 hover:text-gray-900 px-0"
-              >
-                교육기관 관리
-              </Button>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
-              <span className="text-gray-900 font-medium">상세 정보</span>
-            </div>
 
-            <div className="rounded-2xl bg-white border border-gray-200 shadow-sm p-5 md:p-6 flex flex-col gap-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center px-3 py-1 text-xs font-semibold bg-gray-100 text-gray-700 rounded-full">
-                  {selectedInstitution.institutionId}
-                </span>
-                <span className="inline-flex items-center px-3 py-1 text-xs font-semibold bg-blue-50 text-blue-700 rounded-full">
-                  {selectedInstitution.region}
-                </span>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <h2 className="text-2xl md:text-3xl font-bold text-[#3a2e2a] leading-tight">{selectedInstitution.name}</h2>
-                <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-500">주소</span>
-                    <span className="text-gray-900 font-medium">{selectedInstitution.address}</span>
-                  </div>
-                  <div className="h-4 w-px bg-gray-200" />
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-500">전화번호</span>
-                    <span className="text-gray-900 font-medium">{selectedInstitution.phone}</span>
-                  </div>
-                  <div className="h-4 w-px bg-gray-200" />
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-500">담당자</span>
-                    <span className="text-gray-900 font-medium">{selectedInstitution.manager}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2 text-sm">
-                <span
-                  className={`inline-flex items-center rounded-full px-4 h-9 border cursor-pointer transition-colors ${
-                    detailTab === 'basic'
-                      ? 'bg-slate-900 border-slate-900 text-white shadow-sm'
-                      : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setDetailTab('basic')}
-                >
-                  기본 정보
-                </span>
-                <span
-                  className={`inline-flex items-center rounded-full px-4 h-9 border cursor-pointer transition-colors ${
-                    detailTab === 'manager'
-                      ? 'bg-slate-900 border-slate-900 text-white shadow-sm'
-                      : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setDetailTab('manager')}
-                >
-                  담당자 정보
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {detailTab === 'basic' && (
-            <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-blue-500" />
-                  <h3 className="text-lg font-semibold text-[#3a2e2a]">교육기관 정보</h3>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 px-6 py-6">
-                {[
-                  { label: '기관ID', value: selectedInstitution.institutionId },
+            {/* Institution Basic Info Section */}
+            <DetailSectionCard title="교육기관 정보">
+              <DefinitionListGrid
+                items={[
+                  { label: '기관 ID', value: selectedInstitution.institutionId },
                   { label: '기관명', value: selectedInstitution.name },
                   {
                     label: '권역',
@@ -596,88 +446,63 @@ export default function InstitutionManagementPage() {
                       <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
                         {selectedInstitution.region}
                       </span>
-                    ),
+                    )
                   },
                   { label: '주소', value: selectedInstitution.address },
                   { label: '상세 주소', value: selectedInstitution.detailAddress },
                   { label: '전화번호', value: selectedInstitution.phone },
-                ].map((item) => (
-                  <div key={item.label} className="space-y-1">
-                    <div className="text-sm font-semibold text-gray-500">{item.label}</div>
-                    <div className="text-base font-medium text-gray-900">{item.value}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+                ]}
+              />
+            </DetailSectionCard>
 
-          {detailTab === 'manager' && (
-            <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <h3 className="text-lg font-semibold text-[#3a2e2a]">담당자 정보</h3>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 px-6 py-6">
-                {[
+            {/* Manager Info Section */}
+            <DetailSectionCard title="담당자 정보">
+              <DefinitionListGrid
+                items={[
                   { label: '담당자명', value: selectedInstitution.manager },
                   { label: '담당자 이메일', value: selectedInstitution.email || '미등록' },
                   { label: '담당자 전화', value: selectedInstitution.phone },
-                ].map((item) => (
-                  <div key={item.label} className="space-y-1">
-                    <div className="text-sm font-semibold text-gray-500">{item.label}</div>
-                    <div className="text-base font-medium text-gray-900">{item.value}</div>
+                ]}
+              />
+            </DetailSectionCard>
                   </div>
-                ))}
               </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        /* Register/Edit View */
-        <div className="flex gap-6">
-          {/* Sticky Section Navigation */}
-          <div className="w-64 flex-shrink-0">
-            <Card className="rounded-2xl shadow-sm border border-gray-200 sticky top-6">
-              <div className="space-y-2">
-                {sections.map((section) => (
-                  <button
-                    key={section.key}
-                    onClick={() => scrollToSection(section.key)}
-                    className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                      activeSection === section.key
-                        ? 'bg-blue-50 text-blue-700 font-medium'
-                        : 'text-gray-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    {section.label}
-                  </button>
-                ))}
-              </div>
-            </Card>
-          </div>
+      ) : viewMode === 'register' || viewMode === 'edit' ? (
+        /* Register/Edit View - Redesigned to match other pages */
+        <div className="bg-slate-50 min-h-screen px-6 pt-0">
+          {/* Sticky Header */}
+          <PageHeaderSticky
+            mode={viewMode === 'edit' ? 'edit' : 'create'}
+            onCancel={handleBackToList}
+            onTempSave={() => {
+              const values = form.getFieldsValue()
+              console.log('Temp save:', values)
+            }}
+            onSave={() => form.submit()}
+          />
 
-          {/* Form Content */}
-          <div className="flex-1">
+          {/* Main Content Container */}
+          <div className="max-w-5xl mx-auto pt-6 pb-12">
             <Form
               form={form}
               layout="vertical"
               onFinish={handleFormSubmit}
-              className="space-y-6"
             >
-              {/* 교육기관 정보 */}
-              <Card
-                ref={(el) => {
-                  sectionRefs.current['institution'] = el
-                }}
-                id="institution"
-                className="rounded-2xl shadow-sm border border-gray-200"
-                title={<span className="text-lg font-semibold">교육기관 정보</span>}
-              >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <SectionAccordion
+                sections={[
+                  {
+                    key: 'institution',
+                    title: '교육기관 정보',
+                    helperText: '교육기관의 기본 정보를 입력하세요',
+                    defaultOpen: true,
+                    children: (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                 <Form.Item
-                  label="교육기관명"
+                          label={
+                            <span>
+                              교육기관명 <span className="text-red-500">*</span>
+                            </span>
+                          }
                   name="name"
                   rules={[{ required: true, message: '교육기관명을 입력해주세요' }]}
                   className="mb-0"
@@ -686,7 +511,11 @@ export default function InstitutionManagementPage() {
                 </Form.Item>
 
                 <Form.Item
-                  label="교육기관 유형"
+                          label={
+                            <span>
+                              교육기관 유형 <span className="text-red-500">*</span>
+                            </span>
+                          }
                   name="institutionType"
                   rules={[{ required: true, message: '교육기관 유형을 선택해주세요' }]}
                   className="mb-0"
@@ -699,7 +528,11 @@ export default function InstitutionManagementPage() {
                 </Form.Item>
 
                 <Form.Item
-                  label="전화번호"
+                          label={
+                            <span>
+                              전화번호 <span className="text-red-500">*</span>
+                            </span>
+                          }
                   name="phone"
                   rules={[{ required: true, message: '전화번호를 입력해주세요' }]}
                   className="mb-0"
@@ -708,11 +541,7 @@ export default function InstitutionManagementPage() {
                 </Form.Item>
 
                 <div className="md:col-span-2">
-                  <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-4">
-                    <div className="hidden md:flex md:items-center">
-                      <span className="text-sm text-gray-600 font-medium">지역(시/군)</span>
-                    </div>
-                    <div className="flex gap-4 items-end">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                       <div className="flex-shrink-0">
                         <div className="mb-2">
                           <span className="text-sm text-gray-600 font-medium">도시</span>
@@ -731,7 +560,7 @@ export default function InstitutionManagementPage() {
                       </div>
                       <div className="flex-1">
                         <div className="mb-2">
-                          <span className="text-sm text-gray-600 font-medium">지역(시/군)</span>
+                                <span className="text-sm text-gray-600 font-medium">지역(시/군) <span className="text-red-500">*</span></span>
                         </div>
                         <Form.Item
                           name="city"
@@ -742,15 +571,34 @@ export default function InstitutionManagementPage() {
                             placeholder="지역(시/군)을 선택하세요"
                             options={cityOptions}
                             className="h-11 rounded-xl"
+                                  onChange={handleCityChange}
                           />
                         </Form.Item>
                       </div>
+                            <div className="flex-1">
+                              <div className="mb-2">
+                                <span className="text-sm text-gray-600 font-medium">권역</span>
+                              </div>
+                              <Form.Item
+                                name="region"
+                                className="mb-0"
+                              >
+                                <Input
+                                  disabled
+                                  className="bg-gray-50 h-11 rounded-xl"
+                                  placeholder="지역(시/군) 선택 시 자동 설정됩니다"
+                                />
+                              </Form.Item>
                     </div>
                   </div>
                 </div>
 
                 <Form.Item
-                  label="도로명"
+                          label={
+                            <span>
+                              도로명 <span className="text-red-500">*</span>
+                            </span>
+                          }
                   name="address"
                   rules={[{ required: true, message: '도로명을 입력해주세요' }]}
                   className="mb-0"
@@ -778,20 +626,21 @@ export default function InstitutionManagementPage() {
                   />
                 </Form.Item>
               </div>
-            </Card>
-
-              {/* 담당자 정보 */}
-              <Card
-                ref={(el) => {
-                  sectionRefs.current['manager'] = el
-                }}
-                id="manager"
-                className="rounded-2xl shadow-sm border border-gray-200"
-                title={<span className="text-lg font-semibold">담당자 정보</span>}
-              >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    ),
+                  },
+                  {
+                    key: 'manager',
+                    title: '담당자 정보',
+                    helperText: '담당자 정보를 입력하세요',
+                    defaultOpen: true,
+                    children: (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                 <Form.Item
-                  label="담당자명"
+                          label={
+                            <span>
+                              담당자명 <span className="text-red-500">*</span>
+                            </span>
+                          }
                   name="manager"
                   rules={[{ required: true, message: '담당자명을 입력해주세요' }]}
                   className="mb-0"
@@ -800,7 +649,11 @@ export default function InstitutionManagementPage() {
                 </Form.Item>
 
                 <Form.Item
-                  label="담당자 전화"
+                          label={
+                            <span>
+                              담당자 전화 <span className="text-red-500">*</span>
+                            </span>
+                          }
                   name="managerPhone"
                   rules={[{ required: true, message: '담당자 전화를 입력해주세요' }]}
                   className="mb-0"
@@ -809,7 +662,11 @@ export default function InstitutionManagementPage() {
                 </Form.Item>
 
                 <Form.Item
-                  label="담당자 이메일"
+                          label={
+                            <span>
+                              담당자 이메일 <span className="text-red-500">*</span>
+                            </span>
+                          }
                   name="managerEmail"
                   rules={[
                     { required: true, message: '담당자 이메일을 입력해주세요' },
@@ -845,12 +702,157 @@ export default function InstitutionManagementPage() {
                   </div>
                 </Form.Item>
               </div>
-              </Card>
+                    ),
+                  },
+                ]}
+              />
             </Form>
           </div>
         </div>
+      ) : (
+        /* List View */
+        <div className="p-6">
+          {/* Page Header */}
+          <div className="flex items-center justify-between mb-6">
+            {viewMode === 'list' ? (
+              <Space>
+                <Button
+                  type="primary"
+                  icon={<Plus className="w-4 h-4" />}
+                  onClick={handleRegisterClick}
+                  className="h-11 px-6 rounded-xl border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                >
+                  기관 등록
+                </Button>
+                {selectedRowKeys.length > 0 && (
+                  <Button
+                    danger
+                    icon={<Trash2 className="w-4 h-4" />}
+                    onClick={handleBulkDelete}
+                    className="h-11 px-4 rounded-xl font-medium transition-all"
+                  >
+                    삭제
+                  </Button>
+                )}
+              </Space>
+            ) : null}
+          </div>
+
+          {viewMode === 'list' ? (
+            /* List View */
+            <Card className="rounded-xl shadow-sm border border-gray-200">
+              {/* Search Toolbar */}
+              <div className="flex items-center h-16 px-4 py-3 border-b border-gray-200 gap-3">
+                {/* Search Input - Left Side */}
+                <div className="w-full max-w-[420px]">
+                  <Input
+                    placeholder="검색어를 입력하세요..."
+                    value={nameSearch || managerSearch}
+                    onChange={(e) => {
+                      setNameSearch(e.target.value)
+                      setManagerSearch(e.target.value)
+                    }}
+                    allowClear
+                    onPressEnter={handleSearch}
+                    prefix={<Search className="h-5 w-5 text-slate-400" />}
+                    className="admin-search-input h-11 w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 transition hover:border-slate-300 focus:border-slate-300 focus:ring-2 focus:ring-slate-300"
+                  />
+                </div>
+                
+                {/* Filter Button with Dropdown - Right Side */}
+                <div className="relative ml-auto" ref={filterDropdownRef}>
+                  <Button
+                    icon={<Filter className="w-4 h-4" />}
+                    onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
+                    className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all flex items-center gap-2"
+                  >
+                    필터
+                    <ChevronRight className={`w-4 h-4 transition-transform ${filterDropdownOpen ? 'rotate-90' : ''}`} />
+                  </Button>
+                  
+                  {/* Filter Dropdown */}
+                  {filterDropdownOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50 p-4">
+                      <div className="space-y-4">
+                        {/* Region Filter */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">권역</label>
+                          <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
+                            <Select
+                              placeholder="ALL REGIONS"
+                              value={regionFilter}
+                              onChange={setRegionFilter}
+                              options={regionOptions}
+                              className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
+                              suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
+                            />
+                          </div>
+                        </div>
+                        
+                        {/* Action Buttons */}
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-200">
+                          <Button
+                            type="text"
+                            icon={<RotateCcw className="w-4 h-4" />}
+                            onClick={() => {
+                              handleResetFilters()
+                              setFilterDropdownOpen(false)
+                            }}
+                            className="h-9 px-4 text-sm"
+                          >
+                            초기화
+                          </Button>
+                          <Button
+                            type="primary"
+                            onClick={() => {
+                              setCurrentPage(1)
+                              setFilterDropdownOpen(false)
+                            }}
+                            className="h-9 px-4 text-sm bg-slate-900 hover:bg-slate-800 active:bg-slate-900 border-0 text-white hover:text-white active:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                          >
+                            적용
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <Table
+                columns={columns}
+                dataSource={filteredData}
+                rowSelection={{
+                  selectedRowKeys,
+                  onChange: (selectedKeys) => {
+                    setSelectedRowKeys(selectedKeys)
+                  },
+                }}
+                onRow={(record) => ({
+                  onClick: () => handleViewDetail(record),
+                  className: 'cursor-pointer',
+                })}
+                pagination={{
+                  current: currentPage,
+                  pageSize: pageSize,
+                  total: filteredData.length,
+                  showSizeChanger: true,
+                  showTotal: (total) => `총 ${total}건`,
+                  onChange: (page, size) => {
+                    setCurrentPage(page)
+                    setPageSize(size)
+                  },
+                }}
+                rowKey="key"
+                scroll={{ x: 'max-content' }}
+                className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:sticky [&_.ant-table-thead>tr>th]:top-0 [&_.ant-table-thead>tr>th]:z-10 [&_.ant-table-tbody>tr]:border-b [&_.ant-table-tbody>tr]:border-gray-100 [&_.ant-pagination]:!mt-4 [&_.ant-pagination]:!mb-0 [&_.ant-pagination-item]:!rounded-lg [&_.ant-pagination-item]:!border-[#E6E6EF] [&_.ant-pagination-item]:!h-9 [&_.ant-pagination-item]:!min-w-[36px] [&_.ant-pagination-item-active]:!border-[#3b82f6] [&_.ant-pagination-item-active]:!bg-[#3b82f6] [&_.ant-pagination-item-active>a]:!text-white [&_.ant-pagination-prev]:!rounded-lg [&_.ant-pagination-prev]:!border-[#E6E6EF] [&_.ant-pagination-next]:!rounded-lg [&_.ant-pagination-next]:!border-[#E6E6EF] [&_.ant-pagination-options]:!ml-4 [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-[#E6E6EF] [&_.ant-pagination-total-text]:!text-[#151827] [&_.ant-pagination-total-text]:!mr-4"
+              />
+            </Card>
+          ) : null}
+        </div>
       )}
-    </div>
+      </div>
+    </ProtectedRoute>
   )
 }
 

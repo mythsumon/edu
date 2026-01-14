@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 
-export type UserRole = 'admin' | 'instructor' | 'operator' | null
+export type UserRole = 'admin' | 'instructor' | 'operator' | 'teacher' | null
 
 export interface UserProfile {
   userId: string
@@ -62,6 +62,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             userId: 'admin-1',
             name: '관리자',
             email: 'admin@example.com',
+            phone: '010-1234-5678',
+          }
+          setUserProfile(defaultProfile)
+          localStorage.setItem('userProfile', JSON.stringify(defaultProfile))
+        } else if (storedRole === 'teacher') {
+          const defaultProfile: UserProfile = {
+            userId: 'teacher-1',
+            name: '학교선생님',
+            email: 'teacher@example.com',
             phone: '010-1234-5678',
           }
           setUserProfile(defaultProfile)

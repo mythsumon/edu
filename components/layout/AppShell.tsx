@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { AdminSidebar } from '@/components/layout/admin/AdminSidebar'
 import { InstructorSidebar } from '@/components/layout/instructor/InstructorSidebar'
+import { TeacherSidebar } from '@/components/layout/teacher/TeacherSidebar'
 import { Header } from '@/components/layout/Header'
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
@@ -29,6 +30,8 @@ export function AppShell({ children }: AppShellProps) {
       return <AdminSidebar isCollapsed={isSidebarCollapsed} setIsCollapsed={setIsSidebarCollapsed} />
     } else if (userRole === 'instructor') {
       return <InstructorSidebar isCollapsed={isSidebarCollapsed} setIsCollapsed={setIsSidebarCollapsed} />
+    } else if (userRole === 'teacher') {
+      return <TeacherSidebar isCollapsed={isSidebarCollapsed} setIsCollapsed={setIsSidebarCollapsed} />
     }
     return null
   }
