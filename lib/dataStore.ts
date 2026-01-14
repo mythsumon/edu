@@ -25,7 +25,7 @@ export interface Education {
   courseName?: string
   totalSessions?: number
   note?: string
-  educationStatus?: 'OPEN' | 'INIT' | 'CANCEL' | '신청 중' | '신청 마감'
+  educationStatus?: 'OPEN' | 'INIT' | 'CANCEL' | '신청 중' | '신청 마감' | '대기'
   applicationDeadline?: string
   lessons?: Lesson[]
 }
