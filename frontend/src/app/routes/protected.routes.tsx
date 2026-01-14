@@ -23,6 +23,7 @@ import {
   AdminAccountManagementPage,
   AddAdminPage,
   InstructorAccountManagementPage,
+  AddInstructorPage,
 } from '@/modules/account-management'
 
 export const protectedRoutes: RouteObject[] = [
@@ -127,7 +128,16 @@ export const protectedRoutes: RouteObject[] = [
                   },
                   {
                     path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS,
-                    element: <InstructorAccountManagementPage />,
+                    children: [
+                      {
+                        index: true,
+                        element: <InstructorAccountManagementPage />,
+                      },
+                      {
+                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_ADD,
+                        element: <AddInstructorPage />,
+                      },
+                    ],
                   },
                 ],
               },

@@ -5,6 +5,7 @@ import type {
   InstructorResponseDto,
   ListAccountsParams,
   CreateAdminRequestDto,
+  CreateInstructorRequestDto,
 } from './account-management.types'
 
 /**
@@ -29,6 +30,19 @@ export async function listAdmins(
   const response = await axiosInstance.get<ApiResponse<PageResponse<AdminResponseDto>>>(
     '/admin',
     { params }
+  )
+  return response.data.data
+}
+
+/**
+ * Create a new instructor
+ */
+export async function createInstructor(
+  data: CreateInstructorRequestDto
+): Promise<InstructorResponseDto> {
+  const response = await axiosInstance.post<ApiResponse<InstructorResponseDto>>(
+    '/instructor/register',
+    data
   )
   return response.data.data
 }

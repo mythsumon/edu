@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { accountManagementQueryKeys } from './queryKeys'
-import { createAdmin } from '../model/account-management.service'
-import type { CreateAdminRequestDto } from '../model/account-management.types'
+import { createAdmin, createInstructor } from '../model/account-management.service'
+import type { CreateAdminRequestDto, CreateInstructorRequestDto } from '../model/account-management.types'
 
 /**
  * Mutation hook for creating a new admin
@@ -15,6 +15,22 @@ export const useCreateAdmin = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.admins() })
+    },
+  })
+}
+
+/**
+ * Mutation hook for creating a new instructor
+ */
+export const useCreateInstructor = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: async (data: CreateInstructorRequestDto) => {
+      return await createInstructor(data)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.instructors() })
     },
   })
 }

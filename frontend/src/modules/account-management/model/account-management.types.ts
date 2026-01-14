@@ -74,6 +74,26 @@ export interface CreateAdminRequestDto {
 }
 
 /**
+ * Request DTO for creating instructor
+ */
+export interface CreateInstructorRequestDto {
+  username: string
+  password: string
+  firstName: string
+  lastName: string
+  email?: string
+  phone?: string
+  gender?: string
+  dob?: string
+  regionId?: number
+  city?: string
+  street?: string
+  detailAddress?: string
+  statusId?: number
+  classificationId?: number
+}
+
+/**
  * Query parameters for listing accounts
  */
 export interface ListAccountsParams {
