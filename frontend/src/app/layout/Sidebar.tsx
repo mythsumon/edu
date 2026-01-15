@@ -242,7 +242,7 @@ export const Sidebar = () => {
             : "w-64 min-w-52 max-w-72",
           "transition-all duration-300 ease-in-out",
           // Mobile/Tablet: fixed drawer from left with smooth slide animation
-          "fixed left-0 top-0 min-h-screen z-50",
+          "fixed left-0 top-0 h-screen z-50",
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
           // Disable pointer events when off-screen on mobile
           !sidebarOpen && "pointer-events-none lg:pointer-events-auto",
