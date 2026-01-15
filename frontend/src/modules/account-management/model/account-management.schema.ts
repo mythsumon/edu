@@ -53,34 +53,37 @@ export const createInstructorSchema = z.object({
     .optional(),
   phone: z
     .string()
-    .optional(),
+    .min(1, 'Phone number is required'),
   gender: z
     .string()
-    .optional(),
+    .min(1, 'Gender is required'),
   dob: z
     .string()
-    .optional(),
+    .min(1, 'Date of birth is required'),
   zoneId: z
     .string()
-    .optional(),
+    .min(1, 'Zone is required'),
   regionId: z
     .string()
-    .optional(),
+    .min(1, 'Region is required'),
   city: z
     .string()
-    .optional(),
+    .min(1, 'City is required')
+    .max(255, 'City must be at most 255 characters'),
   street: z
     .string()
-    .optional(),
+    .min(1, 'Street is required')
+    .max(255, 'Street must be at most 255 characters'),
   detailAddress: z
     .string()
-    .optional(),
+    .min(1, 'Detail address is required')
+    .max(255, 'Detail address must be at most 255 characters'),
   statusId: z
     .string()
-    .optional(),
+    .min(1, 'Status is required'),
   classificationId: z
     .string()
-    .optional(),
+    .min(1, 'Classification is required'),
 })
 
 export type CreateInstructorFormData = z.infer<typeof createInstructorSchema>

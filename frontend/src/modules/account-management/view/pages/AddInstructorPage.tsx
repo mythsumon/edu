@@ -97,15 +97,15 @@ export const AddInstructorPage = () => {
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email || undefined,
-        phone: data.phone || undefined,
-        gender: data.gender || undefined,
-        dob: data.dob || undefined,
-        regionId: data.regionId ? Number(data.regionId) : undefined,
-        city: data.city || undefined,
-        street: data.street || undefined,
-        detailAddress: data.detailAddress || undefined,
-        statusId: data.statusId ? Number(data.statusId) : undefined,
-        classificationId: data.classificationId ? Number(data.classificationId) : undefined,
+        phone: data.phone,
+        gender: data.gender,
+        dob: data.dob,
+        regionId: Number(data.regionId),
+        city: data.city,
+        street: data.street,
+        detailAddress: data.detailAddress,
+        statusId: Number(data.statusId),
+        classificationId: Number(data.classificationId),
       })
       navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL)
     } catch (error) {
@@ -128,7 +128,7 @@ export const AddInstructorPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Username */}
             <div className="space-y-2">
-              <Label htmlFor="username">Username *</Label>
+              <Label htmlFor="username">Username <span className="text-destructive">**</span></Label>
               <Input
                 id="username"
                 type="text"
@@ -145,7 +145,7 @@ export const AddInstructorPage = () => {
 
             {/* Password */}
             <div className="space-y-2">
-              <Label htmlFor="password">Password *</Label>
+              <Label htmlFor="password">Password <span className="text-destructive">**</span></Label>
               <Input
                 id="password"
                 type="password"
@@ -162,7 +162,7 @@ export const AddInstructorPage = () => {
 
             {/* First Name */}
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name *</Label>
+              <Label htmlFor="firstName">First Name <span className="text-destructive">**</span></Label>
               <Input
                 id="firstName"
                 type="text"
@@ -179,7 +179,7 @@ export const AddInstructorPage = () => {
 
             {/* Last Name */}
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name *</Label>
+              <Label htmlFor="lastName">Last Name <span className="text-destructive">**</span></Label>
               <Input
                 id="lastName"
                 type="text"
@@ -213,11 +213,11 @@ export const AddInstructorPage = () => {
 
             {/* Phone */}
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
+              <Label htmlFor="phone">Phone Number <span className="text-destructive">**</span></Label>
               <Input
                 id="phone"
                 type="tel"
-                placeholder="Enter phone number (optional)"
+                placeholder="Enter phone number"
                 icon={<Phone className="h-4 w-4" />}
                 {...register('phone')}
                 className={errors.phone ? 'ring-2 ring-destructive' : ''}
@@ -230,11 +230,11 @@ export const AddInstructorPage = () => {
 
             {/* Gender */}
             <div className="space-y-2">
-              <Label htmlFor="gender">Gender</Label>
+              <Label htmlFor="gender">Gender <span className="text-destructive">**</span></Label>
               <Input
                 id="gender"
                 type="text"
-                placeholder="Enter gender (optional)"
+                placeholder="Enter gender"
                 icon={<UserCircle className="h-4 w-4" />}
                 {...register('gender')}
                 className={errors.gender ? 'ring-2 ring-destructive' : ''}
@@ -247,11 +247,10 @@ export const AddInstructorPage = () => {
 
             {/* Date of Birth */}
             <div className="space-y-2">
-              <Label htmlFor="dob">Date of Birth</Label>
+              <Label htmlFor="dob">Date of Birth <span className="text-destructive">**</span></Label>
               <Controller
                 name="dob"
                 control={control}
-                rules={{ required: false }}
                 render={({ field }) => {
                   let date: Date | undefined
                   try {
@@ -280,7 +279,7 @@ export const AddInstructorPage = () => {
                             onBlur={field.onBlur}
                           >
                             <span className="flex-1 text-left">
-                              {date ? date.toLocaleDateString() : 'Enter date of birth (optional)'}
+                              {date ? date.toLocaleDateString() : 'Enter date of birth'}
                             </span>
                             <ChevronDownIcon className="h-4 w-4 shrink-0 ml-2" />
                           </Button>
@@ -318,11 +317,11 @@ export const AddInstructorPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 col-span-1 lg:col-span-2">
               {/* City */}
               <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
+                <Label htmlFor="city">City <span className="text-destructive">**</span></Label>
                 <Input
                   id="city"
                   type="text"
-                  placeholder="Enter city (optional)"
+                  placeholder="Enter city"
                   icon={<MapPin className="h-4 w-4" />}
                   {...register('city')}
                   className={errors.city ? 'ring-2 ring-destructive' : ''}
@@ -335,7 +334,7 @@ export const AddInstructorPage = () => {
 
               {/* Zone */}
               <div className="space-y-2">
-                <Label htmlFor="zoneId">Zone</Label>
+                <Label htmlFor="zoneId">Zone <span className="text-destructive">**</span></Label>
                 <Controller
                   name="zoneId"
                   control={control}
@@ -369,7 +368,7 @@ export const AddInstructorPage = () => {
 
               {/* Region */}
               <div className="space-y-2">
-                <Label htmlFor="regionId">Region</Label>
+                <Label htmlFor="regionId">Region <span className="text-destructive">**</span></Label>
                 <Controller
                   name="regionId"
                   control={control}
@@ -403,11 +402,11 @@ export const AddInstructorPage = () => {
 
             {/* Street */}
             <div className="space-y-2">
-              <Label htmlFor="street">Street</Label>
+              <Label htmlFor="street">Street <span className="text-destructive">**</span></Label>
               <Input
                 id="street"
                 type="text"
-                placeholder="Enter street (optional)"
+                placeholder="Enter street"
                 icon={<MapPin className="h-4 w-4" />}
                 {...register('street')}
                 className={errors.street ? 'ring-2 ring-destructive' : ''}
@@ -420,11 +419,11 @@ export const AddInstructorPage = () => {
 
             {/* Detail Address */}
             <div className="space-y-2">
-              <Label htmlFor="detailAddress">Detail Address</Label>
+              <Label htmlFor="detailAddress">Detail Address <span className="text-destructive">**</span></Label>
               <Input
                 id="detailAddress"
                 type="text"
-                placeholder="Enter detail address (optional)"
+                placeholder="Enter detail address"
                 icon={<MapPin className="h-4 w-4" />}
                 {...register('detailAddress')}
                 className={errors.detailAddress ? 'ring-2 ring-destructive' : ''}
@@ -437,7 +436,7 @@ export const AddInstructorPage = () => {
 
             {/* Status */}
             <div className="space-y-2">
-              <Label htmlFor="statusId">Status</Label>
+              <Label htmlFor="statusId">Status <span className="text-destructive">**</span></Label>
               <Controller
                 name="statusId"
                 control={control}
@@ -451,7 +450,7 @@ export const AddInstructorPage = () => {
                       icon={<UserCircle className="h-4 w-4" />}
                       className={`${errors.statusId ? 'ring-2 ring-destructive' : ''} ${!field.value ? 'text-muted-foreground/60' : ''}`}
                     >
-                      <SelectValue placeholder="Select status (optional)" />
+                      <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
                       {statusMasterCodes.map((status) => (
@@ -470,7 +469,7 @@ export const AddInstructorPage = () => {
 
             {/* Classification */}
             <div className="space-y-2">
-              <Label htmlFor="classificationId">Classification</Label>
+              <Label htmlFor="classificationId">Classification <span className="text-destructive">**</span></Label>
               <Controller
                 name="classificationId"
                 control={control}
@@ -484,7 +483,7 @@ export const AddInstructorPage = () => {
                       icon={<UserCircle className="h-4 w-4" />}
                       className={`${errors.classificationId ? 'ring-2 ring-destructive' : ''} ${!field.value ? 'text-muted-foreground/60' : ''}`}
                     >
-                      <SelectValue placeholder="Select classification (optional)" />
+                      <SelectValue placeholder="Select classification" />
                     </SelectTrigger>
                     <SelectContent>
                       {classificationMasterCodes.map((classification) => (
