@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Table, Button, Card, Select, Space, Form, Descriptions, Tag, Checkbox, Input, Modal, message } from 'antd'
+import { Table, Button, Card, Select, Space, Form, Descriptions, Tag, Checkbox, Input, Modal, message, DatePicker } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { 
   ChevronRight, 
@@ -17,9 +17,12 @@ import {
   Save,
   Filter,
   Key,
-  UserSearch
+  UserSearch,
+  Download
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import dayjs, { Dayjs } from 'dayjs'
+import 'dayjs/locale/ko'
 import { 
   DetailPageHeaderSticky,
   PageHeaderSticky,
@@ -29,6 +32,7 @@ import {
   SectionAccordion
 } from '@/components/admin/operations'
 
+dayjs.locale('ko')
 const { TextArea } = Input
 
 interface InstructorItem {
@@ -150,6 +154,7 @@ export default function InstructorManagementPage() {
   const [findPasswordModalOpen, setFindPasswordModalOpen] = useState(false)
   const [findIdForm] = Form.useForm()
   const [findPasswordForm] = Form.useForm()
+  const [isPostcodeScriptLoaded, setIsPostcodeScriptLoaded] = useState(false)
 
   // Close filter dropdown when clicking outside
   useEffect(() => {
@@ -167,6 +172,27 @@ export default function InstructorManagementPage() {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [filterDropdownOpen])
+
+  // Daum 우편번호 서비스 스크립트 로드
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !isPostcodeScriptLoaded) {
+      const script = document.createElement('script')
+      script.src = '//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js'
+      script.async = true
+      script.onload = () => {
+        setIsPostcodeScriptLoaded(true)
+      }
+      script.onerror = () => {
+        console.error('Daum 우편번호 서비스 스크립트 로드 실패')
+        message.error('주소 검색 서비스를 불러올 수 없습니다.')
+      }
+      document.body.appendChild(script)
+
+      return () => {
+        // 컴포넌트 언마운트 시 스크립트 제거하지 않음 (다른 곳에서도 사용 가능)
+      }
+    }
+  }, [isPostcodeScriptLoaded])
   const [activeSection, setActiveSection] = useState<string>('basic')
   const [selectedInstructor, setSelectedInstructor] = useState<InstructorItem | null>(null)
   const [detailTab, setDetailTab] = useState<'basic'>('basic')
@@ -186,7 +212,15 @@ export default function InstructorManagementPage() {
   }
 
   const handleFormSubmit = (values: any) => {
-    console.log('Form values:', values)
+    // 기본 비밀번호 자동 설정 (모든 강사 동일)
+    const defaultPassword = 'Instructor@1234'
+    const instructorData = {
+      ...values,
+      password: defaultPassword,
+      passwordChanged: false, // 첫 로그인 시 비밀번호 변경 필요
+    }
+    console.log('강사 등록:', instructorData)
+    message.success('강사가 등록되었습니다. 기본 비밀번호는 Instructor@1234입니다.')
     handleBackToList()
   }
 
@@ -195,6 +229,154 @@ export default function InstructorManagementPage() {
     const assignmentZone = cityToRegionMap[region] || ''
     if (assignmentZone) {
       form.setFieldsValue({ assignmentZone })
+    }
+  }
+
+  // 주소 검색 핸들러 (Daum 우편번호 서비스)
+  const handleAddressSearch = () => {
+    if (typeof window === 'undefined' || !(window as any).daum) {
+      message.warning('주소 검색 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.')
+      return
+    }
+
+    new (window as any).daum.Postcode({
+      oncomplete: (data: any) => {
+        // 주소 선택 시 폼에 자동 입력
+        let fullAddress = data.address // 최종 선택한 주소
+        let extraAddress = '' // 참고항목 변수
+
+        // 사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
+        if (data.userSelectedType === 'R') {
+          // 사용자가 도로명 주소를 선택했을 경우
+          fullAddress = data.roadAddress
+        } else {
+          // 사용자가 지번 주소를 선택했을 경우(J)
+          fullAddress = data.jibunAddress
+        }
+
+        // 사용자가 선택한 주소가 도로명 타입일때 참고항목을 조합한다.
+        if (data.userSelectedType === 'R') {
+          // 법정동명이 있을 경우 추가한다. (법정리는 제외)
+          // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
+          if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
+            extraAddress += data.bname
+          }
+          // 건물명이 있고, 공동주택일 경우 추가한다.
+          if (data.buildingName !== '' && data.apartment === 'Y') {
+            extraAddress += extraAddress !== '' ? ', ' + data.buildingName : data.buildingName
+          }
+          // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+          if (extraAddress !== '') {
+            extraAddress = ' (' + extraAddress + ')'
+          }
+        }
+
+        // 우편번호와 주소 정보를 해당 필드에 넣는다.
+        form.setFieldsValue({
+          address: fullAddress,
+          // 우편번호가 필요한 경우
+          // postcode: data.zonecode,
+        })
+
+        message.success('주소가 입력되었습니다.')
+      },
+      onresize: (size: any) => {
+        // 팝업 크기 조정
+      },
+      width: '100%',
+      height: '100%',
+    }).open()
+  }
+
+  // CSV 다운로드 기능
+  const handleDownload = () => {
+    try {
+      // 필터링된 데이터 가져오기
+      const dataToExport = filteredData
+      
+      if (dataToExport.length === 0) {
+        message.warning('다운로드할 데이터가 없습니다.')
+        return
+      }
+
+      // CSV 헤더 정의
+      const headers = [
+        '강사ID',
+        '강사명',
+        '계정',
+        '소속',
+        '지역',
+        '배정권역',
+        '강사 구분',
+        '강사 카테고리',
+        '이메일',
+        '전화번호',
+        '성별',
+        '생년월일',
+        '도시',
+        '도로명주소',
+        '건물명/호수',
+        '상태',
+        '등록일시',
+      ]
+
+      // CSV 데이터 생성
+      const csvRows = [
+        headers.join(','),
+        ...dataToExport.map((item) => {
+          return [
+            item.instructorId || '',
+            item.name || '',
+            item.account || '',
+            item.affiliation || '-',
+            item.region || '',
+            item.assignmentZone || '',
+            item.type || '',
+            item.category || '',
+            '', // 이메일은 더미 데이터에 없을 수 있음
+            '', // 전화번호는 더미 데이터에 없을 수 있음
+            '', // 성별은 더미 데이터에 없을 수 있음
+            '', // 생년월일은 더미 데이터에 없을 수 있음
+            '경기도', // 고정값
+            '', // 도로명주소는 더미 데이터에 없을 수 있음
+            '', // 건물명/호수는 더미 데이터에 없을 수 있음
+            item.status || '',
+            item.registeredAt || '',
+          ]
+            .map((field) => {
+              // CSV 형식에 맞게 이스케이프 처리
+              if (field === null || field === undefined) return ''
+              const stringField = String(field)
+              // 쉼표, 따옴표, 줄바꿈이 포함된 경우 따옴표로 감싸고 내부 따옴표는 이중화
+              if (stringField.includes(',') || stringField.includes('"') || stringField.includes('\n')) {
+                return `"${stringField.replace(/"/g, '""')}"`
+              }
+              return stringField
+            })
+            .join(',')
+        }),
+      ]
+
+      // BOM 추가 (한글 깨짐 방지)
+      const BOM = '\uFEFF'
+      const csvContent = BOM + csvRows.join('\n')
+
+      // Blob 생성 및 다운로드
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+      link.setAttribute('href', url)
+      link.setAttribute('download', `강사_목록_${new Date().toISOString().split('T')[0]}.csv`)
+      link.style.visibility = 'hidden'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+
+      message.success(`${dataToExport.length}건의 데이터가 다운로드되었습니다.`)
+    } catch (error) {
+      console.error('다운로드 오류:', error)
+      message.error('다운로드 중 오류가 발생했습니다.')
     }
   }
 
@@ -480,6 +662,20 @@ export default function InstructorManagementPage() {
                         <Form.Item
                           label={
                             <span>
+                              강사 ID <span className="text-red-500">*</span>
+                            </span>
+                          }
+                          name="instructorId"
+                          rules={[{ required: true, message: '강사 ID를 입력해주세요' }]}
+                          className="mb-0"
+                          help="강사 로그인에 사용할 ID입니다"
+                        >
+                          <Input placeholder="강사 ID를 입력하세요" className="h-11 rounded-xl" />
+                        </Form.Item>
+
+                        <Form.Item
+                          label={
+                            <span>
                               강사명 <span className="text-red-500">*</span>
                             </span>
                           }
@@ -501,6 +697,18 @@ export default function InstructorManagementPage() {
                           className="mb-0"
                         >
                           <Input placeholder="이메일을 입력하세요" className="h-11 rounded-xl" />
+                        </Form.Item>
+                        
+                        <Form.Item
+                          label="기본 비밀번호"
+                          className="mb-0"
+                          help="모든 강사는 동일한 기본 비밀번호로 생성됩니다. 첫 로그인 시 변경해야 합니다."
+                        >
+                          <Input 
+                            value="Instructor@1234" 
+                            disabled 
+                            className="h-11 rounded-xl bg-gray-50" 
+                          />
                         </Form.Item>
 
                         <Form.Item
@@ -543,10 +751,27 @@ export default function InstructorManagementPage() {
                             </span>
                           }
                           name="birthDate"
-                          rules={[{ required: true, message: '생년월일을 입력해주세요' }]}
+                          rules={[{ required: true, message: '생년월일을 선택해주세요' }]}
                           className="mb-0"
+                          normalize={(value) => {
+                            if (value && dayjs.isDayjs(value)) {
+                              return value.format('YYYY-MM-DD')
+                            }
+                            return value
+                          }}
+                          getValueProps={(value) => {
+                            if (value && typeof value === 'string') {
+                              return { value: dayjs(value) }
+                            }
+                            return { value: null }
+                          }}
                         >
-                          <Input placeholder="생년월일을 입력하세요 (YYYY-MM-DD)" className="h-11 rounded-xl" />
+                          <DatePicker 
+                            placeholder="생년월일을 선택하세요" 
+                            className="h-11 rounded-xl w-full"
+                            format="YYYY-MM-DD"
+                            style={{ width: '100%' }}
+                          />
                         </Form.Item>
 
                         <Form.Item
@@ -582,16 +807,12 @@ export default function InstructorManagementPage() {
                     children: (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                         <Form.Item
-                          label={
-                            <span>
-                              소속 <span className="text-red-500">*</span>
-                            </span>
-                          }
+                          label="소속"
                           name="affiliation"
-                          rules={[{ required: true, message: '소속을 입력해주세요' }]}
                           className="mb-0"
+                          help="선택 사항입니다. 미입력 시 '-'로 처리됩니다."
                         >
-                          <Input placeholder="소속을 입력하세요" className="h-11 rounded-xl" />
+                          <Input placeholder="소속을 입력하세요 (선택사항)" className="h-11 rounded-xl" />
                         </Form.Item>
 
                         <Form.Item
@@ -681,11 +902,28 @@ export default function InstructorManagementPage() {
                               도로명주소 <span className="text-red-500">*</span>
                             </span>
                           }
-                          name="address"
-                          rules={[{ required: true, message: '도로명주소를 입력해주세요' }]}
                           className="mb-0"
                         >
-                          <Input placeholder="도로명주소를 입력하세요" className="h-11 rounded-xl" />
+                          <Input.Group compact className="flex gap-2">
+                            <Form.Item
+                              name="address"
+                              noStyle
+                              rules={[{ required: true, message: '도로명주소를 입력해주세요' }]}
+                            >
+                              <Input 
+                                placeholder="도로명주소를 검색하세요" 
+                                className="h-11 rounded-xl flex-1" 
+                                readOnly
+                              />
+                            </Form.Item>
+                            <Button
+                              type="default"
+                              onClick={handleAddressSearch}
+                              className="h-11 px-4 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all whitespace-nowrap"
+                            >
+                              주소 검색
+                            </Button>
+                          </Input.Group>
                         </Form.Item>
 
                         <Form.Item
@@ -768,6 +1006,13 @@ export default function InstructorManagementPage() {
                 className="h-11 px-6 rounded-xl border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
                 강사 등록
+              </Button>
+              <Button
+                icon={<Download className="w-4 h-4" />}
+                onClick={handleDownload}
+                className="h-11 px-4 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+              >
+                다운로드
               </Button>
               <Button
                 icon={<UserSearch className="w-4 h-4" />}

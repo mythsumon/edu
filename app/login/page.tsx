@@ -1,7 +1,6 @@
 'use client'
 
-import { Form, Button, message, Spin } from 'antd'
-import { InputField } from '@/components/shared/common'
+import { Form, Button, message, Spin, Input } from 'antd'
 import { GraduationCap, Shield, User } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
@@ -10,7 +9,7 @@ import { useEffect, useState } from 'react'
 export default function LoginPage() {
   const [form] = Form.useForm()
   const router = useRouter()
-  const { login } = useAuth()
+  const { login, setUserProfile } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [loginType, setLoginType] = useState<'instructor' | 'admin' | 'teacher'>('instructor')
 
@@ -21,7 +20,13 @@ export default function LoginPage() {
       : loginType === 'teacher'
       ? { email: 'teacher@example.com', password: 'Teacher@1234' }
       : { email: 'instructor@example.com', password: 'Instructor@1234' }
+    
+    // Clear validation errors before setting new values
     form.setFieldsValue(defaultValues)
+    form.setFields([
+      { name: 'email', errors: [] },
+      { name: 'password', errors: [] }
+    ])
   }, [form, loginType])
 
   const handleSubmit = async (values: any) => {
@@ -45,6 +50,16 @@ export default function LoginPage() {
       // Instructor credentials
       if (email === 'instructor@example.com' && password === 'Instructor@1234') {
         login('instructor')
+        // 기본 비밀번호로 로그인한 경우 passwordChanged를 false로 설정
+        const defaultPassword = 'Instructor@1234'
+        const isDefaultPassword = password === defaultPassword
+        setUserProfile({
+          userId: 'instructor-1',
+          name: '홍길동',
+          email: 'instructor@example.com',
+          phone: '010-1234-5678',
+          passwordChanged: !isDefaultPassword, // 기본 비밀번호면 false, 아니면 true
+        })
         message.success('강사로 로그인되었습니다.')
         // Add small delay before redirect to show success message
         await new Promise(resolve => setTimeout(resolve, 500))
@@ -237,9 +252,10 @@ export default function LoginPage() {
                 { required: true, message: '사용자 ID 또는 이메일을 입력해주세요' },
               ]}
             >
-              <InputField
+              <Input
                 type="text"
                 placeholder="사용자 ID 또는 이메일을 입력하세요"
+                className="h-12 rounded-lg"
               />
             </Form.Item>
             
@@ -248,9 +264,9 @@ export default function LoginPage() {
               name="password"
               rules={[{ required: true, message: '비밀번호를 입력해주세요' }]}
             >
-              <InputField
-                type="password"
+              <Input.Password
                 placeholder="••••••••"
+                className="h-12 rounded-lg"
               />
             </Form.Item>
             

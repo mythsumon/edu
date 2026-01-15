@@ -16,6 +16,7 @@ import dayjs, { Dayjs } from 'dayjs'
 import 'dayjs/locale/ko'
 import { dataStore, type Education } from '@/lib/dataStore'
 import { message } from 'antd'
+import { getProgramSessionByValue } from '@/lib/commonCodeStore'
 
 dayjs.locale('ko')
 
@@ -181,10 +182,27 @@ function getProgramOptions() {
       const programs = JSON.parse(stored)
       return programs
         .filter((p: any) => p.status === '활성' || p.status === '대기')
-        .map((p: any) => ({
-          value: p.programId || p.key,
-          label: p.programDisplayName || p.name,
-        }))
+        .map((p: any) => {
+          // 차시 정보 가져오기
+          let sessionLabel = ''
+          if (p.sessionValue) {
+            const sessionKey = getProgramSessionByValue(p.sessionValue)
+            sessionLabel = sessionKey ? sessionKey.label : ''
+          }
+          
+          // 프로그램명 가져오기
+          const programName = p.programDisplayName || p.name || ''
+          
+          // 표시 형식: "##차시 프로그램명" (차시가 있으면)
+          const displayLabel = sessionLabel 
+            ? `${sessionLabel} ${programName}`
+            : programName
+          
+          return {
+            value: p.programId || p.key,
+            label: displayLabel,
+          }
+        })
     }
   } catch (e) {
     console.warn('Failed to load programs from localStorage', e)
@@ -192,18 +210,32 @@ function getProgramOptions() {
   
   // Fallback to dummy data from program management page
   const dummyPrograms = [
-    { key: '1', programId: 'PROG-2025-001', name: '도서벽지 프로그램', status: '활성' },
-    { key: '2', programId: 'PROG-2025-002', name: '50차시 프로그램', status: '활성' },
-    { key: '3', programId: 'PROG-2025-003', name: '특수학급 프로그램', status: '대기' },
-    { key: '4', programId: 'PROG-2025-004', name: '온라인 교육 프로그램', status: '활성' },
+    { key: '1', programId: 'PROG-2025-001', name: '도서벽지 프로그램', status: '활성', sessionValue: '8' },
+    { key: '2', programId: 'PROG-2025-002', name: '50차시 프로그램', status: '활성', sessionValue: '50' },
+    { key: '3', programId: 'PROG-2025-003', name: '특수학급 프로그램', status: '대기', sessionValue: '16' },
+    { key: '4', programId: 'PROG-2025-004', name: '온라인 교육 프로그램', status: '활성', sessionValue: '4' },
   ]
   
   return dummyPrograms
     .filter(p => p.status === '활성' || p.status === '대기')
-    .map(p => ({
-      value: p.programId,
-      label: p.name,
-    }))
+    .map(p => {
+      // 차시 정보 가져오기
+      let sessionLabel = ''
+      if (p.sessionValue) {
+        const sessionKey = getProgramSessionByValue(p.sessionValue)
+        sessionLabel = sessionKey ? sessionKey.label : ''
+      }
+      
+      // 표시 형식: "##차시 프로그램명" (차시가 있으면)
+      const displayLabel = sessionLabel 
+        ? `${sessionLabel} ${p.name}`
+        : p.name
+      
+      return {
+        value: p.programId,
+        label: displayLabel,
+      }
+    })
 }
 
 const institutionOptions = [

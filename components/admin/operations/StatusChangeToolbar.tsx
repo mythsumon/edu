@@ -37,15 +37,17 @@ export function StatusChangeToolbar({
   const canApplyStatusChange = selectedCount > 0 && statusValue
 
   const handlePartialClick = () => {
+    // 항상 택1 상태 유지: 같은 버튼을 다시 클릭해도 선택 상태 유지
     if (onAssignmentModeChange) {
-      onAssignmentModeChange(assignmentMode === 'partial' ? null : 'partial')
+      onAssignmentModeChange('partial')
     }
     onAssignPartial()
   }
 
   const handleAllClick = () => {
+    // 항상 택1 상태 유지: 같은 버튼을 다시 클릭해도 선택 상태 유지
     if (onAssignmentModeChange) {
-      onAssignmentModeChange(assignmentMode === 'full' ? null : 'full')
+      onAssignmentModeChange('full')
     }
     onAssignAll()
   }
@@ -59,7 +61,7 @@ export function StatusChangeToolbar({
             onClick={handlePartialClick}
             className={`h-10 px-6 rounded-xl border font-medium transition-all ${
               assignmentMode === 'partial'
-                ? 'bg-blue-50 border-blue-300 text-blue-700'
+                ? 'bg-blue-600 border-blue-600 text-white'
                 : 'border-slate-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 text-slate-700'
             }`}
           >
@@ -69,7 +71,7 @@ export function StatusChangeToolbar({
             onClick={handleAllClick}
             className={`h-10 px-6 rounded-xl border font-medium transition-all ${
               assignmentMode === 'full'
-                ? 'bg-blue-50 border-blue-300 text-blue-700'
+                ? 'bg-blue-600 border-blue-600 text-white'
                 : 'border-slate-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 text-slate-700'
             }`}
           >

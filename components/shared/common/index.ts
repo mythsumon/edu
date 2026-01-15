@@ -8,3 +8,4 @@ export { InputField } from './InputField';
 export { SearchToolbar } from './SearchToolbar';
 export { DocumentStatusIndicator } from './DocumentStatusIndicator';
 export { EducationDetailDrawer } from './EducationDetailDrawer';
+export { PasswordChangeModal } from './PasswordChangeModal';

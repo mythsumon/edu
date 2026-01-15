@@ -378,7 +378,7 @@ export default function EducationStatusPage() {
     // - Clear selection
     // setSelectedIds([])
     setAssignmentModalOpen(false)
-    setAssignmentMode(null)
+    // assignmentMode는 유지하여 항상 택1 상태 유지
   }
 
   const handleStatusChange = (value: string) => {
@@ -523,7 +523,7 @@ export default function EducationStatusPage() {
             mode={assignmentMode || 'partial'}
             onClose={() => {
               setAssignmentModalOpen(false)
-              setAssignmentMode(null)
+              // assignmentMode는 유지하여 항상 택1 상태 유지
             }}
             onConfirm={handleAssignmentConfirm}
             educationIds={selectedIds}

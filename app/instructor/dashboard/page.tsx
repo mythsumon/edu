@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Card, Modal, Button, Badge } from 'antd'
-import { DocumentStatusIndicator } from '@/components/shared/common'
+import { DocumentStatusIndicator, PasswordChangeModal } from '@/components/shared/common'
 import { 
   Calendar, 
   BookOpen, 
@@ -151,13 +151,14 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
   }
   
   const handleAttendanceClick = () => {
-    // 교육 출석부 상세보기를 누르면 강사의 activity-logs logId page로 이동
-    const activityLog = getActivityLogByEducationId(course.id)
-    if (activityLog?.id) {
-      router.push(`/instructor/activity-logs/${activityLog.id}`)
+    // 출석부 수정 페이지로 이동
+    const attendanceDoc = getAttendanceDocByEducationId(course.id)
+    if (attendanceDoc?.id) {
+      // 출석부가 있으면 수정 페이지로 이동
+      router.push(`/instructor/schedule/${course.id}/attendance`)
     } else {
-      // activity log가 없으면 educationId를 사용하여 새로 생성하거나 찾기
-      router.push(`/instructor/activity-logs/${course.id}`)
+      // 출석부가 없으면 생성/수정 페이지로 이동
+      router.push(`/instructor/schedule/${course.id}/attendance`)
     }
   }
   
@@ -471,13 +472,14 @@ const DailyCalendarView = ({
 
 export default function InstructorDashboard() {
   const router = useRouter()
-  const { userProfile } = useAuth()
+  const { userProfile, updateProfile } = useAuth()
   const [activeFilter, setActiveFilter] = useState<'all' | 'scheduled' | 'ongoing' | 'completed' | 'applicable'>('all')
   const [currentMonth, setCurrentMonth] = useState(new Date(2025, 2))
   const [calendarView, setCalendarView] = useState<'monthly' | 'weekly' | 'daily'>('monthly')
   const [selectedDate, setSelectedDate] = useState(new Date(2025, 2, 15))
   const [selectedDateForModal, setSelectedDateForModal] = useState<string | null>(null)
   const [isEventModalOpen, setIsEventModalOpen] = useState(false)
+  const [isPasswordChangeModalOpen, setIsPasswordChangeModalOpen] = useState(false)
   
   // Collapse state with localStorage persistence
   const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
@@ -493,6 +495,20 @@ export default function InstructorDashboard() {
   
   // Get current instructor name
   const currentInstructorName = userProfile?.name || '홍길동'
+  
+  // 첫 로그인 시 비밀번호 변경 모달 표시
+  useEffect(() => {
+    if (userProfile && userProfile.passwordChanged === false) {
+      setIsPasswordChangeModalOpen(true)
+    }
+  }, [userProfile])
+  
+  // 비밀번호 변경 성공 시 처리
+  const handlePasswordChangeSuccess = (newPassword: string) => {
+    // passwordChanged 플래그를 true로 설정
+    updateProfile({ passwordChanged: true })
+    setIsPasswordChangeModalOpen(false)
+  }
   
   // Get actual document summaries
   const documentSummaries = useMemo(() => {
@@ -1281,6 +1297,13 @@ export default function InstructorDashboard() {
           </div>
         )}
       </Modal>
+      
+      {/* 첫 로그인 시 비밀번호 변경 모달 */}
+      <PasswordChangeModal
+        open={isPasswordChangeModalOpen}
+        isRequired={userProfile?.passwordChanged === false}
+        onSuccess={handlePasswordChangeSuccess}
+      />
     </ProtectedRoute>
   )
 }

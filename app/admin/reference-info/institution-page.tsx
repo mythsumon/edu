@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useRef, useMemo, useEffect } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Table, Button, Card, Form, Input, Select, Checkbox, Space } from 'antd'
+import { Table, Button, Card, Form, Input, Select, Checkbox, Space, message } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { ChevronRight, Download, ArrowLeft, Save, Trash2, RotateCcw, Eye, Plus, Search, Filter } from 'lucide-react'
 import { 
@@ -131,6 +131,7 @@ const emailDomainOptions = [
   { value: 'hanmail.net', label: 'hanmail.net' },
   { value: 'korea.kr', label: 'korea.kr' },
   { value: 'goe.go.kr', label: 'goe.go.kr' },
+  { value: '기타', label: '기타' },
 ]
 
 // 시/군별 권역 매핑
@@ -212,6 +213,8 @@ export default function InstitutionManagementPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [emailLocal, setEmailLocal] = useState<string>('')
   const [emailDomain, setEmailDomain] = useState<string>('')
+  const [isCustomDomain, setIsCustomDomain] = useState<boolean>(false)
+  const [customDomain, setCustomDomain] = useState<string>('')
   const [activeSection, setActiveSection] = useState<string>('institution')
   const [selectedInstitution, setSelectedInstitution] = useState<InstitutionItem | null>(null)
   const [detailTab, setDetailTab] = useState<'basic' | 'manager'>('basic')
@@ -263,6 +266,8 @@ export default function InstitutionManagementPage() {
     form.resetFields()
     setEmailLocal('')
     setEmailDomain('')
+    setIsCustomDomain(false)
+    setCustomDomain('')
   }
 
   const handleViewDetail = (record: InstitutionItem) => {
@@ -277,6 +282,8 @@ export default function InstitutionManagementPage() {
     setEditingId(null)
     setEmailLocal('')
     setEmailDomain('')
+    setIsCustomDomain(false)
+    setCustomDomain('')
     setSelectedInstitution(null)
   }
 
@@ -308,13 +315,117 @@ export default function InstitutionManagementPage() {
     setCurrentPage(1)
   }
 
+  // CSV 다운로드 기능
+  const handleDownload = () => {
+    try {
+      // 필터링된 데이터 가져오기
+      const dataToExport = filteredData
+      
+      if (dataToExport.length === 0) {
+        message.warning('다운로드할 데이터가 없습니다.')
+        return
+      }
+
+      // CSV 헤더 정의
+      const headers = [
+        '권역',
+        '기관ID',
+        '교육기관명',
+        '전화번호',
+        '도시',
+        '지역(시/군)',
+        '도로명',
+        '상세주소',
+        '대분류',
+        '1분류',
+        '2분류',
+        '학교급 구분',
+        '담당자명',
+        '담당자 이메일',
+        '담당자 전화',
+      ]
+
+      // CSV 데이터 생성
+      const csvRows = [
+        headers.join(','),
+        ...dataToExport.map((item) => {
+          // Common Code에서 실제 라벨 가져오기
+          const mainCategoryLabel = mainCategoryOptions.find(opt => opt.value === item.classMain)?.label || item.classMain || ''
+          const subCategory1Label = subCategory1Options.find(opt => opt.value === item.classLv1)?.label || item.classLv1 || ''
+          const subCategory2Label = subCategory2Options.find(opt => opt.value === item.classLv2)?.label || item.classLv2 || ''
+          const schoolLevelLabel = schoolLevelTypeOptions.find(opt => opt.value === item.schoolLevelType)?.label || item.schoolLevelType || ''
+
+          return [
+            item.region || '',
+            item.institutionId || '',
+            item.name || '',
+            item.phone || '',
+            '경기도', // 고정값
+            '', // city는 데이터에 없을 수 있음
+            item.address || '',
+            item.detailAddress || '',
+            mainCategoryLabel,
+            subCategory1Label,
+            subCategory2Label,
+            schoolLevelLabel,
+            item.manager || '',
+            item.email || '',
+            item.phone || '',
+          ]
+            .map((field) => {
+              // CSV 형식에 맞게 이스케이프 처리
+              if (field === null || field === undefined) return ''
+              const stringField = String(field)
+              // 쉼표, 따옴표, 줄바꿈이 포함된 경우 따옴표로 감싸고 내부 따옴표는 이중화
+              if (stringField.includes(',') || stringField.includes('"') || stringField.includes('\n')) {
+                return `"${stringField.replace(/"/g, '""')}"`
+              }
+              return stringField
+            })
+            .join(',')
+        }),
+      ]
+
+      // BOM 추가 (한글 깨짐 방지)
+      const BOM = '\uFEFF'
+      const csvContent = BOM + csvRows.join('\n')
+
+      // Blob 생성 및 다운로드
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+      link.setAttribute('href', url)
+      link.setAttribute('download', `교육기관_목록_${new Date().toISOString().split('T')[0]}.csv`)
+      link.style.visibility = 'hidden'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+
+      message.success(`${dataToExport.length}건의 데이터가 다운로드되었습니다.`)
+    } catch (error) {
+      console.error('다운로드 오류:', error)
+      message.error('다운로드 중 오류가 발생했습니다.')
+    }
+  }
+
   const handleEditFromDetail = () => {
     if (!selectedInstitution) return
     setViewMode('edit')
     setEditingId(selectedInstitution.key)
     setDetailTab('basic')
-    setEmailLocal(selectedInstitution.email?.split('@')[0] || '')
-    setEmailDomain(selectedInstitution.email?.split('@')[1] || '')
+    const emailParts = selectedInstitution.email?.split('@') || []
+    setEmailLocal(emailParts[0] || '')
+    const domain = emailParts[1] || ''
+    const isCustom = domain && !emailDomainOptions.find(opt => opt.value === domain)
+    setIsCustomDomain(isCustom)
+    if (isCustom) {
+      setCustomDomain(domain)
+      setEmailDomain('')
+    } else {
+      setEmailDomain(domain)
+      setCustomDomain('')
+    }
     form.setFieldsValue({
       name: selectedInstitution.name,
       phone: selectedInstitution.phone,
@@ -595,23 +706,6 @@ export default function InstitutionManagementPage() {
                 <Form.Item
                           label={
                             <span>
-                              교육기관 유형 <span className="text-red-500">*</span>
-                            </span>
-                          }
-                  name="institutionType"
-                  rules={[{ required: true, message: '교육기관 유형을 선택해주세요' }]}
-                  className="mb-0"
-                >
-                  <Select
-                    placeholder="교육기관 유형을 선택하세요"
-                    options={institutionTypeOptions}
-                    className="h-11 rounded-xl"
-                  />
-                </Form.Item>
-
-                <Form.Item
-                          label={
-                            <span>
                               전화번호 <span className="text-red-500">*</span>
                             </span>
                           }
@@ -836,25 +930,51 @@ export default function InstitutionManagementPage() {
                       value={emailLocal}
                       onChange={(e) => {
                         setEmailLocal(e.target.value)
-                        form.setFieldsValue({
-                          managerEmail: `${e.target.value}@${emailDomain}`,
-                        })
+                        const domain = isCustomDomain ? customDomain : emailDomain
+                        if (domain) {
+                          form.setFieldsValue({
+                            managerEmail: `${e.target.value}@${domain}`,
+                          })
+                        }
                       }}
                       className="flex-1 h-11 rounded-xl"
                     />
                     <span className="flex items-center text-gray-500">@</span>
-                    <Select
-                      placeholder="도메인"
-                      value={emailDomain}
-                      onChange={(value) => {
-                        setEmailDomain(value)
-                        form.setFieldsValue({
-                          managerEmail: `${emailLocal}@${value}`,
-                        })
-                      }}
-                      options={emailDomainOptions}
-                      className="flex-1 h-11 rounded-xl"
-                    />
+                    {isCustomDomain ? (
+                      <Input
+                        placeholder="도메인을 직접 입력하세요"
+                        value={customDomain}
+                        onChange={(e) => {
+                          const domain = e.target.value
+                          setCustomDomain(domain)
+                          if (domain) {
+                            form.setFieldsValue({
+                              managerEmail: `${emailLocal}@${domain}`,
+                            })
+                          }
+                        }}
+                        className="flex-1 h-11 rounded-xl"
+                      />
+                    ) : (
+                      <Select
+                        placeholder="도메인"
+                        value={emailDomain}
+                        onChange={(value) => {
+                          if (value === '기타') {
+                            setIsCustomDomain(true)
+                            setEmailDomain('')
+                            setCustomDomain('')
+                          } else {
+                            setEmailDomain(value)
+                            form.setFieldsValue({
+                              managerEmail: `${emailLocal}@${value}`,
+                            })
+                          }
+                        }}
+                        options={emailDomainOptions}
+                        className="flex-1 h-11 rounded-xl"
+                      />
+                    )}
                   </div>
                 </Form.Item>
               </div>
@@ -879,6 +999,13 @@ export default function InstitutionManagementPage() {
                   className="h-11 px-6 rounded-xl border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   기관 등록
+                </Button>
+                <Button
+                  icon={<Download className="w-4 h-4" />}
+                  onClick={handleDownload}
+                  className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+                >
+                  다운로드
                 </Button>
                 {selectedRowKeys.length > 0 && (
                   <Button

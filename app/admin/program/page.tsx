@@ -192,7 +192,8 @@ export default function ProgramManagementPage() {
       const typeKey = getProgramTypeByValue(programTypeValue)
       
       if (sessionKey && typeKey) {
-        const displayName = `(${sessionKey.label}) ${typeKey.label}`
+        // 괄호 제거: "8차시 블록코딩" 형식으로 표시
+        const displayName = `${sessionKey.label} ${typeKey.label}`
         setComputedProgramName(displayName)
         form.setFieldsValue({ programDisplayName: displayName })
       } else {

@@ -10,6 +10,7 @@ export interface UserProfile {
   email: string
   phone?: string
   signatureImageUrl?: string
+  passwordChanged?: boolean // 첫 로그인 시 비밀번호 변경 여부
 }
 
 interface AuthContextType {
@@ -54,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: '홍길동',
             email: 'instructor@example.com',
             phone: '010-1234-5678',
+            passwordChanged: false, // 첫 로그인 시 비밀번호 변경 필요
           }
           setUserProfile(defaultProfile)
           localStorage.setItem('userProfile', JSON.stringify(defaultProfile))
