@@ -352,7 +352,7 @@ export const AddInstructorPage = () => {
                       >
                         <SelectTrigger
                           icon={<MapPin className="h-4 w-4" />}
-                          className={errors.zoneId ? 'ring-2 ring-destructive' : ''}
+                          className={`${errors.zoneId ? 'ring-2 ring-destructive' : ''} ${!field.value ? 'text-muted-foreground/60' : ''}`}
                         >
                           <SelectValue placeholder="Zone (auto-selected)">
                             {selectedZone ? selectedZone.name : 'Zone (auto-selected)'}
@@ -381,9 +381,9 @@ export const AddInstructorPage = () => {
                     >
                       <SelectTrigger
                         icon={<MapPin className="h-4 w-4" />}
-                        className={errors.regionId ? 'ring-2 ring-destructive' : ''}
+                        className={`${errors.regionId ? 'ring-2 ring-destructive' : ''} ${!field.value ? 'text-muted-foreground/60' : ''}`}
                       >
-                        <SelectValue placeholder="Select region (optional)" />
+                        <SelectValue placeholder="Select region" />
                       </SelectTrigger>
                       <SelectContent>
                         {regions.map((region) => (
@@ -449,7 +449,7 @@ export const AddInstructorPage = () => {
                   >
                     <SelectTrigger
                       icon={<UserCircle className="h-4 w-4" />}
-                      className={errors.statusId ? 'ring-2 ring-destructive' : ''}
+                      className={`${errors.statusId ? 'ring-2 ring-destructive' : ''} ${!field.value ? 'text-muted-foreground/60' : ''}`}
                     >
                       <SelectValue placeholder="Select status (optional)" />
                     </SelectTrigger>
@@ -482,7 +482,7 @@ export const AddInstructorPage = () => {
                   >
                     <SelectTrigger
                       icon={<UserCircle className="h-4 w-4" />}
-                      className={errors.classificationId ? 'ring-2 ring-destructive' : ''}
+                      className={`${errors.classificationId ? 'ring-2 ring-destructive' : ''} ${!field.value ? 'text-muted-foreground/60' : ''}`}
                     >
                       <SelectValue placeholder="Select classification (optional)" />
                     </SelectTrigger>
