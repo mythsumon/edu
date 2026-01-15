@@ -213,8 +213,6 @@ export default function InstitutionManagementPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [emailLocal, setEmailLocal] = useState<string>('')
   const [emailDomain, setEmailDomain] = useState<string>('')
-  const [isCustomDomain, setIsCustomDomain] = useState<boolean>(false)
-  const [customDomain, setCustomDomain] = useState<string>('')
   const [activeSection, setActiveSection] = useState<string>('institution')
   const [selectedInstitution, setSelectedInstitution] = useState<InstitutionItem | null>(null)
   const [detailTab, setDetailTab] = useState<'basic' | 'manager'>('basic')
@@ -266,8 +264,6 @@ export default function InstitutionManagementPage() {
     form.resetFields()
     setEmailLocal('')
     setEmailDomain('')
-    setIsCustomDomain(false)
-    setCustomDomain('')
   }
 
   const handleViewDetail = (record: InstitutionItem) => {
@@ -282,8 +278,6 @@ export default function InstitutionManagementPage() {
     setEditingId(null)
     setEmailLocal('')
     setEmailDomain('')
-    setIsCustomDomain(false)
-    setCustomDomain('')
     setSelectedInstitution(null)
   }
 
@@ -417,15 +411,7 @@ export default function InstitutionManagementPage() {
     const emailParts = selectedInstitution.email?.split('@') || []
     setEmailLocal(emailParts[0] || '')
     const domain = emailParts[1] || ''
-    const isCustom = Boolean(domain && !emailDomainOptions.find(opt => opt.value === domain))
-    setIsCustomDomain(isCustom)
-    if (isCustom) {
-      setCustomDomain(domain)
-      setEmailDomain('')
-    } else {
-      setEmailDomain(domain)
-      setCustomDomain('')
-    }
+    setEmailDomain(domain)
     form.setFieldsValue({
       name: selectedInstitution.name,
       phone: selectedInstitution.phone,
@@ -845,24 +831,22 @@ export default function InstitutionManagementPage() {
                   />
                 </Form.Item>
 
-                {classLv2Value && (
-                  <Form.Item
-                    label={
-                      <span>
-                        학교급 구분 <span className="text-red-500">*</span>
-                      </span>
-                    }
-                    name="schoolLevelType"
-                    rules={[{ required: true, message: '학교급 구분을 선택해주세요' }]}
-                    className="mb-0"
-                  >
-                    <Select
-                      placeholder="학교급 구분을 선택하세요"
-                      options={schoolLevelTypeOptions}
-                      className="h-11 rounded-xl"
-                    />
-                  </Form.Item>
-                )}
+                <Form.Item
+                  label={
+                    <span>
+                      학교급 구분 <span className="text-red-500">*</span>
+                    </span>
+                  }
+                  name="schoolLevelType"
+                  rules={[{ required: true, message: '학교급 구분을 선택해주세요' }]}
+                  className="mb-0"
+                >
+                  <Select
+                    placeholder="학교급 구분을 선택하세요"
+                    options={schoolLevelTypeOptions}
+                    className="h-11 rounded-xl"
+                  />
+                </Form.Item>
 
                 <Form.Item
                   label="비고"
@@ -930,7 +914,7 @@ export default function InstitutionManagementPage() {
                       value={emailLocal}
                       onChange={(e) => {
                         setEmailLocal(e.target.value)
-                        const domain = isCustomDomain ? customDomain : emailDomain
+                        const domain = emailDomain
                         if (domain) {
                           form.setFieldsValue({
                             managerEmail: `${e.target.value}@${domain}`,
@@ -940,41 +924,20 @@ export default function InstitutionManagementPage() {
                       className="flex-1 h-11 rounded-xl"
                     />
                     <span className="flex items-center text-gray-500">@</span>
-                    {isCustomDomain ? (
-                      <Input
-                        placeholder="도메인을 직접 입력하세요"
-                        value={customDomain}
-                        onChange={(e) => {
-                          const domain = e.target.value
-                          setCustomDomain(domain)
-                          if (domain) {
-                            form.setFieldsValue({
-                              managerEmail: `${emailLocal}@${domain}`,
-                            })
-                          }
-                        }}
-                        className="flex-1 h-11 rounded-xl"
-                      />
-                    ) : (
-                      <Select
-                        placeholder="도메인"
-                        value={emailDomain}
-                        onChange={(value) => {
-                          if (value === '기타') {
-                            setIsCustomDomain(true)
-                            setEmailDomain('')
-                            setCustomDomain('')
-                          } else {
-                            setEmailDomain(value)
-                            form.setFieldsValue({
-                              managerEmail: `${emailLocal}@${value}`,
-                            })
-                          }
-                        }}
-                        options={emailDomainOptions}
-                        className="flex-1 h-11 rounded-xl"
-                      />
-                    )}
+                    <Input
+                      placeholder="도메인을 입력하세요"
+                      value={emailDomain}
+                      onChange={(e) => {
+                        const domain = e.target.value
+                        setEmailDomain(domain)
+                        if (domain) {
+                          form.setFieldsValue({
+                            managerEmail: `${emailLocal}@${domain}`,
+                          })
+                        }
+                      }}
+                      className="flex-1 h-11 rounded-xl"
+                    />
                   </div>
                 </Form.Item>
               </div>
