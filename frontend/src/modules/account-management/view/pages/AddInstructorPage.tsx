@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useState } from 'react'
-import { User, Lock, Mail, Phone, UserCircle, MapPin, Calendar as CalendarIcon, ChevronDownIcon } from 'lucide-react'
+import { User, Lock, Mail, Phone, UserCircle, MapPin, Calendar as CalendarIcon, ChevronDownIcon, Eye, EyeOff } from 'lucide-react'
 import { PageLayout } from '@/app/layout/PageLayout'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -44,7 +44,7 @@ export const AddInstructorPage = () => {
     mode: 'onBlur',
     defaultValues: {
       username: '',
-      password: '',
+      password: 'instructor123',
       firstName: '',
       lastName: '',
       email: '',
@@ -64,6 +64,7 @@ export const AddInstructorPage = () => {
   const { data: regions = [], isLoading: isLoadingRegions } = useRegionsQuery()
   const selectedRegionId = watch('regionId')
   const [datePickerOpen, setDatePickerOpen] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   
   // Fetch status master codes (parent code 100)
   const { data: statusMasterCodesData, isLoading: isLoadingStatusCodes } = useMasterCodeChildrenByCodeQuery(
@@ -146,15 +147,30 @@ export const AddInstructorPage = () => {
             {/* Password */}
             <div className="space-y-2">
               <Label htmlFor="password">Password <span className="text-destructive">**</span></Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter password"
-                icon={<Lock className="h-4 w-4" />}
-                {...register('password')}
-                className={errors.password ? 'ring-2 ring-destructive' : ''}
-                disabled={isSubmitting}
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter password"
+                  icon={<Lock className="h-4 w-4" />}
+                  {...register('password')}
+                  className={errors.password ? 'ring-2 ring-destructive pr-10' : 'pr-10'}
+                  disabled={isSubmitting}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  disabled={isSubmitting}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
               {errors.password && (
                 <p className="text-sm text-destructive">{errors.password.message}</p>
               )}
