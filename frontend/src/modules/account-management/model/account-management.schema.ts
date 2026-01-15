@@ -3,7 +3,7 @@ import { z } from 'zod'
 export const createAdminSchema = z.object({
   username: z
     .string()
-    .min(3, 'Username must be at least 3 characters')
+    .nonempty('Username is required')
     .max(50, 'Username must be at most 50 characters'),
   password: z
     .string()
@@ -32,7 +32,7 @@ export type CreateAdminFormData = z.infer<typeof createAdminSchema>
 export const createInstructorSchema = z.object({
   username: z
     .string()
-    .min(3, 'Username must be at least 3 characters')
+    .nonempty('Username is required')
     .max(50, 'Username must be at most 50 characters'),
   password: z
     .string()
