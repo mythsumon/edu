@@ -33,8 +33,7 @@ export interface InstructorAccount {
 export interface AdminResponseDto {
   userId: number
   username: string
-  firstName: string
-  lastName: string
+  name: string
   email?: string
   phone?: string
   profilePhoto?: string
@@ -66,8 +65,7 @@ export interface InstructorResponseDto {
 export interface CreateAdminRequestDto {
   username: string
   password: string
-  firstName: string
-  lastName: string
+  name: string
   email?: string
   phone?: string
 }

@@ -42,8 +42,7 @@ public class AuthMapper {
         AdminProfileDto adminDto = null;
         if (user.getAdmin() != null) {
             adminDto = AdminProfileDto.builder()
-                    .firstName(user.getAdmin().getFirstName())
-                    .lastName(user.getAdmin().getLastName())
+                    .name(user.getAdmin().getName())
                     .email(user.getAdmin().getEmail())
                     .phone(user.getAdmin().getPhone())
                     .profilePhoto(user.getAdmin().getProfilePhoto())

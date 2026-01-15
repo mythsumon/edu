@@ -92,8 +92,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_master_code_parent_name ON master_code(pare
 -- Admins table
 CREATE TABLE IF NOT EXISTS admins (
     user_id BIGINT PRIMARY KEY,
-    first_name VARCHAR(255) NOT NULL,
-    last_name VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
     email VARCHAR(255),
     phone VARCHAR(50),
     profile_photo VARCHAR(500),
