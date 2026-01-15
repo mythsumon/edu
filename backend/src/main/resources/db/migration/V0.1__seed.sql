@@ -87,10 +87,9 @@ VALUES ('instructor',
 ON CONFLICT (username) DO NOTHING;
 
 -- Insert instructor profile
-INSERT INTO instructors (user_id, first_name, last_name, email, phone, gender, dob, region_id, city, street, detail_address, status_id, classification_id)
+INSERT INTO instructors (user_id, name, email, phone, gender, dob, region_id, city, street, detail_address, status_id, classification_id)
 VALUES ((SELECT id FROM users WHERE username = 'instructor'),
-        'Instructor',
-        'User',
+        'Instructor User',
         'instructor@example.com',
         '+1234567890',
         'MALE',

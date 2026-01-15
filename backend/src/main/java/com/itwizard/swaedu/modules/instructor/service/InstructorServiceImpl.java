@@ -70,15 +70,17 @@ public class InstructorServiceImpl implements InstructorService {
         // Create instructor profile
         Instructor instructor = new Instructor();
         instructor.setUser(savedUser);
-        instructor.setFirstName(request.getFirstName());
-        instructor.setLastName(request.getLastName());
+        instructor.setName(request.getName());
         instructor.setEmail(request.getEmail());
         instructor.setPhone(request.getPhone());
         instructor.setGender(request.getGender());
         instructor.setDob(request.getDob());
+        instructor.setRegionId(request.getRegionId());
         instructor.setCity(request.getCity());
         instructor.setStreet(request.getStreet());
         instructor.setDetailAddress(request.getDetailAddress());
+        instructor.setStatusId(request.getStatusId());
+        instructor.setClassificationId(request.getClassificationId());
 
         // Set region if provided
         if (request.getRegionId() != null) {

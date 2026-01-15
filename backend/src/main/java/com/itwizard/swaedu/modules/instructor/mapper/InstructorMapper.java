@@ -30,8 +30,7 @@ public class InstructorMapper {
         return InstructorResponseDto.builder()
                 .userId(instructor.getUserId())
                 .username(user != null ? user.getUsername() : null)
-                .firstName(instructor.getFirstName())
-                .lastName(instructor.getLastName())
+                .name(instructor.getName())
                 .email(instructor.getEmail())
                 .phone(instructor.getPhone())
                 .gender(instructor.getGender())
@@ -55,8 +54,7 @@ public class InstructorMapper {
         if (instructor == null || dto == null) {
             return;
         }
-        instructor.setFirstName(dto.getFirstName());
-        instructor.setLastName(dto.getLastName());
+        instructor.setName(dto.getName());
         instructor.setEmail(dto.getEmail());
         instructor.setPhone(dto.getPhone());
         instructor.setGender(dto.getGender());
@@ -73,11 +71,8 @@ public class InstructorMapper {
         if (instructor == null || dto == null) {
             return;
         }
-        if (dto.getFirstName() != null) {
-            instructor.setFirstName(dto.getFirstName());
-        }
-        if (dto.getLastName() != null) {
-            instructor.setLastName(dto.getLastName());
+        if (dto.getName() != null) {
+            instructor.setName(dto.getName());
         }
         if (dto.getEmail() != null) {
             instructor.setEmail(dto.getEmail());

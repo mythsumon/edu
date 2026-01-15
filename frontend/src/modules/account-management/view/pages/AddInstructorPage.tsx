@@ -45,8 +45,7 @@ export const AddInstructorPage = () => {
     defaultValues: {
       username: '',
       password: 'instructor123',
-      firstName: '',
-      lastName: '',
+      name: '',
       email: '',
       phone: '',
       gender: '',
@@ -95,8 +94,7 @@ export const AddInstructorPage = () => {
       await createInstructorMutation.mutateAsync({
         username: data.username,
         password: data.password,
-        firstName: data.firstName,
-        lastName: data.lastName,
+        name: data.name,
         email: data.email || undefined,
         phone: data.phone,
         gender: data.gender,
@@ -176,37 +174,20 @@ export const AddInstructorPage = () => {
               )}
             </div>
 
-            {/* First Name */}
+            {/* Name */}
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name <span className="text-destructive">**</span></Label>
+              <Label htmlFor="name">Name <span className="text-destructive">**</span></Label>
               <Input
-                id="firstName"
+                id="name"
                 type="text"
-                placeholder="Enter first name"
+                placeholder="Enter full name"
                 icon={<UserCircle className="h-4 w-4" />}
-                {...register('firstName')}
-                className={errors.firstName ? 'ring-2 ring-destructive' : ''}
+                {...register('name')}
+                className={errors.name ? 'ring-2 ring-destructive' : ''}
                 disabled={isSubmitting}
               />
-              {errors.firstName && (
-                <p className="text-sm text-destructive">{errors.firstName.message}</p>
-              )}
-            </div>
-
-            {/* Last Name */}
-            <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name <span className="text-destructive">**</span></Label>
-              <Input
-                id="lastName"
-                type="text"
-                placeholder="Enter last name"
-                icon={<UserCircle className="h-4 w-4" />}
-                {...register('lastName')}
-                className={errors.lastName ? 'ring-2 ring-destructive' : ''}
-                disabled={isSubmitting}
-              />
-              {errors.lastName && (
-                <p className="text-sm text-destructive">{errors.lastName.message}</p>
+              {errors.name && (
+                <p className="text-sm text-destructive">{errors.name.message}</p>
               )}
             </div>
 

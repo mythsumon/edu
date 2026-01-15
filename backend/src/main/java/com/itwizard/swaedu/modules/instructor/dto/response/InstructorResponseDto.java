@@ -14,8 +14,7 @@ import java.time.LocalDate;
 public class InstructorResponseDto {
     private Long userId;
     private String username;
-    private String firstName;
-    private String lastName;
+    private String name;
     private String email;
     private String phone;
     private String gender;

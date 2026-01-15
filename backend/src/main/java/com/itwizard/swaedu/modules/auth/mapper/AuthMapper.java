@@ -53,8 +53,7 @@ public class AuthMapper {
         InstructorProfileDto instructorDto = null;
         if (user.getInstructor() != null) {
             instructorDto = InstructorProfileDto.builder()
-                    .firstName(user.getInstructor().getFirstName())
-                    .lastName(user.getInstructor().getLastName())
+                    .name(user.getInstructor().getName())
                     .email(user.getInstructor().getEmail())
                     .phone(user.getInstructor().getPhone())
                     .gender(user.getInstructor().getGender())

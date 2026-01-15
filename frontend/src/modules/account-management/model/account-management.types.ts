@@ -44,8 +44,7 @@ export interface AdminResponseDto {
 export interface InstructorResponseDto {
   userId: number
   username: string
-  firstName: string
-  lastName: string
+  name: string
   email?: string
   phone?: string
   gender?: string
@@ -79,8 +78,7 @@ export interface CreateAdminRequestDto {
 export interface CreateInstructorRequestDto {
   username: string
   password: string
-  firstName: string
-  lastName: string
+  name: string
   email?: string
   phone?: string
   gender?: string

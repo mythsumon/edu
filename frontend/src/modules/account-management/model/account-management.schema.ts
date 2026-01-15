@@ -37,14 +37,10 @@ export const createInstructorSchema = z.object({
   password: z
     .string()
     .min(6, 'Password must be at least 6 characters'),
-  firstName: z
+  name: z
     .string()
-    .min(1, 'First name is required')
-    .max(255, 'First name must be at most 255 characters'),
-  lastName: z
-    .string()
-    .min(1, 'Last name is required')
-    .max(255, 'Last name must be at most 255 characters'),
+    .min(1, 'Name is required')
+    .max(255, 'Name must be at most 255 characters'),
   email: z
     .string()
     .refine((val) => val === '' || z.string().email().safeParse(val).success, {
