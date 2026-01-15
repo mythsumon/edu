@@ -1,21 +1,21 @@
 import { z } from 'zod'
 
-export const createAdminSchema = z.object({
+export const createAdminSchema = (t: (key: string) => string) => z.object({
   username: z
     .string()
-    .nonempty('Username is required')
-    .max(50, 'Username must be at most 50 characters'),
+    .nonempty(t('accountManagement.validation.usernameRequired'))
+    .max(50, t('accountManagement.validation.usernameMaxLength')),
   password: z
     .string()
-    .min(6, 'Password must be at least 6 characters'),
+    .min(6, t('accountManagement.validation.passwordMinLength')),
   name: z
     .string()
-    .min(1, 'Name is required')
-    .max(255, 'Name must be at most 255 characters'),
+    .min(1, t('accountManagement.validation.nameRequired'))
+    .max(255, t('accountManagement.validation.nameMaxLength')),
   email: z
     .string()
     .refine((val) => val === '' || z.string().email().safeParse(val).success, {
-      message: 'Email must be valid',
+      message: t('accountManagement.validation.emailInvalid'),
     })
     .optional(),
   phone: z
@@ -23,59 +23,59 @@ export const createAdminSchema = z.object({
     .optional(),
 })
 
-export type CreateAdminFormData = z.infer<typeof createAdminSchema>
+export type CreateAdminFormData = z.infer<ReturnType<typeof createAdminSchema>>
 
-export const createInstructorSchema = z.object({
+export const createInstructorSchema = (t: (key: string) => string) => z.object({
   username: z
     .string()
-    .nonempty('Username is required')
-    .max(50, 'Username must be at most 50 characters'),
+    .nonempty(t('accountManagement.validation.usernameRequired'))
+    .max(50, t('accountManagement.validation.usernameMaxLength')),
   password: z
     .string()
-    .min(6, 'Password must be at least 6 characters'),
+    .min(6, t('accountManagement.validation.passwordMinLength')),
   name: z
     .string()
-    .min(1, 'Name is required')
-    .max(255, 'Name must be at most 255 characters'),
+    .min(1, t('accountManagement.validation.nameRequired'))
+    .max(255, t('accountManagement.validation.nameMaxLength')),
   email: z
     .string()
     .refine((val) => val === '' || z.string().email().safeParse(val).success, {
-      message: 'Email must be valid',
+      message: t('accountManagement.validation.emailInvalid'),
     })
     .optional(),
   phone: z
     .string()
-    .min(1, 'Phone number is required'),
+    .min(1, t('accountManagement.validation.phoneNumberRequired')),
   gender: z
     .string()
-    .min(1, 'Gender is required'),
+    .min(1, t('accountManagement.validation.genderRequired')),
   dob: z
     .string()
-    .min(1, 'Date of birth is required'),
+    .min(1, t('accountManagement.validation.dateOfBirthRequired')),
   zoneId: z
     .string()
-    .min(1, 'Zone is required'),
+    .min(1, t('accountManagement.validation.zoneRequired')),
   regionId: z
     .string()
-    .min(1, 'Region is required'),
+    .min(1, t('accountManagement.validation.regionRequired')),
   city: z
     .string()
-    .min(1, 'City is required')
-    .max(255, 'City must be at most 255 characters'),
+    .min(1, t('accountManagement.validation.cityRequired'))
+    .max(255, t('accountManagement.validation.cityMaxLength')),
   street: z
     .string()
-    .min(1, 'Street is required')
-    .max(255, 'Street must be at most 255 characters'),
+    .min(1, t('accountManagement.validation.streetRequired'))
+    .max(255, t('accountManagement.validation.streetMaxLength')),
   detailAddress: z
     .string()
-    .min(1, 'Building name / lake number is required')
-    .max(255, 'Building name / lake number must be at most 255 characters'),
+    .min(1, t('accountManagement.validation.buildingNameLakeNumberRequired'))
+    .max(255, t('accountManagement.validation.buildingNameLakeNumberMaxLength')),
   statusId: z
     .string()
-    .min(1, 'Status is required'),
+    .min(1, t('accountManagement.validation.statusRequired')),
   classificationId: z
     .string()
-    .min(1, 'Classification is required'),
+    .min(1, t('accountManagement.validation.classificationRequired')),
 })
 
-export type CreateInstructorFormData = z.infer<typeof createInstructorSchema>
+export type CreateInstructorFormData = z.infer<ReturnType<typeof createInstructorSchema>>

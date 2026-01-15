@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { useTranslation } from 'react-i18next'
 import { type ColumnDef } from '@tanstack/react-table'
 import { Checkbox } from '@/shared/ui/checkbox'
 import { Button } from '@/shared/ui/button'
@@ -15,6 +16,8 @@ export const InstructorAccountTable = ({
   data,
   onDetailClick,
 }: InstructorAccountTableProps) => {
+  const { t } = useTranslation()
+  
   const columns = React.useMemo<ColumnDef<InstructorAccount>[]>(
     () => [
       {
@@ -26,14 +29,14 @@ export const InstructorAccountTable = ({
               (table.getIsSomePageRowsSelected() && 'indeterminate')
             }
             onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-            aria-label="Select all"
+            aria-label={t('accountManagement.selectAll')}
           />
         ),
         cell: ({ row }) => (
           <Checkbox
             checked={row.getIsSelected()}
             onCheckedChange={(value) => row.toggleSelected(!!value)}
-            aria-label={`Select ${row.original.name}`}
+            aria-label={`${t('accountManagement.selectRow')} ${row.original.name}`}
           />
         ),
         enableSorting: false,
@@ -41,22 +44,22 @@ export const InstructorAccountTable = ({
       },
       {
         accessorKey: 'id',
-        header: 'Instructor ID',
+        header: t('accountManagement.instructorId'),
         cell: ({ row }) => (
           <div className="font-medium">{row.getValue('id')}</div>
         ),
       },
       {
         accessorKey: 'name',
-        header: 'Name',
+        header: t('accountManagement.name'),
       },
       {
         accessorKey: 'username',
-        header: 'Username',
+        header: t('accountManagement.username'),
       },
       {
         accessorKey: 'region',
-        header: 'Region',
+        header: t('accountManagement.region'),
         cell: ({ row }) => {
           const region = row.getValue('region') as string | undefined
           return <div>{region || '-'}</div>
@@ -64,7 +67,7 @@ export const InstructorAccountTable = ({
       },
       {
         accessorKey: 'instructorClassification',
-        header: 'Instructor Classification',
+        header: t('accountManagement.instructorClassification'),
         cell: ({ row }) => {
           const classification = row.getValue('instructorClassification') as string | undefined
           return <div>{classification || '-'}</div>
@@ -78,7 +81,7 @@ export const InstructorAccountTable = ({
             variant="ghost"
             size="icon"
             onClick={() => onDetailClick?.(row.original)}
-            aria-label="View details"
+            aria-label={t('accountManagement.viewDetails')}
           >
             <MoreHorizontal className="h-4 w-4" />
           </Button>
@@ -87,14 +90,14 @@ export const InstructorAccountTable = ({
         enableHiding: false,
       },
     ],
-    [onDetailClick]
+    [onDetailClick, t]
   )
 
   return (
     <DataTable
       data={data}
       columns={columns}
-      emptyMessage="No instructor accounts found."
+      emptyMessage={t('accountManagement.noInstructorAccountsFound')}
       enableRowSelection={true}
     />
   )

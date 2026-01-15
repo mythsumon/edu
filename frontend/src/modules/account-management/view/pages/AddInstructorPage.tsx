@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useTranslation } from 'react-i18next'
 import { useEffect, useState } from 'react'
 import { User, Lock, Mail, Phone, UserCircle, MapPin, Calendar as CalendarIcon, ChevronDownIcon, Eye, EyeOff } from 'lucide-react'
 import { PageLayout } from '@/app/layout/PageLayout'
@@ -28,6 +29,7 @@ import { useMasterCodeChildrenByCodeQuery } from '@/modules/master-code-setup/co
 import { MASTER_CODE_PARENT_CODES } from '@/shared/constants/master-code'
 
 export const AddInstructorPage = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const createInstructorMutation = useCreateInstructor()
   const { data: zones = [] } = useZonesQuery()
@@ -40,7 +42,7 @@ export const AddInstructorPage = () => {
     control,
     formState: { errors, isSubmitting },
   } = useForm<CreateInstructorFormData>({
-    resolver: zodResolver(createInstructorSchema),
+    resolver: zodResolver(createInstructorSchema(t)),
     mode: 'onBlur',
     defaultValues: {
       username: '',
@@ -119,19 +121,21 @@ export const AddInstructorPage = () => {
 
   return (
     <PageLayout
-      title="Add New Instructor"
-      customBreadcrumbRoot={{ path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL, label: 'Instructors' }}
+      title={t('accountManagement.addNewInstructor')}
+      customBreadcrumbRoot={{ path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL, label: t('accountManagement.instructors') }}
     >
       <div className="max-w-4xl p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Username */}
             <div className="space-y-2">
-              <Label htmlFor="username">Username <span className="text-destructive">**</span></Label>
+              <Label htmlFor="username">
+                {t('accountManagement.username')} <span className="text-destructive">**</span>
+              </Label>
               <Input
                 id="username"
                 type="text"
-                placeholder="Enter username"
+                placeholder={t('accountManagement.usernamePlaceholder')}
                 icon={<User className="h-4 w-4" />}
                 {...register('username')}
                 className={errors.username ? 'ring-2 ring-destructive' : ''}
@@ -144,12 +148,14 @@ export const AddInstructorPage = () => {
 
             {/* Password */}
             <div className="space-y-2">
-              <Label htmlFor="password">Password <span className="text-destructive">**</span></Label>
+              <Label htmlFor="password">
+                {t('accountManagement.password')} <span className="text-destructive">**</span>
+              </Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter password"
+                  placeholder={t('accountManagement.passwordPlaceholder')}
                   icon={<Lock className="h-4 w-4" />}
                   {...register('password')}
                   className={errors.password ? 'ring-2 ring-destructive pr-10' : 'pr-10'}
@@ -160,7 +166,7 @@ export const AddInstructorPage = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   disabled={isSubmitting}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-label={showPassword ? t('accountManagement.hidePassword') : t('accountManagement.showPassword')}
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -176,11 +182,13 @@ export const AddInstructorPage = () => {
 
             {/* Name */}
             <div className="space-y-2">
-              <Label htmlFor="name">Name <span className="text-destructive">**</span></Label>
+              <Label htmlFor="name">
+                {t('accountManagement.name')} <span className="text-destructive">**</span>
+              </Label>
               <Input
                 id="name"
                 type="text"
-                placeholder="Enter full name"
+                placeholder={t('accountManagement.namePlaceholder')}
                 icon={<UserCircle className="h-4 w-4" />}
                 {...register('name')}
                 className={errors.name ? 'ring-2 ring-destructive' : ''}
@@ -193,11 +201,11 @@ export const AddInstructorPage = () => {
 
             {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('accountManagement.email')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter email (optional)"
+                placeholder={t('accountManagement.emailPlaceholder')}
                 icon={<Mail className="h-4 w-4" />}
                 {...register('email')}
                 className={errors.email ? 'ring-2 ring-destructive' : ''}
@@ -210,11 +218,13 @@ export const AddInstructorPage = () => {
 
             {/* Phone */}
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number <span className="text-destructive">**</span></Label>
+              <Label htmlFor="phone">
+                {t('accountManagement.phoneNumber')} <span className="text-destructive">**</span>
+              </Label>
               <Input
                 id="phone"
                 type="tel"
-                placeholder="Enter phone number"
+                placeholder={t('accountManagement.phoneNumberRequiredPlaceholder')}
                 icon={<Phone className="h-4 w-4" />}
                 {...register('phone')}
                 className={errors.phone ? 'ring-2 ring-destructive' : ''}
@@ -227,11 +237,13 @@ export const AddInstructorPage = () => {
 
             {/* Gender */}
             <div className="space-y-2">
-              <Label htmlFor="gender">Gender <span className="text-destructive">**</span></Label>
+              <Label htmlFor="gender">
+                {t('accountManagement.gender')} <span className="text-destructive">**</span>
+              </Label>
               <Input
                 id="gender"
                 type="text"
-                placeholder="Enter gender"
+                placeholder={t('accountManagement.genderPlaceholder')}
                 icon={<UserCircle className="h-4 w-4" />}
                 {...register('gender')}
                 className={errors.gender ? 'ring-2 ring-destructive' : ''}
@@ -244,7 +256,9 @@ export const AddInstructorPage = () => {
 
             {/* Date of Birth */}
             <div className="space-y-2">
-              <Label htmlFor="dob">Date of Birth <span className="text-destructive">**</span></Label>
+              <Label htmlFor="dob">
+                {t('accountManagement.dateOfBirth')} <span className="text-destructive">**</span>
+              </Label>
               <Controller
                 name="dob"
                 control={control}
@@ -276,7 +290,7 @@ export const AddInstructorPage = () => {
                             onBlur={field.onBlur}
                           >
                             <span className="flex-1 text-left">
-                              {date ? date.toLocaleDateString() : 'Enter date of birth'}
+                              {date ? date.toLocaleDateString() : t('accountManagement.dateOfBirthPlaceholder')}
                             </span>
                             <ChevronDownIcon className="h-4 w-4 shrink-0 ml-2" />
                           </Button>
@@ -314,11 +328,13 @@ export const AddInstructorPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 col-span-1 lg:col-span-2">
               {/* City */}
               <div className="space-y-2">
-                <Label htmlFor="city">City <span className="text-destructive">**</span></Label>
+                <Label htmlFor="city">
+                  {t('accountManagement.city')} <span className="text-destructive">**</span>
+                </Label>
                 <Input
                   id="city"
                   type="text"
-                  placeholder="Enter city"
+                  placeholder={t('accountManagement.cityPlaceholder')}
                   icon={<MapPin className="h-4 w-4" />}
                   {...register('city')}
                   className={errors.city ? 'ring-2 ring-destructive' : ''}
@@ -331,7 +347,9 @@ export const AddInstructorPage = () => {
 
               {/* Zone */}
               <div className="space-y-2">
-                <Label htmlFor="zoneId">Zone <span className="text-destructive">**</span></Label>
+                <Label htmlFor="zoneId">
+                  {t('accountManagement.zone')} <span className="text-destructive">**</span>
+                </Label>
                 <Controller
                   name="zoneId"
                   control={control}
@@ -350,8 +368,8 @@ export const AddInstructorPage = () => {
                           icon={<MapPin className="h-4 w-4" />}
                           className={`${errors.zoneId ? 'ring-2 ring-destructive' : ''} ${!field.value ? 'text-muted-foreground/60' : ''}`}
                         >
-                          <SelectValue placeholder="Zone (auto-selected)">
-                            {selectedZone ? selectedZone.name : 'Zone (auto-selected)'}
+                          <SelectValue placeholder={t('accountManagement.zoneAutoSelected')}>
+                            {selectedZone ? selectedZone.name : t('accountManagement.zoneAutoSelected')}
                           </SelectValue>
                         </SelectTrigger>
                       </Select>
@@ -365,7 +383,9 @@ export const AddInstructorPage = () => {
 
               {/* Region */}
               <div className="space-y-2">
-                <Label htmlFor="regionId">Region <span className="text-destructive">**</span></Label>
+                <Label htmlFor="regionId">
+                  {t('accountManagement.region')} <span className="text-destructive">**</span>
+                </Label>
                 <Controller
                   name="regionId"
                   control={control}
@@ -379,7 +399,7 @@ export const AddInstructorPage = () => {
                         icon={<MapPin className="h-4 w-4" />}
                         className={`${errors.regionId ? 'ring-2 ring-destructive' : ''} ${!field.value ? 'text-muted-foreground/60' : ''}`}
                       >
-                        <SelectValue placeholder="Select region" />
+                        <SelectValue placeholder={t('accountManagement.regionPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
                         {regions.map((region) => (
@@ -399,11 +419,13 @@ export const AddInstructorPage = () => {
 
             {/* Street */}
             <div className="space-y-2">
-              <Label htmlFor="street">Street <span className="text-destructive">**</span></Label>
+              <Label htmlFor="street">
+                {t('accountManagement.street')} <span className="text-destructive">**</span>
+              </Label>
               <Input
                 id="street"
                 type="text"
-                placeholder="Enter street"
+                placeholder={t('accountManagement.streetPlaceholder')}
                 icon={<MapPin className="h-4 w-4" />}
                 {...register('street')}
                 className={errors.street ? 'ring-2 ring-destructive' : ''}
@@ -416,11 +438,13 @@ export const AddInstructorPage = () => {
 
             {/* Detail Address */}
             <div className="space-y-2">
-              <Label htmlFor="detailAddress">Building Name / Lake Number <span className="text-destructive">**</span></Label>
+              <Label htmlFor="detailAddress">
+                {t('accountManagement.buildingNameLakeNumber')} <span className="text-destructive">**</span>
+              </Label>
               <Input
                 id="detailAddress"
                 type="text"
-                placeholder="Enter building name / lake number"
+                placeholder={t('accountManagement.buildingNameLakeNumberPlaceholder')}
                 icon={<MapPin className="h-4 w-4" />}
                 {...register('detailAddress')}
                 className={errors.detailAddress ? 'ring-2 ring-destructive' : ''}
@@ -433,7 +457,9 @@ export const AddInstructorPage = () => {
 
             {/* Status */}
             <div className="space-y-2">
-              <Label htmlFor="statusId">Status <span className="text-destructive">**</span></Label>
+              <Label htmlFor="statusId">
+                {t('accountManagement.status')} <span className="text-destructive">**</span>
+              </Label>
               <Controller
                 name="statusId"
                 control={control}
@@ -447,7 +473,7 @@ export const AddInstructorPage = () => {
                       icon={<UserCircle className="h-4 w-4" />}
                       className={`${errors.statusId ? 'ring-2 ring-destructive' : ''} ${!field.value ? 'text-muted-foreground/60' : ''}`}
                     >
-                      <SelectValue placeholder="Select status" />
+                      <SelectValue placeholder={t('accountManagement.statusPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {statusMasterCodes.map((status) => (
@@ -466,7 +492,9 @@ export const AddInstructorPage = () => {
 
             {/* Classification */}
             <div className="space-y-2">
-              <Label htmlFor="classificationId">Classification <span className="text-destructive">**</span></Label>
+              <Label htmlFor="classificationId">
+                {t('accountManagement.classification')} <span className="text-destructive">**</span>
+              </Label>
               <Controller
                 name="classificationId"
                 control={control}
@@ -480,7 +508,7 @@ export const AddInstructorPage = () => {
                       icon={<UserCircle className="h-4 w-4" />}
                       className={`${errors.classificationId ? 'ring-2 ring-destructive' : ''} ${!field.value ? 'text-muted-foreground/60' : ''}`}
                     >
-                      <SelectValue placeholder="Select classification" />
+                      <SelectValue placeholder={t('accountManagement.classificationPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {classificationMasterCodes.map((classification) => (
@@ -506,10 +534,10 @@ export const AddInstructorPage = () => {
               onClick={handleCancel}
               disabled={isSubmitting}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Creating...' : 'Create Instructor'}
+              {isSubmitting ? t('accountManagement.creating') : t('accountManagement.createInstructor')}
             </Button>
           </div>
         </form>

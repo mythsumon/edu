@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useTranslation } from 'react-i18next'
 import { User, Lock, Mail, Phone, UserCircle } from 'lucide-react'
 import { PageLayout } from '@/app/layout/PageLayout'
 import { Button } from '@/shared/ui/button'
@@ -11,6 +12,7 @@ import { useCreateAdmin } from '../../controller/mutations'
 import { createAdminSchema, type CreateAdminFormData } from '../../model/account-management.schema'
 
 export const AddAdminPage = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const createAdminMutation = useCreateAdmin()
 
@@ -19,7 +21,7 @@ export const AddAdminPage = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<CreateAdminFormData>({
-    resolver: zodResolver(createAdminSchema),
+    resolver: zodResolver(createAdminSchema(t)),
     defaultValues: {
       username: '',
       password: '',
@@ -51,19 +53,21 @@ export const AddAdminPage = () => {
 
   return (
     <PageLayout
-      title="Add New Admin"
-      customBreadcrumbRoot={{ path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL, label: 'Admins' }}
+      title={t('accountManagement.addNewAdmin')}
+      customBreadcrumbRoot={{ path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL, label: t('accountManagement.admins') }}
     >
       <div className="max-w-4xl p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Username */}
             <div className="space-y-2">
-              <Label htmlFor="username">Username *</Label>
+              <Label htmlFor="username">
+                {t('accountManagement.username')} <span className="text-destructive">**</span>
+              </Label>
               <Input
                 id="username"
                 type="text"
-                placeholder="Enter username"
+                placeholder={t('accountManagement.usernamePlaceholder')}
                 icon={<User className="h-4 w-4" />}
                 {...register('username')}
                 className={errors.username ? 'ring-2 ring-destructive' : ''}
@@ -76,11 +80,13 @@ export const AddAdminPage = () => {
 
             {/* Password */}
             <div className="space-y-2">
-              <Label htmlFor="password">Password *</Label>
+              <Label htmlFor="password">
+                {t('accountManagement.password')} <span className="text-destructive">**</span>
+              </Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter password"
+                placeholder={t('accountManagement.passwordPlaceholder')}
                 icon={<Lock className="h-4 w-4" />}
                 {...register('password')}
                 className={errors.password ? 'ring-2 ring-destructive' : ''}
@@ -93,11 +99,13 @@ export const AddAdminPage = () => {
 
             {/* Name */}
             <div className="space-y-2">
-              <Label htmlFor="name">Name *</Label>
+              <Label htmlFor="name">
+                {t('accountManagement.name')} <span className="text-destructive">**</span>
+              </Label>
               <Input
                 id="name"
                 type="text"
-                placeholder="Enter full name"
+                placeholder={t('accountManagement.namePlaceholder')}
                 icon={<UserCircle className="h-4 w-4" />}
                 {...register('name')}
                 className={errors.name ? 'ring-2 ring-destructive' : ''}
@@ -110,11 +118,11 @@ export const AddAdminPage = () => {
 
             {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('accountManagement.email')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter email (optional)"
+                placeholder={t('accountManagement.emailPlaceholder')}
                 icon={<Mail className="h-4 w-4" />}
                 {...register('email')}
                 className={errors.email ? 'ring-2 ring-destructive' : ''}
@@ -127,11 +135,11 @@ export const AddAdminPage = () => {
 
             {/* Phone */}
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
+              <Label htmlFor="phone">{t('accountManagement.phoneNumber')}</Label>
               <Input
                 id="phone"
                 type="tel"
-                placeholder="Enter phone number (optional)"
+                placeholder={t('accountManagement.phoneNumberPlaceholder')}
                 icon={<Phone className="h-4 w-4" />}
                 {...register('phone')}
                 className={errors.phone ? 'ring-2 ring-destructive' : ''}
@@ -151,10 +159,10 @@ export const AddAdminPage = () => {
               onClick={handleCancel}
               disabled={isSubmitting}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Creating...' : 'Create Admin'}
+              {isSubmitting ? t('accountManagement.creating') : t('accountManagement.createAdmin')}
             </Button>
           </div>
         </form>
