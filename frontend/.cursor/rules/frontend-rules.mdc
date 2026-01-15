@@ -338,6 +338,19 @@ const MyForm = () => {
 - Leverage react-hook-form's `formState` for loading states (`isSubmitting`, `isValid`, etc.).
 - Use `defaultValues` in `useForm` for initial form state.
 
+### Required Field Indicators (MANDATORY)
+- **ALL required form fields MUST display a "**" (asterisk) indicator with destructive color behind the label.**
+- Required fields are determined by the zod schema (fields that are not `.optional()` or `.nullable()`).
+- Implementation pattern:
+  ```typescript
+  <Label htmlFor="fieldName" className='text-xs text-secondary-foreground/80'>
+    {t('myFeature.fieldLabel')}
+    <span className="text-destructive">**</span>
+  </Label>
+  ```
+- Optional fields (`.optional()` or `.nullable()` in schema) should NOT have the asterisk indicator.
+- The asterisk must use `text-destructive` class for consistent styling.
+
 ---
 
 ## 16) Coding Rules. You must always:
@@ -345,3 +358,71 @@ const MyForm = () => {
 - Follow existing project rules and folder structures strictly
 - Respect module boundaries and architectural decisions
 - Prioritize maintainability, readability, and scalability
+
+---
+
+## 17) Internationalization (i18n) Rules (MANDATORY)
+### Language Translation Requirements
+- **ALL labels, text, and user-facing strings MUST use language translations.**
+- **FORBIDDEN:** Hardcoded text strings in components (e.g., `"Submit"`, `"Cancel"`, `"Loading..."`).
+- **FORBIDDEN:** Hardcoded validation error messages in zod schemas.
+- **REQUIRED:** Use `useTranslation` hook from `react-i18next` in all components that display text.
+
+### Implementation Pattern
+```typescript
+import { useTranslation } from 'react-i18next'
+
+const MyComponent = () => {
+  const { t } = useTranslation()
+  
+  return (
+    <div>
+      <h1>{t('myFeature.title')}</h1>
+      <button>{t('common.submit')}</button>
+      <Label>{t('myFeature.fieldLabel')}</Label>
+      <Input placeholder={t('myFeature.fieldPlaceholder')} />
+    </div>
+  )
+}
+```
+
+### Translation Keys Location
+- Translation files: `src/assets/lang/en.json` and `src/assets/lang/ko.json`
+- Organize keys by feature/module (e.g., `masterCode.*`, `auth.*`, `common.*`)
+- Use nested objects for logical grouping
+
+### Schema Validation Messages
+- Zod schemas MUST accept a translation function parameter
+- All validation error messages MUST use translations
+- Pattern:
+  ```typescript
+  export const mySchema = (t: (key: string) => string) => z.object({
+    field: z.string().min(1, t('myFeature.validation.fieldRequired'))
+  })
+  ```
+
+### What Must Be Translated
+- ✅ All button labels
+- ✅ All form field labels
+- ✅ All placeholder text
+- ✅ All validation error messages
+- ✅ All dialog titles and descriptions
+- ✅ All page titles and headings
+- ✅ All tooltip text
+- ✅ All empty state messages
+- ✅ All error messages
+- ✅ All loading messages
+
+### Forbidden Patterns
+- ❌ Hardcoded strings: `"Create"`, `"Save"`, `"Delete"`
+- ❌ Hardcoded labels: `<Label>Code</Label>`
+- ❌ Hardcoded placeholders: `placeholder="Enter code"`
+- ❌ Hardcoded validation: `.min(1, 'Field is required')`
+- ❌ Hardcoded error messages: `"An error occurred"`
+
+### Best Practices
+- Use common translation keys for shared UI elements (`common.cancel`, `common.save`, `common.create`)
+- Group feature-specific translations under feature namespace (`masterCode.*`, `auth.*`)
+- Keep translation keys descriptive and hierarchical
+- Always test with both English and Korean translations
+- Update both `en.json` and `ko.json` files when adding new translations

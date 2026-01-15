@@ -25,6 +25,7 @@ export interface MasterCodeCreateDto {
 export interface MasterCodeUpdateDto {
   code: number
   codeName: string
+  parentId?: number | null
 }
 
 /**
@@ -37,4 +38,17 @@ export interface ListMasterCodesParams {
   sort?: string
   parentId?: number
   rootOnly?: boolean
+}
+
+/**
+ * Master Code Tree DTO (matches backend MasterCodeTreeDto)
+ */
+export interface MasterCodeTreeDto {
+  id: number
+  code: number
+  codeName: string
+  parentId: number | null
+  createdAt: string
+  updatedAt: string
+  children: MasterCodeTreeDto[]
 }

@@ -170,6 +170,11 @@ public class MasterCodeServiceImpl implements MasterCodeService {
         }
     }
 
+    @Override
+    public boolean checkCodeExists(Integer code) {
+        return repository.existsByCodeAndIsDeleteFalse(code);
+    }
+
     // Private helper methods
 
     private void validateUniqueness(Integer code, String codeName, Long parentId, Long excludeId) {

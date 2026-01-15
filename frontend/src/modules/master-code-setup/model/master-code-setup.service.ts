@@ -5,6 +5,7 @@ import type {
   MasterCodeCreateDto,
   MasterCodeUpdateDto,
   ListMasterCodesParams,
+  MasterCodeTreeDto,
 } from './master-code-setup.types'
 
 /**
@@ -44,5 +45,66 @@ export async function updateMasterCode(
     `/mastercode/${id}`,
     request
   )
+  return response.data.data
+}
+
+/**
+ * List root-level master codes only
+ */
+export async function listRootMasterCodes(
+  params?: Omit<ListMasterCodesParams, 'parentId' | 'rootOnly'>
+): Promise<PageResponse<MasterCodeResponseDto>> {
+  const response = await axiosInstance.get<ApiResponse<PageResponse<MasterCodeResponseDto>>>(
+    '/mastercode/roots',
+    { params }
+  )
+  return response.data.data
+}
+
+/**
+ * Delete master code
+ */
+export async function deleteMasterCode(id: number): Promise<void> {
+  await axiosInstance.delete<ApiResponse<unknown>>(`/mastercode/${id}`)
+}
+
+/**
+ * Check if master code exists
+ * Returns true if code exists, false if available
+ * Uses the success field from ApiResponse instead of HTTP status codes
+ */
+export async function checkCodeExists(code: number): Promise<boolean> {
+  try {
+    const response = await axiosInstance.get<ApiResponse<unknown>>('/mastercode/check', {
+      params: { code },
+    })
+    // success: true means code is available (doesn't exist) → return false
+    // success: false means code exists → return true
+    return response.data.success
+  } catch (error: unknown) {
+    // Handle 400 response (code exists)
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as { response?: { data?: ApiResponse<unknown>; status?: number } }
+      // 400 response with success: false means code exists
+      if (axiosError.response?.status === 400 && axiosError.response.data) {
+        // success: false means code exists → return true
+        return axiosError.response.data.success
+      }
+    }
+    // Re-throw other errors
+    throw error
+  }
+}
+
+/**
+ * Get master code tree (hierarchical structure)
+ */
+export async function getMasterCodeTree(
+  rootId?: number,
+  depth?: number
+): Promise<MasterCodeTreeDto[]> {
+  const response = await axiosInstance.get<ApiResponse<MasterCodeTreeDto[]>>('/mastercode/tree', {
+    params: { rootId, depth },
+  })
   return response.data.data
 }
