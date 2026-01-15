@@ -419,11 +419,11 @@ export const AddInstructorPage = () => {
 
             {/* Detail Address */}
             <div className="space-y-2">
-              <Label htmlFor="detailAddress">Detail Address <span className="text-destructive">**</span></Label>
+              <Label htmlFor="detailAddress">Building Name / Lake Number <span className="text-destructive">**</span></Label>
               <Input
                 id="detailAddress"
                 type="text"
-                placeholder="Enter detail address"
+                placeholder="Enter building name / lake number"
                 icon={<MapPin className="h-4 w-4" />}
                 {...register('detailAddress')}
                 className={errors.detailAddress ? 'ring-2 ring-destructive' : ''}

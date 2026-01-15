@@ -76,8 +76,8 @@ export const createInstructorSchema = z.object({
     .max(255, 'Street must be at most 255 characters'),
   detailAddress: z
     .string()
-    .min(1, 'Detail address is required')
-    .max(255, 'Detail address must be at most 255 characters'),
+    .min(1, 'Building name / lake number is required')
+    .max(255, 'Building name / lake number must be at most 255 characters'),
   statusId: z
     .string()
     .min(1, 'Status is required'),
