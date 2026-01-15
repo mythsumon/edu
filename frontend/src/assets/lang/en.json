@@ -151,6 +151,8 @@
     "dashboard": "Dashboard",
     "username": "Username",
     "usernamePlaceholder": "Enter username",
+    "instructorId": "Instructor ID",
+    "instructorIdPlaceholder": "Enter instructor ID",
     "password": "Password",
     "passwordPlaceholder": "Enter password",
     "name": "Name",

@@ -197,9 +197,9 @@ export const PageLayout = ({
 
 
   return (
-    <div className="space-y-1 px-5 py-6">
+    <div className="space-y-1 pb-6">
       {/* Header Section: Title, Badge, and Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      <div className="flex sticky top-0 bg-background z-30 px-5 py-4 border-b border-border flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         {/* Left Side: Title, Badge */}
         <div className="space-y-1 flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -251,7 +251,7 @@ export const PageLayout = ({
       </div>
 
       {/* Page Content */}
-      {children && <div>{children}</div>}
+      {children && <div className="px-5">{children}</div>}
     </div>
   );
 };
