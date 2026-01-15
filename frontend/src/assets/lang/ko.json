@@ -124,6 +124,7 @@
     "hasChildrenDeleteErrorDescription": "이 마스터 코드를 삭제하기 전에 모든 자식 코드를 제거해주세요.",
     "viewChildren": "하위 항목 보기",
     "selectCodeToViewChildren": "사이드바에서 마스터 코드를 선택하여 하위 항목을 보세요",
+    "toggleSidebar": "사이드바 토글",
     "childrenItems": "하위 항목",
     "noChildrenFound": "하위 항목 없음",
     "noChildrenDescription": "이 마스터 코드에는 하위 항목이 없습니다.",

@@ -124,6 +124,7 @@
     "hasChildrenDeleteErrorDescription": "Please remove all child codes before deleting this master code.",
     "viewChildren": "View Children",
     "selectCodeToViewChildren": "Select a master code from the sidebar to view children",
+    "toggleSidebar": "Toggle sidebar",
     "childrenItems": "Children Items",
     "noChildrenFound": "No children found",
     "noChildrenDescription": "This master code has no child items.",

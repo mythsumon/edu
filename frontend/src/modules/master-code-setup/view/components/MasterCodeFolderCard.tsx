@@ -1,4 +1,4 @@
-import { Folder } from "lucide-react";
+import { CodeXml, Folder } from "lucide-react";
 import type { MasterCodeResponseDto } from "../../model/master-code-setup.types";
 import { cn } from "@/shared/lib/cn";
 
@@ -22,7 +22,7 @@ export const MasterCodeFolderCard = ({
     >
       {/* Folder Icon */}
       <div className="flex items-center justify-center w-16 h-16">
-        <Folder className="w-12 h-12 text-primary" />
+        <CodeXml className="w-12 h-12 text-primary" />
       </div>
 
       {/* Code Name */}
