@@ -17,8 +17,10 @@ export const useCreateMasterCode = () => {
       return await createMasterCode(data)
     },
     onSuccess: () => {
+      // Invalidate all list, root-level, and tree queries after creation
       queryClient.invalidateQueries({ queryKey: masterCodeSetupQueryKeys.lists() })
       queryClient.invalidateQueries({ queryKey: masterCodeSetupQueryKeys.roots() })
+      queryClient.invalidateQueries({ queryKey: masterCodeSetupQueryKeys.tree() })
     },
   })
 }
@@ -34,7 +36,10 @@ export const useUpdateMasterCode = () => {
       return await updateMasterCode(id, data)
     },
     onSuccess: (_, variables) => {
+      // Invalidate all list, root-level, tree, and detail queries after update
       queryClient.invalidateQueries({ queryKey: masterCodeSetupQueryKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: masterCodeSetupQueryKeys.roots() })
+      queryClient.invalidateQueries({ queryKey: masterCodeSetupQueryKeys.tree() })
       queryClient.invalidateQueries({ queryKey: masterCodeSetupQueryKeys.detail(variables.id) })
     },
   })
@@ -51,8 +56,10 @@ export const useDeleteMasterCode = () => {
       return await deleteMasterCode(id)
     },
     onSuccess: () => {
+      // Invalidate all list, root-level, and tree queries after deletion
       queryClient.invalidateQueries({ queryKey: masterCodeSetupQueryKeys.lists() })
       queryClient.invalidateQueries({ queryKey: masterCodeSetupQueryKeys.roots() })
+      queryClient.invalidateQueries({ queryKey: masterCodeSetupQueryKeys.tree() })
     },
   })
 }

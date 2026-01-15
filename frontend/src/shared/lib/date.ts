@@ -1,3 +1,5 @@
+import { format as formatDateFns } from 'date-fns'
+
 /**
  * Format date to readable string
  */
@@ -9,6 +11,14 @@ export function formatDate(date: Date | string, options?: Intl.DateTimeFormatOpt
     day: 'numeric',
     ...options,
   }).format(dateObj)
+}
+
+/**
+ * Format date to YYYY.MM.DD format
+ */
+export function formatDateDot(date: Date | string): string {
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  return formatDateFns(dateObj, 'yyyy.MM.dd')
 }
 
 /**

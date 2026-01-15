@@ -128,6 +128,7 @@
     "childrenItems": "하위 항목",
     "noChildrenFound": "하위 항목 없음",
     "noChildrenDescription": "이 마스터 코드에는 하위 항목이 없습니다.",
+    "currentCode": "현재",
     "validation": {
       "codeRequired": "코드는 필수입니다",
       "codeMustBeInteger": "코드는 정수여야 합니다",

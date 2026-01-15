@@ -32,8 +32,6 @@ import {
 } from "../../model/master-code-setup.schema";
 import type { MasterCodeTreeDto } from "../../model/master-code-setup.types";
 import { useToast } from "@/shared/ui/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
-import { masterCodeSetupQueryKeys } from "../../controller/queryKeys";
 import { cn } from "@/shared/lib/cn";
 
 interface CreateMasterCodeDialogProps {
@@ -90,7 +88,6 @@ export const CreateMasterCodeDialog = ({
 }: CreateMasterCodeDialogProps) => {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const { data: masterCodeTree, isLoading: isLoadingMasterCodes } =
     useMasterCodeTreeQuery();
 
@@ -193,11 +190,7 @@ export const CreateMasterCodeDialog = ({
             description: t("masterCode.createSuccess"),
           });
 
-          // Refetch root master codes list
-          queryClient.invalidateQueries({
-            queryKey: masterCodeSetupQueryKeys.roots(),
-          });
-
+          // Query invalidation is handled by the mutation hook
           reset();
           onOpenChange(false);
         },

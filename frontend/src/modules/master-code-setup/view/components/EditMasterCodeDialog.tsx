@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import {
-  useAllMasterCodesQuery,
+  useMasterCodeTreeQuery,
   useCheckCodeExistsQuery,
 } from "../../controller/queries";
 import { useUpdateMasterCode } from "../../controller/mutations";
@@ -31,14 +31,93 @@ import {
   type UpdateMasterCodeFormData,
 } from "../../model/master-code-setup.schema";
 import { useToast } from "@/shared/ui/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
-import { masterCodeSetupQueryKeys } from "../../controller/queryKeys";
-import type { MasterCodeResponseDto } from "../../model/master-code-setup.types";
+import { cn } from "@/shared/lib/cn";
+import type { MasterCodeResponseDto, MasterCodeTreeDto } from "../../model/master-code-setup.types";
 
 interface EditMasterCodeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   code: MasterCodeResponseDto | null;
+}
+
+/**
+ * Flatten tree structure for Select component with tree line information
+ */
+function flattenTree(
+  tree: MasterCodeTreeDto[] | undefined,
+  depth: number = 0,
+  isLast: boolean[] = []
+): Array<{
+  node: MasterCodeTreeDto;
+  depth: number;
+  isLast: boolean[];
+  hasChildren: boolean;
+}> {
+  if (!tree) return [];
+
+  const result: Array<{
+    node: MasterCodeTreeDto;
+    depth: number;
+    isLast: boolean[];
+    hasChildren: boolean;
+  }> = [];
+
+  for (let i = 0; i < tree.length; i++) {
+    const node = tree[i];
+    const isLastInLevel = i === tree.length - 1;
+    const currentIsLast = [...isLast, isLastInLevel];
+    const hasChildren = node.children && node.children.length > 0;
+
+    result.push({
+      node,
+      depth,
+      isLast: currentIsLast,
+      hasChildren: !!hasChildren,
+    });
+
+    if (hasChildren) {
+      result.push(...flattenTree(node.children, depth + 1, currentIsLast));
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Find all descendant IDs of a given code in the tree
+ */
+function findDescendantIds(
+  tree: MasterCodeTreeDto[] | undefined,
+  targetId: number
+): Set<number> {
+  const descendantIds = new Set<number>();
+
+  function traverse(nodes: MasterCodeTreeDto[] | undefined) {
+    if (!nodes) return;
+
+    for (const node of nodes) {
+      if (node.id === targetId) {
+        // Found the target, collect all its children recursively
+        collectDescendants(node.children);
+        return;
+      }
+      // Continue searching in children
+      traverse(node.children);
+    }
+  }
+
+  function collectDescendants(nodes: MasterCodeTreeDto[] | undefined) {
+    if (!nodes) return;
+
+    for (const node of nodes) {
+      descendantIds.add(node.id);
+      // Recursively collect children of children
+      collectDescendants(node.children);
+    }
+  }
+
+  traverse(tree);
+  return descendantIds;
 }
 
 export const EditMasterCodeDialog = ({
@@ -48,10 +127,8 @@ export const EditMasterCodeDialog = ({
 }: EditMasterCodeDialogProps) => {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const { data: allMasterCodesData, isLoading: isLoadingMasterCodes } =
-    useAllMasterCodesQuery();
-  const allMasterCodes = allMasterCodesData?.items || [];
+  const { data: masterCodeTree, isLoading: isLoadingMasterCodes } =
+    useMasterCodeTreeQuery();
 
   const updateMutation = useUpdateMasterCode();
 
@@ -185,14 +262,7 @@ export const EditMasterCodeDialog = ({
             description: t("masterCode.updateSuccess"),
           });
 
-          // Refetch root master codes list
-          queryClient.invalidateQueries({
-            queryKey: masterCodeSetupQueryKeys.roots(),
-          });
-          queryClient.invalidateQueries({
-            queryKey: masterCodeSetupQueryKeys.lists(),
-          });
-
+          // Query invalidation is handled by the mutation hook
           reset();
           onOpenChange(false);
         },
@@ -310,34 +380,101 @@ export const EditMasterCodeDialog = ({
               <Controller
                 name="parentId"
                 control={control}
-                render={({ field }) => (
-                  <Select
-                    value={field.value ? String(field.value) : "none"}
-                    onValueChange={(value) => {
-                      field.onChange(value === "none" ? null : Number(value));
-                    }}
-                    disabled={isLoadingMasterCodes || updateMutation.isPending}
-                  >
-                    <SelectTrigger
-                      id="parentId"
-                      className={errors.parentId ? "ring-2 ring-destructive" : ""}
+                render={({ field }) => {
+                  const flattenedTree = flattenTree(masterCodeTree);
+                  // Find all descendant IDs of the current code being edited
+                  const descendantIds = findDescendantIds(masterCodeTree, code.id);
+                  
+                  // Filter out descendants (but keep the current code to show as disabled)
+                  const filteredTree = flattenedTree.filter(
+                    ({ node }) => !descendantIds.has(node.id)
+                  );
+                  
+                  const selectedValue = field.value
+                    ? String(field.value)
+                    : "none";
+
+                  return (
+                    <Select
+                      value={selectedValue}
+                      onValueChange={(value) => {
+                        // Prevent selecting the current code or its descendants
+                        if (value === String(code.id) || descendantIds.has(Number(value))) {
+                          return;
+                        }
+                        field.onChange(value === "none" ? null : Number(value));
+                      }}
+                      disabled={isLoadingMasterCodes || updateMutation.isPending}
                     >
-                      <SelectValue placeholder={t("masterCode.noneRootLevel")} />
-                    </SelectTrigger>
-                    <SelectContent className="text-xs">
-                      <SelectItem value="none">
-                        {t("masterCode.noneRootLevel")}
-                      </SelectItem>
-                      {allMasterCodes
-                        .filter((c) => c.id !== code.id)
-                        .map((c) => (
-                          <SelectItem key={c.id} value={String(c.id)}>
-                            {c.codeName}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                      <SelectTrigger
+                        id="parentId"
+                        className={cn(
+                          errors.parentId &&
+                            "ring-2 ring-destructive focus:ring-destructive"
+                        )}
+                      >
+                        <SelectValue
+                          placeholder={t("masterCode.noneRootLevel")}
+                        />
+                      </SelectTrigger>
+                      <SelectContent className="py-2 relative">
+                        <SelectItem className="px-3.5" value="none">
+                          <span className="flex items-center gap-2">
+                            <span
+                              className={`h-2 w-2 rounded-full ${
+                                selectedValue === "none" ? "bg-primary" : "bg-background"
+                              }`}
+                            />
+                            {t("masterCode.noneRootLevel")}
+                          </span>
+                        </SelectItem>
+                        {filteredTree.map(({ node, depth }) => {
+                          const indentWidth = 1; // rem
+                          const lineOffset = 0.75; // rem
+                          const isSelected = selectedValue === String(node.id);
+                          const isCurrentCode = node.id === code.id;
+                          const isDisabled = isCurrentCode;
+
+                          return (
+                            <SelectItem
+                              key={node.id}
+                              className={cn(
+                                "relative my-0.5",
+                                isDisabled && "opacity-50 cursor-not-allowed"
+                              )}
+                              value={String(node.id)}
+                              disabled={isDisabled}
+                              style={{
+                                paddingLeft: `${
+                                  depth * indentWidth + lineOffset
+                                }rem`,
+                              }}
+                            >
+                              <span className="flex items-center gap-2">
+                                <span
+                                  className={cn(
+                                    "h-2 w-2 rounded-full",
+                                    isSelected && !isDisabled
+                                      ? "bg-primary"
+                                      : isDisabled
+                                      ? "bg-muted-foreground"
+                                      : "bg-background"
+                                  )}
+                                />
+                                {node.codeName}
+                                {isCurrentCode && (
+                                  <span className="text-xs text-muted-foreground">
+                                    ({t("masterCode.currentCode")})
+                                  </span>
+                                )}
+                              </span>
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  );
+                }}
               />
               {errors.parentId && (
                 <p className="text-xs text-destructive">

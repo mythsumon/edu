@@ -128,6 +128,7 @@
     "childrenItems": "Children Items",
     "noChildrenFound": "No children found",
     "noChildrenDescription": "This master code has no child items.",
+    "currentCode": "Current",
     "validation": {
       "codeRequired": "Code is required",
       "codeMustBeInteger": "Code must be an integer",
