@@ -8,13 +8,13 @@ export interface ApiResponse<T> {
 }
 
 /**
- * Paginated response
+ * Paginated response (matches backend PageResponse)
  */
 export interface PageResponse<T> {
   items: T[]
   total: number
   page: number
-  pageSize: number
+  size: number
   totalPages: number
 }
 

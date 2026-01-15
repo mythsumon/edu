@@ -1,5 +1,7 @@
 package com.itwizard.swaedu.modules.auth.entity;
 
+import com.itwizard.swaedu.modules.admin.entity.Admin;
+import com.itwizard.swaedu.modules.instructor.entity.Instructor;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.ColumnDefault;

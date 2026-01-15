@@ -62,10 +62,34 @@ This document describes the database schema structure for the backend applicatio
 
 ---
 
+### master_code
+**Description**: Stores hierarchical master code data with parent-child relationships for code management.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | BIGSERIAL | PRIMARY KEY | Master code unique identifier (auto-increment) |
+| code | INT | NOT NULL | Code value |
+| code_name | VARCHAR(255) | NOT NULL | Code name/description |
+| parent_id | BIGINT | NULL, FOREIGN KEY | Reference to parent master_code.id (NULL for root level codes) |
+
+**Foreign Keys**:
+- `master_code.parent_id` → `master_code(id)` ON DELETE RESTRICT
+
+**Indexes**:
+- `idx_master_code_parent_id` on `parent_id` - For faster tree queries and parent-child lookups
+- `uq_master_code_parent_code` on `(parent_id, code)` (UNIQUE) - Ensures code uniqueness within the same parent
+- `uq_master_code_parent_name` on `(parent_id, code_name)` (UNIQUE) - Ensures code name uniqueness within the same parent
+
+---
+
 ## Relationships
 
 - `refresh_token_t.user_id` → `users.id` (Many-to-One)
   - Cascade delete: When a user is deleted, all their refresh tokens are automatically deleted
+
+- `master_code.parent_id` → `master_code.id` (Self-referencing, Many-to-One)
+  - Restrict delete: Prevents deletion of a parent code if it has child codes
+  - Supports hierarchical code structure (tree-like organization)
 
 ---
 

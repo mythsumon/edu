@@ -101,7 +101,7 @@ public class TokenService {
             }
         } catch (Exception ex) {
             // INFO: force delete refresh token
-            deleteRefreshToken(refreshToken);
+            // deleteRefreshToken(refreshToken);
         } finally {
 
             // INFO: force delete refresh token

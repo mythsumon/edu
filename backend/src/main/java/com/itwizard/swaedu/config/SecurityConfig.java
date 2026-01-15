@@ -23,6 +23,14 @@ import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -35,17 +43,20 @@ public class SecurityConfig {
     @Value("${auth.token.access-token-secret}")
     private String jwtSecret;
 
+    @Value("${cors.allowed-origins}")
+    private String allowedOrigins;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    CustomBearerTokenAuthenticationEntryPoint authenticationEntryPoint,
                                                    CustomBearerTokenAccessDeniedHandler accessDeniedHandler,
-                                                   CustomJwtAuthenticationConverter jwtAuthenticationConverter) throws Exception {
+                                                   CustomJwtAuthenticationConverter jwtAuthenticationConverter,
+                                                   CorsConfigurationSource corsConfigurationSource) throws Exception {
         http
+                .cors((cors) -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/api/v1/auth/**", "/auth/**", "/swagger-ui/**", "/sample/**").permitAll()
-                        .requestMatchers("/api/v1/user/**", "/user/**").hasAnyRole("INSTRUCTOR", "ADMIN")
-                        .requestMatchers("/api/v1/admin/**", "/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/company/**").hasRole("COMPANY")
+                        .requestMatchers("/api/v1/auth/**", "/swagger-ui/**", "/sample/**").permitAll()
+                        .requestMatchers("/api/v1/mastercode/**", "/api/v1/zones/**", "/api/v1/regions/**", "/api/v1/admin/**", "/api/v1/instructor/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
@@ -60,6 +71,23 @@ public class SecurityConfig {
                         .accessDeniedHandler(accessDeniedHandler)
                 );
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        List<String> origins = Stream.of(allowedOrigins.split(","))
+                .map(String::trim)
+                .collect(Collectors.toList());
+        configuration.setAllowedOrigins(origins);
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     @Bean

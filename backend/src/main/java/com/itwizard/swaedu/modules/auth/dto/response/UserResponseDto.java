@@ -1,5 +1,7 @@
 package com.itwizard.swaedu.modules.auth.dto.response;
 
+import com.itwizard.swaedu.modules.admin.dto.response.AdminProfileDto;
+import com.itwizard.swaedu.modules.instructor.dto.response.InstructorProfileDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
