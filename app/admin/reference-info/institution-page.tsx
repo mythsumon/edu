@@ -417,7 +417,7 @@ export default function InstitutionManagementPage() {
     const emailParts = selectedInstitution.email?.split('@') || []
     setEmailLocal(emailParts[0] || '')
     const domain = emailParts[1] || ''
-    const isCustom = domain && !emailDomainOptions.find(opt => opt.value === domain)
+    const isCustom = Boolean(domain && !emailDomainOptions.find(opt => opt.value === domain))
     setIsCustomDomain(isCustom)
     if (isCustom) {
       setCustomDomain(domain)
