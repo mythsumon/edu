@@ -26,3 +26,22 @@ export function normalizeError(error: unknown): ApiError {
   }
 }
 
+/**
+ * Convert ApiError to Error instance for React Query compatibility
+ */
+export function toError(error: unknown): Error {
+  if (error instanceof Error) {
+    return error
+  }
+
+  const apiError = normalizeError(error)
+  const errorInstance = new Error(apiError.message)
+  // Attach additional properties for debugging
+  if (apiError.statusCode) {
+    (errorInstance as any).statusCode = apiError.statusCode
+  }
+  if (apiError.code) {
+    (errorInstance as any).code = apiError.code
+  }
+  return errorInstance
+}

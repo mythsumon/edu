@@ -1,328 +1,325 @@
-import { useState, useMemo } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { useUiStore } from '@/shared/stores/ui.store'
-import { useAuthStore } from '@/shared/stores/auth.store'
-import { cn } from '@/shared/lib/cn'
-import { ROUTES } from '@/shared/constants/routes'
+import { useState, useMemo, useEffect, useRef } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useUiStore } from "@/shared/stores/ui.store";
+import { cn } from "@/shared/lib/cn";
+import { ROUTES } from "@/shared/constants/routes";
+import { STORAGE_KEYS } from "@/shared/constants/storageKeys";
+import type { UserResponseDto } from "@/modules/auth/model/auth.types";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/shared/ui/tooltip'
-import {
-  Menu,
   LayoutDashboard,
   BookOpen,
-  GraduationCap,
-  FileStack,
-  Settings,
-  ChevronDown,
-  ChevronUp,
-} from 'lucide-react'
+  Calendar,
+  Users,
+  ClipboardList,
+  Award,
+  Code2,
+} from "lucide-react";
+import logoImage from "@/assets/images/logo/logo.png";
 
 interface MenuItem {
-  nameKey: string
-  href: string
-  icon: typeof LayoutDashboard
-  subItems?: { nameKey: string; href: string }[]
+  nameKey: string;
+  href: string;
+  icon: typeof LayoutDashboard;
+}
+
+interface MenuSection {
+  titleKey: string;
+  items: MenuItem[];
 }
 
 export const Sidebar = () => {
-  const { t } = useTranslation()
-  const location = useLocation()
-  const { sidebarCollapsed, toggleSidebar, setSidebarCollapsed } = useUiStore()
-  const { user } = useAuthStore()
-  const [expandedItems, setExpandedItems] = useState<string[]>(['sidebar.dashboard'])
-  const [isHovered, setIsHovered] = useState(false)
+  const { t } = useTranslation();
+  const location = useLocation();
+  const { sidebarCollapsed, sidebarOpen, setSidebarOpen, setSidebarCollapsed } = useUiStore();
+  const [user, setUser] = useState<UserResponseDto | null>(null);
+  const [wasCollapsedBeforeHover, setWasCollapsedBeforeHover] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
 
-  const navigation: MenuItem[] = useMemo(() => [
-    {
-      nameKey: 'sidebar.dashboard',
-      href: ROUTES.DASHBOARD,
-      icon: LayoutDashboard,
-      subItems: [
-        { nameKey: 'sidebar.overallProgramStatus', href: ROUTES.DASHBOARD },
-      ],
-    },
-    {
-      nameKey: 'sidebar.educationOperations',
-      href: ROUTES.EDUCATION_OPERATIONS,
-      icon: BookOpen,
-    },
-    {
-      nameKey: 'sidebar.instructorAssignment',
-      href: ROUTES.INSTRUCTOR_ASSIGNMENT,
-      icon: GraduationCap,
-      subItems: [
-        { nameKey: 'sidebar.instructorApplicationManagement', href: ROUTES.INSTRUCTOR_APPLICATION_MANAGEMENT },
-        { nameKey: 'sidebar.instructorAllocationManagement', href: ROUTES.INSTRUCTOR_ALLOCATION_MANAGEMENT },
-        { nameKey: 'sidebar.teachingConfirmationManagement', href: ROUTES.TEACHING_CONFIRMATION_MANAGEMENT },
-      ],
-    },
-    {
-      nameKey: 'sidebar.referenceInformationManagement',
-      href: ROUTES.REFERENCE_INFORMATION_MANAGEMENT,
-      icon: FileStack,
-      subItems: [
-        { nameKey: 'sidebar.institutionManagement', href: ROUTES.INSTITUTION_MANAGEMENT },
-        { nameKey: 'sidebar.programManagement', href: ROUTES.PROGRAM_MANAGEMENT },
-        { nameKey: 'sidebar.instructorManagement', href: ROUTES.INSTRUCTOR_MANAGEMENT },
-      ],
-    },
-    {
-      nameKey: 'sidebar.systemManagement',
-      href: ROUTES.SYSTEM_MANAGEMENT,
-      icon: Settings,
-      subItems: [
-        { nameKey: 'sidebar.settingsAndUserManagement', href: ROUTES.SETTINGS_AND_USER_MANAGEMENT },
-      ],
-    },
-  ], [])
-
-  // Determine if sidebar should appear expanded (either manually expanded or hovered)
-  const isExpanded = !sidebarCollapsed || isHovered
-
-  const toggleExpand = (itemName: string) => {
-    setExpandedItems((prev) =>
-      prev.includes(itemName)
-        ? prev.filter((name) => name !== itemName)
-        : [...prev, itemName]
-    )
-  }
-
-  const isItemExpanded = (itemNameKey: string) => expandedItems.includes(itemNameKey)
-
-  const isActiveRoute = (href: string) => location.pathname === href
-
-  // Handle menu item click - expand sidebar
-  const handleMenuItemClick = () => {
-    if (sidebarCollapsed) {
-      setSidebarCollapsed(false)
-    }
-  }
-
-  // Handle hover enter - expand sidebar
-  const handleMouseEnter = () => {
-    setIsHovered(true)
-  }
-
-  // Handle hover leave - collapse sidebar if it was only expanded by hover
-  const handleMouseLeave = () => {
-    setIsHovered(false)
-  }
-
-  // Get user initials for avatar
-  const getUserInitials = () => {
-    if (user?.name) {
-      const names = user.name.split(' ')
-      if (names.length >= 2) {
-        return `${names[0][0]}${names[1][0]}`.toUpperCase()
+  // Load user from localStorage
+  useEffect(() => {
+    const loadUser = () => {
+      try {
+        const userStr = localStorage.getItem(STORAGE_KEYS.USER);
+        if (userStr) {
+          setUser(JSON.parse(userStr));
+        }
+      } catch (error) {
+        console.error("Failed to load user from localStorage:", error);
       }
-      return user.name.substring(0, 2).toUpperCase()
+    };
+    loadUser();
+
+    // Listen for storage changes (in case user is updated elsewhere)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEYS.USER) {
+        loadUser();
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  // Get user role
+  const userRole = user?.roleName?.toUpperCase();
+
+  // Admin navigation sections
+  const adminSections: MenuSection[] = useMemo(
+    () => [
+      {
+        titleKey: "sidebar.menu",
+        items: [
+          {
+            nameKey: "sidebar.dashboard",
+            href: ROUTES.ADMIN_DASHBOARD_FULL,
+            icon: LayoutDashboard,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.accountManagement",
+        items: [
+          {
+            nameKey: "sidebar.adminAccounts",
+            href: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL,
+            icon: Users,
+          },
+          {
+            nameKey: "sidebar.instructorAccounts",
+            href: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL,
+            icon: Users,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.system",
+        items: [
+          {
+            nameKey: "sidebar.masterCodeSetup",
+            href: ROUTES.ADMIN_MASTER_CODE_SETUP_FULL,
+            icon: Code2,
+          },
+        ],
+      },
+    ],
+    []
+  );
+
+  // Instructor navigation sections
+  const instructorSections: MenuSection[] = useMemo(
+    () => [
+      {
+        titleKey: "sidebar.menu",
+        items: [
+          {
+            nameKey: "sidebar.dashboard",
+            href: ROUTES.INSTRUCTOR_DASHBOARD,
+            icon: LayoutDashboard,
+          },
+          {
+            nameKey: "sidebar.myClasses",
+            href: ROUTES.EDUCATION_OPERATIONS,
+            icon: BookOpen,
+          },
+          {
+            nameKey: "sidebar.mySchedule",
+            href: ROUTES.INSTRUCTOR_ASSIGNMENT,
+            icon: Calendar,
+          },
+          {
+            nameKey: "sidebar.myStudents",
+            href: ROUTES.REFERENCE_INFORMATION_MANAGEMENT,
+            icon: Users,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.academic",
+        items: [
+          {
+            nameKey: "sidebar.attendance",
+            href: ROUTES.SYSTEM_MANAGEMENT,
+            icon: ClipboardList,
+          },
+          {
+            nameKey: "sidebar.grades",
+            href: ROUTES.SETTINGS_AND_USER_MANAGEMENT,
+            icon: Award,
+          },
+        ],
+      },
+    ],
+    []
+  );
+
+  // Select navigation based on role
+  const sections: MenuSection[] = useMemo(() => {
+    if (userRole === "ADMIN") {
+      return adminSections;
     }
-    return 'U'
-  }
+    if (userRole === "INSTRUCTOR") {
+      return instructorSections;
+    }
+    return adminSections;
+  }, [userRole, adminSections, instructorSections]);
+
+  const isActiveRoute = (href: string) => {
+    // Exact match
+    if (location.pathname === href) return true;
+    // Check if current path starts with the menu item href (for child routes)
+    // Only match if it's a path segment boundary (not just a substring)
+    return location.pathname.startsWith(href + "/") || location.pathname.startsWith(href + "?");
+  };
+
+  // Close drawer when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        sidebarOpen &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node)
+      ) {
+        setSidebarOpen(false);
+      }
+    };
+
+    if (sidebarOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      // Prevent body scroll when drawer is open on mobile
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.body.style.overflow = "unset";
+    };
+  }, [sidebarOpen, setSidebarOpen]);
+
+  // Close drawer when route changes (mobile/tablet)
+  useEffect(() => {
+    if (sidebarOpen) {
+      setSidebarOpen(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   return (
-    <aside
-      className={cn(
-        'border-r bg-background transition-all duration-300 flex flex-col h-screen overflow-hidden',
-        isExpanded ? 'w-64 min-w-64 max-w-64' : 'w-16 min-w-16 max-w-16'
-      )}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      {/* Sidebar Header */}
-      <div className="h-16 border-b flex items-center px-4">
-        <div className={cn(
-          'flex items-center w-full',
-          sidebarCollapsed ? 'justify-center' : 'justify-between'
-        )}>
-          {isExpanded && (
-            <h1 className="font-bold text-base text-foreground truncate whitespace-nowrap flex-1 min-w-0">
-              {t('sidebar.educationManagementSystem')}
-            </h1>
-          )}
-          <button
-            onClick={toggleSidebar}
-            className="p-1 rounded hover:bg-accent transition-colors"
-            aria-label="Toggle sidebar"
-          >
-            <Menu className="h-5 w-5 text-foreground" />
-          </button>
+    <>
+      {/* Overlay for mobile/tablet */}
+      <div
+        className={cn(
+          "fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300",
+          sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}
+        onClick={() => setSidebarOpen(false)}
+        aria-hidden="true"
+      />
+
+      {/* Sidebar */}
+      <aside
+        ref={sidebarRef}
+        onMouseEnter={() => {
+          // On desktop: if collapsed, expand on hover
+          if (sidebarCollapsed) {
+            setWasCollapsedBeforeHover(true);
+            setSidebarCollapsed(false);
+          }
+        }}
+        onMouseLeave={() => {
+          // On desktop: if it was collapsed before hover, collapse again
+          if (wasCollapsedBeforeHover) {
+            setSidebarCollapsed(true);
+            setWasCollapsedBeforeHover(false);
+          }
+        }}
+        className={cn(
+          "bg-background flex flex-col overflow-hidden py-4",
+          // Border (right border since sidebar is on the left)
+          "border-r border-secondary-foreground/10",
+          // Width based on collapsed state with smooth transition
+          sidebarCollapsed
+            ? "w-16 min-w-16 max-w-24"
+            : "w-64 min-w-52 max-w-72",
+          "transition-all duration-300 ease-in-out",
+          // Mobile/Tablet: fixed drawer from left with smooth slide animation
+          "fixed left-0 top-0 h-screen z-50",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full",
+          // Disable pointer events when off-screen on mobile
+          !sidebarOpen && "pointer-events-none lg:pointer-events-auto",
+          // Desktop: always visible, relative positioning, no transform, always flex
+          "lg:relative lg:translate-x-0 lg:flex"
+        )}
+      >
+        {/* Sidebar Header with Logo */}
+        <div className="h-16 flex items-center px-4">
+          <div className="flex items-center justify-center gap-3 w-full">
+            <img
+              src={logoImage}
+              alt={t("sidebar.educationManagementSystem")}
+              className={cn(
+                "h-auto object-contain transition-opacity duration-300 ease-in-out",
+                sidebarCollapsed ? "w-0 opacity-0" : "w-40 opacity-100"
+              )}
+            />
+          </div>
         </div>
-      </div>
+        {/* Navigation Menu */}
+        <nav className="flex-1 overflow-y-auto py-4 px-3">
+          <div className="space-y-4">
+            {sections.map((section) => (
+              <div key={section.titleKey} className="space-y-2">
+                <p
+                  className={cn(
+                    "text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1 px-1 transition-opacity duration-300 ease-in-out",
+                    sidebarCollapsed
+                      ? "opacity-0 h-0 overflow-hidden"
+                      : "opacity-100"
+                  )}
+                >
+                  {t(section.titleKey)}
+                </p>
+                <ul className="space-y-1">
+                  {section.items.map((item) => {
+                    const isActive = isActiveRoute(item.href);
+                    const itemName = t(item.nameKey);
 
-      {/* Navigation Menu */}
-      <nav className={cn(
-        'flex-1 overflow-y-auto',
-        isExpanded ? 'p-4' : 'p-2'
-      )}>
-        <TooltipProvider delayDuration={0}>
-          <ul className="space-y-2">
-            {navigation.map((item) => {
-              const hasSubItems = item.subItems && item.subItems.length > 0
-              const isItemExpandedState = isItemExpanded(item.nameKey)
-              const isActive = isActiveRoute(item.href) ||
-                (hasSubItems && item.subItems?.some((sub) => isActiveRoute(sub.href)))
-              const itemName = t(item.nameKey)
-
-              if (!isExpanded) {
-                // Collapsed view: show only icons + tooltip (right)
-                return (
-                  <li key={item.nameKey}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                    return (
+                      <li key={item.nameKey}>
                         <Link
                           to={item.href}
-                          onClick={handleMenuItemClick}
                           className={cn(
-                            'flex items-center justify-center p-3 rounded-md transition-colors',
+                            "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors",
+                            sidebarCollapsed ? "justify-center" : "",
                             isActive
-                              ? 'bg-primary text-primary-foreground'
-                              : 'text-foreground hover:bg-accent'
+                              ? "bg-primary text-primary-foreground"
+                              : "text-foreground hover:bg-muted"
                           )}
                         >
-                          <item.icon className="h-5 w-5" />
-                        </Link>
-                      </TooltipTrigger>
-                      <TooltipContent side="right" align="center">
-                        {itemName}
-                      </TooltipContent>
-                    </Tooltip>
-                  </li>
-                )
-              }
-
-              // Expanded view: show full menu
-              return (
-                <li key={item.nameKey} className="mb-2">
-                  {hasSubItems ? (
-                    <>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            onClick={() => {
-                              toggleExpand(item.nameKey)
-                              handleMenuItemClick()
-                            }}
+                          <item.icon
+                            className={`h-4 w-4 flex-shrink-0  ${
+                              sidebarCollapsed ? "ml-2.5" : "ml-0"
+                            }`}
+                          />
+                          <span
                             className={cn(
-                              'w-full flex items-center justify-between px-3 py-2 rounded-md transition-colors',
-                              isActive
-                                ? 'bg-primary/10 text-primary'
-                                : 'text-foreground hover:bg-accent'
+                              "text-sm font-normal truncate transition-opacity duration-300 ease-in-out",
+                              sidebarCollapsed
+                                ? "opacity-0 w-0 overflow-hidden"
+                                : "opacity-100"
                             )}
                           >
-                            <div className="flex items-center gap-3 min-w-0 flex-1">
-                              <item.icon className="h-5 w-5 flex-shrink-0" />
-                              <span className="text-sm font-medium truncate whitespace-nowrap">{itemName}</span>
-                            </div>
-                            {isItemExpandedState ? (
-                              <ChevronUp className="h-4 w-4" />
-                            ) : (
-                              <ChevronDown className="h-4 w-4" />
-                            )}
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="right" align="center">
-                          {itemName}
-                        </TooltipContent>
-                      </Tooltip>
-                      {isItemExpandedState && item.subItems && (
-                        <ul className="ml-8 mt-2 space-y-2">
-                          {item.subItems.map((subItem) => {
-                            const isSubActive = isActiveRoute(subItem.href)
-                            const subItemName = t(subItem.nameKey)
-                            return (
-                              <li key={subItem.nameKey}>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Link
-                                      to={subItem.href}
-                                      onClick={handleMenuItemClick}
-                                      className={cn(
-                                        'block px-3 py-2 rounded-md text-sm transition-colors truncate whitespace-nowrap',
-                                        isSubActive
-                                          ? 'bg-primary text-primary-foreground font-medium'
-                                          : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-                                      )}
-                                    >
-                                      {subItemName}
-                                    </Link>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="right" align="center">
-                                    {subItemName}
-                                  </TooltipContent>
-                                </Tooltip>
-                              </li>
-                            )
-                          })}
-                        </ul>
-                      )}
-                    </>
-                  ) : (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Link
-                          to={item.href}
-                          onClick={handleMenuItemClick}
-                          className={cn(
-                            'flex items-center gap-3 px-3 py-2 rounded-md transition-colors min-w-0',
-                            isActive
-                              ? 'bg-primary/10 text-primary'
-                              : 'text-foreground hover:bg-accent'
-                          )}
-                        >
-                          <item.icon className="h-5 w-5 flex-shrink-0" />
-                          <span className="text-sm font-medium truncate whitespace-nowrap flex-1">{itemName}</span>
+                            {itemName}
+                          </span>
                         </Link>
-                      </TooltipTrigger>
-                      <TooltipContent side="right" align="center">
-                        {itemName}
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
-        </TooltipProvider>
-      </nav>
-
-      {/* User Profile Section */}
-      <div className={cn(
-        'border-t p-4',
-        isExpanded ? '' : 'px-2'
-      )}>
-        {!isExpanded ? (
-          <div className="flex justify-center">
-            <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-sm font-medium text-primary-foreground">
-                {getUserInitials()}
-              </span>
-            </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
           </div>
-        ) : (
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-              <span className="text-sm font-medium text-primary-foreground">
-                {getUserInitials()}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate">
-                {user?.name || t('sidebar.administrator')}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">
-                Gyeonggi Future Chim...
-              </p>
-            </div>
-            <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-          </div>
-        )}
-      </div>
-    </aside>
-  )
-}
+        </nav>
+      </aside>
+    </>
+  );
+};

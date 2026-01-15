@@ -1,8 +1,8 @@
 package com.itwizard.swaedu.modules.auth.mapper;
 
+import com.itwizard.swaedu.modules.admin.dto.response.AdminProfileDto;
+import com.itwizard.swaedu.modules.instructor.dto.response.InstructorProfileDto;
 import com.itwizard.swaedu.modules.auth.dto.JwtPayload;
-import com.itwizard.swaedu.modules.auth.dto.response.AdminProfileDto;
-import com.itwizard.swaedu.modules.auth.dto.response.InstructorProfileDto;
 import com.itwizard.swaedu.modules.auth.dto.response.UserResponseDto;
 import com.itwizard.swaedu.modules.auth.entity.User;
 
@@ -42,21 +42,31 @@ public class AuthMapper {
         AdminProfileDto adminDto = null;
         if (user.getAdmin() != null) {
             adminDto = AdminProfileDto.builder()
-                    .name(user.getAdmin().getName())
+                    .firstName(user.getAdmin().getFirstName())
+                    .lastName(user.getAdmin().getLastName())
+                    .email(user.getAdmin().getEmail())
+                    .phone(user.getAdmin().getPhone())
+                    .profilePhoto(user.getAdmin().getProfilePhoto())
                     .build();
         }
 
         InstructorProfileDto instructorDto = null;
         if (user.getInstructor() != null) {
             instructorDto = InstructorProfileDto.builder()
-                    .name(user.getInstructor().getName())
+                    .firstName(user.getInstructor().getFirstName())
+                    .lastName(user.getInstructor().getLastName())
                     .email(user.getInstructor().getEmail())
                     .phone(user.getInstructor().getPhone())
                     .gender(user.getInstructor().getGender())
                     .dob(user.getInstructor().getDob())
+                    .regionId(user.getInstructor().getRegionId())
                     .city(user.getInstructor().getCity())
                     .street(user.getInstructor().getStreet())
                     .detailAddress(user.getInstructor().getDetailAddress())
+                    .statusId(user.getInstructor().getStatusId())
+                    .classificationId(user.getInstructor().getClassificationId())
+                    .signature(user.getInstructor().getSignature())
+                    .profilePhoto(user.getInstructor().getProfilePhoto())
                     .build();
         }
 

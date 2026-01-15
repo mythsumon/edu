@@ -11,6 +11,7 @@ export const axiosInstance = axios.create({
     'Content-Type': 'application/json',
   },
   timeout: 30000,
+  withCredentials: true, // Required for cookies to be sent/received in cross-origin requests
 })
 
 // Setup interceptors

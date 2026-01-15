@@ -2,11 +2,13 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { publicRoutes } from './public.routes'
 import { protectedRoutes } from './protected.routes'
 import { notFoundRoutes } from './notFound.routes'
+import { unauthorizedRoutes } from './unauthorized.routes'
 import { ROUTES } from '@/shared/constants/routes'
 
 const router = createBrowserRouter([
   ...publicRoutes,
   ...protectedRoutes,
+  ...unauthorizedRoutes,
   ...notFoundRoutes,
   {
     path: '*',

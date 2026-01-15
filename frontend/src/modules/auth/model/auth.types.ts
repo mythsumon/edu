@@ -2,7 +2,7 @@
  * Login request DTO
  */
 export interface LoginRequestDto {
-  email: string
+  username: string
   password: string
 }
 
@@ -10,12 +10,8 @@ export interface LoginRequestDto {
  * Login response DTO
  */
 export interface LoginResponseDto {
-  token: string
-  user: {
-    id: string
-    email: string
-    name: string
-  }
+  access_token: string
+  refresh_token: string
 }
 
 /**
@@ -29,5 +25,29 @@ export interface RefreshTokenRequestDto {
  * Refresh token response DTO
  */
 export interface RefreshTokenResponseDto {
-  token: string
+  access_token: string
+  refresh_token: string
+}
+
+/**
+ * User response DTO
+ */
+export interface UserResponseDto {
+  id: number
+  username: string
+  roleName: string
+  enabled: boolean
+  admin?: {
+    name: string
+  } | null
+  instructor?: {
+    name: string
+    email: string
+    phone: string
+    gender: string
+    dob: string
+    city: string
+    street: string
+    detailAddress: string
+  } | null
 }
