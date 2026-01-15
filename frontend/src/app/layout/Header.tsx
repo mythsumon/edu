@@ -107,7 +107,7 @@ export const Header = () => {
     languages.find((lang) => lang.code === language) || languages[0];
 
   return (
-    <header className="py-3 px-4 bg-background flex items-center justify-between border-b border-muted/80 relative">
+    <header className="py-3 px-4 bg-background flex items-center justify-between border-b border-secondary-foreground/10 relative">
       {/* Left Side - Sidebar Toggle Button */}
       <div className="flex items-center">
         {/* Mobile/Tablet: Menu button to open drawer */}

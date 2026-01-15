@@ -207,7 +207,7 @@ export const PageLayout = ({
       : null;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1 px-5 py-6">
       {/* Back Button - Only show on nested pages and when not hidden */}
       {isNestedPage && parentRoute && (
         <Button
@@ -273,7 +273,7 @@ export const PageLayout = ({
       </div>
 
       {/* Page Content */}
-      {children && <div className="mt-4">{children}</div>}
+      {children && <div>{children}</div>}
     </div>
   );
 };

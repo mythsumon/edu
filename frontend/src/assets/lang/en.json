@@ -96,6 +96,47 @@
     "english": "English",
     "korean": "한국어",
     "changeLanguage": "Change Language"
+  },
+  "masterCode": {
+    "createNewCode": "Create New Code",
+    "createNewCodeDescription": "Make changes to your master code here. Click create when you're done.",
+    "masterCodes": "Master Codes",
+    "noMasterCodesFound": "No master codes found",
+    "code": "Code",
+    "codePlaceholder": "Enter code",
+    "codeName": "Code Name",
+    "codeNamePlaceholder": "Enter code name",
+    "parentCode": "Parent Code",
+    "noneRootLevel": "None (Root Level)",
+    "createSuccess": "Master code created successfully",
+    "createError": "Failed to create master code",
+    "editCode": "Edit Code",
+    "editCodeDescription": "Make changes to your master code here. Click update when you're done.",
+    "updateSuccess": "Master code updated successfully",
+    "updateError": "Failed to update master code",
+    "hasChildrenError": "Cannot edit master code with children",
+    "hasChildrenErrorDescription": "Please remove all child codes before editing this master code.",
+    "deleteCode": "Delete Code",
+    "deleteConfirmation": "Are you sure to delete the code ({{codeName}})?",
+    "deleteSuccess": "Master code deleted successfully",
+    "deleteError": "Failed to delete master code",
+    "hasChildrenDeleteError": "Cannot delete master code with children",
+    "hasChildrenDeleteErrorDescription": "Please remove all child codes before deleting this master code.",
+    "viewChildren": "View Children",
+    "selectCodeToViewChildren": "Select a master code from the sidebar to view children",
+    "toggleSidebar": "Toggle sidebar",
+    "childrenItems": "Children Items",
+    "noChildrenFound": "No children found",
+    "noChildrenDescription": "This master code has no child items.",
+    "validation": {
+      "codeRequired": "Code is required",
+      "codeMustBeInteger": "Code must be an integer",
+      "codeMustBePositive": "Code must be a positive number",
+      "codeNameRequired": "Code Name is required",
+      "codeAvailable": "Code is available to use.",
+      "codeUnavailable": "Code is unavailable to use",
+      "checkingCode": "Checking..."
+    }
   }
 }
 

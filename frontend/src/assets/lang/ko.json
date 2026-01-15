@@ -96,6 +96,47 @@
     "english": "English",
     "korean": "한국어",
     "changeLanguage": "언어 변경"
+  },
+  "masterCode": {
+    "createNewCode": "새 코드 생성",
+    "createNewCodeDescription": "여기서 마스터 코드를 변경하세요. 완료되면 생성 버튼을 클릭하세요.",
+    "masterCodes": "마스터 코드",
+    "noMasterCodesFound": "마스터 코드를 찾을 수 없습니다",
+    "code": "코드",
+    "codePlaceholder": "코드를 입력하세요",
+    "codeName": "코드 이름",
+    "codeNamePlaceholder": "코드 이름을 입력하세요",
+    "parentCode": "상위 코드",
+    "noneRootLevel": "없음 (루트 레벨)",
+    "createSuccess": "마스터 코드가 성공적으로 생성되었습니다",
+    "createError": "마스터 코드 생성에 실패했습니다",
+    "editCode": "코드 수정",
+    "editCodeDescription": "여기서 마스터 코드를 변경하세요. 완료되면 업데이트 버튼을 클릭하세요.",
+    "updateSuccess": "마스터 코드가 성공적으로 업데이트되었습니다",
+    "updateError": "마스터 코드 업데이트에 실패했습니다",
+    "hasChildrenError": "자식 코드가 있는 마스터 코드는 수정할 수 없습니다",
+    "hasChildrenErrorDescription": "이 마스터 코드를 수정하기 전에 모든 자식 코드를 제거해주세요.",
+    "deleteCode": "코드 삭제",
+    "deleteConfirmation": "코드 ({{codeName}})를 삭제하시겠습니까?",
+    "deleteSuccess": "마스터 코드가 성공적으로 삭제되었습니다",
+    "deleteError": "마스터 코드 삭제에 실패했습니다",
+    "hasChildrenDeleteError": "자식 코드가 있는 마스터 코드는 삭제할 수 없습니다",
+    "hasChildrenDeleteErrorDescription": "이 마스터 코드를 삭제하기 전에 모든 자식 코드를 제거해주세요.",
+    "viewChildren": "하위 항목 보기",
+    "selectCodeToViewChildren": "사이드바에서 마스터 코드를 선택하여 하위 항목을 보세요",
+    "toggleSidebar": "사이드바 토글",
+    "childrenItems": "하위 항목",
+    "noChildrenFound": "하위 항목 없음",
+    "noChildrenDescription": "이 마스터 코드에는 하위 항목이 없습니다.",
+    "validation": {
+      "codeRequired": "코드는 필수입니다",
+      "codeMustBeInteger": "코드는 정수여야 합니다",
+      "codeMustBePositive": "코드는 양수여야 합니다",
+      "codeNameRequired": "코드 이름은 필수입니다",
+      "codeAvailable": "코드를 사용할 수 있습니다.",
+      "codeUnavailable": "코드를 사용할 수 없습니다",
+      "checkingCode": "확인 중..."
+    }
   }
 }
 

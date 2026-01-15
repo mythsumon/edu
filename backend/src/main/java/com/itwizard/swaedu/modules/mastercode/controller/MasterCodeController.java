@@ -106,4 +106,14 @@ public class MasterCodeController {
         List<MasterCodeTreeDto> response = masterCodeService.getMasterCodeTree(rootId, depth);
         return ResponseUtil.success("Master code tree retrieved successfully", response);
     }
+
+    // 11. GET /api/v1/mastercode/check — check if master code exists
+    @GetMapping("/check")
+    public ResponseEntity<ApiResponse> checkCodeExists(@RequestParam Integer code) {
+        boolean exists = masterCodeService.checkCodeExists(code);
+        if (exists) {
+            return ResponseUtil.error("Master code already exists");
+        }
+        return ResponseUtil.success("Master code is available");
+    }
 }

@@ -235,7 +235,7 @@ export const Sidebar = () => {
         className={cn(
           "bg-background flex flex-col overflow-hidden py-4",
           // Border (right border since sidebar is on the left)
-          "border-r border-secondary/50",
+          "border-r border-secondary-foreground/10",
           // Width based on collapsed state with smooth transition
           sidebarCollapsed
             ? "w-16 min-w-16 max-w-24"

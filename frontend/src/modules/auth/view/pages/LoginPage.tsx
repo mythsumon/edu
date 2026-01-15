@@ -38,7 +38,7 @@ export const LoginPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
-  const { language, setLanguage } = useUiStore();
+  const { language, setLanguage, theme } = useUiStore();
   const [showPassword, setShowPassword] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -110,14 +110,20 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      {/* Background Image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url(${bgLoginImage})`,
-        }}
-      />
+    <div
+      className={`min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden ${
+        theme === "dark" ? "bg-background" : ""
+      }`}
+    >
+      {/* Background Image - Only in light mode */}
+      {theme === "light" && (
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(${bgLoginImage})`,
+          }}
+        />
+      )}
 
       {/* Language Switcher - Top Right */}
       <div className="absolute top-4 right-4 z-20">
