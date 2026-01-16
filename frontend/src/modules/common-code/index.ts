@@ -8,6 +8,8 @@ export {
   useCommonCodeByIdQuery,
   useCommonCodeChildrenQuery,
   useCommonCodeChildrenByCodeQuery,
+  useCommonCodeGrandChildrenByCodeQuery,
+  useCommonCodeByCodeQuery,
 } from './controller/queries'
 export { useCreateCommonCode, useUpdateCommonCode, useDeleteCommonCode } from './controller/mutations'
 export type {

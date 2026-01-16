@@ -2,15 +2,16 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useMemo } from 'react'
 import { PageLayout } from '@/app/layout/PageLayout'
 import { Button } from '@/shared/ui/button'
 import { ROUTES } from '@/shared/constants/routes'
 import { useCreateInstructor } from '../../controller/mutations'
 import { createInstructorSchema, type CreateInstructorFormData } from '../../model/account-management.schema'
-import { useZonesQuery, useRegionsQuery } from '../../controller/zone-region.queries'
 import { useMasterCodeChildrenByCodeQuery } from '@/modules/master-code-setup/controller/queries'
-import { MASTER_CODE_PARENT_CODES } from '@/shared/constants/master-code'
+import { MASTER_CODE_PARENT_CODES, MASTER_CODE_DISTRICT_CODE } from '@/shared/constants/master-code'
+import { useCommonCodeByCodeQuery, useCommonCodeGrandChildrenByCodeQuery, useCommonCodeChildrenByCodeQuery } from '@/modules/common-code/controller/queries'
+import { GENDER_OPTIONS } from '@/shared/constants/users'
 import { FormInputField } from '../components/FormInputField'
 import { FormPasswordField } from '../components/FormPasswordField'
 import { FormSelectField } from '../components/FormSelectField'
@@ -21,7 +22,6 @@ export const AddInstructorPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const createInstructorMutation = useCreateInstructor()
-  const { data: zones = [] } = useZonesQuery()
   const formRef = useRef<HTMLFormElement>(null)
 
   const {
@@ -53,8 +53,22 @@ export const AddInstructorPage = () => {
     },
   })
 
-  const { data: regions = [], isLoading: isLoadingRegions } = useRegionsQuery()
   const selectedRegionId = watch('regionId')
+
+  // Fetch zones from common code (children of zone/region parent code)
+  const { data: zonesData, isLoading: isLoadingZones } = useCommonCodeChildrenByCodeQuery(
+    MASTER_CODE_DISTRICT_CODE
+  )
+  const zones = useMemo(() => zonesData?.items || [], [zonesData?.items])
+
+  // Fetch regions from common code (grandchildren of zone/region parent code)
+  const { data: regionsData, isLoading: isLoadingRegions } = useCommonCodeGrandChildrenByCodeQuery(
+    MASTER_CODE_DISTRICT_CODE
+  )
+  const regions = useMemo(() => regionsData?.items || [], [regionsData?.items])
+
+  // Fetch city common code
+  const { data: cityCommonCode } = useCommonCodeByCodeQuery(MASTER_CODE_DISTRICT_CODE)
 
   // Fetch status master codes (parent code 100)
   const { data: statusMasterCodesData, isLoading: isLoadingStatusCodes } = useMasterCodeChildrenByCodeQuery(
@@ -67,18 +81,29 @@ export const AddInstructorPage = () => {
     useMasterCodeChildrenByCodeQuery(MASTER_CODE_PARENT_CODES.INSTRUCTOR_CLASSIFICATION)
   const classificationMasterCodes = classificationMasterCodesData?.items || []
 
-  // Auto-select zone when region is selected
+  // Auto-select zone when region is selected (using parentId from common code)
   useEffect(() => {
     if (selectedRegionId) {
       const selectedRegion = regions.find((r) => String(r.id) === selectedRegionId)
-      if (selectedRegion && selectedRegion.zoneId) {
-        setValue('zoneId', String(selectedRegion.zoneId))
+      if (selectedRegion && selectedRegion.parentId) {
+        // Find zone by matching parentId
+        const matchingZone = zones.find((z) => z.id === selectedRegion.parentId)
+        if (matchingZone) {
+          setValue('zoneId', String(matchingZone.id))
+        }
       }
     } else {
       // Clear zone when region is cleared
       setValue('zoneId', '')
     }
-  }, [selectedRegionId, regions, setValue])
+  }, [selectedRegionId, regions, zones, setValue])
+
+  // Set city default value from common code
+  useEffect(() => {
+    if (cityCommonCode?.codeName) {
+      setValue('city', cityCommonCode.codeName)
+    }
+  }, [cityCommonCode, setValue])
 
   const onSubmit = async (data: CreateInstructorFormData) => {
     try {
@@ -86,7 +111,7 @@ export const AddInstructorPage = () => {
         username: data.username,
         password: data.password,
         name: data.name,
-        email: data.email || undefined,
+        email: data.email,
         phone: data.phone,
         gender: data.gender,
         dob: data.dob,
@@ -176,6 +201,7 @@ export const AddInstructorPage = () => {
                 type="email"
                 register={register('email')}
                 error={errors.email}
+                required
                 isSubmitting={isSubmitting}
               />
 
@@ -203,11 +229,15 @@ export const AddInstructorPage = () => {
               />
 
               {/* Gender */}
-              <FormInputField
+              <FormSelectField
                 id="gender"
+                name="gender"
                 label={t('accountManagement.gender')}
                 placeholder={t('accountManagement.genderPlaceholder')}
-                register={register('gender')}
+                control={control}
+                options={GENDER_OPTIONS}
+                getOptionValue={(option) => option.value}
+                getOptionLabel={(option) => option.label}
                 error={errors.gender}
                 required
                 isSubmitting={isSubmitting}
@@ -241,7 +271,6 @@ export const AddInstructorPage = () => {
                 placeholder={t('accountManagement.affiliationPlaceholder')}
                 register={register('affiliation')}
                 error={errors.affiliation}
-                required
                 isSubmitting={isSubmitting}
               />
 
@@ -254,6 +283,7 @@ export const AddInstructorPage = () => {
                 error={errors.city}
                 required
                 isSubmitting={isSubmitting}
+                disabled
               />
 
               {/* Zone */}
@@ -265,15 +295,16 @@ export const AddInstructorPage = () => {
                 control={control}
                 options={zones}
                 getOptionValue={(option) => String(option.id)}
-                getOptionLabel={(option) => option.name || ''}
+                getOptionLabel={(option) => option.codeName || ''}
                 error={errors.zoneId}
                 required
                 isSubmitting={isSubmitting}
                 disabled
+                isLoading={isLoadingZones}
                 onValueChange={() => { }} // Disabled - auto-selected
                 displayValue={(value) => {
                   const selectedZone = value ? zones.find((z) => String(z.id) === value) : null
-                  return selectedZone ? selectedZone.name : t('accountManagement.zoneAutoSelected')
+                  return selectedZone ? selectedZone.codeName : t('accountManagement.zoneAutoSelected')
                 }}
               />
 
@@ -286,7 +317,7 @@ export const AddInstructorPage = () => {
                 control={control}
                 options={regions}
                 getOptionValue={(option) => String(option.id)}
-                getOptionLabel={(option) => option.name || ''}
+                getOptionLabel={(option) => option.codeName || ''}
                 error={errors.regionId}
                 required
                 isSubmitting={isSubmitting}

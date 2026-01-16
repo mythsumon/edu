@@ -50,6 +50,13 @@ public class MasterCodeController {
         return ResponseUtil.success("Master code retrieved successfully", response);
     }
 
+    // 4b. GET /api/v1/mastercode/code/{code} — master code detail by code
+    @GetMapping("/code/{code}")
+    public ResponseEntity<ApiResponse> getMasterCodeByCode(@PathVariable String code) {
+        MasterCodeResponseDto response = masterCodeService.getMasterCodeByCode(code);
+        return ResponseUtil.success("Master code retrieved successfully", response);
+    }
+
     // 5. PUT /api/v1/mastercode/{id} — update master code (full update)
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse> updateMasterCode(
@@ -96,6 +103,18 @@ public class MasterCodeController {
             @RequestParam(required = false) String sort) {
         PageResponse<MasterCodeResponseDto> response = masterCodeService.listChildren(code, q, page, size, sort);
         return ResponseUtil.success("Children retrieved successfully", response);
+    }
+
+    // 9b. GET /api/v1/mastercode/{code}/grandchildren — list grandchildren of a master code (by code)
+    @GetMapping("/{code}/grandchildren")
+    public ResponseEntity<ApiResponse> listGrandChildren(
+            @PathVariable String code,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "20") Integer size,
+            @RequestParam(required = false) String sort) {
+        PageResponse<MasterCodeResponseDto> response = masterCodeService.listGrandChildren(code, q, page, size, sort);
+        return ResponseUtil.success("Grandchildren retrieved successfully", response);
     }
 
     // 10. GET /api/v1/mastercode/tree — retrieve master code hierarchy
