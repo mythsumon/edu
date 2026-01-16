@@ -11,7 +11,7 @@ import type {
 export function mapAdminAccount(dto: AdminResponseDto): AdminAccount {
   return {
     id: dto.userId,
-    name: `${dto.firstName} ${dto.lastName}`.trim(),
+    name: dto.name,
     username: dto.username,
     email: dto.email,
     phoneNumber: dto.phone,
@@ -24,7 +24,7 @@ export function mapAdminAccount(dto: AdminResponseDto): AdminAccount {
 export function mapInstructorAccount(dto: InstructorResponseDto): InstructorAccount {
   return {
     id: dto.userId,
-    name: `${dto.firstName} ${dto.lastName}`.trim(),
+    name: dto.name,
     username: dto.username,
     affiliation: undefined, // Not available in DTO
     region: dto.city, // Use city as region for now

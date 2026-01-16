@@ -12,8 +12,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InstructorProfileDto {
-    private String firstName;
-    private String lastName;
+    private String name;
     private String email;
     private String phone;
     private String gender;

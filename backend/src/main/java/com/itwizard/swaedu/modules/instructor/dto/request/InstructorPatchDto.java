@@ -15,11 +15,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class InstructorPatchDto {
 
-    @Size(min = 1, max = 255, message = "First name must be between 1 and 255 characters")
-    private String firstName;
-
-    @Size(min = 1, max = 255, message = "Last name must be between 1 and 255 characters")
-    private String lastName;
+    @Size(min = 1, max = 255, message = "Name must be between 1 and 255 characters")
+    private String name;
 
     @Email(message = "Email must be valid")
     private String email;

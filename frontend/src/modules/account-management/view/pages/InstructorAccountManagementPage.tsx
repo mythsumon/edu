@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Plus } from 'lucide-react'
 import { InstructorAccountTable } from '../components/InstructorAccountTable'
 import type { InstructorAccount } from '../../model/account-management.types'
@@ -10,6 +11,7 @@ import { Button } from '@/shared/ui/button'
 import { ROUTES } from '@/shared/constants/routes'
 
 export const InstructorAccountManagementPage = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { data, isLoading, error } = useInstructorAccountsQuery()
 
@@ -19,19 +21,19 @@ export const InstructorAccountManagementPage = () => {
   }
 
   const handleAddClick = () => {
-    navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_ADD_FULL)
+    navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_CREATE_FULL)
   }
 
   const instructorAccounts = data?.items ?? []
 
   return (
     <PageLayout
-      title="Instructor Account Management"
-      customBreadcrumbRoot={{ path: ROUTES.ADMIN_DASHBOARD_FULL, label: 'Dashboard' }}
+      title={t('accountManagement.instructorAccountManagement')}
+      customBreadcrumbRoot={{ path: ROUTES.ADMIN_DASHBOARD_FULL, label: t('accountManagement.dashboard') }}
       actions={
         <Button onClick={handleAddClick}>
           <Plus className="h-4 w-4 mr-2" />
-          New Instructor
+          {t('accountManagement.newInstructor')}
         </Button>
       }
     >

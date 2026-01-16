@@ -1,6 +1,5 @@
-import { useLocation, Link, useNavigate } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { useMemo, ReactNode } from "react";
-import { ArrowLeft } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -8,7 +7,6 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from "@/shared/ui/breadcrumb";
-import { Button } from "@/shared/ui/button";
 import { cn } from "@/shared/lib/cn";
 import { ROUTES } from "@/shared/constants/routes";
 
@@ -58,7 +56,6 @@ export const PageLayout = ({
   children,
 }: PageLayoutProps) => {
   const location = useLocation();
-  const navigate = useNavigate();
 
   // Build breadcrumb items from current path
   const breadcrumbItems = useMemo(() => {
@@ -198,30 +195,11 @@ export const PageLayout = ({
     });
   }, [location.pathname, breadcrumbRoot, customBreadcrumbRoot]);
 
-  // Determine if this is a nested page (has more than one breadcrumb item)
-  const isNestedPage = breadcrumbItems.length > 1;
-  // Get parent route (second to last item if nested, or null)
-  const parentRoute =
-    isNestedPage && breadcrumbItems.length > 1
-      ? breadcrumbItems[breadcrumbItems.length - 2].path
-      : null;
 
   return (
-    <div className="space-y-1 px-5 py-6">
-      {/* Back Button - Only show on nested pages and when not hidden */}
-      {isNestedPage && parentRoute && (
-        <Button
-          variant="link"
-          size="sm"
-          onClick={() => navigate(parentRoute)}
-          className="text-muted-foreground hover:text-foreground p-0 h-auto"
-        >
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Back
-        </Button>
-      )}
+    <div className="space-y-1 pb-6">
       {/* Header Section: Title, Badge, and Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      <div className="flex sticky top-0 bg-background z-30 px-5 py-4 border-b border-border flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         {/* Left Side: Title, Badge */}
         <div className="space-y-1 flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -273,7 +251,7 @@ export const PageLayout = ({
       </div>
 
       {/* Page Content */}
-      {children && <div>{children}</div>}
+      {children && <div className="px-5">{children}</div>}
     </div>
   );
 };

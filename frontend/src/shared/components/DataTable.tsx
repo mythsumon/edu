@@ -31,6 +31,7 @@ interface DataTableProps<TData> {
   onRowClick?: (row: TData) => void;
   selectedRowId?: string | number | null | ((row: TData) => boolean);
   initialState?: TableOptions<TData>["initialState"];
+  enablePagination?: boolean;
 }
 
 export function DataTable<TData>({
@@ -44,6 +45,7 @@ export function DataTable<TData>({
   onRowClick,
   selectedRowId,
   initialState,
+  enablePagination = false,
 }: DataTableProps<TData>) {
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
 
@@ -77,7 +79,10 @@ export function DataTable<TData>({
       rowSelection: enableRowSelection ? rowSelection : undefined,
     },
     enableRowSelection,
-    initialState,
+    initialState: {
+      ...initialState,
+      pagination: enablePagination ? initialState?.pagination : { pageIndex: 0, pageSize: data.length },
+    },
   });
 
   const columnCount = table.getAllColumns().length;
@@ -87,7 +92,7 @@ export function DataTable<TData>({
       <Table>
         <TableHeader className="bg-muted rounded-t-2xl text-xs">
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow key={headerGroup.id} className="bg-muted hover:bg-muted/50">
               {headerGroup.headers.map((header) => {
                 // Default className for select and actions columns
                 const defaultClassName =

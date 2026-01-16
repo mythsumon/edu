@@ -72,3 +72,56 @@
   }
 }
 
+/* Custom Scrollbar Styles */
+* {
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.08) transparent;
+}
+
+*:hover {
+  scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+}
+
+/* Webkit browsers (Chrome, Edge, Safari) */
+*::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+  transition: width 0.2s ease, height 0.2s ease;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.08);
+  border-radius: 2px;
+  transition: background-color 0.2s ease;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.25);
+}
+
+*:hover::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+/* Dark mode scrollbar */
+.dark * {
+  scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+}
+
+.dark *:hover {
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+.dark *::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark *:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.25);
+}

@@ -93,10 +93,9 @@ VALUES ('admin',
         TRUE)
 ON CONFLICT (username) DO NOTHING;
 -- Insert admin profile
-INSERT INTO admins (user_id, first_name, last_name, email, phone)
+INSERT INTO admins (user_id, name, email, phone)
 VALUES ((SELECT id FROM users WHERE username = 'admin'),
-        'Admin',
-        'User',
+        'Admin User',
         'admin@example.com',
         '+1234567890')
 ON CONFLICT (user_id) DO NOTHING;
@@ -109,10 +108,9 @@ VALUES ('instructor',
         TRUE)
 ON CONFLICT (username) DO NOTHING;
 -- Insert instructor profile
-INSERT INTO instructors (user_id, first_name, last_name, email, phone, gender, dob, region_id, city, street, detail_address, status_id, classification_id)
+INSERT INTO instructors (user_id, name, email, phone, gender, dob, region_id, city, street, detail_address, status_id, classification_id)
 VALUES ((SELECT id FROM users WHERE username = 'instructor'),
-        'Instructor',
-        'User',
+        'Instructor User',
         'instructor@example.com',
         '+1234567890',
         'MALE',

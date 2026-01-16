@@ -16,8 +16,7 @@ public interface AdminRepository extends JpaRepository<Admin, Long> {
 
     @Query("SELECT a FROM Admin a JOIN a.user u " +
            "WHERE (:q IS NULL OR :q = '' OR " +
-           "LOWER(a.firstName) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
-           "LOWER(a.lastName) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
+           "LOWER(a.name) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
            "LOWER(COALESCE(a.email, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
            "LOWER(u.username) LIKE LOWER(CONCAT('%', :q, '%')))")
     Page<Admin> search(@Param("q") String q, Pageable pageable);

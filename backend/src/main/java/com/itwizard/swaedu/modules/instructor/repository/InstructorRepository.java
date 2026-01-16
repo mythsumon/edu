@@ -18,8 +18,7 @@ public interface InstructorRepository extends JpaRepository<Instructor, Long> {
 
     @Query("SELECT i FROM Instructor i JOIN i.user u " +
            "WHERE (:q IS NULL OR :q = '' OR " +
-           "LOWER(i.firstName) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
-           "LOWER(i.lastName) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
+           "LOWER(i.name) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
            "LOWER(COALESCE(i.email, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
            "LOWER(COALESCE(i.phone, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
            "LOWER(u.username) LIKE LOWER(CONCAT('%', :q, '%')))")

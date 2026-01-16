@@ -57,8 +57,7 @@ public class AdminServiceImpl implements AdminService {
         // Create admin profile
         Admin admin = new Admin();
         admin.setUser(savedUser);
-        admin.setFirstName(request.getFirstName());
-        admin.setLastName(request.getLastName());
+        admin.setName(request.getName());
         admin.setEmail(request.getEmail());
         admin.setPhone(request.getPhone());
 
