@@ -139,7 +139,7 @@ VALUES ('instructor',
         TRUE)
 ON CONFLICT (username) DO NOTHING;
 -- Insert instructor profile
-INSERT INTO instructors (user_id, name, email, phone, gender, dob, region_id, city, street, detail_address, status_id, classification_id)
+INSERT INTO instructors (user_id, name, email, phone, gender, dob, region_id, city, street, detail_address, status_id, classification_id, affiliation)
 VALUES ((SELECT id FROM users WHERE username = 'instructor'),
         'Instructor User',
         'instructor@example.com',
@@ -151,7 +151,8 @@ VALUES ((SELECT id FROM users WHERE username = 'instructor'),
         'Street',
         'Detail Address',
         (SELECT id FROM master_code WHERE code = '100-1' AND parent_id = (SELECT id FROM master_code WHERE code = '100' AND parent_id IS NULL)),
-        (SELECT id FROM master_code WHERE code = '200-1' AND parent_id = (SELECT id FROM master_code WHERE code = '200' AND parent_id IS NULL)))
+        (SELECT id FROM master_code WHERE code = '200-1' AND parent_id = (SELECT id FROM master_code WHERE code = '200' AND parent_id IS NULL)),
+        NULL)
 ON CONFLICT (user_id) DO NOTHING;
 
 -- Insert teacher user

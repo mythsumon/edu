@@ -38,4 +38,6 @@ public class InstructorPatchDto {
     private Long statusId;
 
     private Long classificationId;
+
+    private String affiliation;
 }

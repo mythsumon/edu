@@ -125,6 +125,7 @@ CREATE TABLE IF NOT EXISTS instructors (
     detail_address VARCHAR(500),
     status_id BIGINT,
     classification_id BIGINT,
+    affiliation VARCHAR(255),
     signature VARCHAR(500),
     profile_photo VARCHAR(500),
     CONSTRAINT fk_instructors_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,

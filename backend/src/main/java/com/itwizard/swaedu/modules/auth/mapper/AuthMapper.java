@@ -63,6 +63,7 @@ public class AuthMapper {
                     .detailAddress(user.getInstructor().getDetailAddress())
                     .statusId(user.getInstructor().getStatusId())
                     .classificationId(user.getInstructor().getClassificationId())
+                    .affiliation(user.getInstructor().getAffiliation())
                     .signature(user.getInstructor().getSignature())
                     .profilePhoto(user.getInstructor().getProfilePhoto())
                     .build();
