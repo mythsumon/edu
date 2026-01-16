@@ -45,7 +45,7 @@ export function DataTable<TData>({
   onRowClick,
   selectedRowId,
   initialState,
-  enablePagination = false,
+  // enablePagination = false,
 }: DataTableProps<TData>) {
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
 
@@ -81,7 +81,7 @@ export function DataTable<TData>({
     enableRowSelection,
     initialState: {
       ...initialState,
-      pagination: enablePagination ? initialState?.pagination : { pageIndex: 0, pageSize: data.length },
+      // pagination: enablePagination ? initialState?.pagination : { pageIndex: 0, pageSize: data.length },
     },
   });
 

@@ -11,7 +11,10 @@ import { LoadingState } from "@/shared/components/LoadingState";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { CreateCommonCodeDialog } from "./CreateCommonCodeDialog";
 import { EditCommonCodeDialog } from "./EditCommonCodeDialog";
-import { useCommonCodeChildrenQuery, useCommonCodeHasChildrenQuery } from "../../controller/queries";
+import {
+  useCommonCodeChildrenQuery,
+  useCommonCodeHasChildrenQuery,
+} from "../../controller/queries";
 import { useDeleteCommonCode } from "../../controller/mutations";
 import { useToast } from "@/shared/ui/use-toast";
 import type { CommonCodeResponseDto } from "../../model/common-code.types";
@@ -98,9 +101,9 @@ export const ChildCodeCard = ({
   const { data: childrenData, isLoading } = useCommonCodeChildrenQuery(
     parentId,
     parentId !== null && parentId !== undefined,
-    { q: debouncedSearchQuery || undefined, sort: "code,desc" }
+    { q: debouncedSearchQuery || undefined, sort: "id,desc", page: 0, size: 0 }
   );
-
+  console.log(childrenData);
   const deleteMutation = useDeleteCommonCode();
 
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
@@ -110,10 +113,8 @@ export const ChildCodeCard = ({
     React.useState<CommonCodeResponseDto | null>(null);
 
   // Check if selected code has children - enable immediately when selectedCode is set
-  const { data: hasChildren, isLoading: isCheckingChildren } = useCommonCodeHasChildrenQuery(
-    selectedCode?.id,
-    selectedCode !== null
-  );
+  const { data: hasChildren, isLoading: isCheckingChildren } =
+    useCommonCodeHasChildrenQuery(selectedCode?.id, selectedCode !== null);
 
   // When children check completes, open appropriate dialog
   React.useEffect(() => {
@@ -151,16 +152,17 @@ export const ChildCodeCard = ({
   };
 
   // Get data from API - sorting is handled by API
-  const tableData = React.useMemo(() => {
-    if (
-      !childrenData ||
-      !childrenData.items ||
-      !Array.isArray(childrenData.items)
-    ) {
-      return [];
-    }
-    return childrenData.items || [];
-  }, [childrenData]);
+
+  // const tableData = React.useMemo(() => {
+  //   if (
+  //     !childrenData ||
+  //     !childrenData.items ||
+  //     !Array.isArray(childrenData.items)
+  //   ) {
+  //     return [];
+  //   }
+  //   return childrenData.items || [];
+  // }, [childrenData]);
 
   const handleEdit = (code: CommonCodeResponseDto) => {
     setCodeToEdit(code);
@@ -189,23 +191,31 @@ export const ChildCodeCard = ({
     } catch (error) {
       toast({
         title: t("common.error"),
-        description: (error as { message?: string })?.message ?? t("commonCode.deleteError"),
+        description:
+          (error as { message?: string })?.message ??
+          t("commonCode.deleteError"),
         variant: "error",
       });
     }
   }, [selectedCode, deleteMutation, toast, t]);
 
   const memoNextToCode = React.useMemo(() => {
-    if (tableData.length === 0) {
+
+    const data = childrenData?.items || [];
+
+    if (data.length === 0) {
       return `${parentCode}-1`;
     }
-    const lastCode = tableData[0].code;
+    const lastCode = data[0].code;
     const lastCodeParts = lastCode.split("-");
-    const lastCodeNumber = parseInt(lastCodeParts[lastCodeParts.length - 1], 10);
+    const lastCodeNumber = parseInt(
+      lastCodeParts[lastCodeParts.length - 1],
+      10
+    );
     const next_code_number = isNaN(lastCodeNumber) ? 1 : lastCodeNumber + 1;
     const next_code = `${parentCode}-${next_code_number}`;
     return next_code;
-  }, [parentCode, tableData]);
+  }, [parentCode, childrenData]);
 
   const columns = React.useMemo<ColumnDef<CommonCodeResponseDto>[]>(
     () => [
@@ -297,17 +307,17 @@ export const ChildCodeCard = ({
         />
       </div>
       {/* Table */}
-      <div className="flex-1">
+      <div className="flex-1 overflow-y-auto min-h-0">
         {isLoading ? (
           <LoadingState />
-        ) : tableData.length === 0 ? (
+        ) : childrenData?.items?.length === 0 ? (
           <EmptyState
             title={t("commonCode.noChildrenFound")}
             description={t("commonCode.noChildrenDescription")}
           />
         ) : (
           <DataTable
-            data={tableData || []}
+            data={childrenData?.items || []}
             columns={columns}
             getHeaderClassName={(headerId) => {
               if (headerId === "actions") return "text-right";
