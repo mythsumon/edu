@@ -49,6 +49,7 @@ export const AddInstructorPage = () => {
       detailAddress: '',
       statusId: '',
       classificationId: '',
+      affiliation: '',
     },
   })
 
@@ -95,6 +96,7 @@ export const AddInstructorPage = () => {
         detailAddress: data.detailAddress,
         statusId: Number(data.statusId),
         classificationId: Number(data.classificationId),
+        affiliation: data.affiliation || undefined,
       })
       navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL)
     } catch (error) {
@@ -225,63 +227,71 @@ export const AddInstructorPage = () => {
             </div>
           </CollapsibleCard>
 
-          {/* Address Information Collapsible Card */}
+          {/* Affiliation and Address Information Collapsible Card */}
           <CollapsibleCard
             title={t('accountManagement.addressInformation')}
             description={t('accountManagement.addressInformationDescription')}
             defaultExpanded={true}
           >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* City, Zone, Region - One row on lg+ screens */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 col-span-1 lg:col-span-2">
-                {/* City */}
-                <FormInputField
-                  id="city"
-                  label={t('accountManagement.city')}
-                  placeholder={t('accountManagement.cityPlaceholder')}
-                  register={register('city')}
-                  error={errors.city}
-                  required
-                  isSubmitting={isSubmitting}
-                />
+              {/* Affiliation */}
+              <FormInputField
+                id="affiliation"
+                label={t('accountManagement.affiliation')}
+                placeholder={t('accountManagement.affiliationPlaceholder')}
+                register={register('affiliation')}
+                error={errors.affiliation}
+                required
+                isSubmitting={isSubmitting}
+              />
 
-                {/* Zone */}
-                <FormSelectField
-                  id="zoneId"
-                  name="zoneId"
-                  label={t('accountManagement.zone')}
-                  placeholder={t('accountManagement.zoneAutoSelected')}
-                  control={control}
-                  options={zones}
-                  getOptionValue={(option) => String(option.id)}
-                  getOptionLabel={(option) => option.name || ''}
-                  error={errors.zoneId}
-                  required
-                  isSubmitting={isSubmitting}
-                  disabled
-                  onValueChange={() => { }} // Disabled - auto-selected
-                  displayValue={(value) => {
-                    const selectedZone = value ? zones.find((z) => String(z.id) === value) : null
-                    return selectedZone ? selectedZone.name : t('accountManagement.zoneAutoSelected')
-                  }}
-                />
+              {/* City */}
+              <FormInputField
+                id="city"
+                label={t('accountManagement.city')}
+                placeholder={t('accountManagement.cityPlaceholder')}
+                register={register('city')}
+                error={errors.city}
+                required
+                isSubmitting={isSubmitting}
+              />
 
-                {/* Region */}
-                <FormSelectField
-                  id="regionId"
-                  name="regionId"
-                  label={t('accountManagement.region')}
-                  placeholder={t('accountManagement.regionPlaceholder')}
-                  control={control}
-                  options={regions}
-                  getOptionValue={(option) => String(option.id)}
-                  getOptionLabel={(option) => option.name || ''}
-                  error={errors.regionId}
-                  required
-                  isSubmitting={isSubmitting}
-                  isLoading={isLoadingRegions}
-                />
-              </div>
+              {/* Zone */}
+              <FormSelectField
+                id="zoneId"
+                name="zoneId"
+                label={t('accountManagement.zone')}
+                placeholder={t('accountManagement.zoneAutoSelected')}
+                control={control}
+                options={zones}
+                getOptionValue={(option) => String(option.id)}
+                getOptionLabel={(option) => option.name || ''}
+                error={errors.zoneId}
+                required
+                isSubmitting={isSubmitting}
+                disabled
+                onValueChange={() => { }} // Disabled - auto-selected
+                displayValue={(value) => {
+                  const selectedZone = value ? zones.find((z) => String(z.id) === value) : null
+                  return selectedZone ? selectedZone.name : t('accountManagement.zoneAutoSelected')
+                }}
+              />
+
+              {/* Region */}
+              <FormSelectField
+                id="regionId"
+                name="regionId"
+                label={t('accountManagement.region')}
+                placeholder={t('accountManagement.regionPlaceholder')}
+                control={control}
+                options={regions}
+                getOptionValue={(option) => String(option.id)}
+                getOptionLabel={(option) => option.name || ''}
+                error={errors.regionId}
+                required
+                isSubmitting={isSubmitting}
+                isLoading={isLoadingRegions}
+              />
 
               {/* Street */}
               <FormInputField

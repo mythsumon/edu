@@ -87,6 +87,7 @@ export interface CreateInstructorRequestDto {
   detailAddress?: string
   statusId?: number
   classificationId?: number
+  affiliation?: string
 }
 
 /**

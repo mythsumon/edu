@@ -76,6 +76,10 @@ export const createInstructorSchema = (t: (key: string) => string) => z.object({
   classificationId: z
     .string()
     .min(1, t('accountManagement.validation.classificationRequired')),
+  affiliation: z
+    .string()
+    .min(1, t('accountManagement.validation.affiliationRequired'))
+    .max(255, t('accountManagement.validation.affiliationMaxLength')),
 })
 
 export type CreateInstructorFormData = z.infer<ReturnType<typeof createInstructorSchema>>

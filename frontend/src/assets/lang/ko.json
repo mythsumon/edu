@@ -181,6 +181,8 @@
     "statusPlaceholder": "상태를 선택하세요",
     "classification": "분류",
     "classificationPlaceholder": "분류를 선택하세요",
+    "affiliation": "소속",
+    "affiliationPlaceholder": "소속을 입력하세요",
     "createAdmin": "관리자 생성",
     "creating": "생성 중...",
     "createInstructor": "강사 생성",
@@ -221,7 +223,9 @@
       "buildingNameLakeNumberRequired": "건물명 / 호수 번호는 필수입니다",
       "buildingNameLakeNumberMaxLength": "건물명 / 호수 번호는 최대 255자까지 가능합니다",
       "statusRequired": "상태는 필수입니다",
-      "classificationRequired": "분류는 필수입니다"
+      "classificationRequired": "분류는 필수입니다",
+      "affiliationRequired": "소속은 필수입니다",
+      "affiliationMaxLength": "소속은 최대 255자까지 가능합니다"
     }
   },
   "dataTable": {
