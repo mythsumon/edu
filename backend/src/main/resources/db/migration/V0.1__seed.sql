@@ -85,6 +85,37 @@ INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALU
     ('400-6', 'Institution Type F', (SELECT id FROM master_code WHERE code = '400' AND parent_id IS NULL), NOW(), FALSE)
 ON CONFLICT DO NOTHING;
 
+-- Insert master codes for district
+-- First insert the parent
+INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
+    ('500', 'District', NULL, NOW(), FALSE)
+ON CONFLICT DO NOTHING;
+-- Insert 경기도 (Gyeonggi-do)
+INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
+    ('500-1', '경기도', (SELECT id FROM master_code WHERE code = '500' AND parent_id IS NULL), NOW(), FALSE)
+ON CONFLICT DO NOTHING;
+-- Insert zones under 경기도
+INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
+    ('500-1-1', 'Zone-1', (SELECT id FROM master_code WHERE code = '500-1'), NOW(), FALSE),
+    ('500-1-2', 'Zone-2', (SELECT id FROM master_code WHERE code = '500-1'), NOW(), FALSE),
+    ('500-1-3', 'Zone-3', (SELECT id FROM master_code WHERE code = '500-1'), NOW(), FALSE),
+    ('500-1-4', 'Zone-4', (SELECT id FROM master_code WHERE code = '500-1'), NOW(), FALSE),
+    ('500-1-5', 'Zone-5', (SELECT id FROM master_code WHERE code = '500-1'), NOW(), FALSE)
+ON CONFLICT DO NOTHING;
+-- Insert cities under each zone
+INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
+    ('500-1-1-1', 'Suwon City', (SELECT id FROM master_code WHERE code = '500-1-1'), NOW(), FALSE),
+    ('500-1-1-2', 'Yongin City', (SELECT id FROM master_code WHERE code = '500-1-1'), NOW(), FALSE),
+    ('500-1-2-1', 'Goyang City', (SELECT id FROM master_code WHERE code = '500-1-2'), NOW(), FALSE),
+    ('500-1-2-2', 'Seongnam City', (SELECT id FROM master_code WHERE code = '500-1-2'), NOW(), FALSE),
+    ('500-1-3-1', 'Bucheon City', (SELECT id FROM master_code WHERE code = '500-1-3'), NOW(), FALSE),
+    ('500-1-3-2', 'Ansan City', (SELECT id FROM master_code WHERE code = '500-1-3'), NOW(), FALSE),
+    ('500-1-4-1', 'Anyang City', (SELECT id FROM master_code WHERE code = '500-1-4'), NOW(), FALSE),
+    ('500-1-4-2', 'Hwaseong City', (SELECT id FROM master_code WHERE code = '500-1-4'), NOW(), FALSE),
+    ('500-1-5-1', 'Pyeongtaek City', (SELECT id FROM master_code WHERE code = '500-1-5'), NOW(), FALSE),
+    ('500-1-5-2', 'Gimpo City', (SELECT id FROM master_code WHERE code = '500-1-5'), NOW(), FALSE)
+ON CONFLICT DO NOTHING;
+
 -- Insert admin user
 INSERT INTO users (username, password, role_id, enabled)
 VALUES ('admin',
