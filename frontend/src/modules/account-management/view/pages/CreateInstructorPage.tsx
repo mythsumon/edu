@@ -2,16 +2,16 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
-import { useEffect, useRef } from 'react'
-import { User, Mail, Phone, UserCircle, MapPin } from 'lucide-react'
+import { useEffect, useRef, useMemo } from 'react'
 import { PageLayout } from '@/app/layout/PageLayout'
 import { Button } from '@/shared/ui/button'
 import { ROUTES } from '@/shared/constants/routes'
 import { useCreateInstructor } from '../../controller/mutations'
 import { createInstructorSchema, type CreateInstructorFormData } from '../../model/account-management.schema'
-import { useZonesQuery, useRegionsQuery } from '../../controller/zone-region.queries'
 import { useMasterCodeChildrenByCodeQuery } from '@/modules/master-code-setup/controller/queries'
-import { MASTER_CODE_PARENT_CODES } from '@/shared/constants/master-code'
+import { MASTER_CODE_PARENT_CODES, MASTER_CODE_DISTRICT_CODE } from '@/shared/constants/master-code'
+import { useCommonCodeByCodeQuery, useCommonCodeGrandChildrenByCodeQuery, useCommonCodeChildrenByCodeQuery } from '@/modules/common-code/controller/queries'
+import { GENDER_OPTIONS } from '@/shared/constants/users'
 import { FormInputField } from '../components/FormInputField'
 import { FormPasswordField } from '../components/FormPasswordField'
 import { FormSelectField } from '../components/FormSelectField'
@@ -22,7 +22,6 @@ export const AddInstructorPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const createInstructorMutation = useCreateInstructor()
-  const { data: zones = [] } = useZonesQuery()
   const formRef = useRef<HTMLFormElement>(null)
 
   const {
@@ -50,11 +49,26 @@ export const AddInstructorPage = () => {
       detailAddress: '',
       statusId: '',
       classificationId: '',
+      affiliation: '',
     },
   })
 
-  const { data: regions = [], isLoading: isLoadingRegions } = useRegionsQuery()
   const selectedRegionId = watch('regionId')
+
+  // Fetch zones from common code (children of zone/region parent code)
+  const { data: zonesData, isLoading: isLoadingZones } = useCommonCodeChildrenByCodeQuery(
+    MASTER_CODE_DISTRICT_CODE
+  )
+  const zones = useMemo(() => zonesData?.items || [], [zonesData?.items])
+
+  // Fetch regions from common code (grandchildren of zone/region parent code)
+  const { data: regionsData, isLoading: isLoadingRegions } = useCommonCodeGrandChildrenByCodeQuery(
+    MASTER_CODE_DISTRICT_CODE
+  )
+  const regions = useMemo(() => regionsData?.items || [], [regionsData?.items])
+
+  // Fetch city common code
+  const { data: cityCommonCode } = useCommonCodeByCodeQuery(MASTER_CODE_DISTRICT_CODE)
 
   // Fetch status master codes (parent code 100)
   const { data: statusMasterCodesData, isLoading: isLoadingStatusCodes } = useMasterCodeChildrenByCodeQuery(
@@ -67,18 +81,29 @@ export const AddInstructorPage = () => {
     useMasterCodeChildrenByCodeQuery(MASTER_CODE_PARENT_CODES.INSTRUCTOR_CLASSIFICATION)
   const classificationMasterCodes = classificationMasterCodesData?.items || []
 
-  // Auto-select zone when region is selected
+  // Auto-select zone when region is selected (using parentId from common code)
   useEffect(() => {
     if (selectedRegionId) {
       const selectedRegion = regions.find((r) => String(r.id) === selectedRegionId)
-      if (selectedRegion && selectedRegion.zoneId) {
-        setValue('zoneId', String(selectedRegion.zoneId))
+      if (selectedRegion && selectedRegion.parentId) {
+        // Find zone by matching parentId
+        const matchingZone = zones.find((z) => z.id === selectedRegion.parentId)
+        if (matchingZone) {
+          setValue('zoneId', String(matchingZone.id))
+        }
       }
     } else {
       // Clear zone when region is cleared
       setValue('zoneId', '')
     }
-  }, [selectedRegionId, regions, setValue])
+  }, [selectedRegionId, regions, zones, setValue])
+
+  // Set city default value from common code
+  useEffect(() => {
+    if (cityCommonCode?.codeName) {
+      setValue('city', cityCommonCode.codeName)
+    }
+  }, [cityCommonCode, setValue])
 
   const onSubmit = async (data: CreateInstructorFormData) => {
     try {
@@ -86,7 +111,7 @@ export const AddInstructorPage = () => {
         username: data.username,
         password: data.password,
         name: data.name,
-        email: data.email || undefined,
+        email: data.email,
         phone: data.phone,
         gender: data.gender,
         dob: data.dob,
@@ -96,6 +121,7 @@ export const AddInstructorPage = () => {
         detailAddress: data.detailAddress,
         statusId: Number(data.statusId),
         classificationId: Number(data.classificationId),
+        affiliation: data.affiliation || undefined,
       })
       navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL)
     } catch (error) {
@@ -150,7 +176,6 @@ export const AddInstructorPage = () => {
                 id="username"
                 label={t('accountManagement.instructorId')}
                 placeholder={t('accountManagement.instructorIdPlaceholder')}
-                icon={<User className="h-4 w-4" />}
                 register={register('username')}
                 error={errors.username}
                 required
@@ -162,7 +187,6 @@ export const AddInstructorPage = () => {
                 id="name"
                 label={t('accountManagement.name')}
                 placeholder={t('accountManagement.namePlaceholder')}
-                icon={<UserCircle className="h-4 w-4" />}
                 register={register('name')}
                 error={errors.name}
                 required
@@ -174,10 +198,10 @@ export const AddInstructorPage = () => {
                 id="email"
                 label={t('accountManagement.email')}
                 placeholder={t('accountManagement.emailPlaceholder')}
-                icon={<Mail className="h-4 w-4" />}
                 type="email"
                 register={register('email')}
                 error={errors.email}
+                required
                 isSubmitting={isSubmitting}
               />
 
@@ -197,7 +221,6 @@ export const AddInstructorPage = () => {
                 id="phone"
                 label={t('accountManagement.phoneNumber')}
                 placeholder={t('accountManagement.phoneNumberRequiredPlaceholder')}
-                icon={<Phone className="h-4 w-4" />}
                 type="tel"
                 register={register('phone')}
                 error={errors.phone}
@@ -206,12 +229,15 @@ export const AddInstructorPage = () => {
               />
 
               {/* Gender */}
-              <FormInputField
+              <FormSelectField
                 id="gender"
+                name="gender"
                 label={t('accountManagement.gender')}
                 placeholder={t('accountManagement.genderPlaceholder')}
-                icon={<UserCircle className="h-4 w-4" />}
-                register={register('gender')}
+                control={control}
+                options={GENDER_OPTIONS}
+                getOptionValue={(option) => option.value}
+                getOptionLabel={(option) => option.label}
                 error={errors.gender}
                 required
                 isSubmitting={isSubmitting}
@@ -231,73 +257,78 @@ export const AddInstructorPage = () => {
             </div>
           </CollapsibleCard>
 
-          {/* Address Information Collapsible Card */}
+          {/* Affiliation and Address Information Collapsible Card */}
           <CollapsibleCard
             title={t('accountManagement.addressInformation')}
             description={t('accountManagement.addressInformationDescription')}
             defaultExpanded={true}
           >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* City, Zone, Region - One row on lg+ screens */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 col-span-1 lg:col-span-2">
-                {/* City */}
-                <FormInputField
-                  id="city"
-                  label={t('accountManagement.city')}
-                  placeholder={t('accountManagement.cityPlaceholder')}
-                  icon={<MapPin className="h-4 w-4" />}
-                  register={register('city')}
-                  error={errors.city}
-                  required
-                  isSubmitting={isSubmitting}
-                />
+              {/* Affiliation */}
+              <FormInputField
+                id="affiliation"
+                label={t('accountManagement.affiliation')}
+                placeholder={t('accountManagement.affiliationPlaceholder')}
+                register={register('affiliation')}
+                error={errors.affiliation}
+                isSubmitting={isSubmitting}
+              />
 
-                {/* Zone */}
-                <FormSelectField
-                  id="zoneId"
-                  name="zoneId"
-                  label={t('accountManagement.zone')}
-                  placeholder={t('accountManagement.zoneAutoSelected')}
-                  icon={<MapPin className="h-4 w-4" />}
-                  control={control}
-                  options={zones}
-                  getOptionValue={(option) => String(option.id)}
-                  getOptionLabel={(option) => option.name || ''}
-                  error={errors.zoneId}
-                  required
-                  isSubmitting={isSubmitting}
-                  disabled
-                  onValueChange={() => { }} // Disabled - auto-selected
-                  displayValue={(value) => {
-                    const selectedZone = value ? zones.find((z) => String(z.id) === value) : null
-                    return selectedZone ? selectedZone.name : t('accountManagement.zoneAutoSelected')
-                  }}
-                />
+              {/* City */}
+              <FormInputField
+                id="city"
+                label={t('accountManagement.city')}
+                placeholder={t('accountManagement.cityPlaceholder')}
+                register={register('city')}
+                error={errors.city}
+                required
+                isSubmitting={isSubmitting}
+                disabled
+              />
 
-                {/* Region */}
-                <FormSelectField
-                  id="regionId"
-                  name="regionId"
-                  label={t('accountManagement.region')}
-                  placeholder={t('accountManagement.regionPlaceholder')}
-                  icon={<MapPin className="h-4 w-4" />}
-                  control={control}
-                  options={regions}
-                  getOptionValue={(option) => String(option.id)}
-                  getOptionLabel={(option) => option.name || ''}
-                  error={errors.regionId}
-                  required
-                  isSubmitting={isSubmitting}
-                  isLoading={isLoadingRegions}
-                />
-              </div>
+              {/* Zone */}
+              <FormSelectField
+                id="zoneId"
+                name="zoneId"
+                label={t('accountManagement.zone')}
+                placeholder={t('accountManagement.zoneAutoSelected')}
+                control={control}
+                options={zones}
+                getOptionValue={(option) => String(option.id)}
+                getOptionLabel={(option) => option.codeName || ''}
+                error={errors.zoneId}
+                required
+                isSubmitting={isSubmitting}
+                disabled
+                isLoading={isLoadingZones}
+                onValueChange={() => { }} // Disabled - auto-selected
+                displayValue={(value) => {
+                  const selectedZone = value ? zones.find((z) => String(z.id) === value) : null
+                  return selectedZone ? selectedZone.codeName : t('accountManagement.zoneAutoSelected')
+                }}
+              />
+
+              {/* Region */}
+              <FormSelectField
+                id="regionId"
+                name="regionId"
+                label={t('accountManagement.region')}
+                placeholder={t('accountManagement.regionPlaceholder')}
+                control={control}
+                options={regions}
+                getOptionValue={(option) => String(option.id)}
+                getOptionLabel={(option) => option.codeName || ''}
+                error={errors.regionId}
+                required
+                isSubmitting={isSubmitting}
+                isLoading={isLoadingRegions}
+              />
 
               {/* Street */}
               <FormInputField
                 id="street"
                 label={t('accountManagement.street')}
                 placeholder={t('accountManagement.streetPlaceholder')}
-                icon={<MapPin className="h-4 w-4" />}
                 register={register('street')}
                 error={errors.street}
                 required
@@ -309,7 +340,6 @@ export const AddInstructorPage = () => {
                 id="detailAddress"
                 label={t('accountManagement.buildingNameLakeNumber')}
                 placeholder={t('accountManagement.buildingNameLakeNumberPlaceholder')}
-                icon={<MapPin className="h-4 w-4" />}
                 register={register('detailAddress')}
                 error={errors.detailAddress}
                 required
@@ -331,7 +361,6 @@ export const AddInstructorPage = () => {
                 name="statusId"
                 label={t('accountManagement.status')}
                 placeholder={t('accountManagement.statusPlaceholder')}
-                icon={<UserCircle className="h-4 w-4" />}
                 control={control}
                 options={statusMasterCodes}
                 getOptionValue={(option) => String(option.id)}
@@ -347,7 +376,6 @@ export const AddInstructorPage = () => {
                 name="classificationId"
                 label={t('accountManagement.classification')}
                 placeholder={t('accountManagement.classificationPlaceholder')}
-                icon={<UserCircle className="h-4 w-4" />}
                 control={control}
                 options={classificationMasterCodes}
                 getOptionValue={(option) => String(option.id)}

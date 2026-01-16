@@ -77,6 +77,13 @@ public class MasterCodeServiceImpl implements MasterCodeService {
     }
 
     @Override
+    public MasterCodeResponseDto getMasterCodeByCode(String code) {
+        MasterCodeEntity entity = repository.findByCodeAndIsDeleteFalse(code)
+                .orElseThrow(() -> new ResourceNotFoundException("Master code not found with code: " + code));
+        return MasterCodeMapper.toResponseDto(entity);
+    }
+
+    @Override
     @Transactional
     public MasterCodeResponseDto updateMasterCode(Long id, MasterCodeUpdateDto request) {
         MasterCodeEntity entity = repository.findByIdAndIsDeleteFalse(id)
@@ -157,6 +164,38 @@ public class MasterCodeServiceImpl implements MasterCodeService {
 
         Pageable pageable = buildPageable(page, size, sort);
         Page<MasterCodeEntity> pageResult = repository.findChildren(parent.getId(), q, pageable);
+        return buildPageResponse(pageResult);
+    }
+
+    @Override
+    public PageResponse<MasterCodeResponseDto> listGrandChildren(String grandparentCode, String q, Integer page, Integer size, String sort) {
+        // Find grandparent by code and validate it exists
+        MasterCodeEntity grandparent = repository.findByCodeAndIsDeleteFalse(grandparentCode)
+                .orElseThrow(() -> new ResourceNotFoundException("Grandparent master code not found with code: " + grandparentCode));
+
+        // Get all direct children of the grandparent
+        List<MasterCodeEntity> children = repository.findByParentIdAndIsDeleteFalse(grandparent.getId());
+
+        // If no children exist, return empty page
+        if (children.isEmpty()) {
+            Pageable pageable = buildPageable(page, size, sort);
+            return PageResponse.<MasterCodeResponseDto>builder()
+                    .items(List.of())
+                    .total(0)
+                    .page(page != null && page >= 0 ? page : 0)
+                    .size(size != null && size > 0 ? size : 20)
+                    .totalPages(0)
+                    .build();
+        }
+
+        // Extract parent IDs
+        List<Long> parentIds = children.stream()
+                .map(MasterCodeEntity::getId)
+                .toList();
+
+        // Find grandchildren (children of children)
+        Pageable pageable = buildPageable(page, size, sort);
+        Page<MasterCodeEntity> pageResult = repository.findGrandChildren(parentIds, q, pageable);
         return buildPageResponse(pageResult);
     }
 

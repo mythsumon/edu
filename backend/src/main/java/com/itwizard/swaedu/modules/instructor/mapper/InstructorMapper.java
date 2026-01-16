@@ -41,6 +41,7 @@ public class InstructorMapper {
                 .detailAddress(instructor.getDetailAddress())
                 .statusId(instructor.getStatusId())
                 .classificationId(instructor.getClassificationId())
+                .affiliation(instructor.getAffiliation())
                 .signature(instructor.getSignature())
                 .profilePhoto(instructor.getProfilePhoto())
                 .enabled(user != null ? user.getEnabled() : null)
@@ -62,6 +63,7 @@ public class InstructorMapper {
         instructor.setCity(dto.getCity());
         instructor.setStreet(dto.getStreet());
         instructor.setDetailAddress(dto.getDetailAddress());
+        instructor.setAffiliation(dto.getAffiliation());
     }
 
     /**
@@ -94,6 +96,9 @@ public class InstructorMapper {
         }
         if (dto.getDetailAddress() != null) {
             instructor.setDetailAddress(dto.getDetailAddress());
+        }
+        if (dto.getAffiliation() != null) {
+            instructor.setAffiliation(dto.getAffiliation());
         }
     }
 

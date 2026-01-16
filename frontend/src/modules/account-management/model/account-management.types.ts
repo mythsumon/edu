@@ -77,7 +77,7 @@ export interface CreateInstructorRequestDto {
   username: string
   password: string
   name: string
-  email?: string
+  email: string
   phone?: string
   gender?: string
   dob?: string
@@ -87,6 +87,7 @@ export interface CreateInstructorRequestDto {
   detailAddress?: string
   statusId?: number
   classificationId?: number
+  affiliation?: string
 }
 
 /**

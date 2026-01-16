@@ -161,7 +161,7 @@
     "name": "Name",
     "namePlaceholder": "Enter full name",
     "email": "Email",
-    "emailPlaceholder": "Enter email (optional)",
+    "emailPlaceholder": "Enter email",
     "phoneNumber": "Phone Number",
     "phoneNumberPlaceholder": "Enter phone number (optional)",
     "phoneNumberRequiredPlaceholder": "Enter phone number",
@@ -183,6 +183,8 @@
     "statusPlaceholder": "Select status",
     "classification": "Classification",
     "classificationPlaceholder": "Select classification",
+    "affiliation": "Affiliation",
+    "affiliationPlaceholder": "Enter affiliation",
     "createAdmin": "Create Admin",
     "creating": "Creating...",
     "createInstructor": "Create Instructor",
@@ -210,6 +212,7 @@
       "passwordMinLength": "Password must be at least 6 characters",
       "nameRequired": "Name is required",
       "nameMaxLength": "Name must be at most 255 characters",
+      "emailRequired": "Email is required",
       "emailInvalid": "Email must be valid",
       "phoneNumberRequired": "Phone number is required",
       "genderRequired": "Gender is required",
@@ -223,7 +226,9 @@
       "buildingNameLakeNumberRequired": "Building name / lake number is required",
       "buildingNameLakeNumberMaxLength": "Building name / lake number must be at most 255 characters",
       "statusRequired": "Status is required",
-      "classificationRequired": "Classification is required"
+      "classificationRequired": "Classification is required",
+      "affiliationRequired": "Affiliation is required",
+      "affiliationMaxLength": "Affiliation must be at most 255 characters"
     }
   },
   "dataTable": {

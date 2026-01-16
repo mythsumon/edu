@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
-import { User, Lock, Mail, Phone, UserCircle } from 'lucide-react'
 import { PageLayout } from '@/app/layout/PageLayout'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -68,7 +67,6 @@ export const AddAdminPage = () => {
                 id="username"
                 type="text"
                 placeholder={t('accountManagement.usernamePlaceholder')}
-                icon={<User className="h-4 w-4" />}
                 {...register('username')}
                 className={errors.username ? 'ring-2 ring-destructive' : ''}
                 disabled={isSubmitting}
@@ -87,7 +85,6 @@ export const AddAdminPage = () => {
                 id="password"
                 type="password"
                 placeholder={t('accountManagement.passwordPlaceholder')}
-                icon={<Lock className="h-4 w-4" />}
                 {...register('password')}
                 className={errors.password ? 'ring-2 ring-destructive' : ''}
                 disabled={isSubmitting}
@@ -106,7 +103,6 @@ export const AddAdminPage = () => {
                 id="name"
                 type="text"
                 placeholder={t('accountManagement.namePlaceholder')}
-                icon={<UserCircle className="h-4 w-4" />}
                 {...register('name')}
                 className={errors.name ? 'ring-2 ring-destructive' : ''}
                 disabled={isSubmitting}
@@ -123,7 +119,6 @@ export const AddAdminPage = () => {
                 id="email"
                 type="email"
                 placeholder={t('accountManagement.emailPlaceholder')}
-                icon={<Mail className="h-4 w-4" />}
                 {...register('email')}
                 className={errors.email ? 'ring-2 ring-destructive' : ''}
                 disabled={isSubmitting}
@@ -140,7 +135,6 @@ export const AddAdminPage = () => {
                 id="phone"
                 type="tel"
                 placeholder={t('accountManagement.phoneNumberPlaceholder')}
-                icon={<Phone className="h-4 w-4" />}
                 {...register('phone')}
                 className={errors.phone ? 'ring-2 ring-destructive' : ''}
                 disabled={isSubmitting}

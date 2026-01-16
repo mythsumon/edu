@@ -1,7 +1,7 @@
-import { useState, ReactNode } from 'react'
+import { useState } from 'react'
 import { UseFormRegisterReturn, FieldError } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Eye, EyeOff, Lock } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import { Input } from '@/shared/ui/input'
 import { FormField } from './FormField'
 
@@ -34,7 +34,7 @@ export const FormPasswordField = ({
           id={id}
           type={showPassword ? 'text' : 'password'}
           placeholder={placeholder}
-          icon={<Lock className="h-4 w-4" />}
+          // icon={<Lock className="h-4 w-4" />}
           {...register}
           className={error ? 'ring-2 ring-destructive pr-10' : 'pr-10'}
           disabled={isSubmitting}

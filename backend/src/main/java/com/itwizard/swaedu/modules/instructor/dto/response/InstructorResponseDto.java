@@ -25,6 +25,7 @@ public class InstructorResponseDto {
     private String detailAddress;
     private Long statusId;
     private Long classificationId;
+    private String affiliation;
     private String signature;
     private String profilePhoto;
     private Boolean enabled;

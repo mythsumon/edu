@@ -40,4 +40,6 @@ public class InstructorUpdateDto {
     private Long statusId;
 
     private Long classificationId;
+
+    private String affiliation;
 }

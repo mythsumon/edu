@@ -92,4 +92,18 @@ public interface MasterCodeRepository extends JpaRepository<MasterCodeEntity, Lo
     // Find root by ID (for tree building)
     @Query("SELECT mc FROM MasterCodeEntity mc WHERE mc.id = :rootId AND mc.parentId IS NULL AND mc.isDelete = FALSE")
     Optional<MasterCodeEntity> findRootById(@Param("rootId") Long rootId);
+
+    // Find grandchildren - children where parent_id is in a list of parent IDs - using native query for proper PostgreSQL type handling
+    @Query(value = """
+        SELECT mc.* FROM master_code mc
+        WHERE mc.is_delete = FALSE
+          AND mc.parent_id IN :parentIds
+          AND (:q IS NULL OR 
+               mc.code LIKE '%' || :q || '%' OR
+               LOWER(mc.code_name) LIKE '%' || LOWER(:q) || '%')
+        """, nativeQuery = true)
+    Page<MasterCodeEntity> findGrandChildren(
+            @Param("parentIds") List<Long> parentIds,
+            @Param("q") String q,
+            Pageable pageable);
 }

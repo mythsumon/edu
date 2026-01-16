@@ -120,6 +120,16 @@ export async function getCommonCodeById(id: number): Promise<CommonCodeResponseD
 }
 
 /**
+ * Get common code by code (uses mastercode endpoint)
+ */
+export async function getCommonCodeByCode(code: string): Promise<CommonCodeResponseDto> {
+  const response = await axiosInstance.get<ApiResponse<CommonCodeResponseDto>>(
+    `/mastercode/code/${code}`
+  )
+  return response.data.data
+}
+
+/**
  * Get children of a common code by parent code (uses mastercode endpoint)
  */
 export async function getCommonCodeChildrenByCode(
@@ -128,6 +138,21 @@ export async function getCommonCodeChildrenByCode(
 ): Promise<PageResponse<CommonCodeResponseDto>> {
   const response = await axiosInstance.get<ApiResponse<PageResponse<CommonCodeResponseDto>>>(
     `/mastercode/${parentCode}/children`,
+    { params }
+  )
+  return response.data.data
+}
+
+/**
+ * Get grandchildren of a common code by parent code (uses mastercode endpoint)
+ * Grandchildren are children of children (2 levels deep)
+ */
+export async function getCommonCodeGrandChildrenByCode(
+  parentCode: string,
+  params?: { q?: string; page?: number; size?: number; sort?: string }
+): Promise<PageResponse<CommonCodeResponseDto>> {
+  const response = await axiosInstance.get<ApiResponse<PageResponse<CommonCodeResponseDto>>>(
+    `/mastercode/${parentCode}/grandchildren`,
     { params }
   )
   return response.data.data

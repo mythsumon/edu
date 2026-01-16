@@ -81,6 +81,7 @@ public class InstructorServiceImpl implements InstructorService {
         instructor.setDetailAddress(request.getDetailAddress());
         instructor.setStatusId(request.getStatusId());
         instructor.setClassificationId(request.getClassificationId());
+        instructor.setAffiliation(request.getAffiliation());
 
         // Set region if provided
         if (request.getRegionId() != null) {

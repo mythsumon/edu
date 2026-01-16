@@ -16,6 +16,8 @@ public interface MasterCodeService {
 
     MasterCodeResponseDto getMasterCodeById(Long id);
 
+    MasterCodeResponseDto getMasterCodeByCode(String code);
+
     MasterCodeResponseDto updateMasterCode(Long id, MasterCodeUpdateDto request);
 
     MasterCodeResponseDto patchMasterCode(Long id, MasterCodePatchDto request);
@@ -25,6 +27,8 @@ public interface MasterCodeService {
     PageResponse<MasterCodeResponseDto> listRootMasterCodes(String q, Integer page, Integer size, String sort);
 
     PageResponse<MasterCodeResponseDto> listChildren(String parentCode, String q, Integer page, Integer size, String sort);
+
+    PageResponse<MasterCodeResponseDto> listGrandChildren(String grandparentCode, String q, Integer page, Integer size, String sort);
 
     List<MasterCodeTreeDto> getMasterCodeTree(Long rootId, Integer depth);
 

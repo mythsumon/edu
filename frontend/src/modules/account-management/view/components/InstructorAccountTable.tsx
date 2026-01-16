@@ -128,7 +128,6 @@ export const InstructorAccountTable = ({
       columns={columns}
       emptyMessage={t('accountManagement.noInstructorAccountsFound')}
       enableRowSelection={true}
-      searchPlaceholder={t('accountManagement.searchPlaceholder')}
     />
   )
 }

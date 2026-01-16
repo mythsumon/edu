@@ -67,6 +67,9 @@ public class Instructor {
     private Long classificationId;
 
     @Column
+    private String affiliation;
+
+    @Column
     private String signature;
 
     @Column(name = "profile_photo")

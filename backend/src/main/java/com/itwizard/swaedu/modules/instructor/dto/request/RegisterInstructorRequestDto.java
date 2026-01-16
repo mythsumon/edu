@@ -47,4 +47,6 @@ public class RegisterInstructorRequestDto {
     private Long statusId;
 
     private Long classificationId;
+
+    private String affiliation;
 }

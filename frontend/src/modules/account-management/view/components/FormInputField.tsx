@@ -7,7 +7,7 @@ interface FormInputFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>
   id: string
   label: string
   placeholder: string
-  icon: ReactNode
+  icon?: ReactNode
   register: UseFormRegisterReturn
   error?: FieldError
   required?: boolean

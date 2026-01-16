@@ -39,10 +39,8 @@ export const createInstructorSchema = (t: (key: string) => string) => z.object({
     .max(255, t('accountManagement.validation.nameMaxLength')),
   email: z
     .string()
-    .refine((val) => val === '' || z.string().email().safeParse(val).success, {
-      message: t('accountManagement.validation.emailInvalid'),
-    })
-    .optional(),
+    .min(1, t('accountManagement.validation.emailRequired'))
+    .email(t('accountManagement.validation.emailInvalid')),
   phone: z
     .string()
     .min(1, t('accountManagement.validation.phoneNumberRequired')),
@@ -76,6 +74,12 @@ export const createInstructorSchema = (t: (key: string) => string) => z.object({
   classificationId: z
     .string()
     .min(1, t('accountManagement.validation.classificationRequired')),
+  affiliation: z
+    .string()
+    .refine((val) => val === '' || val.length <= 255, {
+      message: t('accountManagement.validation.affiliationMaxLength'),
+    })
+    .optional(),
 })
 
 export type CreateInstructorFormData = z.infer<ReturnType<typeof createInstructorSchema>>

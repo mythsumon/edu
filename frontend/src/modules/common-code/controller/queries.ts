@@ -5,7 +5,9 @@ import {
   checkCodeExists,
   getCommonCodeTree,
   getCommonCodeById,
+  getCommonCodeByCode,
   getCommonCodeChildrenByCode,
+  getCommonCodeGrandChildrenByCode,
 } from '../model/common-code.service'
 import type { ListCommonCodesParams } from '../model/common-code.types'
 import { commonCodeQueryKeys } from './queryKeys'
@@ -126,6 +128,23 @@ export const useCommonCodeByIdQuery = (id: number | undefined, enabled: boolean 
 }
 
 /**
+ * Query hook for getting common code by code
+ */
+export const useCommonCodeByCodeQuery = (
+  code: string | undefined,
+  enabled: boolean = true
+) => {
+  return useQuery({
+    queryKey: commonCodeQueryKeys.detailByCode(code!),
+    queryFn: async () => {
+      if (code === undefined || code.trim() === '') throw new Error('Code is required')
+      return await getCommonCodeByCode(code)
+    },
+    enabled: enabled && code !== undefined && code.trim() !== '',
+  })
+}
+
+/**
  * Query hook for fetching common code children by parent code
  */
 export const useCommonCodeChildrenByCodeQuery = (
@@ -136,6 +155,22 @@ export const useCommonCodeChildrenByCodeQuery = (
     queryKey: ['common-codes', 'children', parentCode, params],
     queryFn: async () => {
       return await getCommonCodeChildrenByCode(parentCode, params)
+    },
+  })
+}
+
+/**
+ * Query hook for fetching common code grandchildren by parent code
+ * Grandchildren are children of children (2 levels deep)
+ */
+export const useCommonCodeGrandChildrenByCodeQuery = (
+  parentCode: string,
+  params?: { q?: string; page?: number; size?: number; sort?: string }
+) => {
+  return useQuery({
+    queryKey: commonCodeQueryKeys.grandchildrenByCode(parentCode, JSON.stringify(params || {})),
+    queryFn: async () => {
+      return await getCommonCodeGrandChildrenByCode(parentCode, params)
     },
   })
 }
