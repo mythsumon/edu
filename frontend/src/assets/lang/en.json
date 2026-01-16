@@ -193,6 +193,12 @@
     "viewDetails": "View details",
     "noAdminAccountsFound": "No admin accounts found.",
     "noInstructorAccountsFound": "No instructor accounts found.",
+    "basicInformation": "Basic Information",
+    "basicInformationDescription": "Enter the instructor's basic information such as ID, name, email, and contact details.",
+    "addressInformation": "Address Information",
+    "addressInformationDescription": "Enter the instructor's address details including city, region, zone, street, and building information.",
+    "statusAndClassification": "Status and Classification",
+    "statusAndClassificationDescription": "Set the instructor's status and classification which determine their role and permissions in the system.",
     "validation": {
       "usernameRequired": "Username is required",
       "usernameMaxLength": "Username must be at most 50 characters",

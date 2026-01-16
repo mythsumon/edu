@@ -16,6 +16,7 @@ import { FormInputField } from '../components/FormInputField'
 import { FormPasswordField } from '../components/FormPasswordField'
 import { FormSelectField } from '../components/FormSelectField'
 import { FormDatePickerField } from '../components/FormDatePickerField'
+import { CollapsibleCard } from '../components/CollapsibleCard'
 
 export const AddInstructorPage = () => {
   const { t } = useTranslation()
@@ -135,205 +136,229 @@ export const AddInstructorPage = () => {
         </>
       }
     >
-      <div className="max-w-4xl p-6">
+      <div className="max-w-4xl p-6 mx-auto">
         <form ref={formRef} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Instructor ID */}
-            <FormInputField
-              id="username"
-              label={t('accountManagement.instructorId')}
-              placeholder={t('accountManagement.instructorIdPlaceholder')}
-              icon={<User className="h-4 w-4" />}
-              register={register('username')}
-              error={errors.username}
-              required
-              isSubmitting={isSubmitting}
-            />
-
-            {/* Name */}
-            <FormInputField
-              id="name"
-              label={t('accountManagement.name')}
-              placeholder={t('accountManagement.namePlaceholder')}
-              icon={<UserCircle className="h-4 w-4" />}
-              register={register('name')}
-              error={errors.name}
-              required
-              isSubmitting={isSubmitting}
-            />
-
-            {/* Email */}
-            <FormInputField
-              id="email"
-              label={t('accountManagement.email')}
-              placeholder={t('accountManagement.emailPlaceholder')}
-              icon={<Mail className="h-4 w-4" />}
-              type="email"
-              register={register('email')}
-              error={errors.email}
-              isSubmitting={isSubmitting}
-            />
-
-            {/* Password */}
-            <FormPasswordField
-              id="password"
-              label={t('accountManagement.password')}
-              placeholder={t('accountManagement.passwordPlaceholder')}
-              register={register('password')}
-              error={errors.password}
-              required
-              isSubmitting={isSubmitting}
-            />
-
-            {/* Phone */}
-            <FormInputField
-              id="phone"
-              label={t('accountManagement.phoneNumber')}
-              placeholder={t('accountManagement.phoneNumberRequiredPlaceholder')}
-              icon={<Phone className="h-4 w-4" />}
-              type="tel"
-              register={register('phone')}
-              error={errors.phone}
-              required
-              isSubmitting={isSubmitting}
-            />
-
-            {/* Gender */}
-            <FormInputField
-              id="gender"
-              label={t('accountManagement.gender')}
-              placeholder={t('accountManagement.genderPlaceholder')}
-              icon={<UserCircle className="h-4 w-4" />}
-              register={register('gender')}
-              error={errors.gender}
-              required
-              isSubmitting={isSubmitting}
-            />
-
-            {/* Date of Birth */}
-            <FormDatePickerField
-              id="dob"
-              name="dob"
-              label={t('accountManagement.dateOfBirth')}
-              placeholder={t('accountManagement.dateOfBirthPlaceholder')}
-              control={control}
-              error={errors.dob}
-              required
-              isSubmitting={isSubmitting}
-            />
-
-            {/* Classification */}
-            <FormSelectField
-              id="classificationId"
-              name="classificationId"
-              label={t('accountManagement.classification')}
-              placeholder={t('accountManagement.classificationPlaceholder')}
-              icon={<UserCircle className="h-4 w-4" />}
-              control={control}
-              options={classificationMasterCodes}
-              getOptionValue={(option) => String(option.id)}
-              getOptionLabel={(option) => option.codeName || ''}
-              error={errors.classificationId}
-              required
-              isSubmitting={isSubmitting}
-              isLoading={isLoadingClassificationCodes}
-            />
-
-            {/* City, Zone, Region - One row on lg+ screens */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 col-span-1 lg:col-span-2">
-              {/* City */}
+          {/* Basic Information Collapsible Card */}
+          <CollapsibleCard
+            title={t('accountManagement.basicInformation')}
+            description={t('accountManagement.basicInformationDescription')}
+            defaultExpanded={true}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Instructor ID */}
               <FormInputField
-                id="city"
-                label={t('accountManagement.city')}
-                placeholder={t('accountManagement.cityPlaceholder')}
-                icon={<MapPin className="h-4 w-4" />}
-                register={register('city')}
-                error={errors.city}
+                id="username"
+                label={t('accountManagement.instructorId')}
+                placeholder={t('accountManagement.instructorIdPlaceholder')}
+                icon={<User className="h-4 w-4" />}
+                register={register('username')}
+                error={errors.username}
                 required
                 isSubmitting={isSubmitting}
               />
 
-              {/* Zone */}
-              <FormSelectField
-                id="zoneId"
-                name="zoneId"
-                label={t('accountManagement.zone')}
-                placeholder={t('accountManagement.zoneAutoSelected')}
-                icon={<MapPin className="h-4 w-4" />}
-                control={control}
-                options={zones}
-                getOptionValue={(option) => String(option.id)}
-                getOptionLabel={(option) => option.name || ''}
-                error={errors.zoneId}
+              {/* Name */}
+              <FormInputField
+                id="name"
+                label={t('accountManagement.name')}
+                placeholder={t('accountManagement.namePlaceholder')}
+                icon={<UserCircle className="h-4 w-4" />}
+                register={register('name')}
+                error={errors.name}
                 required
                 isSubmitting={isSubmitting}
-                disabled
-                onValueChange={() => {}} // Disabled - auto-selected
-                displayValue={(value) => {
-                  const selectedZone = value ? zones.find((z) => String(z.id) === value) : null
-                  return selectedZone ? selectedZone.name : t('accountManagement.zoneAutoSelected')
-                }}
               />
 
-              {/* Region */}
-              <FormSelectField
-                id="regionId"
-                name="regionId"
-                label={t('accountManagement.region')}
-                placeholder={t('accountManagement.regionPlaceholder')}
-                icon={<MapPin className="h-4 w-4" />}
-                control={control}
-                options={regions}
-                getOptionValue={(option) => String(option.id)}
-                getOptionLabel={(option) => option.name || ''}
-                error={errors.regionId}
+              {/* Email */}
+              <FormInputField
+                id="email"
+                label={t('accountManagement.email')}
+                placeholder={t('accountManagement.emailPlaceholder')}
+                icon={<Mail className="h-4 w-4" />}
+                type="email"
+                register={register('email')}
+                error={errors.email}
+                isSubmitting={isSubmitting}
+              />
+
+              {/* Password */}
+              <FormPasswordField
+                id="password"
+                label={t('accountManagement.password')}
+                placeholder={t('accountManagement.passwordPlaceholder')}
+                register={register('password')}
+                error={errors.password}
                 required
                 isSubmitting={isSubmitting}
-                isLoading={isLoadingRegions}
+              />
+
+              {/* Phone */}
+              <FormInputField
+                id="phone"
+                label={t('accountManagement.phoneNumber')}
+                placeholder={t('accountManagement.phoneNumberRequiredPlaceholder')}
+                icon={<Phone className="h-4 w-4" />}
+                type="tel"
+                register={register('phone')}
+                error={errors.phone}
+                required
+                isSubmitting={isSubmitting}
+              />
+
+              {/* Gender */}
+              <FormInputField
+                id="gender"
+                label={t('accountManagement.gender')}
+                placeholder={t('accountManagement.genderPlaceholder')}
+                icon={<UserCircle className="h-4 w-4" />}
+                register={register('gender')}
+                error={errors.gender}
+                required
+                isSubmitting={isSubmitting}
+              />
+
+              {/* Date of Birth */}
+              <FormDatePickerField
+                id="dob"
+                name="dob"
+                label={t('accountManagement.dateOfBirth')}
+                placeholder={t('accountManagement.dateOfBirthPlaceholder')}
+                control={control}
+                error={errors.dob}
+                required
+                isSubmitting={isSubmitting}
               />
             </div>
+          </CollapsibleCard>
 
-            {/* Street */}
-            <FormInputField
-              id="street"
-              label={t('accountManagement.street')}
-              placeholder={t('accountManagement.streetPlaceholder')}
-              icon={<MapPin className="h-4 w-4" />}
-              register={register('street')}
-              error={errors.street}
-              required
-              isSubmitting={isSubmitting}
-            />
+          {/* Address Information Collapsible Card */}
+          <CollapsibleCard
+            title={t('accountManagement.addressInformation')}
+            description={t('accountManagement.addressInformationDescription')}
+            defaultExpanded={true}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* City, Zone, Region - One row on lg+ screens */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 col-span-1 lg:col-span-2">
+                {/* City */}
+                <FormInputField
+                  id="city"
+                  label={t('accountManagement.city')}
+                  placeholder={t('accountManagement.cityPlaceholder')}
+                  icon={<MapPin className="h-4 w-4" />}
+                  register={register('city')}
+                  error={errors.city}
+                  required
+                  isSubmitting={isSubmitting}
+                />
 
-            {/* Detail Address */}
-            <FormInputField
-              id="detailAddress"
-              label={t('accountManagement.buildingNameLakeNumber')}
-              placeholder={t('accountManagement.buildingNameLakeNumberPlaceholder')}
-              icon={<MapPin className="h-4 w-4" />}
-              register={register('detailAddress')}
-              error={errors.detailAddress}
-              required
-              isSubmitting={isSubmitting}
-            />
+                {/* Zone */}
+                <FormSelectField
+                  id="zoneId"
+                  name="zoneId"
+                  label={t('accountManagement.zone')}
+                  placeholder={t('accountManagement.zoneAutoSelected')}
+                  icon={<MapPin className="h-4 w-4" />}
+                  control={control}
+                  options={zones}
+                  getOptionValue={(option) => String(option.id)}
+                  getOptionLabel={(option) => option.name || ''}
+                  error={errors.zoneId}
+                  required
+                  isSubmitting={isSubmitting}
+                  disabled
+                  onValueChange={() => { }} // Disabled - auto-selected
+                  displayValue={(value) => {
+                    const selectedZone = value ? zones.find((z) => String(z.id) === value) : null
+                    return selectedZone ? selectedZone.name : t('accountManagement.zoneAutoSelected')
+                  }}
+                />
 
-            {/* Status */}
-            <FormSelectField
-              id="statusId"
-              name="statusId"
-              label={t('accountManagement.status')}
-              placeholder={t('accountManagement.statusPlaceholder')}
-              icon={<UserCircle className="h-4 w-4" />}
-              control={control}
-              options={statusMasterCodes}
-              getOptionValue={(option) => String(option.id)}
-              getOptionLabel={(option) => option.codeName || ''}
-              error={errors.statusId}
-              required
-              isSubmitting={isSubmitting}
-              isLoading={isLoadingStatusCodes}
-            />
-          </div>
+                {/* Region */}
+                <FormSelectField
+                  id="regionId"
+                  name="regionId"
+                  label={t('accountManagement.region')}
+                  placeholder={t('accountManagement.regionPlaceholder')}
+                  icon={<MapPin className="h-4 w-4" />}
+                  control={control}
+                  options={regions}
+                  getOptionValue={(option) => String(option.id)}
+                  getOptionLabel={(option) => option.name || ''}
+                  error={errors.regionId}
+                  required
+                  isSubmitting={isSubmitting}
+                  isLoading={isLoadingRegions}
+                />
+              </div>
+
+              {/* Street */}
+              <FormInputField
+                id="street"
+                label={t('accountManagement.street')}
+                placeholder={t('accountManagement.streetPlaceholder')}
+                icon={<MapPin className="h-4 w-4" />}
+                register={register('street')}
+                error={errors.street}
+                required
+                isSubmitting={isSubmitting}
+              />
+
+              {/* Detail Address */}
+              <FormInputField
+                id="detailAddress"
+                label={t('accountManagement.buildingNameLakeNumber')}
+                placeholder={t('accountManagement.buildingNameLakeNumberPlaceholder')}
+                icon={<MapPin className="h-4 w-4" />}
+                register={register('detailAddress')}
+                error={errors.detailAddress}
+                required
+                isSubmitting={isSubmitting}
+              />
+            </div>
+          </CollapsibleCard>
+
+          {/* Status and Classification Collapsible Card */}
+          <CollapsibleCard
+            title={t('accountManagement.statusAndClassification')}
+            description={t('accountManagement.statusAndClassificationDescription')}
+            defaultExpanded={true}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Status */}
+              <FormSelectField
+                id="statusId"
+                name="statusId"
+                label={t('accountManagement.status')}
+                placeholder={t('accountManagement.statusPlaceholder')}
+                icon={<UserCircle className="h-4 w-4" />}
+                control={control}
+                options={statusMasterCodes}
+                getOptionValue={(option) => String(option.id)}
+                getOptionLabel={(option) => option.codeName || ''}
+                error={errors.statusId}
+                required
+                isSubmitting={isSubmitting}
+                isLoading={isLoadingStatusCodes}
+              />
+              {/* Classification */}
+              <FormSelectField
+                id="classificationId"
+                name="classificationId"
+                label={t('accountManagement.classification')}
+                placeholder={t('accountManagement.classificationPlaceholder')}
+                icon={<UserCircle className="h-4 w-4" />}
+                control={control}
+                options={classificationMasterCodes}
+                getOptionValue={(option) => String(option.id)}
+                getOptionLabel={(option) => option.codeName || ''}
+                error={errors.classificationId}
+                required
+                isSubmitting={isSubmitting}
+                isLoading={isLoadingClassificationCodes}
+              />
+            </div>
+          </CollapsibleCard>
         </form>
       </div>
     </PageLayout>
