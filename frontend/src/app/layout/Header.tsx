@@ -369,7 +369,7 @@ export const Header = () => {
                 <DropdownMenuItem
                   key={lang.code}
                   onClick={() => handleLanguageChange(lang.code as "en" | "ko")}
-                  className="cursor-pointer"
+                  className="cursor-pointer px-3"
                 >
                   <span className="mr-2">{lang.flag}</span>
                   <span className="flex-1">{lang.name}</span>

@@ -77,7 +77,8 @@
     "grades": "성적",
     "adminAccounts": "관리자 계정",
     "instructorAccounts": "강사 계정",
-    "masterCodeSetup": "마스터 코드 설정"
+    "masterCodeSetup": "마스터 코드 설정",
+    "commonCode": "공통 코드"
   },
   "errors": {
     "generic": "오류가 발생했습니다",
@@ -137,6 +138,58 @@
       "codeAvailable": "코드를 사용할 수 있습니다.",
       "codeUnavailable": "코드를 사용할 수 없습니다",
       "checkingCode": "확인 중..."
+    }
+  },
+  "commonCode": {
+    "title": "공통 코드 관리",
+    "description": "시스템 전체에서 사용되는 공통 코드를 관리합니다",
+    "code": "코드",
+    "codeName": "코드 이름",
+    "descriptionLabel": "설명",
+    "createdAt": "생성일",
+    "titleName": "제목 이름",
+    "status": "상태",
+    "actions": "작업",
+    "active": "활성",
+    "addition": "추가",
+    "searchPlaceholder": "제목 검색...",
+    "level": "레벨",
+    "openMenu": "메뉴 열기",
+    "noData": "공통 코드를 찾을 수 없습니다",
+    "noDataDescription": "현재 사용 가능한 공통 코드가 없습니다.",
+    "rootCode": "루트 코드",
+    "deleteTitle": "공통 코드 삭제",
+    "deleteDescription": "\"{{name}}\"을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+    "searchPlaceholderWithCode": "코드 이름 또는 코드로 검색...",
+    "childCode": "하위 코드",
+    "noSelection": "선택 없음",
+    "selectParentToViewChildren": "상위 코드를 선택하여 하위 항목을 보세요",
+    "noChildrenFound": "하위 항목 없음",
+    "noChildrenDescription": "이 코드에는 하위 항목이 없습니다.",
+    "createNewCode": "새 코드 생성",
+    "createNewCodeDescription": "여기서 공통 코드를 변경하세요. 완료되면 생성 버튼을 클릭하세요.",
+    "editCode": "코드 편집",
+    "editCodeDescription": "여기서 공통 코드를 변경하세요. 완료되면 업데이트 버튼을 클릭하세요.",
+    "codePlaceholder": "코드를 입력하세요",
+    "codeNamePlaceholder": "코드 이름을 입력하세요",
+    "parentCode": "상위 코드",
+    "createSuccess": "공통 코드가 성공적으로 생성되었습니다",
+    "createError": "공통 코드 생성에 실패했습니다",
+    "updateSuccess": "공통 코드가 성공적으로 업데이트되었습니다",
+    "updateError": "공통 코드 업데이트에 실패했습니다",
+    "deleteSuccess": "공통 코드가 성공적으로 삭제되었습니다",
+    "deleteError": "공통 코드 삭제에 실패했습니다",
+    "hasChildrenDeleteError": "하위 코드가 있는 공통 코드는 삭제할 수 없습니다",
+    "hasChildrenDeleteErrorDescription": "이 공통 코드를 삭제하기 전에 모든 하위 코드를 제거하세요.",
+    "validation": {
+      "codeRequired": "코드는 필수입니다",
+      "codeMustBeInteger": "코드는 정수여야 합니다",
+      "codeMustBePositive": "코드는 양수여야 합니다",
+      "codeMustBePositiveInteger": "코드는 양의 정수여야 합니다",
+      "codeNameRequired": "코드 이름은 필수입니다",
+      "checkingCode": "코드 확인 중",
+      "codeAvailable": "코드를 사용할 수 있습니다",
+      "codeUnavailable": "코드가 이미 존재합니다!"
     }
   }
 }

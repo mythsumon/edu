@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Menu, SquareChevronRight } from "lucide-react";
+import { SquareChevronRight } from "lucide-react";
 import { useUiStore } from "@/shared/stores/ui.store";
 import { MasterCodeSidebar } from "../components/MasterCodeSidebar";
 import { MasterCodeFolderCard } from "../components/MasterCodeFolderCard";
@@ -97,9 +97,9 @@ export const MasterCodeSetupPage = () => {
       />
 
       {/* Right Content Area - Display children as folder cards */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-muted/50">
+      <div className="flex-1 flex flex-col overflow-hidden bg-muted/50 min-h-0">
         {/* Toggle Button - Mobile/Tablet only */}
-        <div className="lg:hidden p-2 border-b border-muted">
+        <div className="lg:hidden flex-shrink-0 p-2 border-b border-muted">
           <button
             onClick={toggleMasterCodeSidebarOpen}
             className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
@@ -110,15 +110,15 @@ export const MasterCodeSetupPage = () => {
         </div>
 
         {!selectedCode ? (
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center min-h-0">
             <p className="text-center text-muted-foreground">
               {t("masterCode.selectCodeToViewChildren")}
             </p>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto px-4">
-            {/* Header */}
-            <div className="mb-6">
+          <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+            {/* Header - Fixed */}
+            <div className="flex-shrink-0 px-4 pt-5 pb-4">
               {/* Breadcrumb - Only show if depth >= 2 (child level or deeper) */}
               {shouldShowBreadcrumb && (
                 <div className="mb-2">
@@ -165,27 +165,29 @@ export const MasterCodeSetupPage = () => {
               </p>
             </div>
 
-            {/* Children Folder Cards */}
-            {isLoadingChildren ? (
-              <LoadingState />
-            ) : childrenError ? (
-              <ErrorState error={childrenError} />
-            ) : !childrenData || childrenData.items.length === 0 ? (
-              <EmptyState
-                title={t("masterCode.noChildrenFound")}
-                description={t("masterCode.noChildrenDescription")}
-              />
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-                {childrenData.items.map((child) => (
-                  <MasterCodeFolderCard
-                    key={child.id}
-                    code={child}
-                    onClick={handleSelectCode}
-                  />
-                ))}
-              </div>
-            )}
+            {/* Scrollable Cards Area */}
+            <div className="flex-1 overflow-y-auto px-4 pb-5 min-h-0">
+              {isLoadingChildren ? (
+                <LoadingState />
+              ) : childrenError ? (
+                <ErrorState error={childrenError} />
+              ) : !childrenData || childrenData.items.length === 0 ? (
+                <EmptyState
+                  title={t("masterCode.noChildrenFound")}
+                  description={t("masterCode.noChildrenDescription")}
+                />
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                  {childrenData.items.map((child) => (
+                    <MasterCodeFolderCard
+                      key={child.id}
+                      code={child}
+                      onClick={handleSelectCode}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

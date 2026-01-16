@@ -19,6 +19,7 @@ import {
 } from '@/modules/reference-information-management'
 import { SettingsAndUserManagementPage } from '@/modules/system-management'
 import { MasterCodeSetupPage, MasterCodeCreatePage } from '@/modules/master-code-setup'
+import { CommonCodePage } from '@/modules/common-code'
 import {
   AdminAccountManagementPage,
   AddAdminPage,
@@ -105,6 +106,10 @@ export const protectedRoutes: RouteObject[] = [
                     element: <MasterCodeCreatePage />,
                   },
                 ],
+              },
+              {
+                path: ROUTES.ADMIN_COMMON_CODE,
+                element: <CommonCodePage />,
               },
               {
                 path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT,

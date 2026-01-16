@@ -51,14 +51,14 @@ export const useAllMasterCodesQuery = () => {
  * Query hook for checking if master code exists
  * Returns true if code exists, false if available
  */
-export const useCheckCodeExistsQuery = (code: number | undefined, enabled: boolean) => {
+export const useCheckCodeExistsQuery = (code: string | undefined, enabled: boolean) => {
   return useQuery({
     queryKey: masterCodeSetupQueryKeys.checkCode(code!),
     queryFn: async () => {
-      if (code === undefined) return false
+      if (code === undefined || code.trim() === '') return false
       return await checkCodeExists(code)
     },
-    enabled: enabled && code !== undefined && !isNaN(code),
+    enabled: enabled && code !== undefined && code.trim() !== '',
     retry: false,
   })
 }
@@ -113,7 +113,7 @@ export const useMasterCodeChildrenQuery = (
  * Query hook for fetching master code children by parent code
  */
 export const useMasterCodeChildrenByCodeQuery = (
-  parentCode: number,
+  parentCode: string,
   params?: { q?: string; page?: number; size?: number; sort?: string }
 ) => {
   return useQuery({

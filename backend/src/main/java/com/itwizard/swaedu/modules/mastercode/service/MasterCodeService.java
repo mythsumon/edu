@@ -24,9 +24,9 @@ public interface MasterCodeService {
 
     PageResponse<MasterCodeResponseDto> listRootMasterCodes(String q, Integer page, Integer size, String sort);
 
-    PageResponse<MasterCodeResponseDto> listChildren(Integer parentCode, String q, Integer page, Integer size, String sort);
+    PageResponse<MasterCodeResponseDto> listChildren(String parentCode, String q, Integer page, Integer size, String sort);
 
     List<MasterCodeTreeDto> getMasterCodeTree(Long rootId, Integer depth);
 
-    boolean checkCodeExists(Integer code);
+    boolean checkCodeExists(String code);
 }

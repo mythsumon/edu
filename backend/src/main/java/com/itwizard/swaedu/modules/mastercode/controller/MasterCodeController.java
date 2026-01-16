@@ -89,7 +89,7 @@ public class MasterCodeController {
     // 9. GET /api/v1/mastercode/{code}/children — list direct children of a master code (by code)
     @GetMapping("/{code}/children")
     public ResponseEntity<ApiResponse> listChildren(
-            @PathVariable Integer code,
+            @PathVariable String code,
             @RequestParam(required = false) String q,
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "20") Integer size,
@@ -109,7 +109,7 @@ public class MasterCodeController {
 
     // 11. GET /api/v1/mastercode/check — check if master code exists
     @GetMapping("/check")
-    public ResponseEntity<ApiResponse> checkCodeExists(@RequestParam Integer code) {
+    public ResponseEntity<ApiResponse> checkCodeExists(@RequestParam String code) {
         boolean exists = masterCodeService.checkCodeExists(code);
         if (exists) {
             return ResponseUtil.error("Master code already exists");

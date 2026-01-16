@@ -3,7 +3,7 @@
  */
 export interface MasterCodeResponseDto {
   id: number
-  code: number
+  code: string
   codeName: string
   parentId: number | null
   createdAt: string
@@ -14,7 +14,7 @@ export interface MasterCodeResponseDto {
  * Master Code Create Request DTO (matches backend MasterCodeCreateDto)
  */
 export interface MasterCodeCreateDto {
-  code: number
+  code: string
   codeName: string
   parentId: number | null
 }
@@ -23,7 +23,7 @@ export interface MasterCodeCreateDto {
  * Master Code Update Request DTO (matches backend MasterCodeUpdateDto)
  */
 export interface MasterCodeUpdateDto {
-  code: number
+  code: string
   codeName: string
   parentId?: number | null
 }
@@ -45,7 +45,7 @@ export interface ListMasterCodesParams {
  */
 export interface MasterCodeTreeDto {
   id: number
-  code: number
+  code: string
   codeName: string
   parentId: number | null
   createdAt: string

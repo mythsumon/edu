@@ -77,7 +77,8 @@
     "grades": "Grades",
     "adminAccounts": "Admin Accounts",
     "instructorAccounts": "Instructor Accounts",
-    "masterCodeSetup": "Master Code Setup"
+    "masterCodeSetup": "Master Code Setup",
+    "commonCode": "Common Code"
   },
   "errors": {
     "generic": "An error occurred",
@@ -137,6 +138,58 @@
       "codeAvailable": "Code is available to use.",
       "codeUnavailable": "Code is unavailable to use",
       "checkingCode": "Checking..."
+    }
+  },
+  "commonCode": {
+    "title": "Common Code Management",
+    "description": "Manage common codes used throughout the system",
+    "code": "Code",
+    "codeName": "Code Name",
+    "descriptionLabel": "Description",
+    "createdAt": "Created At",
+    "titleName": "Title Name",
+    "status": "Status",
+    "actions": "Actions",
+    "active": "Active",
+    "addition": "Add New Code",
+    "searchPlaceholder": "Search title...",
+    "level": "Level",
+    "openMenu": "Open menu",
+    "noData": "No common codes found",
+    "noDataDescription": "There are no common codes available at this time.",
+    "rootCode": "Root Code",
+    "deleteTitle": "Delete Common Code",
+    "deleteDescription": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
+    "hasChildrenDeleteError": "Cannot delete common code with children",
+    "hasChildrenDeleteErrorDescription": "Please remove all child codes before deleting this common code.",
+    "searchPlaceholderWithCode": "Search with Code Name or Code ...",
+    "childCode": "Child Code",
+    "noSelection": "No Selection",
+    "selectParentToViewChildren": "Select a parent code to view its children",
+    "noChildrenFound": "No children found",
+    "noChildrenDescription": "This code has no child items.",
+    "createNewCode": "Create New Code",
+    "createNewCodeDescription": "Make changes to your common code here. Click create when you're done.",
+    "editCode": "Edit Code",
+    "editCodeDescription": "Make changes to your common code here. Click update when you're done.",
+    "codePlaceholder": "Enter code",
+    "codeNamePlaceholder": "Enter code name",
+    "parentCode": "Parent Code",
+    "createSuccess": "Common code created successfully",
+    "createError": "Failed to create common code",
+    "updateSuccess": "Common code updated successfully",
+    "updateError": "Failed to update common code",
+    "deleteSuccess": "Common code deleted successfully",
+    "deleteError": "Failed to delete common code",
+    "validation": {
+      "codeRequired": "Code is required",
+      "codeMustBeInteger": "Code must be an integer",
+      "codeMustBePositive": "Code must be a positive number",
+      "codeMustBePositiveInteger": "Code must be a positive integer",
+      "codeNameRequired": "Code Name is required",
+      "checkingCode": "Checking the code",
+      "codeAvailable": "Code is available to use",
+      "codeUnavailable": "Code already exists!"
     }
   }
 }

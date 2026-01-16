@@ -39,26 +39,50 @@ ON CONFLICT DO NOTHING;
 -- Insert master codes for instructor status
 -- First insert the parent
 INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
-    (100, 'Instructor Status', NULL, NOW(), FALSE)
+    ('100', 'Instructor Status', NULL, NOW(), FALSE)
 ON CONFLICT DO NOTHING;
-
 -- Then insert the children
 INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
-    (101, 'Active', (SELECT id FROM master_code WHERE code = 100 AND parent_id IS NULL), NOW(), FALSE),
-    (102, 'Inactive', (SELECT id FROM master_code WHERE code = 100 AND parent_id IS NULL), NOW(), FALSE)
+    ('100-1', 'Active', (SELECT id FROM master_code WHERE code = '100' AND parent_id IS NULL), NOW(), FALSE),
+    ('100-2', 'Inactive', (SELECT id FROM master_code WHERE code = '100' AND parent_id IS NULL), NOW(), FALSE)
 ON CONFLICT DO NOTHING;
 
 -- Insert master codes for instructor classification
 -- First insert the parent
 INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
-    (200, 'Instructor Classification', NULL, NOW(), FALSE)
+    ('200', 'Instructor Classification', NULL, NOW(), FALSE)
 ON CONFLICT DO NOTHING;
-
 -- Then insert the children
 INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
-    (201, 'Basic', (SELECT id FROM master_code WHERE code = 200 AND parent_id IS NULL), NOW(), FALSE),
-    (202, 'Intermediate', (SELECT id FROM master_code WHERE code = 200 AND parent_id IS NULL), NOW(), FALSE),
-    (203, 'Advanced', (SELECT id FROM master_code WHERE code = 200 AND parent_id IS NULL), NOW(), FALSE)
+    ('200-1', 'Basic', (SELECT id FROM master_code WHERE code = '200' AND parent_id IS NULL), NOW(), FALSE),
+    ('200-2', 'Intermediate', (SELECT id FROM master_code WHERE code = '200' AND parent_id IS NULL), NOW(), FALSE),
+    ('200-3', 'Advanced', (SELECT id FROM master_code WHERE code = '200' AND parent_id IS NULL), NOW(), FALSE)
+ON CONFLICT DO NOTHING;
+
+-- Insert master codes for education type
+-- First insert the parent
+INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
+    ('300', 'Education Type', NULL, NOW(), FALSE)
+ON CONFLICT DO NOTHING;
+-- Then insert the children
+INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
+    ('300-1', 'On site Education', (SELECT id FROM master_code WHERE code = '300' AND parent_id IS NULL), NOW(), FALSE),
+    ('300-2', 'Center Education', (SELECT id FROM master_code WHERE code = '300' AND parent_id IS NULL), NOW(), FALSE)
+ON CONFLICT DO NOTHING;
+
+-- Insert master codes for institution type
+-- First insert the parent
+INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
+    ('400', 'Institution Type', NULL, NOW(), FALSE)
+ON CONFLICT DO NOTHING;
+-- Then insert the children
+INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
+    ('400-1', 'Institution Type A', (SELECT id FROM master_code WHERE code = '400' AND parent_id IS NULL), NOW(), FALSE),
+    ('400-2', 'Institution Type B', (SELECT id FROM master_code WHERE code = '400' AND parent_id IS NULL), NOW(), FALSE),
+    ('400-3', 'Institution Type C', (SELECT id FROM master_code WHERE code = '400' AND parent_id IS NULL), NOW(), FALSE),
+    ('400-4', 'Institution Type D', (SELECT id FROM master_code WHERE code = '400' AND parent_id IS NULL), NOW(), FALSE),
+    ('400-5', 'Institution Type E', (SELECT id FROM master_code WHERE code = '400' AND parent_id IS NULL), NOW(), FALSE),
+    ('400-6', 'Institution Type F', (SELECT id FROM master_code WHERE code = '400' AND parent_id IS NULL), NOW(), FALSE)
 ON CONFLICT DO NOTHING;
 
 -- Insert admin user
@@ -68,7 +92,6 @@ VALUES ('admin',
         (SELECT id FROM roles WHERE name = 'ADMIN'),
         TRUE)
 ON CONFLICT (username) DO NOTHING;
-
 -- Insert admin profile
 INSERT INTO admins (user_id, first_name, last_name, email, phone)
 VALUES ((SELECT id FROM users WHERE username = 'admin'),
@@ -85,7 +108,6 @@ VALUES ('instructor',
         (SELECT id FROM roles WHERE name = 'INSTRUCTOR'),
         TRUE)
 ON CONFLICT (username) DO NOTHING;
-
 -- Insert instructor profile
 INSERT INTO instructors (user_id, first_name, last_name, email, phone, gender, dob, region_id, city, street, detail_address, status_id, classification_id)
 VALUES ((SELECT id FROM users WHERE username = 'instructor'),
@@ -99,6 +121,24 @@ VALUES ((SELECT id FROM users WHERE username = 'instructor'),
         'City',
         'Street',
         'Detail Address',
-        (SELECT id FROM master_code WHERE code = 101 AND parent_id = (SELECT id FROM master_code WHERE code = 100 AND parent_id IS NULL)),
-        (SELECT id FROM master_code WHERE code = 201 AND parent_id = (SELECT id FROM master_code WHERE code = 200 AND parent_id IS NULL)))
+        (SELECT id FROM master_code WHERE code = '100-1' AND parent_id = (SELECT id FROM master_code WHERE code = '100' AND parent_id IS NULL)),
+        (SELECT id FROM master_code WHERE code = '200-1' AND parent_id = (SELECT id FROM master_code WHERE code = '200' AND parent_id IS NULL)))
 ON CONFLICT (user_id) DO NOTHING;
+
+-- Insert teacher user
+INSERT INTO users (username, password, role_id, enabled)
+VALUES ('teacher-a',
+        '$2a$10$mDQoYJDbT2nybSeSa.FeJuSa67r15X3s.HjCxlUjnDMsu0Hv6aS/O',
+        (SELECT id FROM roles WHERE name = 'TEACHER'),
+        TRUE)
+ON CONFLICT (username) DO NOTHING;
+-- Insert teacher profile
+INSERT INTO teachers (user_id, first_name, last_name, email, phone)
+VALUES ((SELECT id FROM users WHERE username = 'teacher-a'),
+        'TeacherA',
+        'User',
+        'teachera@example.com',
+        '+1234567890')
+ON CONFLICT (user_id) DO NOTHING;
+
+

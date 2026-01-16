@@ -14,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 public class MasterCodeTreeDto {
     private Long id;
-    private Integer code;
+    private String code;
     private String codeName;
     private Long parentId;
     private LocalDateTime createdAt;
