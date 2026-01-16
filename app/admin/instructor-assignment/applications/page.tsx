@@ -23,6 +23,16 @@ interface ApplierInfo {
   email: string
   phone: string
   address: string
+  instructorId?: string
+  instructorLevel?: string
+  userId?: string
+  gender?: string
+  birthDate?: string
+  affiliation?: string
+  city?: string
+  cityCounty?: string
+  roadName?: string
+  detailAddress?: string
 }
 
 interface LessonInfo {
@@ -74,6 +84,16 @@ const dummyData: InstructorApplicationItem[] = [
       email: 'hong.gildong@example.com',
       phone: '010-1234-5678',
       address: '경기도 수원시 영통구 월드컵로 123',
+      instructorId: 'INST-001',
+      instructorLevel: '주강사',
+      userId: 'hong.gildong',
+      gender: '남',
+      birthDate: '1985-05-15',
+      affiliation: '수원교육청',
+      city: '경기도',
+      cityCounty: '수원시',
+      roadName: '월드컵로',
+      detailAddress: '123',
     },
     lessons: [
       {
@@ -217,6 +237,16 @@ const dummyData: InstructorApplicationItem[] = [
       email: 'kim.youngsu@example.com',
       phone: '010-2345-6789',
       address: '경기도 성남시 분당구 정자로 456',
+      instructorId: 'INST-002',
+      instructorLevel: '보조강사',
+      userId: 'kim.youngsu',
+      gender: '남',
+      birthDate: '1990-08-20',
+      affiliation: '성남교육청',
+      city: '경기도',
+      cityCounty: '성남시',
+      roadName: '정자로',
+      detailAddress: '456',
     },
   },
   {
@@ -252,6 +282,16 @@ const dummyData: InstructorApplicationItem[] = [
       email: 'lee.miyoung@example.com',
       phone: '010-3456-7890',
       address: '경기도 용인시 기흥구 신갈로 789',
+      instructorId: 'INST-004',
+      instructorLevel: '보조강사',
+      userId: 'lee.miyoung',
+      gender: '여',
+      birthDate: '1992-03-10',
+      affiliation: '용인교육청',
+      city: '경기도',
+      cityCounty: '용인시',
+      roadName: '신갈로',
+      detailAddress: '789',
     },
   },
   {
@@ -287,6 +327,16 @@ const dummyData: InstructorApplicationItem[] = [
       email: 'park.jihoon@example.com',
       phone: '010-4567-8901',
       address: '경기도 안양시 만안구 안양로 321',
+      instructorId: 'INST-006',
+      instructorLevel: '주강사',
+      userId: 'park.jihoon',
+      gender: '남',
+      birthDate: '1988-11-25',
+      affiliation: '안양교육청',
+      city: '경기도',
+      cityCounty: '안양시',
+      roadName: '안양로',
+      detailAddress: '321',
     },
   },
   {
@@ -307,6 +357,16 @@ const dummyData: InstructorApplicationItem[] = [
       email: 'yoon.seoyeon@example.com',
       phone: '010-5678-9012',
       address: '경기도 의정부시 평화로 654',
+      instructorId: 'INST-007',
+      instructorLevel: '보조강사',
+      userId: 'yoon.seoyeon',
+      gender: '여',
+      birthDate: '1991-07-08',
+      affiliation: '의정부교육청',
+      city: '경기도',
+      cityCounty: '의정부시',
+      roadName: '평화로',
+      detailAddress: '654',
     },
   },
   {
@@ -327,6 +387,16 @@ const dummyData: InstructorApplicationItem[] = [
       email: 'kang.dohyun@example.com',
       phone: '010-6789-0123',
       address: '경기도 구리시 건원대로 987',
+      instructorId: 'INST-008',
+      instructorLevel: '주강사',
+      userId: 'kang.dohyun',
+      gender: '남',
+      birthDate: '1987-12-30',
+      affiliation: '구리교육청',
+      city: '경기도',
+      cityCounty: '구리시',
+      roadName: '건원대로',
+      detailAddress: '987',
     },
   },
   {
@@ -347,6 +417,16 @@ const dummyData: InstructorApplicationItem[] = [
       email: 'kim.minji@example.com',
       phone: '010-7890-1234',
       address: '경기도 평택시 평택로 111',
+      instructorId: 'INST-009',
+      instructorLevel: '보조강사',
+      userId: 'kim.minji',
+      gender: '여',
+      birthDate: '1993-04-18',
+      affiliation: '평택교육청',
+      city: '경기도',
+      cityCounty: '평택시',
+      roadName: '평택로',
+      detailAddress: '111',
     },
   },
   {
@@ -367,6 +447,16 @@ const dummyData: InstructorApplicationItem[] = [
       email: 'oh.soobin@example.com',
       phone: '010-8901-2345',
       address: '경기도 화성시 봉담읍 봉담로 222',
+      instructorId: 'INST-010',
+      instructorLevel: '주강사',
+      userId: 'oh.soobin',
+      gender: '여',
+      birthDate: '1989-09-12',
+      affiliation: '화성교육청',
+      city: '경기도',
+      cityCounty: '화성시',
+      roadName: '봉담로',
+      detailAddress: '222',
     },
   },
 ]
@@ -971,6 +1061,117 @@ export default function InstructorApplicationPage() {
           {/* Page Header */}
           <div className="flex items-center justify-between mb-6">
             <Space>
+              <Button
+                icon={<Download className="w-4 h-4" />}
+                onClick={() => {
+                  // Export to Excel (CSV format)
+                  try {
+                    const dataToExport = filteredData
+                    
+                    if (dataToExport.length === 0) {
+                      message.warning('다운로드할 데이터가 없습니다.')
+                      return
+                    }
+
+                    // CSV 헤더 정의 (이미지에 표시된 항목 순서대로)
+                    const headers = [
+                      '강사ID',
+                      '강사레벨',
+                      '아이디',
+                      '이름',
+                      '성별',
+                      '생년월일',
+                      '전화번호',
+                      '이메일',
+                      '소속',
+                      '상태',
+                      '도시',
+                      '시/군',
+                      '도로명',
+                      '상세주소',
+                    ]
+
+                    // CSV 데이터 생성
+                    const csvRows = [
+                      headers.join(','),
+                      ...dataToExport.map((item) => {
+                        // 주소 파싱 (도시, 시/군, 도로명, 상세주소 분리)
+                        const address = item.applier?.address || ''
+                        let city = item.applier?.city || ''
+                        let cityCounty = item.applier?.cityCounty || ''
+                        let roadName = item.applier?.roadName || ''
+                        let detailAddress = item.applier?.detailAddress || ''
+                        
+                        // 주소가 있지만 분리된 정보가 없는 경우 파싱 시도
+                        if (address && !city && !roadName) {
+                          // 기본적인 주소 파싱 (예: "경기도 수원시 영통구 월드컵로 123")
+                          const parts = address.split(' ')
+                          if (parts.length > 0) {
+                            city = parts[0] || '' // "경기도"
+                            if (parts.length > 1) {
+                              cityCounty = parts[1] || '' // "수원시"
+                            }
+                            if (parts.length > 2) {
+                              roadName = parts.slice(2).join(' ') || '' // 나머지
+                            }
+                          }
+                        }
+
+                        return [
+                          item.applier?.instructorId || item.key || '',
+                          item.applier?.instructorLevel || item.role || '',
+                          item.applier?.userId || item.applier?.email?.split('@')[0] || '',
+                          item.applier?.name || item.instructorName || '',
+                          item.applier?.gender || '',
+                          item.applier?.birthDate || '',
+                          item.applier?.phone || '',
+                          item.applier?.email || '',
+                          item.applier?.affiliation || '',
+                          item.status || '',
+                          city,
+                          cityCounty,
+                          roadName,
+                          detailAddress,
+                        ]
+                          .map((field) => {
+                            // CSV 형식에 맞게 이스케이프 처리
+                            if (field === null || field === undefined) return ''
+                            const stringField = String(field)
+                            // 쉼표, 따옴표, 줄바꿈이 포함된 경우 따옴표로 감싸고 내부 따옴표는 이중화
+                            if (stringField.includes(',') || stringField.includes('"') || stringField.includes('\n')) {
+                              return `"${stringField.replace(/"/g, '""')}"`
+                            }
+                            return stringField
+                          })
+                          .join(',')
+                      }),
+                    ]
+
+                    // BOM 추가 (한글 깨짐 방지)
+                    const BOM = '\uFEFF'
+                    const csvContent = BOM + csvRows.join('\n')
+
+                    // Blob 생성 및 다운로드
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+                    const link = document.createElement('a')
+                    const url = URL.createObjectURL(blob)
+                    link.setAttribute('href', url)
+                    link.setAttribute('download', `강사신청관리_${dayjs().format('YYYY-MM-DD_HH-mm-ss')}.csv`)
+                    document.body.appendChild(link)
+                    link.click()
+                    document.body.removeChild(link)
+                    URL.revokeObjectURL(url)
+                    
+                    message.success(`${dataToExport.length}건의 데이터가 다운로드되었습니다.`)
+                  } catch (error) {
+                    console.error('Export error:', error)
+                    message.error('다운로드 중 오류가 발생했습니다.')
+                  }
+                }}
+                className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
+              >
+                엑셀 다운로드
+              </Button>
               <Button
                 icon={<RefreshCw className="w-4 h-4" />}
                 onClick={() => {

@@ -441,7 +441,8 @@ export default function InstructorManagementPage() {
       const matchesType = typeFilter === 'all' || item.type === typeFilter
       const matchesName = !nameSearch || 
         item.name.toLowerCase().includes(nameSearch.toLowerCase()) ||
-        item.account.toLowerCase().includes(nameSearch.toLowerCase())
+        item.account.toLowerCase().includes(nameSearch.toLowerCase()) ||
+        (item.affiliation && item.affiliation.toLowerCase().includes(nameSearch.toLowerCase()))
       return matchesStatus && matchesRegion && matchesType && matchesName
     })
   }, [statusFilter, regionFilter, typeFilter, nameSearch])
@@ -906,10 +907,10 @@ export default function InstructorManagementPage() {
                         >
                           <Input.Group compact className="flex gap-2">
                             <Form.Item
-                              name="address"
+                          name="address"
                               noStyle
-                              rules={[{ required: true, message: '도로명주소를 입력해주세요' }]}
-                            >
+                          rules={[{ required: true, message: '도로명주소를 입력해주세요' }]}
+                        >
                               <Input 
                                 placeholder="도로명주소를 검색하세요" 
                                 className="h-11 rounded-xl flex-1" 
@@ -1051,7 +1052,7 @@ export default function InstructorManagementPage() {
             {/* Search Input - Left Side */}
             <div className="w-full max-w-[420px]">
               <Input
-                placeholder="검색어를 입력하세요..."
+                placeholder="강사명, 강사 ID, 소속, 검색하세요"
                 value={nameSearch}
                 onChange={(e) => setNameSearch(e.target.value)}
                 allowClear
@@ -1076,45 +1077,15 @@ export default function InstructorManagementPage() {
               {filterDropdownOpen && (
                 <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50 p-4">
                   <div className="space-y-4">
-                    {/* Status Filter */}
+                    {/* 강사 구분 Select */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">상태</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">강사 구분</label>
                       <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
                         <Select
-                          placeholder="ALL STATUS"
-                          value={statusFilter}
-                          onChange={setStatusFilter}
-                          options={statusOptions}
-                          className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
-                          suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
-                        />
-                      </div>
-                    </div>
-                    
-                    {/* Region Filter */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">권역</label>
-                      <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
-                        <Select
-                          placeholder="REGION"
-                          value={regionFilter}
-                          onChange={setRegionFilter}
-                          options={regionOptions}
-                          className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
-                          suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
-                        />
-                      </div>
-                    </div>
-                    
-                    {/* Type Filter */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">유형</label>
-                      <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
-                        <Select
-                          placeholder="TYPE"
-                          value={typeFilter}
+                          placeholder="전체"
+                          value={typeFilter === 'all' ? undefined : typeFilter}
                           onChange={setTypeFilter}
-                          options={typeOptions}
+                          options={typeOptions.filter(opt => opt.value !== 'all')}
                           className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
                           suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
                         />
@@ -1142,7 +1113,7 @@ export default function InstructorManagementPage() {
                         }}
                         className="h-9 px-4 text-sm bg-slate-900 hover:bg-slate-800 active:bg-slate-900 border-0 text-white hover:text-white active:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
                       >
-                        적용
+                        필터 적용
                       </Button>
                     </div>
                   </div>

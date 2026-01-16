@@ -57,11 +57,30 @@ export default function InstructorAttendancePage() {
   const [students, setStudents] = useState<StudentAttendance[]>([])
   const [sessions, setSessions] = useState<SessionAttendance[]>([])
   
+  // Helper function to parse gradeClass into grade and className
+  const parseGradeClass = (gradeClass: string): { grade: string; className: string } => {
+    const match = gradeClass.match(/(\d+)학년\s*(\d+)반/)
+    if (match) {
+      return { grade: match[1], className: match[2] }
+    }
+    return { grade: '', className: '' }
+  }
+
+  // Helper function to format grade and className into gradeClass
+  const formatGradeClass = (grade: string, className: string): string => {
+    if (grade && className) {
+      return `${grade}학년 ${className}반`
+    }
+    return ''
+  }
+
   // Header fields state
   const [headerData, setHeaderData] = useState({
     location: '평택시',
     institution: '평택안일초등학교',
     gradeClass: '5학년 6반',
+    grade: '5',
+    className: '6',
     programName: '8차시 블록코딩과 엔트리 기초 및 인공지능',
     totalSessions: 8,
     maleCount: 11,
@@ -252,7 +271,9 @@ export default function InstructorAttendancePage() {
         if (teacherInfo.grade && teacherInfo.className) {
           setHeaderData(prev => ({
             ...prev,
-            gradeClass: `${teacherInfo.grade}학년 ${teacherInfo.className}`,
+            grade: teacherInfo.grade,
+            className: teacherInfo.className,
+            gradeClass: `${teacherInfo.grade}학년 ${teacherInfo.className}반`,
           }))
         }
         
@@ -298,11 +319,15 @@ export default function InstructorAttendancePage() {
       const savedDoc = getAttendanceDocByEducationId(educationId)
       if (savedDoc) {
         setAttendanceStatus(savedDoc.status)
+        // Parse gradeClass into grade and className
+        const { grade, className } = parseGradeClass(savedDoc.gradeClass)
         // Load saved data
         setHeaderData({
           location: savedDoc.location,
           institution: savedDoc.institution,
           gradeClass: savedDoc.gradeClass,
+          grade,
+          className,
           programName: savedDoc.programName,
           totalSessions: savedDoc.totalSessions,
           maleCount: savedDoc.maleCount,
@@ -393,11 +418,21 @@ export default function InstructorAttendancePage() {
       // Get existing document to preserve createdAt if it exists
       const existingDoc = getAttendanceDocByEducationId(educationId)
       
+      // Format gradeClass from grade and className
+      const gradeClass = formatGradeClass(headerData.grade, headerData.className)
+      
       const docToSave: AttendanceDocument = {
         id: `attendance-${educationId}`,
         educationId: educationId!,
         assignmentId: assignment?.key,
-        ...headerData,
+        location: headerData.location,
+        institution: headerData.institution,
+        gradeClass,
+        programName: headerData.programName,
+        totalSessions: headerData.totalSessions,
+        maleCount: headerData.maleCount,
+        femaleCount: headerData.femaleCount,
+        schoolContactName: headerData.schoolContactName,
         institutionContact: {
           name: institutionContact.name,
           phone: institutionContact.phone || '',
@@ -438,11 +473,21 @@ export default function InstructorAttendancePage() {
         try {
           setLoading(true)
           
+          // Format gradeClass from grade and className
+          const gradeClass = formatGradeClass(headerData.grade, headerData.className)
+          
           const docToSubmit: AttendanceDocument = {
             id: `attendance-${educationId}`,
             educationId: educationId!,
             assignmentId: assignment?.key,
-            ...headerData,
+            location: headerData.location,
+            institution: headerData.institution,
+            gradeClass,
+            programName: headerData.programName,
+            totalSessions: headerData.totalSessions,
+            maleCount: headerData.maleCount,
+            femaleCount: headerData.femaleCount,
+            schoolContactName: headerData.schoolContactName,
             institutionContact: {
               name: institutionContact.name,
               phone: institutionContact.phone || '',
@@ -1042,21 +1087,56 @@ export default function InstructorAttendancePage() {
               </div>
               <div>
                 <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">
-                  학급명
+                  학년
                   {teacherEducationInfo && (
                     <span className="ml-2 text-xs text-blue-600">(학교 입력)</span>
                   )}
                 </div>
                 {isEditMode ? (
                   <Input
-                    value={headerData.gradeClass}
-                    onChange={(e) => setHeaderData({ ...headerData, gradeClass: e.target.value })}
+                    value={headerData.grade}
+                    onChange={(e) => {
+                      const grade = e.target.value
+                      setHeaderData({ 
+                        ...headerData, 
+                        grade,
+                        gradeClass: formatGradeClass(grade, headerData.className)
+                      })
+                    }}
                     className="w-full"
                     disabled={!!teacherEducationInfo}
                     title={teacherEducationInfo ? '학교 선생님이 입력한 정보는 수정할 수 없습니다.' : ''}
+                    placeholder="학년"
                   />
                 ) : (
-                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">{headerData.gradeClass}</div>
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">{headerData.grade}학년</div>
+                )}
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">
+                  반
+                  {teacherEducationInfo && (
+                    <span className="ml-2 text-xs text-blue-600">(학교 입력)</span>
+                  )}
+                </div>
+                {isEditMode ? (
+                  <Input
+                    value={headerData.className}
+                    onChange={(e) => {
+                      const className = e.target.value
+                      setHeaderData({ 
+                        ...headerData, 
+                        className,
+                        gradeClass: formatGradeClass(headerData.grade, className)
+                      })
+                    }}
+                    className="w-full"
+                    disabled={!!teacherEducationInfo}
+                    title={teacherEducationInfo ? '학교 선생님이 입력한 정보는 수정할 수 없습니다.' : ''}
+                    placeholder="반"
+                  />
+                ) : (
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">{headerData.className}반</div>
                 )}
               </div>
               <div>
