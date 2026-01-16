@@ -59,3 +59,13 @@ export async function listInstructors(
   )
   return response.data.data
 }
+
+/**
+ * Get a single instructor by ID
+ */
+export async function getInstructorById(id: number): Promise<InstructorResponseDto> {
+  const response = await axiosInstance.get<ApiResponse<InstructorResponseDto>>(
+    `/instructor/${id}`
+  )
+  return response.data.data
+}

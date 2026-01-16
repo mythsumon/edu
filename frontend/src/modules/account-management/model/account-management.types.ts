@@ -30,6 +30,28 @@ export interface InstructorAccount {
 }
 
 /**
+ * Instructor detail data for detail page display
+ */
+export interface InstructorDetail {
+  id: number
+  username: string
+  name: string
+  email?: string
+  phone?: string
+  gender?: string
+  dob?: string
+  regionId?: number
+  city?: string
+  street?: string
+  detailAddress?: string
+  statusId?: number
+  classificationId?: number
+  affiliation?: string
+  enabled?: boolean
+  createdAt?: string
+}
+
+/**
  * Backend DTOs
  */
 export interface AdminResponseDto {

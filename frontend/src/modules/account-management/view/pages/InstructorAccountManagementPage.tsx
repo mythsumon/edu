@@ -118,8 +118,7 @@ export const InstructorAccountManagementPage = () => {
   }
 
   const handleDetailClick = (instructor: InstructorAccount) => {
-    // TODO: Implement detail view/navigation
-    console.log('View details for instructor:', instructor)
+    navigate(`${ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL}/${instructor.id}`)
   }
 
   const columns = useInstructorAccountColumns({
