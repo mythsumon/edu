@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
 import { useEffect, useRef } from 'react'
-import { User, Mail, Phone, UserCircle, MapPin } from 'lucide-react'
 import { PageLayout } from '@/app/layout/PageLayout'
 import { Button } from '@/shared/ui/button'
 import { ROUTES } from '@/shared/constants/routes'
@@ -150,7 +149,6 @@ export const AddInstructorPage = () => {
                 id="username"
                 label={t('accountManagement.instructorId')}
                 placeholder={t('accountManagement.instructorIdPlaceholder')}
-                icon={<User className="h-4 w-4" />}
                 register={register('username')}
                 error={errors.username}
                 required
@@ -162,7 +160,6 @@ export const AddInstructorPage = () => {
                 id="name"
                 label={t('accountManagement.name')}
                 placeholder={t('accountManagement.namePlaceholder')}
-                icon={<UserCircle className="h-4 w-4" />}
                 register={register('name')}
                 error={errors.name}
                 required
@@ -174,7 +171,6 @@ export const AddInstructorPage = () => {
                 id="email"
                 label={t('accountManagement.email')}
                 placeholder={t('accountManagement.emailPlaceholder')}
-                icon={<Mail className="h-4 w-4" />}
                 type="email"
                 register={register('email')}
                 error={errors.email}
@@ -197,7 +193,6 @@ export const AddInstructorPage = () => {
                 id="phone"
                 label={t('accountManagement.phoneNumber')}
                 placeholder={t('accountManagement.phoneNumberRequiredPlaceholder')}
-                icon={<Phone className="h-4 w-4" />}
                 type="tel"
                 register={register('phone')}
                 error={errors.phone}
@@ -210,7 +205,6 @@ export const AddInstructorPage = () => {
                 id="gender"
                 label={t('accountManagement.gender')}
                 placeholder={t('accountManagement.genderPlaceholder')}
-                icon={<UserCircle className="h-4 w-4" />}
                 register={register('gender')}
                 error={errors.gender}
                 required
@@ -245,7 +239,6 @@ export const AddInstructorPage = () => {
                   id="city"
                   label={t('accountManagement.city')}
                   placeholder={t('accountManagement.cityPlaceholder')}
-                  icon={<MapPin className="h-4 w-4" />}
                   register={register('city')}
                   error={errors.city}
                   required
@@ -258,7 +251,6 @@ export const AddInstructorPage = () => {
                   name="zoneId"
                   label={t('accountManagement.zone')}
                   placeholder={t('accountManagement.zoneAutoSelected')}
-                  icon={<MapPin className="h-4 w-4" />}
                   control={control}
                   options={zones}
                   getOptionValue={(option) => String(option.id)}
@@ -280,7 +272,6 @@ export const AddInstructorPage = () => {
                   name="regionId"
                   label={t('accountManagement.region')}
                   placeholder={t('accountManagement.regionPlaceholder')}
-                  icon={<MapPin className="h-4 w-4" />}
                   control={control}
                   options={regions}
                   getOptionValue={(option) => String(option.id)}
@@ -297,7 +288,6 @@ export const AddInstructorPage = () => {
                 id="street"
                 label={t('accountManagement.street')}
                 placeholder={t('accountManagement.streetPlaceholder')}
-                icon={<MapPin className="h-4 w-4" />}
                 register={register('street')}
                 error={errors.street}
                 required
@@ -309,7 +299,6 @@ export const AddInstructorPage = () => {
                 id="detailAddress"
                 label={t('accountManagement.buildingNameLakeNumber')}
                 placeholder={t('accountManagement.buildingNameLakeNumberPlaceholder')}
-                icon={<MapPin className="h-4 w-4" />}
                 register={register('detailAddress')}
                 error={errors.detailAddress}
                 required
@@ -331,7 +320,6 @@ export const AddInstructorPage = () => {
                 name="statusId"
                 label={t('accountManagement.status')}
                 placeholder={t('accountManagement.statusPlaceholder')}
-                icon={<UserCircle className="h-4 w-4" />}
                 control={control}
                 options={statusMasterCodes}
                 getOptionValue={(option) => String(option.id)}
@@ -347,7 +335,6 @@ export const AddInstructorPage = () => {
                 name="classificationId"
                 label={t('accountManagement.classification')}
                 placeholder={t('accountManagement.classificationPlaceholder')}
-                icon={<UserCircle className="h-4 w-4" />}
                 control={control}
                 options={classificationMasterCodes}
                 getOptionValue={(option) => String(option.id)}

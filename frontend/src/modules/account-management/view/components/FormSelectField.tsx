@@ -14,7 +14,7 @@ interface FormSelectFieldProps<TFieldValues extends FieldValues, TOption = unkno
   name: Path<TFieldValues>
   label: string
   placeholder: string
-  icon: ReactNode
+  icon?: ReactNode
   control: Control<TFieldValues>
   options: TOption[]
   getOptionValue: (option: TOption) => string
