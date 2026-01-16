@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { type ColumnDef } from '@tanstack/react-table'
 import { Checkbox } from '@/shared/ui/checkbox'
 import { Button } from '@/shared/ui/button'
-import { MoreHorizontal } from 'lucide-react'
+import { Eye } from 'lucide-react'
 import { DataTable } from '@/shared/components/DataTable'
+import { cn } from '@/shared/lib/cn'
 import type { InstructorAccount } from '../../model/account-management.types'
 
 interface InstructorAccountTableProps {
@@ -70,20 +71,48 @@ export const InstructorAccountTable = ({
         header: t('accountManagement.instructorClassification'),
         cell: ({ row }) => {
           const classification = row.getValue('instructorClassification') as string | undefined
-          return <div>{classification || '-'}</div>
+          if (!classification) return <div>-</div>
+          
+          // Map classification to pill styles
+          const getClassificationStyle = (value: string) => {
+            const lowerValue = value.toLowerCase()
+            if (lowerValue.includes('common') || lowerValue.includes('일반')) {
+              return 'bg-blue-500 text-white'
+            }
+            if (lowerValue.includes('advanced') || lowerValue.includes('고급')) {
+              return 'bg-purple-500 text-white'
+            }
+            if (lowerValue.includes('preparation') || lowerValue.includes('준비')) {
+              return 'bg-yellow-500 text-white'
+            }
+            return 'bg-gray-500 text-white'
+          }
+
+          return (
+            <div
+              className={cn(
+                'inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium',
+                getClassificationStyle(classification)
+              )}
+            >
+              {classification}
+            </div>
+          )
         },
       },
       {
         id: 'actions',
-        header: '',
+        header: t('accountManagement.particular'),
         cell: ({ row }) => (
           <Button
-            variant="ghost"
-            size="icon"
+            variant="outline"
+            size="sm"
             onClick={() => onDetailClick?.(row.original)}
+            className="gap-2"
             aria-label={t('accountManagement.viewDetails')}
           >
-            <MoreHorizontal className="h-4 w-4" />
+            <Eye className="h-4 w-4" />
+            {t('accountManagement.particular')}
           </Button>
         ),
         enableSorting: false,
@@ -99,6 +128,7 @@ export const InstructorAccountTable = ({
       columns={columns}
       emptyMessage={t('accountManagement.noInstructorAccountsFound')}
       enableRowSelection={true}
+      searchPlaceholder={t('accountManagement.searchPlaceholder')}
     />
   )
 }

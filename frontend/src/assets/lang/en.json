@@ -191,6 +191,8 @@
     "selectAll": "Select all",
     "selectRow": "Select",
     "viewDetails": "View details",
+    "particular": "particular",
+    "searchPlaceholder": "Search by instructor name, instructor ID, or affiliation",
     "noAdminAccountsFound": "No admin accounts found.",
     "noInstructorAccountsFound": "No instructor accounts found.",
     "basicInformation": "Basic Information",
@@ -220,6 +222,10 @@
       "statusRequired": "Status is required",
       "classificationRequired": "Classification is required"
     }
+  },
+  "dataTable": {
+    "totalCases": "A total of {{count}} cases",
+    "page": "page"
   }
 }
 

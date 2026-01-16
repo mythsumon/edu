@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { type ColumnDef } from '@tanstack/react-table'
 import { Checkbox } from '@/shared/ui/checkbox'
 import { Button } from '@/shared/ui/button'
-import { MoreHorizontal } from 'lucide-react'
+import { Eye } from 'lucide-react'
 import { DataTable } from '@/shared/components/DataTable'
 import type { AdminAccount } from '../../model/account-management.types'
 
@@ -75,15 +75,17 @@ export const AdminAccountTable = ({
       },
       {
         id: 'actions',
-        header: '',
+        header: t('accountManagement.particular'),
         cell: ({ row }) => (
           <Button
-            variant="ghost"
-            size="icon"
+            variant="outline"
+            size="sm"
             onClick={() => onDetailClick?.(row.original)}
+            className="gap-2"
             aria-label={t('accountManagement.viewDetails')}
           >
-            <MoreHorizontal className="h-4 w-4" />
+            <Eye className="h-4 w-4" />
+            {t('accountManagement.particular')}
           </Button>
         ),
         enableSorting: false,
