@@ -16,8 +16,6 @@ import {
   Trash2,
   Save,
   Filter,
-  Key,
-  UserSearch,
   Download
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -150,10 +148,6 @@ export default function InstructorManagementPage() {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
   const [filterDropdownOpen, setFilterDropdownOpen] = useState<boolean>(false)
   const filterDropdownRef = useRef<HTMLDivElement>(null)
-  const [findIdModalOpen, setFindIdModalOpen] = useState(false)
-  const [findPasswordModalOpen, setFindPasswordModalOpen] = useState(false)
-  const [findIdForm] = Form.useForm()
-  const [findPasswordForm] = Form.useForm()
   const [isPostcodeScriptLoaded, setIsPostcodeScriptLoaded] = useState(false)
 
   // Close filter dropdown when clicking outside
@@ -299,49 +293,50 @@ export default function InstructorManagementPage() {
         return
       }
 
-      // CSV 헤더 정의
+      // CSV 헤더 정의 (이미지에 표시된 순서대로)
       const headers = [
         '강사ID',
-        '강사명',
-        '계정',
-        '소속',
-        '지역',
-        '배정권역',
-        '강사 구분',
-        '강사 카테고리',
-        '이메일',
-        '전화번호',
+        '강사레벨',
+        '아이디',
+        '이름',
         '성별',
         '생년월일',
-        '도시',
-        '도로명주소',
-        '건물명/호수',
+        '전화번호',
+        '이메일',
+        '소속',
         '상태',
-        '등록일시',
+        '도시',
+        '시/군',
+        '도로명',
+        '상세주소',
       ]
 
       // CSV 데이터 생성
       const csvRows = [
         headers.join(','),
         ...dataToExport.map((item) => {
+          // 주소 파싱 (도시, 시/군, 도로명, 상세주소 분리)
+          // 더미 데이터에는 주소 정보가 없으므로 기본값 사용
+          const city = '경기도'
+          const cityCounty = item.region || ''
+          const roadName = ''
+          const detailAddress = ''
+          
           return [
             item.instructorId || '',
-            item.name || '',
-            item.account || '',
-            item.affiliation || '-',
-            item.region || '',
-            item.assignmentZone || '',
-            item.type || '',
-            item.category || '',
-            '', // 이메일은 더미 데이터에 없을 수 있음
-            '', // 전화번호는 더미 데이터에 없을 수 있음
-            '', // 성별은 더미 데이터에 없을 수 있음
-            '', // 생년월일은 더미 데이터에 없을 수 있음
-            '경기도', // 고정값
-            '', // 도로명주소는 더미 데이터에 없을 수 있음
-            '', // 건물명/호수는 더미 데이터에 없을 수 있음
-            item.status || '',
-            item.registeredAt || '',
+            item.type || '', // 강사레벨 (강사 구분)
+            item.account || '', // 아이디
+            item.name || '', // 이름
+            '', // 성별 (더미 데이터에 없음)
+            '', // 생년월일 (더미 데이터에 없음)
+            '', // 전화번호 (더미 데이터에 없음)
+            '', // 이메일 (더미 데이터에 없음)
+            item.affiliation || '', // 소속
+            item.status || '', // 상태
+            city, // 도시
+            cityCounty, // 시/군
+            roadName, // 도로명
+            detailAddress, // 상세주소
           ]
             .map((field) => {
               // CSV 형식에 맞게 이스케이프 처리
@@ -380,23 +375,6 @@ export default function InstructorManagementPage() {
     }
   }
 
-  // ID 찾기
-  const handleFindId = (values: any) => {
-    console.log('Find ID:', values)
-    // TODO: 실제 ID 찾기 로직 구현
-    message.success('ID 찾기 요청이 처리되었습니다. 이메일을 확인해주세요.')
-    setFindIdModalOpen(false)
-    findIdForm.resetFields()
-  }
-
-  // 비밀번호 찾기
-  const handleFindPassword = (values: any) => {
-    console.log('Find Password:', values)
-    // TODO: 실제 비밀번호 찾기 로직 구현
-    message.success('비밀번호 재설정 링크가 이메일로 전송되었습니다.')
-    setFindPasswordModalOpen(false)
-    findPasswordForm.resetFields()
-  }
 
   const handleDelete = () => {
     console.log('Delete instructors:', selectedRowKeys)
@@ -775,28 +753,6 @@ export default function InstructorManagementPage() {
                           />
                         </Form.Item>
 
-                        <Form.Item
-                          label={
-                            <span>
-                              강사 카테고리 <span className="text-red-500">*</span>
-                              <span className="text-xs text-gray-500 ml-2">(2026년용)</span>
-                            </span>
-                          }
-                          name="category"
-                          rules={[{ required: true, message: '강사 카테고리를 선택해주세요' }]}
-                          className="mb-0"
-                          help="강사 수수료 차이에 사용됩니다"
-                        >
-                          <Select
-                            placeholder="강사 카테고리를 선택하세요"
-                            options={[
-                              { value: '신규강사', label: '신규강사' },
-                              { value: '재채용', label: '재채용' },
-                              { value: '재고용', label: '재고용' },
-                            ]}
-                            className="h-11 rounded-xl"
-                          />
-                        </Form.Item>
                       </div>
                     ),
                   },
@@ -967,19 +923,21 @@ export default function InstructorManagementPage() {
                         <Form.Item
                           label={
                             <span>
-                              강사 구분 <span className="text-red-500">*</span>
+                              강사 카테고리 <span className="text-red-500">*</span>
+                              <span className="text-xs text-gray-500 ml-2">(2026년용)</span>
                             </span>
                           }
-                          name="type"
-                          rules={[{ required: true, message: '강사 구분을 선택해주세요' }]}
+                          name="category"
+                          rules={[{ required: true, message: '강사 카테고리를 선택해주세요' }]}
                           className="mb-0"
+                          help="강사 수수료 차이에 사용됩니다"
                         >
                           <Select
-                            placeholder="강사 구분을 선택하세요"
+                            placeholder="강사 카테고리를 선택하세요"
                             options={[
-                              { value: '예비', label: '예비' },
-                              { value: '일반', label: '일반' },
-                              { value: '고급', label: '고급' },
+                              { value: '신규강사', label: '신규강사' },
+                              { value: '재채용', label: '재채용' },
+                              { value: '재고용', label: '재고용' },
                             ]}
                             className="h-11 rounded-xl"
                           />
@@ -998,7 +956,7 @@ export default function InstructorManagementPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between mb-6">
         {viewMode === 'list' ? (
-          <Space>
+          <>
             <Space>
               <Button
                 type="primary"
@@ -1008,39 +966,25 @@ export default function InstructorManagementPage() {
               >
                 강사 등록
               </Button>
-              <Button
-                icon={<Download className="w-4 h-4" />}
-                onClick={handleDownload}
-                className="h-11 px-4 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
-              >
-                다운로드
-              </Button>
-              <Button
-                icon={<UserSearch className="w-4 h-4" />}
-                onClick={() => setFindIdModalOpen(true)}
-                className="h-11 px-4 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
-              >
-                ID 찾기
-              </Button>
-              <Button
-                icon={<Key className="w-4 h-4" />}
-                onClick={() => setFindPasswordModalOpen(true)}
-                className="h-11 px-4 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
-              >
-                비밀번호 찾기
-              </Button>
+              {selectedRowKeys.length > 0 && (
+                <Button
+                  danger
+                  icon={<Trash2 className="w-4 h-4" />}
+                  onClick={handleDelete}
+                  className="h-11 px-4 rounded-xl font-medium transition-all"
+                >
+                  삭제
+                </Button>
+              )}
             </Space>
-            {selectedRowKeys.length > 0 && (
-              <Button
-                danger
-                icon={<Trash2 className="w-4 h-4" />}
-                onClick={handleDelete}
-                className="h-11 px-4 rounded-xl font-medium transition-all"
-              >
-                삭제
-              </Button>
-            )}
-          </Space>
+            <Button
+              icon={<Download className="w-4 h-4" />}
+              onClick={handleDownload}
+              className="h-11 px-4 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
+            >
+              다운로드
+            </Button>
+          </>
         ) : null}
       </div>
 
@@ -1148,111 +1092,6 @@ export default function InstructorManagementPage() {
       </div>
     )}
 
-      {/* ID 찾기 모달 */}
-      <Modal
-        title={
-          <div className="flex items-center gap-2">
-            <UserSearch className="w-5 h-5" />
-            <span>ID 찾기</span>
-          </div>
-        }
-        open={findIdModalOpen}
-        onCancel={() => {
-          setFindIdModalOpen(false)
-          findIdForm.resetFields()
-        }}
-        footer={null}
-        width={500}
-      >
-        <Form
-          form={findIdForm}
-          layout="vertical"
-          onFinish={handleFindId}
-          className="mt-4"
-        >
-          <Form.Item
-            label="이메일"
-            name="email"
-            rules={[
-              { required: true, message: '이메일을 입력해주세요' },
-              { type: 'email', message: '올바른 이메일 형식이 아닙니다' },
-            ]}
-          >
-            <Input placeholder="등록된 이메일을 입력하세요" className="h-11 rounded-xl" />
-          </Form.Item>
-          <Form.Item
-            label="강사명"
-            name="name"
-            rules={[{ required: true, message: '강사명을 입력해주세요' }]}
-          >
-            <Input placeholder="등록된 강사명을 입력하세요" className="h-11 rounded-xl" />
-          </Form.Item>
-          <div className="flex justify-end gap-2 mt-6">
-            <Button onClick={() => {
-              setFindIdModalOpen(false)
-              findIdForm.resetFields()
-            }}>
-              취소
-            </Button>
-            <Button type="primary" htmlType="submit" className="bg-slate-900 hover:bg-slate-800">
-              찾기
-            </Button>
-          </div>
-        </Form>
-      </Modal>
-
-      {/* 비밀번호 찾기 모달 */}
-      <Modal
-        title={
-          <div className="flex items-center gap-2">
-            <Key className="w-5 h-5" />
-            <span>비밀번호 찾기</span>
-          </div>
-        }
-        open={findPasswordModalOpen}
-        onCancel={() => {
-          setFindPasswordModalOpen(false)
-          findPasswordForm.resetFields()
-        }}
-        footer={null}
-        width={500}
-      >
-        <Form
-          form={findPasswordForm}
-          layout="vertical"
-          onFinish={handleFindPassword}
-          className="mt-4"
-        >
-          <Form.Item
-            label="ID (사용자명)"
-            name="username"
-            rules={[{ required: true, message: 'ID를 입력해주세요' }]}
-          >
-            <Input placeholder="등록된 ID를 입력하세요" className="h-11 rounded-xl" />
-          </Form.Item>
-          <Form.Item
-            label="이메일"
-            name="email"
-            rules={[
-              { required: true, message: '이메일을 입력해주세요' },
-              { type: 'email', message: '올바른 이메일 형식이 아닙니다' },
-            ]}
-          >
-            <Input placeholder="등록된 이메일을 입력하세요" className="h-11 rounded-xl" />
-          </Form.Item>
-          <div className="flex justify-end gap-2 mt-6">
-            <Button onClick={() => {
-              setFindPasswordModalOpen(false)
-              findPasswordForm.resetFields()
-            }}>
-              취소
-            </Button>
-            <Button type="primary" htmlType="submit" className="bg-slate-900 hover:bg-slate-800">
-              비밀번호 재설정 링크 전송
-            </Button>
-          </div>
-        </Form>
-      </Modal>
       </div>
     </ProtectedRoute>
   )
