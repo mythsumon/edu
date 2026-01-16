@@ -28,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select'
-import { Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/shared/lib/cn'
 
 interface DataTableProps<TData> {
@@ -126,7 +126,7 @@ export function DataTable<TData>({
             className="max-w-md"
           />
         </div>
-        <Button
+        {/* <Button
           variant="outline"
           onClick={() => {
             // Filter button - no action for now
@@ -136,14 +136,14 @@ export function DataTable<TData>({
           <Filter className="h-4 w-4" />
           {t('common.filter')}
           <ChevronRight className="h-4 w-4" />
-        </Button>
+        </Button> */}
       </div>
 
       {/* Table */}
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow key={headerGroup.id} className="bg-muted hover:bg-muted/50">
               {headerGroup.headers.map((header) => {
                 // Default className for select and actions columns
                 const defaultClassName =
