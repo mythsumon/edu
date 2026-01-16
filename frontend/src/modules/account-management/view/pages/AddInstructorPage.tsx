@@ -33,7 +33,7 @@ export const AddInstructorPage = () => {
     formState: { errors, isSubmitting },
   } = useForm<CreateInstructorFormData>({
     resolver: zodResolver(createInstructorSchema(t)),
-    mode: 'onBlur',
+    mode: 'onChange',
     defaultValues: {
       username: '',
       password: 'instructor123',
