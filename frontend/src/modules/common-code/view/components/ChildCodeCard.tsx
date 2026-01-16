@@ -103,7 +103,6 @@ export const ChildCodeCard = ({
     parentId !== null && parentId !== undefined,
     { q: debouncedSearchQuery || undefined, sort: "id,desc", page: 0, size: 0 }
   );
-  console.log(childrenData);
   const deleteMutation = useDeleteCommonCode();
 
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);

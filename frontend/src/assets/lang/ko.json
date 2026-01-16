@@ -78,7 +78,7 @@
     "adminAccounts": "관리자 계정",
     "instructorAccounts": "강사 계정",
     "masterCodeSetup": "마스터 코드 설정",
-    "commonCode": "공통 코드"
+    "commonCode": "공통 코드 설정"
   },
   "errors": {
     "generic": "오류가 발생했습니다",

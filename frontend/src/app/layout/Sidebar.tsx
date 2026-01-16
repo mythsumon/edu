@@ -13,7 +13,6 @@ import {
   Users,
   ClipboardList,
   Award,
-  Code2,
   FileCode,
 } from "lucide-react";
 import logoImage from "@/assets/images/logo/logo.png";
@@ -95,11 +94,6 @@ export const Sidebar = () => {
       {
         titleKey: "sidebar.system",
         items: [
-          {
-            nameKey: "sidebar.masterCodeSetup",
-            href: ROUTES.ADMIN_MASTER_CODE_SETUP_FULL,
-            icon: Code2,
-          },
           {
             nameKey: "sidebar.commonCode",
             href: ROUTES.ADMIN_COMMON_CODE_FULL,

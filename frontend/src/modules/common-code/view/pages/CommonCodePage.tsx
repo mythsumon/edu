@@ -55,7 +55,7 @@ export const CommonCodePage = () => {
   return (
     <div className="h-full w-full py-0 flex flex-col">
       {/* Header with Title and Description */}
-      <div className="px-4 pt-6 border-b border-border/20">
+      <div className="px-4 pt-6">
         <h1 className="text-xl font-semibold text-foreground mb-2">
           {t("commonCode.title")}
         </h1>
