@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Plus, Download, Search, Filter } from 'lucide-react'
 import type { ColumnPinningState } from '@tanstack/react-table'
+import { useQueries } from '@tanstack/react-query'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { DataTable } from '@/shared/components/DataTable'
 import { cn } from '@/shared/lib/cn'
 import type { InstructorAccount } from '../../model/account-management.types'
 import { useInstructorAccountsQuery } from '../../controller/queries'
+import { getCommonCodeById } from '@/modules/common-code/model/common-code.service'
 import { LoadingState } from '@/shared/components/LoadingState'
 import { ErrorState } from '@/shared/components/ErrorState'
 import { ROUTES } from '@/shared/constants/routes'
@@ -33,7 +35,73 @@ export const InstructorAccountManagementPage = () => {
   // Search and filter state
   const [searchQuery, setSearchQuery] = React.useState<string>('')
 
-  const instructorAccounts = data?.items ?? []
+  const instructorAccounts = React.useMemo(() => data?.items ?? [], [data?.items])
+
+  // Collect unique regionIds from instructor accounts
+  const uniqueRegionIds = React.useMemo(() => {
+    const regionIds = instructorAccounts
+      .map((account) => account.regionId)
+      .filter((id): id is number => id !== undefined && id !== null)
+    return Array.from(new Set(regionIds))
+  }, [instructorAccounts])
+
+  // Collect unique classificationIds from instructor accounts
+  const uniqueClassificationIds = React.useMemo(() => {
+    const classificationIds = instructorAccounts
+      .map((account) => account.classificationId)
+      .filter((id): id is number => id !== undefined && id !== null)
+    return Array.from(new Set(classificationIds))
+  }, [instructorAccounts])
+
+  // Fetch all regions using useQueries
+  const regionQueries = useQueries({
+    queries: uniqueRegionIds.map((regionId) => ({
+      queryKey: ['common-code', 'by-id', regionId],
+      queryFn: () => getCommonCodeById(regionId),
+      enabled: regionId !== undefined,
+    })),
+  })
+
+  // Fetch all classifications using useQueries
+  const classificationQueries = useQueries({
+    queries: uniqueClassificationIds.map((classificationId) => ({
+      queryKey: ['common-code', 'by-id', classificationId],
+      queryFn: () => getCommonCodeById(classificationId),
+      enabled: classificationId !== undefined,
+    })),
+  })
+
+  // Create region map: regionId -> codeName
+  const regionMap = React.useMemo(() => {
+    const map = new Map<number, string>()
+    regionQueries.forEach((query) => {
+      if (query.data) {
+        // Find the corresponding regionId for this query result
+        const index = regionQueries.indexOf(query)
+        const regionId = uniqueRegionIds[index]
+        if (regionId && query.data.codeName) {
+          map.set(regionId, query.data.codeName)
+        }
+      }
+    })
+    return map
+  }, [regionQueries, uniqueRegionIds])
+
+  // Create classification map: classificationId -> codeName
+  const classificationMap = React.useMemo(() => {
+    const map = new Map<number, string>()
+    classificationQueries.forEach((query) => {
+      if (query.data) {
+        // Find the corresponding classificationId for this query result
+        const index = classificationQueries.indexOf(query)
+        const classificationId = uniqueClassificationIds[index]
+        if (classificationId && query.data.codeName) {
+          map.set(classificationId, query.data.codeName)
+        }
+      }
+    })
+    return map
+  }, [classificationQueries, uniqueClassificationIds])
 
   const handleFilterClick = () => {
     // TODO: Implement filter functionality
@@ -56,6 +124,8 @@ export const InstructorAccountManagementPage = () => {
 
   const columns = useInstructorAccountColumns({
     onDetailClick: handleDetailClick,
+    regionMap,
+    classificationMap,
   })
 
   if (isLoading) {

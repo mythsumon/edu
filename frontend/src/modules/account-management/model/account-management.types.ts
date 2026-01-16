@@ -23,8 +23,10 @@ export interface InstructorAccount {
   name: string
   username: string
   affiliation?: string
-  region?: string // city/country
-  instructorClassification?: string
+  regionId?: number
+  region?: string // region name from mastercode (codeName)
+  classificationId?: number
+  instructorClassification?: string // classification name from mastercode (codeName)
 }
 
 /**
@@ -57,6 +59,7 @@ export interface InstructorResponseDto {
   signature?: string
   profilePhoto?: string
   enabled?: boolean
+  affiliation?: string
 }
 
 /**

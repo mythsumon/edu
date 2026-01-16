@@ -15,8 +15,6 @@ import com.itwizard.swaedu.modules.auth.repository.RoleRepository;
 import com.itwizard.swaedu.modules.auth.repository.UserRepository;
 import com.itwizard.swaedu.modules.mastercode.entity.MasterCodeEntity;
 import com.itwizard.swaedu.modules.mastercode.repository.MasterCodeRepository;
-import com.itwizard.swaedu.modules.region.entity.RegionEntity;
-import com.itwizard.swaedu.modules.region.repository.RegionRepository;
 import com.itwizard.swaedu.util.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,7 +34,6 @@ public class InstructorServiceImpl implements InstructorService {
     private final InstructorRepository instructorRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final RegionRepository regionRepository;
     private final MasterCodeRepository masterCodeRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -85,8 +82,8 @@ public class InstructorServiceImpl implements InstructorService {
 
         // Set region if provided
         if (request.getRegionId() != null) {
-            RegionEntity region = regionRepository.findById(request.getRegionId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Region not found with id: " + request.getRegionId()));
+            MasterCodeEntity region = masterCodeRepository.findByIdAndIsDeleteFalse(request.getRegionId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Region master code not found with id: " + request.getRegionId()));
             instructor.setRegion(region);
         }
 
@@ -140,8 +137,8 @@ public class InstructorServiceImpl implements InstructorService {
 
         // Update region if provided
         if (request.getRegionId() != null) {
-            RegionEntity region = regionRepository.findById(request.getRegionId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Region not found with id: " + request.getRegionId()));
+            MasterCodeEntity region = masterCodeRepository.findByIdAndIsDeleteFalse(request.getRegionId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Region master code not found with id: " + request.getRegionId()));
             instructor.setRegion(region);
         } else {
             instructor.setRegion(null);
@@ -187,8 +184,8 @@ public class InstructorServiceImpl implements InstructorService {
 
         // Update region if provided
         if (request.getRegionId() != null) {
-            RegionEntity region = regionRepository.findById(request.getRegionId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Region not found with id: " + request.getRegionId()));
+            MasterCodeEntity region = masterCodeRepository.findByIdAndIsDeleteFalse(request.getRegionId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Region master code not found with id: " + request.getRegionId()));
             instructor.setRegion(region);
         }
 

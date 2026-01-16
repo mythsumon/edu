@@ -11,6 +11,8 @@ import { ActionsCell } from './InstructorAccountActionsCell'
  */
 export interface InstructorAccountColumnsProps {
   onDetailClick: (instructor: InstructorAccount) => void
+  regionMap?: Map<number, string> // Map of regionId -> region name (codeName)
+  classificationMap?: Map<number, string> // Map of classificationId -> classification name (codeName)
 }
 
 /**
@@ -18,6 +20,8 @@ export interface InstructorAccountColumnsProps {
  */
 export const useInstructorAccountColumns = ({
   onDetailClick,
+  regionMap,
+  classificationMap,
 }: InstructorAccountColumnsProps): ColumnDef<InstructorAccount>[] => {
   const { t } = useTranslation()
 
@@ -129,10 +133,13 @@ export const useInstructorAccountColumns = ({
           </div>
         ),
         cell: ({ row }) => {
-          const region = row.getValue('region') as string | undefined
+          const instructor = row.original
+          const regionName = instructor.regionId && regionMap
+            ? regionMap.get(instructor.regionId)
+            : undefined
           return (
             <div style={{ width: '150px', minWidth: '150px', maxWidth: '150px' }}>
-              {region || '-'}
+              {regionName || '-'}
             </div>
           )
         },
@@ -146,8 +153,12 @@ export const useInstructorAccountColumns = ({
           </div>
         ),
         cell: ({ row }) => {
-          const classification = row.getValue('instructorClassification') as string | undefined
-          if (!classification) {
+          const instructor = row.original
+          const classificationName = instructor.classificationId && classificationMap
+            ? classificationMap.get(instructor.classificationId)
+            : undefined
+
+          if (!classificationName) {
             return (
               <div style={{ width: '180px', minWidth: '180px', maxWidth: '180px' }}>
                 -
@@ -177,10 +188,10 @@ export const useInstructorAccountColumns = ({
               <div
                 className={cn(
                   'inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium',
-                  getClassificationStyle(classification)
+                  getClassificationStyle(classificationName)
                 )}
               >
-                {classification}
+                {classificationName}
               </div>
             </div>
           )
@@ -210,6 +221,6 @@ export const useInstructorAccountColumns = ({
         meta: { minWidth: 80, maxWidth: 100 },
       },
     ],
-    [t, onDetailClick]
+    [t, onDetailClick, regionMap, classificationMap]
   )
 }

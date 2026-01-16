@@ -189,6 +189,8 @@
     "createAdmin": "Create Admin",
     "creating": "Creating...",
     "createInstructor": "Create Instructor",
+    "createInstructorSuccess": "Instructor created successfully",
+    "createInstructorError": "Failed to create instructor",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "adminId": "Admin ID",

@@ -2,7 +2,6 @@ package com.itwizard.swaedu.modules.instructor.entity;
 
 import com.itwizard.swaedu.modules.auth.entity.User;
 import com.itwizard.swaedu.modules.mastercode.entity.MasterCodeEntity;
-import com.itwizard.swaedu.modules.region.entity.RegionEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -38,7 +37,7 @@ public class Instructor {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "region_id", foreignKey = @ForeignKey(name = "fk_instructors_region"))
-    private RegionEntity region;
+    private MasterCodeEntity region;
 
     @Column(name = "region_id", insertable = false, updatable = false)
     private Long regionId;

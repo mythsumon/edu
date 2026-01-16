@@ -26,9 +26,11 @@ export function mapInstructorAccount(dto: InstructorResponseDto): InstructorAcco
     id: dto.userId,
     name: dto.name,
     username: dto.username,
-    affiliation: undefined, // Not available in DTO
-    region: dto.city, // Use city as region for now
-    instructorClassification: undefined, // Only ID available, not name
+    affiliation: dto.affiliation,
+    regionId: dto.regionId,
+    region: undefined, // Will be populated from mastercode lookup using regionId
+    classificationId: dto.classificationId,
+    instructorClassification: undefined, // Will be populated from mastercode lookup using classificationId
   }
 }
 

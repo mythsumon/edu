@@ -189,6 +189,8 @@
     "createAdmin": "관리자 생성",
     "creating": "생성 중...",
     "createInstructor": "강사 생성",
+    "createInstructorSuccess": "강사가 성공적으로 생성되었습니다",
+    "createInstructorError": "강사 생성에 실패했습니다",
     "showPassword": "비밀번호 표시",
     "hidePassword": "비밀번호 숨기기",
     "adminId": "관리자 ID",
