@@ -44,6 +44,7 @@ interface PageLayoutProps {
   badge?: ReactNode;
   breadcrumbRoot?: string; // Root segment for breadcrumb (e.g., "master-code-setup") or "/" for "Home > [last segment]"
   customBreadcrumbRoot?: CustomBreadcrumbRoot; // Custom root path and label (e.g., { path: "/admin/dashboard", label: "Dashboard" })
+  disableBreadcrumb?: boolean; // If true, breadcrumb will not be displayed
   children?: ReactNode;
 }
 
@@ -53,6 +54,7 @@ export const PageLayout = ({
   badge,
   breadcrumbRoot,
   customBreadcrumbRoot,
+  disableBreadcrumb,
   children,
 }: PageLayoutProps) => {
   const location = useLocation();
@@ -207,7 +209,7 @@ export const PageLayout = ({
             {badge && <div className="flex-shrink-0">{badge}</div>}
           </div>
           {/* Breadcrumb with optional back button */}
-          {breadcrumbItems.length > 0 && (
+          {!disableBreadcrumb && breadcrumbItems.length > 0 && (
             <div className="flex flex-col items-start gap-2">
               <Breadcrumb>
                 <BreadcrumbList>

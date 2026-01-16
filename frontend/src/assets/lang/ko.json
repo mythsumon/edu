@@ -145,6 +145,7 @@
   "accountManagement": {
     "adminAccountManagement": "관리자 계정 관리",
     "instructorAccountManagement": "강사 계정 관리",
+    "instructorAccountManagementDescription": "강사 계정 및 정보를 관리합니다.",
     "addNewAdmin": "새 관리자 추가",
     "addNewInstructor": "새 강사 추가",
     "newAdmin": "새 관리자",
@@ -200,6 +201,7 @@
     "searchPlaceholder": "강사 이름, 강사 ID 또는 소속으로 검색",
     "noAdminAccountsFound": "관리자 계정을 찾을 수 없습니다.",
     "noInstructorAccountsFound": "강사 계정을 찾을 수 없습니다.",
+    "download": "다운로드",
     "basicInformation": "기본 정보",
     "basicInformationDescription": "강사 ID, 이름, 이메일 및 연락처 정보 등 기본 정보를 입력하세요.",
     "addressInformation": "주소 정보",
