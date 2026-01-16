@@ -14,6 +14,7 @@ import {
   ClipboardList,
   Award,
   FileCode,
+  Building2,
 } from "lucide-react";
 import logoImage from "@/assets/images/logo/logo.png";
 
@@ -88,6 +89,16 @@ export const Sidebar = () => {
             nameKey: "sidebar.instructorAccounts",
             href: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL,
             icon: Users,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.institution",
+        items: [
+          {
+            nameKey: "sidebar.institutionManagement",
+            href: ROUTES.ADMIN_INSTITUTION_FULL,
+            icon: Building2,
           },
         ],
       },

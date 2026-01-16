@@ -13,13 +13,14 @@ import {
   TeachingConfirmationManagementPage,
 } from '@/modules/instructor-assignment'
 import {
-  InstitutionManagementPage,
+  // InstitutionManagementPage,
   ProgramManagementPage,
   InstructorManagementPage,
 } from '@/modules/reference-information-management'
 import { SettingsAndUserManagementPage } from '@/modules/system-management'
 import { MasterCodeSetupPage, MasterCodeCreatePage } from '@/modules/master-code-setup'
 import { CommonCodePage } from '@/modules/common-code'
+import { InstitutionManagementPage } from '@/modules/institution'
 import {
   AdminAccountManagementPage,
   AddAdminPage,
@@ -71,10 +72,10 @@ export const protectedRoutes: RouteObject[] = [
               {
                 path: ROUTES.ADMIN_REFERENCE_INFORMATION_MANAGEMENT,
                 children: [
-                  {
-                    path: ROUTES.ADMIN_INSTITUTION_MANAGEMENT,
-                    element: <InstitutionManagementPage />,
-                  },
+                  // {
+                  //   path: ROUTES.ADMIN_INSTITUTION_MANAGEMENT,
+                  //   element: <InstitutionManagementPage />,
+                  // },
                   {
                     path: ROUTES.ADMIN_PROGRAM_MANAGEMENT,
                     element: <ProgramManagementPage />,
@@ -110,6 +111,10 @@ export const protectedRoutes: RouteObject[] = [
               {
                 path: ROUTES.ADMIN_COMMON_CODE,
                 element: <CommonCodePage />,
+              },
+              {
+                path: ROUTES.ADMIN_INSTITUTION,
+                element: <InstitutionManagementPage />,
               },
               {
                 path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT,
