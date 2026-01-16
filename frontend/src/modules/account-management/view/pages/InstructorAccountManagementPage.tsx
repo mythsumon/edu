@@ -21,7 +21,7 @@ export const InstructorAccountManagementPage = () => {
   }
 
   const handleAddClick = () => {
-    navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_ADD_FULL)
+    navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_CREATE_FULL)
   }
 
   const instructorAccounts = data?.items ?? []

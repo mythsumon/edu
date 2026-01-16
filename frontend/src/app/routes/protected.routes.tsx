@@ -121,7 +121,7 @@ export const protectedRoutes: RouteObject[] = [
                         element: <AdminAccountManagementPage />,
                       },
                       {
-                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_ADD,
+                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_CREATE,
                         element: <AddAdminPage />,
                       },
                     ],
@@ -134,7 +134,7 @@ export const protectedRoutes: RouteObject[] = [
                         element: <InstructorAccountManagementPage />,
                       },
                       {
-                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_ADD,
+                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_CREATE,
                         element: <AddInstructorPage />,
                       },
                     ],

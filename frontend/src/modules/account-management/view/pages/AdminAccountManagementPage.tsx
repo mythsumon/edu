@@ -21,7 +21,7 @@ export const AdminAccountManagementPage = () => {
   }
 
   const handleAddClick = () => {
-    navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_ADD_FULL)
+    navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_CREATE_FULL)
   }
 
   const adminAccounts = data?.items ?? []
