@@ -3,5 +3,6 @@ export { AdminAccountManagementPage } from './view/pages/AdminAccountManagementP
 export { AddAdminPage } from './view/pages/CreateAdminPage'
 export { InstructorAccountManagementPage } from './view/pages/InstructorAccountManagementPage'
 export { AddInstructorPage } from './view/pages/CreateInstructorPage'
-export { useAdminAccountsQuery, useInstructorAccountsQuery } from './controller/queries'
-export type { AdminAccount, InstructorAccount } from './model/account-management.types'
+export { InstructorDetailPage } from './view/pages/InstructorDetailPage'
+export { useAdminAccountsQuery, useInstructorAccountsQuery, useInstructorDetailQuery } from './controller/queries'
+export type { AdminAccount, InstructorAccount, InstructorDetail } from './model/account-management.types'

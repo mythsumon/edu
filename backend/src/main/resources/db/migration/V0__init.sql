@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS instructors (
     signature VARCHAR(500),
     profile_photo VARCHAR(500),
     CONSTRAINT fk_instructors_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_instructors_region FOREIGN KEY (region_id) REFERENCES regions(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_instructors_region FOREIGN KEY (region_id) REFERENCES master_code(id) ON DELETE RESTRICT,
     CONSTRAINT fk_instructors_status FOREIGN KEY (status_id) REFERENCES master_code(id) ON DELETE RESTRICT,
     CONSTRAINT fk_instructors_classification FOREIGN KEY (classification_id) REFERENCES master_code(id) ON DELETE RESTRICT
 );

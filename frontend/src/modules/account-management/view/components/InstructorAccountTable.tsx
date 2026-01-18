@@ -5,6 +5,7 @@ import { Checkbox } from '@/shared/ui/checkbox'
 import { Button } from '@/shared/ui/button'
 import { Eye } from 'lucide-react'
 import { DataTable } from '@/shared/components/DataTable'
+import { Card, CardContent } from '@/shared/ui/card'
 import { cn } from '@/shared/lib/cn'
 import type { InstructorAccount } from '../../model/account-management.types'
 
@@ -123,11 +124,15 @@ export const InstructorAccountTable = ({
   )
 
   return (
-    <DataTable
-      data={data}
-      columns={columns}
-      emptyMessage={t('accountManagement.noInstructorAccountsFound')}
-      enableRowSelection={true}
-    />
+    <Card>
+      <CardContent className="p-0">
+        <DataTable
+          data={data}
+          columns={columns}
+          emptyMessage={t('accountManagement.noInstructorAccountsFound')}
+          enableRowSelection={true}
+        />
+      </CardContent>
+    </Card>
   )
 }

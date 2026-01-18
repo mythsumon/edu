@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useEffect, useRef, useMemo } from 'react'
 import { PageLayout } from '@/app/layout/PageLayout'
 import { Button } from '@/shared/ui/button'
+import { useToast } from '@/shared/ui/use-toast'
 import { ROUTES } from '@/shared/constants/routes'
 import { useCreateInstructor } from '../../controller/mutations'
 import { createInstructorSchema, type CreateInstructorFormData } from '../../model/account-management.schema'
@@ -20,6 +21,7 @@ import { CollapsibleCard } from '../components/CollapsibleCard'
 
 export const AddInstructorPage = () => {
   const { t } = useTranslation()
+  const { toast } = useToast()
   const navigate = useNavigate()
   const createInstructorMutation = useCreateInstructor()
   const formRef = useRef<HTMLFormElement>(null)
@@ -123,9 +125,26 @@ export const AddInstructorPage = () => {
         classificationId: Number(data.classificationId),
         affiliation: data.affiliation || undefined,
       })
+      toast({
+        title: t('common.success'),
+        description: t('accountManagement.createInstructorSuccess'),
+        variant: 'success',
+      })
       navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL)
     } catch (error) {
-      // Error handling is done by the mutation
+      // Extract error message from the error object
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'object' && error !== null && 'message' in error
+            ? String(error.message)
+            : t('accountManagement.createInstructorError')
+
+      toast({
+        title: t('common.error'),
+        description: errorMessage,
+        variant: 'error',
+      })
       console.error('Failed to create instructor:', error)
     }
   }

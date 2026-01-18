@@ -8,6 +8,6 @@ export interface GenderOption {
 }
 
 export const GENDER_OPTIONS: GenderOption[] = [
-  { value: 'MALE', label: 'MALE' },
-  { value: 'FEMALE', label: 'FEMALE' },
+  { value: '남자', label: '남자' },
+  { value: '여자', label: '여자' },
 ]
