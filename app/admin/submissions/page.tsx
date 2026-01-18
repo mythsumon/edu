@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { useAuth } from '@/contexts/AuthContext'
 import { Table, Button, Card, Tabs, Space, message, Input } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { Eye, CheckCircle2, XCircle, Search } from 'lucide-react'
@@ -26,6 +27,7 @@ import dayjs from 'dayjs'
 
 export default function SubmissionsPage() {
   const router = useRouter()
+  const { userProfile } = useAuth()
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'rejected' | 'approved'>('pending')
   const [searchText, setSearchText] = useState('')
   const [summaries, setSummaries] = useState<EducationDocSummary[]>([])
