@@ -21,6 +21,7 @@ import { getAttendanceDocs } from '@/app/instructor/schedule/[educationId]/atten
 import { getActivityLogs } from '@/app/instructor/activity-logs/storage'
 import { getDocs as getEquipmentDocs } from '@/app/instructor/equipment-confirmations/storage'
 import { getEvidenceDocs } from '@/app/instructor/evidence/storage'
+import { attendanceSheetStore } from '@/lib/attendanceSheetStore'
 import dayjs from 'dayjs'
 
 export default function SubmissionsPage() {
@@ -142,7 +143,7 @@ export default function SubmissionsPage() {
     try {
       // Check if this is an AttendanceSheet
       if (type === 'attendance') {
-        const sheet = attendanceSheetStore.getByEducationId(id) || attendanceSheetStore.getById(id)
+        const sheet = attendanceSheetStore.getByEducationId(id) ?? attendanceSheetStore.getById(id)
         if (sheet && sheet.status === 'SUBMITTED_TO_ADMIN') {
           const adminName = userProfile?.name || '관리자'
           const result = attendanceSheetStore.adminReview(
