@@ -404,7 +404,7 @@ export default function AdminAttendanceDetailPage() {
                     key: 'sessions',
                     label: '차시',
                     ...doc.sessions.reduce((acc, session, index) => {
-                      acc[`session${index + 1}`] = session.sessions
+                      acc[`session${index + 1}`] = String(session.sessions)
                       return acc
                     }, {} as Record<string, string>),
                   },
@@ -412,7 +412,7 @@ export default function AdminAttendanceDetailPage() {
                     key: 'studentCount',
                     label: '학생정원',
                     ...doc.sessions.reduce((acc, session, index) => {
-                      acc[`session${index + 1}`] = session.studentCount
+                      acc[`session${index + 1}`] = String(session.studentCount)
                       return acc
                     }, {} as Record<string, string>),
                   },
@@ -420,7 +420,7 @@ export default function AdminAttendanceDetailPage() {
                     key: 'attendanceCount',
                     label: '출석인원',
                     ...doc.sessions.reduce((acc, session, index) => {
-                      acc[`session${index + 1}`] = session.attendanceCount
+                      acc[`session${index + 1}`] = String(session.attendanceCount)
                       return acc
                     }, {} as Record<string, string>),
                   },
