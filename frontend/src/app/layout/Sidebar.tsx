@@ -103,6 +103,16 @@ export const Sidebar = () => {
         ],
       },
       {
+        titleKey: "sidebar.program",
+        items: [
+          {
+            nameKey: "sidebar.programManagement",
+            href: ROUTES.ADMIN_PROGRAM_MANAGEMENT_FULL,
+            icon: BookOpen,
+          },
+        ],
+      },
+      {
         titleKey: "sidebar.system",
         items: [
           {
@@ -302,7 +312,7 @@ export const Sidebar = () => {
                             "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors",
                             sidebarCollapsed ? "justify-center" : "",
                             isActive
-                              ? "bg-primary text-primary-foreground"
+                              ? "bg-badge text-primary font-semibold"
                               : "text-foreground hover:bg-muted"
                           )}
                         >

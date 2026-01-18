@@ -14,13 +14,13 @@ import {
 } from '@/modules/instructor-assignment'
 import {
   // InstitutionManagementPage,
-  ProgramManagementPage,
   InstructorManagementPage,
 } from '@/modules/reference-information-management'
 import { SettingsAndUserManagementPage } from '@/modules/system-management'
 import { MasterCodeSetupPage, MasterCodeCreatePage } from '@/modules/master-code-setup'
 import { CommonCodePage } from '@/modules/common-code'
 import { InstitutionManagementPage, InstitutionCreatePage, InstitutionEditPage } from '@/modules/institution'
+import { ProgramListPage, ProgramCreatePage, ProgramEditPage } from '@/modules/program'
 import {
   AdminAccountManagementPage,
   AddAdminPage,
@@ -78,11 +78,28 @@ export const protectedRoutes: RouteObject[] = [
                   // },
                   {
                     path: ROUTES.ADMIN_PROGRAM_MANAGEMENT,
-                    element: <ProgramManagementPage />,
+                    element: <ProgramListPage />,
                   },
                   {
                     path: ROUTES.ADMIN_INSTRUCTOR_MANAGEMENT,
                     element: <InstructorManagementPage />,
+                  },
+                ],
+              },
+              {
+                path: ROUTES.ADMIN_PROGRAM,
+                children: [
+                  {
+                    index: true,
+                    element: <ProgramListPage />,
+                  },
+                  {
+                    path: ROUTES.ADMIN_PROGRAM_CREATE,
+                    element: <ProgramCreatePage />,
+                  },
+                  {
+                    path: ROUTES.ADMIN_PROGRAM_EDIT,
+                    element: <ProgramEditPage />,
                   },
                 ],
               },

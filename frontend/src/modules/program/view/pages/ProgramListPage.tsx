@@ -12,32 +12,27 @@ import { DataTable } from "@/shared/components/DataTable";
 import { LoadingOverlay } from "@/shared/components/LoadingOverlay";
 import { CustomPagination } from "@/shared/components/CustomPagination";
 import { ROUTES } from "@/shared/constants/routes";
-import { useInstitutionsQuery } from "../../controller/queries";
-import type {
-  Institution,
-  InstitutionResponseDto,
-} from "../../model/institution.types";
+import { useProgramsQuery } from "../../controller/queries";
+import type { Program, ProgramResponseDto, ProgramFilterData } from "../../model/program.types";
+import { exportProgramsToExcel } from "../../model/program.service";
 import { debounce } from "@/shared/lib/debounce";
-import {
-  InstitutionFilterDialog,
-  type InstitutionFilterData,
-} from "../components/InstitutionFilterDialog";
-import { exportInstitutionsToExcel } from "../../model/institution.service";
+import { formatDateDot } from "@/shared/lib/date";
+import { ProgramFilterDialog } from "../components/ProgramFilterDialog";
 
 /**
  * Actions Cell Component
  */
 interface ActionsCellProps {
-  institution: Institution;
-  onDetail: (institution: Institution) => void;
+  program: Program;
+  onDetail: (program: Program) => void;
 }
 
-const ActionsCell = ({ institution, onDetail }: ActionsCellProps) => {
+const ActionsCell = ({ program, onDetail }: ActionsCellProps) => {
   const { t } = useTranslation();
 
   const handleDetail = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onDetail(institution);
+    onDetail(program);
   };
 
   return (
@@ -55,36 +50,27 @@ const ActionsCell = ({ institution, onDetail }: ActionsCellProps) => {
 };
 
 /**
- * Map InstitutionResponseDto to Institution for table display
- * Maps address -> street and other fields to match table columns
+ * Map ProgramResponseDto to Program for table display
  */
-const mapInstitutionDtoToTable = (dto: InstitutionResponseDto): Institution => {
+const mapProgramDtoToTable = (dto: ProgramResponseDto): Program => {
   return {
     id: dto.id,
-    institutionId: dto.institutionId,
-    institutionName: dto.name,
-    address: dto.street, // Map street to address column
-    detailAddress: dto.address, // Map address to detailAddress column
-    phoneNumber: dto.phoneNumber,
-    manager: dto.teacher?.name || "", // Extract teacher name from nested object
-    email: "",
-    website: "",
-    status: "",
-    region: "",
-    city: "",
-    postalCode: "",
-    faxNumber: "",
-    contactPerson: "",
+    programId: dto.programId || dto.id.toString(),
+    programName: dto.name,
+    sessionPart: dto.sessionPart?.codeName || "",
+    status: dto.status?.codeName || "",
+    programType: dto.programType?.codeName || "",
+    notes: dto.notes || "",
     createdAt: dto.createdAt,
     updatedAt: dto.updatedAt,
   };
 };
 
 /**
- * Institution Management Page
- * Displays institution management interface
+ * Program List Page
+ * Displays program management interface
  */
-export const InstitutionManagementPage = () => {
+export const ProgramListPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -99,9 +85,12 @@ export const InstitutionManagementPage = () => {
     React.useState<string>("");
   const [page, setPage] = React.useState<number>(0);
   const [size, setSize] = React.useState<number>(20);
-  const [isFilterDialogOpen, setIsFilterDialogOpen] =
-    React.useState<boolean>(false);
-  const [filters, setFilters] = React.useState<InstitutionFilterData>({});
+
+  // Filter dialog state
+  const [isFilterDialogOpen, setIsFilterDialogOpen] = React.useState(false);
+  const [filters, setFilters] = React.useState<ProgramFilterData>({});
+
+  // Export state
   const [isExporting, setIsExporting] = React.useState<boolean>(false);
 
   // Debounce search query
@@ -121,40 +110,41 @@ export const InstitutionManagementPage = () => {
     debouncedSetSearch(value);
   };
 
-  // Helper function to convert string array to number array
-  const convertStringArrayToNumbers = (
-    arr: string | string[] | undefined
-  ): number[] | undefined => {
-    if (!arr) return undefined;
-    const arrAsArray = Array.isArray(arr) ? arr : [arr];
-    if (arrAsArray.length === 0) return undefined;
-    return arrAsArray.map((id) => Number(id)).filter((id) => !isNaN(id));
+  // Handle filter confirm
+  const handleFilterConfirm = (filterData: ProgramFilterData) => {
+    setFilters(filterData);
+    setPage(0); // Reset to first page when filters change
+    setIsFilterDialogOpen(false);
   };
 
-  // Fetch institutions using React Query with debounced search and filters
-  const { data: institutionsData } = useInstitutionsQuery({
+  // Build statusIds array from filter
+  const statusIds = React.useMemo(() => {
+    if (!filters.status || filters.status.length === 0) return undefined;
+    return filters.status.map((id) => Number(id));
+  }, [filters.status]);
+
+  // Check if any filters are active
+  const hasActiveFilters = React.useMemo(() => {
+    return (filters.status && filters.status.length > 0) || false;
+  }, [filters]);
+
+  // Fetch programs using React Query with debounced search
+  const { data: programsData } = useProgramsQuery({
     q: debouncedSearchQuery || undefined,
     page,
     size,
-    majorCategoryIds: convertStringArrayToNumbers(filters.majorCategory),
-    categoryOneIds: convertStringArrayToNumbers(filters.category1),
-    categoryTwoIds: convertStringArrayToNumbers(filters.category2),
-    classificationIds: convertStringArrayToNumbers(
-      filters.institutionLevelClassification
-    ),
-    zoneIds: convertStringArrayToNumbers(filters.zone),
-    regionIds: convertStringArrayToNumbers(filters.region),
+    statusIds,
   });
 
   // Map DTOs to table format
-  const institutions: Institution[] = React.useMemo(() => {
-    if (!institutionsData?.items) return [];
-    return institutionsData.items.map(mapInstitutionDtoToTable);
-  }, [institutionsData]);
+  const programs: Program[] = React.useMemo(() => {
+    if (!programsData?.items) return [];
+    return programsData.items.map(mapProgramDtoToTable);
+  }, [programsData]);
 
   // Extract pagination metadata
   const paginationData = React.useMemo(() => {
-    if (!institutionsData) {
+    if (!programsData) {
       return {
         total: 0,
         page: 0,
@@ -163,17 +153,17 @@ export const InstitutionManagementPage = () => {
       };
     }
     return {
-      total: institutionsData.total,
-      page: institutionsData.page,
-      size: institutionsData.size,
-      totalPages: institutionsData.totalPages,
+      total: programsData.total,
+      page: programsData.page,
+      size: programsData.size,
+      totalPages: programsData.totalPages,
     };
-  }, [institutionsData, size]);
+  }, [programsData, size]);
 
-  // Reset to first page when search or filters change
+  // Reset to first page when search changes
   React.useEffect(() => {
     setPage(0);
-  }, [debouncedSearchQuery, filters]);
+  }, [debouncedSearchQuery]);
 
   // Handle page change
   const handlePageChange = (newPage: number) => {
@@ -186,21 +176,8 @@ export const InstitutionManagementPage = () => {
     setPage(0); // Reset to first page when size changes
   };
 
-  const handleFilterClick = () => {
-    setIsFilterDialogOpen(true);
-  };
-
-  const handleFilterConfirm = (filterData: InstitutionFilterData) => {
-    setFilters(filterData);
-    setIsFilterDialogOpen(false);
-  };
-
-  const handleFilterReset = () => {
-    setFilters({});
-  };
-
-  const handleAddInstitution = () => {
-    navigate(ROUTES.ADMIN_INSTITUTION_CREATE_FULL);
+  const handleAddProgram = () => {
+    navigate(ROUTES.ADMIN_PROGRAM_CREATE_FULL);
   };
 
   const handleDownload = async () => {
@@ -210,27 +187,17 @@ export const InstitutionManagementPage = () => {
       // Build export parameters from current filters
       const exportParams = {
         q: debouncedSearchQuery || undefined,
-        majorCategoryIds: convertStringArrayToNumbers(filters.majorCategory),
-        categoryOneIds: convertStringArrayToNumbers(filters.category1),
-        categoryTwoIds: convertStringArrayToNumbers(filters.category2),
-        classificationIds: convertStringArrayToNumbers(
-          filters.institutionLevelClassification
-        ),
-        zoneIds: convertStringArrayToNumbers(filters.zone),
-        regionIds: convertStringArrayToNumbers(filters.region),
-        // Note: districtId and teacherId are not in filters, but can be added if needed
+        statusIds: statusIds,
       };
 
       // Call export API
-      const blob = await exportInstitutionsToExcel(exportParams);
+      const blob = await exportProgramsToExcel(exportParams);
 
       // Create download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `institutions_${
-        new Date().toISOString().split("T")[0]
-      }.xlsx`;
+      link.download = `programs_${new Date().toISOString().split("T")[0]}.xlsx`;
 
       // Trigger download
       document.body.appendChild(link);
@@ -240,7 +207,7 @@ export const InstitutionManagementPage = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Error exporting institutions:", error);
+      console.error("Error exporting programs:", error);
       // TODO: Show error toast/notification
     } finally {
       setIsExporting(false);
@@ -248,13 +215,13 @@ export const InstitutionManagementPage = () => {
   };
 
   const handleDetail = React.useCallback(
-    (institution: Institution) => {
-      navigate(`/admin/institution/${institution.id}/edit?mode=view`);
+    (program: Program) => {
+      navigate(`/admin/program/${program.id}/edit?mode=view`);
     },
     [navigate]
   );
 
-  const columns = React.useMemo<ColumnDef<Institution>[]>(
+  const columns = React.useMemo<ColumnDef<Program>[]>(
     () => [
       {
         id: "select",
@@ -268,7 +235,7 @@ export const InstitutionManagementPage = () => {
               onCheckedChange={(value) =>
                 table.toggleAllPageRowsSelected(!!value)
               }
-              aria-label={t("institution.selectAll")}
+              aria-label={t("program.selectAll")}
             />
           </div>
         ),
@@ -277,8 +244,8 @@ export const InstitutionManagementPage = () => {
             <Checkbox
               checked={row.getIsSelected()}
               onCheckedChange={(value) => row.toggleSelected(!!value)}
-              aria-label={`${t("institution.selectRow")} ${
-                row.original.institutionName
+              aria-label={`${t("program.selectRow")} ${
+                row.original.programName
               }`}
             />
           </div>
@@ -288,127 +255,121 @@ export const InstitutionManagementPage = () => {
         meta: { width: 50 },
       },
       {
-        accessorKey: "institutionId",
+        accessorKey: "programId",
         header: () => (
           <div style={{ width: "120px", minWidth: "120px", maxWidth: "120px" }}>
-            {t("institution.institutionId")}
+            {t("program.programId")}
           </div>
         ),
         cell: ({ row }) => {
-          const institutionId = row.getValue("institutionId") as
-            | string
-            | undefined;
+          const programId = row.getValue("programId") as string | undefined;
           return (
             <div
               className="font-medium"
               style={{ width: "120px", minWidth: "120px", maxWidth: "120px" }}
             >
-              {institutionId || "-"}
+              {programId || "-"}
             </div>
           );
         },
         meta: { width: 120 },
       },
       {
-        accessorKey: "institutionName",
+        accessorKey: "programName",
         header: () => (
           <div style={{ width: "200px", minWidth: "200px", maxWidth: "200px" }}>
-            {t("institution.institutionName")}
+            {t("program.programName")}
           </div>
         ),
         cell: ({ row }) => {
-          const institutionName = row.getValue("institutionName") as
-            | string
-            | undefined;
+          const programName = row.getValue("programName") as string | undefined;
           return (
             <div
               style={{ width: "200px", minWidth: "200px", maxWidth: "200px" }}
             >
-              {institutionName || "-"}
+              {programName || "-"}
             </div>
           );
         },
         meta: { width: 200 },
       },
       {
-        accessorKey: "address",
-        header: () => (
-          <div style={{ width: "200px", minWidth: "200px", maxWidth: "200px" }}>
-            {t("institution.address")}
-          </div>
-        ),
-        cell: ({ row }) => {
-          const address = row.getValue("address") as string | undefined;
-          return (
-            <div
-              style={{ width: "200px", minWidth: "200px", maxWidth: "200px" }}
-            >
-              {address || "-"}
-            </div>
-          );
-        },
-        meta: { width: 200 },
-      },
-      {
-        accessorKey: "detailAddress",
-        header: () => (
-          <div style={{ width: "200px", minWidth: "200px", maxWidth: "200px" }}>
-            {t("institution.detailAddress")}
-          </div>
-        ),
-        cell: ({ row }) => {
-          const detailAddress = row.getValue("detailAddress") as
-            | string
-            | undefined;
-          return (
-            <div
-              style={{ width: "200px", minWidth: "200px", maxWidth: "200px" }}
-            >
-              {detailAddress || "-"}
-            </div>
-          );
-        },
-        meta: { width: 200 },
-      },
-      {
-        accessorKey: "phoneNumber",
-        header: () => (
-          <div style={{ width: "130px", minWidth: "130px", maxWidth: "130px" }}>
-            {t("institution.phoneNumber")}
-          </div>
-        ),
-        cell: ({ row }) => {
-          const phoneNumber = row.getValue("phoneNumber") as string | undefined;
-          return (
-            <div
-              style={{ width: "130px", minWidth: "130px", maxWidth: "130px" }}
-            >
-              {phoneNumber || "-"}
-            </div>
-          );
-        },
-        meta: { width: 130 },
-      },
-      {
-        accessorKey: "manager",
+        accessorKey: "status",
         header: () => (
           <div style={{ width: "150px", minWidth: "150px", maxWidth: "150px" }}>
-            {t("institution.manager")}
+            {t("program.status")}
           </div>
         ),
         cell: ({ row }) => {
-          const manager = row.getValue("manager") as string | undefined;
+          const status = row.getValue("status") as string | undefined;
+          const statusLower = status?.toLowerCase() || "";
+
+          // Determine badge color based on status
+          let badgeClass = "bg-muted text-muted-foreground"; // default/inactive
+          if (statusLower === "active") {
+            badgeClass = "bg-green-100 text-green-700";
+          } else if (statusLower === "pending") {
+            badgeClass = "bg-orange-100 text-yellow-700";
+          } else if (statusLower === "inactive") {
+            badgeClass = "bg-gray-100 text-gray-600";
+          }
+
           return (
             <div
               style={{ width: "150px", minWidth: "150px", maxWidth: "150px" }}
             >
-              {manager || "-"}
+              {status ? (
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${badgeClass}`}
+                >
+                  {status}
+                </span>
+              ) : (
+                "-"
+              )}
             </div>
           );
         },
         meta: { width: 150 },
       },
-
+      {
+        accessorKey: "notes",
+        header: () => (
+          <div style={{ width: "200px", minWidth: "200px", maxWidth: "200px" }}>
+            {t("program.notes")}
+          </div>
+        ),
+        cell: ({ row }) => {
+          const notes = row.getValue("notes") as string | undefined;
+          return (
+            <div
+              style={{ width: "200px", minWidth: "200px", maxWidth: "200px" }}
+            >
+              {notes || "-"}
+            </div>
+          );
+        },
+        meta: { width: 200 },
+      },
+      {
+        accessorKey: "createdAt",
+        header: () => (
+          <div style={{ width: "150px", minWidth: "150px", maxWidth: "150px" }}>
+            {t("program.registrationDate")}
+          </div>
+        ),
+        cell: ({ row }) => {
+          const createdAt = row.getValue("createdAt") as string | undefined;
+          return (
+            <div
+              style={{ width: "150px", minWidth: "150px", maxWidth: "150px" }}
+            >
+              {createdAt ? formatDateDot(createdAt) : "-"}
+            </div>
+          );
+        },
+        meta: { width: 150 },
+      },
       {
         id: "actions",
         header: () => (
@@ -416,14 +377,14 @@ export const InstitutionManagementPage = () => {
             className="text-center"
             style={{ width: "80px", minWidth: "80px", maxWidth: "80px" }}
           >
-            {t("institution.actions")}
+            {t("program.actions")}
           </div>
         ),
         cell: ({ row }) => {
-          const institution = row.original;
+          const program = row.original;
           return (
             <div style={{ width: "80px", minWidth: "80px", maxWidth: "80px" }}>
-              <ActionsCell institution={institution} onDetail={handleDetail} />
+              <ActionsCell program={program} onDetail={handleDetail} />
             </div>
           );
         },
@@ -443,10 +404,10 @@ export const InstitutionManagementPage = () => {
           {/* Left side: Title and Description */}
           <div>
             <h1 className="text-xl font-semibold text-foreground mb-2">
-              {t("institution.title")}
+              {t("program.title")}
             </h1>
             <p className="text-xs text-muted-foreground">
-              {t("institution.description")}
+              {t("program.description")}
             </p>
           </div>
           {/* Right side: Action Buttons */}
@@ -457,13 +418,11 @@ export const InstitutionManagementPage = () => {
               disabled={isExporting}
             >
               <Download className="h-4 w-4" />
-              {isExporting
-                ? t("common.loading") || "Loading..."
-                : t("institution.download")}
+              {isExporting ? t("common.exporting") : t("program.download")}
             </Button>
-            <Button onClick={handleAddInstitution}>
+            <Button onClick={handleAddProgram}>
               <Plus className="h-4 w-4" />
-              {t("institution.addInstitution")}
+              {t("program.addProgram")}
             </Button>
           </div>
         </div>
@@ -476,23 +435,32 @@ export const InstitutionManagementPage = () => {
             <div className="flex-1 max-w-md">
               <Input
                 type="text"
-                placeholder={t("institution.searchPlaceholder")}
+                placeholder={t("program.searchPlaceholder")}
                 value={searchQuery}
                 onChange={handleSearchChange}
                 icon={<Search className="h-4 w-4" />}
               />
             </div>
-            <Button variant="outline" onClick={handleFilterClick}>
+            <Button
+              variant="outline"
+              onClick={() => setIsFilterDialogOpen(true)}
+              className={hasActiveFilters ? "border-primary text-primary" : ""}
+            >
               <Filter className="h-4 w-4" />
-              {t("institution.filter") || "Filter"}
+              {t("program.filter")}
+              {hasActiveFilters && (
+                <span className="ml-1 w-5 h-5 justify-center items-center flex text-xs bg-badge text-primary rounded-full">
+                  {filters.status?.length || 0}
+                </span>
+              )}
             </Button>
           </div>
           {/* Table */}
           <div className="overflow-x-auto">
             <DataTable
-              data={institutions}
+              data={programs}
               columns={columns}
-              emptyMessage={t("institution.noData")}
+              emptyMessage={t("program.noData")}
               getHeaderClassName={(headerId) => {
                 if (headerId === "actions") return "text-right";
                 return "text-left";
@@ -514,12 +482,14 @@ export const InstitutionManagementPage = () => {
           onSizeChange={handleSizeChange}
         />
       </div>
-      <InstitutionFilterDialog
+      <LoadingOverlay isLoading={isExporting} />
+
+      {/* Filter Dialog */}
+      <ProgramFilterDialog
         open={isFilterDialogOpen}
         onOpenChange={setIsFilterDialogOpen}
         onConfirm={handleFilterConfirm}
       />
-      <LoadingOverlay isLoading={isExporting} />
     </div>
   );
 };
