@@ -162,7 +162,7 @@ export default function TeacherAttendanceSignPage() {
       const canSign = sheet.status === 'WAITING_TEACHER_SIGNATURE' || 
                       sheet.status === 'SIGNED_BY_TEACHER' || 
                       sheet.status === 'APPROVED' ||
-                      (selectedAttendance.isCompleted && !sheet.teacherSignature)
+                      (selectedAttendance?.status === 'APPROVED' && !sheet.teacherSignature)
       
       if (canSign) {
         const signature = {
