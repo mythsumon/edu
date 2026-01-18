@@ -157,7 +157,7 @@ export default function EvidenceDetailPage() {
     }
   }
 
-  const handleItemsChange = (items: typeof doc.items) => {
+  const handleItemsChange = (items: EvidenceDoc['items']) => {
     if (!doc) return
     setDoc({
       ...doc,
