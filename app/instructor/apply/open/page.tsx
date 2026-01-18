@@ -1,14 +1,15 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Card, Button, Badge, Modal, message, Tooltip, Tabs } from 'antd'
-import { Calendar, MapPin, Users, Clock, UserCheck, UserPlus, AlertCircle } from 'lucide-react'
+import { Card, Button, Modal, message, Tooltip, Tabs, Table, Checkbox, Space } from 'antd'
+import { Calendar, CheckCircle2 } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import dayjs from 'dayjs'
 import { dataStore } from '@/lib/dataStore'
 import type { Education, InstructorApplication, InstructorAssignment } from '@/lib/dataStore'
 import { useAuth } from '@/contexts/AuthContext'
+import type { ColumnsType } from 'antd/es/table'
 
 export default function ApplyForEducationPage() {
   const router = useRouter()
@@ -16,9 +17,42 @@ export default function ApplyForEducationPage() {
   const { userProfile } = useAuth()
   const educationIdParam = searchParams?.get('educationId') || null
   const [activeTab, setActiveTab] = useState<'open' | 'closed'>('open')
-  
-  const allEducations = dataStore.getEducations()
+  const [allEducations, setAllEducations] = useState<Education[]>(dataStore.getEducations())
   const currentInstructorName = userProfile?.name || '홍길동'
+
+  // Refresh data periodically and on window focus to get latest status changes from admin
+  useEffect(() => {
+    const refreshData = () => {
+      setAllEducations(dataStore.getEducations())
+    }
+
+    // Refresh on mount
+    refreshData()
+
+    // Refresh when window gains focus (user switches back to tab)
+    const handleFocus = () => {
+      refreshData()
+    }
+
+    // Refresh every 5 seconds to catch admin status changes
+    const interval = setInterval(refreshData, 5000)
+
+    // Listen for education status updates from scheduler
+    const handleStatusUpdate = () => {
+      refreshData()
+    }
+
+    window.addEventListener('focus', handleFocus)
+    window.addEventListener('educationStatusUpdated', handleStatusUpdate)
+    window.addEventListener('storage', handleStatusUpdate)
+
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('focus', handleFocus)
+      window.removeEventListener('educationStatusUpdated', handleStatusUpdate)
+      window.removeEventListener('storage', handleStatusUpdate)
+    }
+  }, [])
   
   // Get instructor's assignment zone (region) from profile
   // For now, we'll use a default or get from userProfile if available
@@ -480,7 +514,295 @@ export default function ApplyForEducationPage() {
     return `D-${days}`
   }
 
+  // Get user's applications to check if already applied
+  const [userApplications, setUserApplications] = useState<InstructorApplication[]>(() => {
+    return dataStore.getInstructorApplications().filter(
+      app => app.instructorName === currentInstructorName
+    )
+  })
+
+  // Refresh user applications when data changes
+  useEffect(() => {
+    const refreshApplications = () => {
+      setUserApplications(
+        dataStore.getInstructorApplications().filter(
+          app => app.instructorName === currentInstructorName
+        )
+      )
+    }
+    refreshApplications()
+    
+    // Refresh every 5 seconds
+    const interval = setInterval(refreshApplications, 5000)
+    return () => clearInterval(interval)
+  }, [currentInstructorName])
+
+  // Check if user already applied to an education
+  const getUserApplication = (educationId: string, role: '주강사' | '보조강사') => {
+    return userApplications.find(
+      app => app.educationId === educationId && app.role === role
+    )
+  }
+
   const allCount = openEducations.length + closedEducations.length
+
+  // Table columns for open educations
+  const openColumns: ColumnsType<Education> = [
+    {
+      title: '교육기관명',
+      dataIndex: 'institution',
+      key: 'institution',
+      width: 200,
+    },
+    {
+      title: '학년-반',
+      dataIndex: 'gradeClass',
+      key: 'gradeClass',
+      width: 100,
+    },
+    {
+      title: '교육명',
+      dataIndex: 'name',
+      key: 'name',
+      width: 250,
+    },
+    {
+      title: '지역',
+      dataIndex: 'region',
+      key: 'region',
+      width: 100,
+    },
+    {
+      title: '기간',
+      key: 'period',
+      width: 200,
+      render: (_, record) => {
+        return `${record.periodStart || ''} - ${record.periodEnd || ''}`
+      },
+    },
+    {
+      title: '선택',
+      key: 'action',
+      width: 300,
+      render: (_, record) => {
+        const mainApplication = getUserApplication(record.educationId, '주강사')
+        const assistantApplication = getUserApplication(record.educationId, '보조강사')
+        const applyCheckMain = canApply(record, '주강사')
+        const applyCheckAssistant = canApply(record, '보조강사')
+
+        return (
+          <Space direction="vertical" size="small" style={{ width: '100%' }}>
+            {/* 주강사 */}
+            {mainApplication ? (
+              <Space>
+                <Checkbox checked={mainApplication.status === '수락됨'} disabled>
+                  주강사
+                </Checkbox>
+                <Button
+                  size="small"
+                  type={mainApplication.status === '수락됨' ? 'default' : 'primary'}
+                  danger={mainApplication.status !== '수락됨'}
+                >
+                  {mainApplication.status === '수락됨' ? '확정' : '미확정'}
+                </Button>
+              </Space>
+            ) : (
+              <Tooltip title={!applyCheckMain.canApply ? applyCheckMain.reason : ''}>
+                <Button
+                  type="primary"
+                  size="small"
+                  icon={<CheckCircle2 className="w-3.5 h-3.5" />}
+                  disabled={!applyCheckMain.canApply}
+                  onClick={() => handleApply(record, '주강사')}
+                  style={{ backgroundColor: applyCheckMain.canApply ? '#52c41a' : undefined }}
+                >
+                  주강사 신청완료
+                </Button>
+              </Tooltip>
+            )}
+
+            {/* 보조강사 */}
+            {assistantApplication ? (
+              <Space>
+                <Checkbox checked={assistantApplication.status === '수락됨'} disabled>
+                  보조교사
+                </Checkbox>
+                <Button
+                  size="small"
+                  type={assistantApplication.status === '수락됨' ? 'default' : 'primary'}
+                  danger={assistantApplication.status !== '수락됨'}
+                >
+                  {assistantApplication.status === '수락됨' ? '확정' : '미확정'}
+                </Button>
+              </Space>
+            ) : (
+              <Tooltip title={!applyCheckAssistant.canApply ? applyCheckAssistant.reason : ''}>
+                <Button
+                  size="small"
+                  disabled={!applyCheckAssistant.canApply}
+                  onClick={() => handleApply(record, '보조강사')}
+                  style={{ 
+                    backgroundColor: '#f5f5f5',
+                    borderColor: '#d9d9d9',
+                    color: '#595959',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <span style={{ 
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '16px',
+                    height: '16px',
+                    borderRadius: '50%',
+                    backgroundColor: '#ff4d4f',
+                    color: 'white',
+                    fontSize: '12px',
+                    lineHeight: '1'
+                  }}>−</span>
+                  보조교사
+                </Button>
+              </Tooltip>
+            )}
+          </Space>
+        )
+      },
+    },
+    {
+      title: '교육ID',
+      dataIndex: 'educationId',
+      key: 'educationId',
+      width: 120,
+    },
+  ]
+
+  // Table columns for closed educations
+  const closedColumns: ColumnsType<Education> = [
+    {
+      title: '교육기관명',
+      dataIndex: 'institution',
+      key: 'institution',
+      width: 200,
+    },
+    {
+      title: '학년-반',
+      dataIndex: 'gradeClass',
+      key: 'gradeClass',
+      width: 100,
+    },
+    {
+      title: '교육명',
+      dataIndex: 'name',
+      key: 'name',
+      width: 250,
+    },
+    {
+      title: '지역',
+      dataIndex: 'region',
+      key: 'region',
+      width: 100,
+    },
+    {
+      title: '기간',
+      key: 'period',
+      width: 200,
+      render: (_, record) => {
+        return `${record.periodStart || ''} - ${record.periodEnd || ''}`
+      },
+    },
+    {
+      title: '선택',
+      key: 'action',
+      width: 300,
+      render: (_, record) => {
+        const mainApplication = getUserApplication(record.educationId, '주강사')
+        const assistantApplication = getUserApplication(record.educationId, '보조강사')
+
+        return (
+          <Space direction="vertical" size="small" style={{ width: '100%' }}>
+            {/* 주강사 */}
+            {mainApplication ? (
+              <Space>
+                <Checkbox checked={mainApplication.status === '수락됨'} disabled>
+                  주강사
+                </Checkbox>
+                <Button
+                  size="small"
+                  type={mainApplication.status === '수락됨' ? 'default' : 'primary'}
+                  danger={mainApplication.status !== '수락됨'}
+                  disabled
+                >
+                  {mainApplication.status === '수락됨' ? '확정' : '미확정'}
+                </Button>
+              </Space>
+            ) : (
+              <Button
+                type="primary"
+                size="small"
+                disabled
+                style={{ backgroundColor: '#d9d9d9' }}
+              >
+                주강사 신청
+              </Button>
+            )}
+
+            {/* 보조강사 */}
+            {assistantApplication ? (
+              <Space>
+                <Checkbox checked={assistantApplication.status === '수락됨'} disabled>
+                  보조교사
+                </Checkbox>
+                <Button
+                  size="small"
+                  type={assistantApplication.status === '수락됨' ? 'default' : 'primary'}
+                  danger={assistantApplication.status !== '수락됨'}
+                  disabled
+                >
+                  {assistantApplication.status === '수락됨' ? '확정' : '미확정'}
+                </Button>
+              </Space>
+            ) : (
+              <Button
+                size="small"
+                disabled
+                style={{ 
+                  backgroundColor: '#f5f5f5',
+                  borderColor: '#d9d9d9',
+                  color: '#d9d9d9',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                <span style={{ 
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '16px',
+                  height: '16px',
+                  borderRadius: '50%',
+                  backgroundColor: '#ff4d4f',
+                  color: 'white',
+                  fontSize: '12px',
+                  lineHeight: '1',
+                  opacity: 0.5
+                }}>−</span>
+                보조교사
+              </Button>
+            )}
+          </Space>
+        )
+      },
+    },
+    {
+      title: '교육ID',
+      dataIndex: 'educationId',
+      key: 'educationId',
+      width: 120,
+    },
+  ]
 
   return (
     <ProtectedRoute requiredRole="instructor">
@@ -530,222 +852,48 @@ export default function ApplyForEducationPage() {
             />
           </Card>
 
-          {/* Education Cards */}
-          {activeTab === 'open' ? (
-            openEducations.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {openEducations.map((education) => {
-                // Check for both roles to show appropriate disabled state
-                const applyCheckMain = canApply(education, '주강사')
-                const applyCheckAssistant = canApply(education, '보조강사')
-                const applyCheck = applyCheckMain.canApply && applyCheckAssistant.canApply
-                  ? { canApply: true }
-                  : { canApply: false, reason: applyCheckMain.reason || applyCheckAssistant.reason }
-                
-                return (
-                  <Card
-                    key={education.key}
-                    className="hover:shadow-lg transition-shadow"
-                    actions={[
-                      <Tooltip
-                        key="main"
-                        title={!applyCheckMain.canApply ? applyCheckMain.reason : ''}
-                      >
-                        <Button
-                          type="primary"
-                          className="w-full"
-                          icon={<UserCheck className="w-4 h-4" />}
-                          disabled={!applyCheckMain.canApply}
-                          onClick={() => handleApply(education, '주강사')}
-                        >
-                          주강사 신청
-                        </Button>
-                      </Tooltip>,
-                      <Tooltip
-                        key="assistant"
-                        title={!applyCheckAssistant.canApply ? applyCheckAssistant.reason : ''}
-                      >
-                        <Button
-                          type="default"
-                          className="w-full"
-                          icon={<UserPlus className="w-4 h-4" />}
-                          disabled={!applyCheckAssistant.canApply}
-                          onClick={() => handleApply(education, '보조강사')}
-                        >
-                          보조강사 신청
-                        </Button>
-                      </Tooltip>,
-                    ]}
-                  >
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                          {education.name}
-                        </h3>
-                        {education.applicationDeadline && (
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge 
-                              status={applyCheck.canApply ? "processing" : "error"} 
-                              text={
-                                applyCheck.canApply 
-                                  ? getDaysUntilDeadline(education.applicationDeadline)
-                                  : '마감됨'
-                              } 
-                            />
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4" />
-                          <span>{education.institution}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
-                          <span>{education.periodStart} ~ {education.periodEnd}</span>
-                        </div>
-                        {education.applicationDeadline && (
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4" />
-                            <span>신청 마감: {education.applicationDeadline}</span>
-                          </div>
-                        )}
-                        <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4" />
-                          <span>{education.gradeClass}</span>
-                        </div>
-                      </div>
-
-                      {(!applyCheckMain.canApply || !applyCheckAssistant.canApply) && (
-                        <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-                          <div className="space-y-1">
-                            {!applyCheckMain.canApply && (
-                              <div className="flex items-start gap-2 text-sm text-red-600 dark:text-red-400">
-                                <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                                <span className="break-words">
-                                  <strong>주강사:</strong> {applyCheckMain.reason}
-                                </span>
-                              </div>
-                            )}
-                            {!applyCheckAssistant.canApply && (
-                              <div className="flex items-start gap-2 text-sm text-red-600 dark:text-red-400">
-                                <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                                <span className="break-words">
-                                  <strong>보조강사:</strong> {applyCheckAssistant.reason}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </Card>
-                )
-              })}
-              </div>
+          {/* Education Table */}
+          <Card className="rounded-xl">
+            {activeTab === 'open' ? (
+              openEducations.length > 0 ? (
+                <Table
+                  columns={openColumns}
+                  dataSource={openEducations}
+                  rowKey="key"
+                  pagination={{
+                    pageSize: 10,
+                    showSizeChanger: true,
+                    showTotal: (total) => `총 ${total}개`,
+                  }}
+                  scroll={{ x: 1200 }}
+                />
+              ) : (
+                <div className="text-center py-12">
+                  <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">신청 가능한 교육이 없습니다.</p>
+                </div>
+              )
             ) : (
-              <Card className="text-center py-12">
-                <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">신청 가능한 교육이 없습니다.</p>
-              </Card>
-            )
-          ) : (
-            // 마감된 교육 탭
-            closedEducations.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {closedEducations.map((education) => {
-                  const applyCheckMain = canApply(education, '주강사')
-                  const applyCheckAssistant = canApply(education, '보조강사')
-                  const applyCheck = { canApply: false, reason: '신청이 마감되었습니다.' }
-                  
-                  return (
-                    <Card
-                      key={education.key}
-                      className="hover:shadow-lg transition-shadow opacity-75"
-                      actions={[
-                        <Tooltip
-                          key="main"
-                          title={!applyCheck.canApply ? applyCheck.reason : ''}
-                        >
-                          <Button
-                            type="primary"
-                            className="w-full"
-                            icon={<UserCheck className="w-4 h-4" />}
-                            disabled={true}
-                          >
-                            주강사 신청
-                          </Button>
-                        </Tooltip>,
-                        <Tooltip
-                          key="assistant"
-                          title={!applyCheck.canApply ? applyCheck.reason : ''}
-                        >
-                          <Button
-                            type="default"
-                            className="w-full"
-                            icon={<UserPlus className="w-4 h-4" />}
-                            disabled={true}
-                          >
-                            보조강사 신청
-                          </Button>
-                        </Tooltip>,
-                      ]}
-                    >
-                      <div className="space-y-4">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                            {education.name}
-                          </h3>
-                          {education.applicationDeadline && (
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge 
-                                status="error"
-                                text="마감됨"
-                              />
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4" />
-                            <span>{education.institution}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            <span>{education.periodStart} ~ {education.periodEnd}</span>
-                          </div>
-                          {education.applicationDeadline && (
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-4 h-4" />
-                              <span>신청 마감: {education.applicationDeadline}</span>
-                            </div>
-                          )}
-                          <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4" />
-                            <span>{education.gradeClass}</span>
-                          </div>
-                        </div>
-
-                        <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-                          <div className="flex items-center gap-2 text-sm text-red-600">
-                            <AlertCircle className="w-4 h-4" />
-                            <span>신청이 마감되었습니다.</span>
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  )
-                })}
-              </div>
-            ) : (
-              <Card className="text-center py-12">
-                <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">마감된 교육이 없습니다.</p>
-              </Card>
-            )
-          )}
+              closedEducations.length > 0 ? (
+                <Table
+                  columns={closedColumns}
+                  dataSource={closedEducations}
+                  rowKey="key"
+                  pagination={{
+                    pageSize: 10,
+                    showSizeChanger: true,
+                    showTotal: (total) => `총 ${total}개`,
+                  }}
+                  scroll={{ x: 1200 }}
+                />
+              ) : (
+                <div className="text-center py-12">
+                  <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">마감된 교육이 없습니다.</p>
+                </div>
+              )
+            )}
+          </Card>
         </div>
       </div>
     </ProtectedRoute>

@@ -18,8 +18,9 @@ interface EducationDetailDrawerProps {
   onViewAttendance?: (educationId: string) => void
   onViewActivity?: (id: string) => void
   onViewEquipment?: (id: string) => void
-  onApprove?: (type: 'attendance' | 'activity' | 'equipment', id: string) => void
-  onReject?: (type: 'attendance' | 'activity' | 'equipment', id: string, reason: string) => void
+  onViewEvidence?: (id: string) => void
+  onApprove?: (type: 'attendance' | 'activity' | 'equipment' | 'evidence', id: string) => void
+  onReject?: (type: 'attendance' | 'activity' | 'equipment' | 'evidence', id: string, reason: string) => void
 }
 
 export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
@@ -31,6 +32,7 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
   onViewAttendance,
   onViewActivity,
   onViewEquipment,
+  onViewEvidence,
   onApprove,
   onReject,
 }) => {
@@ -413,6 +415,105 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
                               onClick={() => {
                                 // 교구 확인서가 없으면 educationId를 전달하여 새로 생성하거나 찾기
                                 onViewEquipment(summary.educationId)
+                              }}
+                            >
+                              작성하기
+                            </Button>
+                          )}
+                        </Space>
+                      </div>
+                    )}
+                  </div>
+                ),
+              },
+              {
+                key: 'evidence',
+                label: `증빙자료 ${summary.evidence ? `(${summary.evidence.count})` : ''}`,
+                children: (
+                  <div className="space-y-4">
+                    {summary.evidence ? (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            {getStatusBadge(summary.evidence.status)}
+                            {summary.evidence.rejectReason && (
+                              <div className="mt-2 text-sm text-red-600">
+                                반려 사유: {summary.evidence.rejectReason}
+                              </div>
+                            )}
+                            {summary.evidence.submittedAt && (
+                              <div className="mt-1 text-xs text-gray-500">
+                                제출일: {dayjs(summary.evidence.submittedAt).format('YYYY-MM-DD HH:mm')}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <Space>
+                          {!isAdmin && onViewEvidence && (
+                            <Button
+                              type="primary"
+                              icon={<Eye className="w-4 h-4" />}
+                              onClick={() => {
+                                if (summary.evidence?.id) {
+                                  onViewEvidence(summary.evidence.id)
+                                } else {
+                                  onViewEvidence(summary.educationId)
+                                }
+                              }}
+                            >
+                              {summary.evidence.status === 'DRAFT' ? '작성하기' : '수정하기'}
+                            </Button>
+                          )}
+                          {isAdmin && onViewEvidence && (
+                            <Button
+                              icon={<Eye className="w-4 h-4" />}
+                              onClick={() => onViewEvidence(summary.evidence!.id)}
+                            >
+                              상세보기
+                            </Button>
+                          )}
+                          {isAdmin && summary.evidence.status === 'SUBMITTED' && (
+                            <>
+                              {onApprove && (
+                                <Button
+                                  type="primary"
+                                  icon={<CheckCircle2 className="w-4 h-4" />}
+                                  onClick={() => onApprove('evidence', summary.evidence!.id)}
+                                >
+                                  승인
+                                </Button>
+                              )}
+                              {onReject && (
+                                <Button
+                                  danger
+                                  icon={<XCircle className="w-4 h-4" />}
+                                  onClick={() => {
+                                    const reason = prompt('반려 사유를 입력하세요:')
+                                    if (reason) {
+                                      onReject('evidence', summary.evidence!.id, reason)
+                                    }
+                                  }}
+                                >
+                                  반려
+                                </Button>
+                              )}
+                            </>
+                          )}
+                        </Space>
+                      </>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="text-center py-4 text-gray-400">
+                          증빙자료가 제출되지 않았습니다.
+                        </div>
+                        <Space>
+                          {onViewEvidence && (
+                            <Button
+                              type="primary"
+                              icon={<Eye className="w-4 h-4" />}
+                              onClick={() => {
+                                // 증빙자료가 없으면 educationId를 전달하여 새로 생성하거나 찾기
+                                onViewEvidence(summary.educationId)
                               }}
                             >
                               작성하기

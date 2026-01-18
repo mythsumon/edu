@@ -19,6 +19,7 @@ import { Eye, Search } from 'lucide-react'
 import { getAttendanceDocs } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import { getActivityLogs } from '@/app/instructor/activity-logs/storage'
 import { getDocs as getEquipmentDocs } from '@/app/instructor/equipment-confirmations/storage'
+import { getEvidenceDocs, upsertEvidenceDoc } from '@/app/instructor/evidence/storage'
 import {
   getAllEducationDocSummaries,
   type EducationDocSummary,
@@ -54,7 +55,7 @@ import { type SpecialCategory } from '@/types/region'
 
 interface SubmissionItem {
   id: string
-  type: 'attendance' | 'activity' | 'equipment'
+  type: 'attendance' | 'activity' | 'equipment' | 'evidence'
   educationId: string
   educationName: string
   institutionName: string
@@ -307,7 +308,11 @@ export default function AdminDashboardPage() {
     router.push(`/admin/equipment-confirmations/${id}`)
   }
 
-  const handleApprove = async (type: 'attendance' | 'activity' | 'equipment', id: string) => {
+  const handleViewEvidence = (id: string) => {
+    router.push(`/admin/evidence/${id}`)
+  }
+
+  const handleApprove = async (type: 'attendance' | 'activity' | 'equipment' | 'evidence', id: string) => {
     try {
       if (type === 'attendance') {
         const docs = getAttendanceDocs()
@@ -348,6 +353,19 @@ export default function AdminDashboardPage() {
           upsertDoc(updated)
           message.success('교구 확인서가 승인되었습니다.')
         }
+      } else if (type === 'evidence') {
+        const docs = getEvidenceDocs()
+        const doc = docs.find(d => d.id === id)
+        if (doc) {
+          const updated = {
+            ...doc,
+            status: 'APPROVED' as const,
+            approvedAt: new Date().toISOString(),
+            approvedBy: '관리자',
+          }
+          upsertEvidenceDoc(updated)
+          message.success('증빙자료가 승인되었습니다.')
+        }
       }
       // Trigger storage event for other tabs/windows
       if (typeof window !== 'undefined') {
@@ -368,7 +386,7 @@ export default function AdminDashboardPage() {
     }
   }
 
-  const handleReject = async (type: 'attendance' | 'activity' | 'equipment', id: string, reason: string) => {
+  const handleReject = async (type: 'attendance' | 'activity' | 'equipment' | 'evidence', id: string, reason: string) => {
     if (!reason || reason.trim() === '') {
       message.warning('반려 사유를 입력해주세요.')
       return
@@ -417,17 +435,35 @@ export default function AdminDashboardPage() {
           upsertDoc(updated)
           message.success('교구 확인서가 반려되었습니다.')
         }
+      } else if (type === 'evidence') {
+        const docs = getEvidenceDocs()
+        const doc = docs.find(d => d.id === id)
+        if (doc) {
+          const updated = {
+            ...doc,
+            status: 'REJECTED' as const,
+            rejectedAt: new Date().toISOString(),
+            rejectedBy: '관리자',
+            rejectReason: reason,
+          }
+          upsertEvidenceDoc(updated)
+          message.success('증빙자료가 반려되었습니다.')
+        }
       }
       // Trigger storage event for other tabs/windows
       if (typeof window !== 'undefined') {
         const storageKey = type === 'attendance' ? 'attendance_documents' : 
                           type === 'activity' ? 'activity_logs' : 
+                          type === 'evidence' ? 'evidence_docs' :
                           'equipment_confirmation_docs'
         window.dispatchEvent(new StorageEvent('storage', {
           key: storageKey,
           newValue: localStorage.getItem(storageKey),
           oldValue: localStorage.getItem(storageKey),
         }))
+        if (type === 'evidence') {
+          window.dispatchEvent(new CustomEvent('evidenceUpdated'))
+        }
       }
       loadSummaries()
       setDrawerOpen(false)
@@ -541,6 +577,18 @@ export default function AdminDashboardPage() {
             educationId={record.educationId}
             documentId={record.equipment?.id}
           />
+          <DocumentStatusIndicator
+            status={record.evidence?.status}
+            count={record.evidence?.count}
+            label="증빙자료"
+            onClick={() => {
+              if (record.evidence?.id) {
+                router.push(`/admin/evidence/${record.evidence.id}`)
+              }
+            }}
+            educationId={record.educationId}
+            documentId={record.evidence?.id}
+          />
         </div>
       ),
     },
@@ -580,7 +628,8 @@ export default function AdminDashboardPage() {
   const pendingCount = summaries.filter(s => {
     const hasSubmitted = s.attendance?.status === 'SUBMITTED' || 
                         s.activity?.status === 'SUBMITTED' || 
-                        s.equipment?.status === 'SUBMITTED'
+                        s.equipment?.status === 'SUBMITTED' ||
+                        s.evidence?.status === 'SUBMITTED'
     return hasSubmitted
   }).length
   const approvedCount = summaries.filter(s => s.overallStatus === 'ALL_APPROVED').length
@@ -1336,6 +1385,7 @@ export default function AdminDashboardPage() {
               onViewAttendance={handleViewAttendance}
               onViewActivity={handleViewActivity}
               onViewEquipment={handleViewEquipment}
+              onViewEvidence={handleViewEvidence}
               onApprove={handleApprove}
               onReject={handleReject}
             />

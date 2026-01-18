@@ -16,6 +16,7 @@ import type { InstructorAssignment } from '@/lib/dataStore'
 import { upsertAttendanceDoc, getAttendanceDocByEducationId, type AttendanceDocument } from './storage'
 import { teacherEducationInfoStore, attendanceInfoRequestStore } from '@/lib/teacherStore'
 import type { TeacherEducationInfo } from '@/lib/teacherStore'
+import { attendanceSheetStore, type AttendanceSheet } from '@/lib/attendanceSheetStore'
 import dayjs from 'dayjs'
 
 const { TextArea } = Input
@@ -100,8 +101,6 @@ export default function InstructorAttendancePage() {
   const [schoolSignatureUrl, setSchoolSignatureUrl] = useState<string>('')
   const [schoolSignatureName, setSchoolSignatureName] = useState<string>('')
   const [teacherEducationInfo, setTeacherEducationInfo] = useState<TeacherEducationInfo | null>(null)
-  const [requestModalVisible, setRequestModalVisible] = useState(false)
-  const [requestMessage, setRequestMessage] = useState('')
   
   const educationId = params?.educationId as string
   const currentInstructorName = '홍길동' // TODO: Get from auth context
@@ -259,6 +258,71 @@ export default function InstructorAttendancePage() {
   }
 
   const [attendanceStatus, setAttendanceStatus] = useState<'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'>('DRAFT')
+  const [attendanceSheet, setAttendanceSheet] = useState<AttendanceSheet | null>(null)
+  const [requestModalVisible, setRequestModalVisible] = useState(false)
+  const [requestMessage, setRequestMessage] = useState('')
+
+  // Load AttendanceSheet
+  const loadAttendanceSheet = () => {
+    if (educationId) {
+      const sheet = attendanceSheetStore.getByEducationId(educationId)
+      setAttendanceSheet(sheet)
+      
+      if (sheet) {
+        // Update status based on AttendanceSheet
+        if (sheet.status === 'SUBMITTED_TO_ADMIN') {
+          setAttendanceStatus('SUBMITTED')
+        } else if (sheet.status === 'APPROVED') {
+          setAttendanceStatus('APPROVED')
+        } else if (sheet.status === 'REJECTED') {
+          setAttendanceStatus('REJECTED')
+        } else {
+          setAttendanceStatus('DRAFT')
+        }
+        
+        // Load teacher info from sheet (read-only for instructor)
+        if (sheet.teacherInfo) {
+          setHeaderData(prev => ({
+            ...prev,
+            grade: sheet.teacherInfo.grade,
+            className: sheet.teacherInfo.className,
+            gradeClass: `${sheet.teacherInfo.grade}학년 ${sheet.teacherInfo.className}반`,
+          }))
+          
+          if (sheet.teacherInfo.teacherName && sheet.teacherInfo.teacherContact) {
+            setInstitutionContact({
+              name: sheet.teacherInfo.teacherName,
+              phone: sheet.teacherInfo.teacherContact,
+              email: '',
+            })
+          }
+        }
+        
+        // Load students from sheet
+        if (sheet.students && sheet.students.length > 0) {
+          const sheetStudents: StudentAttendance[] = sheet.students.map((student, index) => {
+            // Get attendance data from sessions if available
+            const sessionAttendances = sheet.sessions.map(session => {
+              const attendance = session.attendanceByStudent[student.id || String(index)]
+              return attendance || 0
+            })
+            
+            return {
+              id: student.id || `student-${student.no}`,
+              number: typeof student.no === 'number' ? student.no : parseInt(String(student.no)) || index + 1,
+              name: student.name,
+              gender: '남' as const,
+              sessionAttendances,
+              completionStatus: 'X' as const,
+              isTransferred: false,
+            }
+          })
+          
+          setStudents(sheetStudents)
+        }
+      }
+    }
+  }
 
   // Load teacher education info
   const loadTeacherEducationInfo = () => {
@@ -346,7 +410,22 @@ export default function InstructorAttendancePage() {
   }
 
   useEffect(() => {
+    loadAttendanceSheet() // Load AttendanceSheet first
     loadAttendanceDoc()
+  }, [educationId])
+
+  // Listen for AttendanceSheet updates
+  useEffect(() => {
+    if (typeof window === 'undefined' || !educationId) return
+
+    const handleSheetUpdate = () => {
+      loadAttendanceSheet()
+    }
+
+    window.addEventListener('attendanceSheetUpdated', handleSheetUpdate)
+    return () => {
+      window.removeEventListener('attendanceSheetUpdated', handleSheetUpdate)
+    }
   }, [educationId])
 
   // Listen for teacher education info updates
@@ -444,6 +523,46 @@ export default function InstructorAttendancePage() {
         status: attendanceStatus,
         createdAt: existingDoc?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+      }
+      
+      // Update AttendanceSheet if it exists
+      if (attendanceSheet && attendanceSheet.status === 'INSTRUCTOR_IN_PROGRESS') {
+        // Convert students to AttendanceSheet format
+        const sheetStudents = students.map((s, idx) => ({
+          no: s.number,
+          name: s.name,
+          id: s.id || `student-${idx}`,
+        }))
+        
+        // Convert sessions to AttendanceSheet format
+        const sheetSessions = sessions.map((session, idx) => {
+          const attendanceByStudent: Record<string, number> = {}
+          students.forEach((student, studentIdx) => {
+            const attendance = student.sessionAttendances[idx] || 0
+            attendanceByStudent[student.id || `student-${studentIdx}`] = attendance
+          })
+          
+          return {
+            sessionId: `session-${session.sessionNumber}`,
+            sessionNo: session.sessionNumber,
+            date: session.date,
+            startTime: session.startTime,
+            endTime: session.endTime,
+            attendanceByStudent,
+            totalAttendedSlots: session.attendanceCount,
+          }
+        })
+        
+        const updatedSheet: AttendanceSheet = {
+          ...attendanceSheet,
+          students: sheetStudents,
+          sessions: sheetSessions,
+          instructorId: userProfile?.userId || 'instructor-1',
+          updatedBy: userProfile?.userId || 'instructor-1',
+        }
+        
+        attendanceSheetStore.upsert(updatedSheet)
+        setAttendanceSheet(updatedSheet)
       }
       
       const saveResult = upsertAttendanceDoc(docToSave)
@@ -611,29 +730,46 @@ export default function InstructorAttendancePage() {
     
     return [
       {
-        key: 'date',
-        label: '강의날짜',
+        key: 'dateTime',
+        label: '강의날짜 및 시간',
         ...sessions.reduce((acc, session, index) => {
           acc[`session${index + 1}`] = session ? (
             isEditMode ? (
-              <DatePicker
-                value={dayjs(session.date, 'YYYY-MM-DD').isValid() ? dayjs(session.date, 'YYYY-MM-DD') : dayjs(session.date)}
-                onChange={(date) => {
-                  if (date) {
-                    handleSessionDataChange('date', index, date.format('YYYY-MM-DD'))
-                  }
-                }}
-                format="YYYY-MM-DD"
-                className="w-full"
-                placeholder="날짜 선택"
-              />
+              <div className="space-y-2">
+                <DatePicker
+                  value={dayjs(session.date, 'YYYY-MM-DD').isValid() ? dayjs(session.date, 'YYYY-MM-DD') : dayjs(session.date)}
+                  onChange={(date) => {
+                    if (date) {
+                      handleSessionDataChange('date', index, date.format('YYYY-MM-DD'))
+                    }
+                  }}
+                  format="YYYY-MM-DD"
+                  className="w-full"
+                  placeholder="날짜 선택"
+                />
+                <div className="flex gap-1 items-center">
+                  <Input
+                    value={session.startTime}
+                    onChange={(e) => handleSessionDataChange('startTime', index, e.target.value)}
+                    className="w-full"
+                    placeholder="시작시간"
+                  />
+                  <span>~</span>
+                  <Input
+                    value={session.endTime}
+                    onChange={(e) => handleSessionDataChange('endTime', index, e.target.value)}
+                    className="w-full"
+                    placeholder="종료시간"
+                  />
+                </div>
+              </div>
             ) : (
               (() => {
                 const normalizedDate = session.date.replace(/\./g, '-')
                 const d = dayjs(normalizedDate)
-                if (!d.isValid()) return session.date
                 const weekdays = ['일', '월', '화', '수', '목', '금', '토']
-                return `${d.month() + 1}.${d.date()}(${weekdays[d.day()]})`
+                const dateStr = d.isValid() ? `${d.month() + 1}.${d.date()}(${weekdays[d.day()]})` : session.date
+                return `${dateStr}, ${session.startTime} ~ ${session.endTime}`
               })()
             )
           ) : '-'
@@ -641,62 +777,45 @@ export default function InstructorAttendancePage() {
         }, {} as Record<string, any>),
       },
       {
-        key: 'time',
-        label: '시간',
+        key: 'instructorType',
+        label: '참여강사',
+        subLabel: '강사구분',
+        ...sessions.reduce((acc, session, index) => {
+          acc[`session${index + 1}`] = session ? (
+            <div className="space-y-2">
+              <div className="text-sm">주강사</div>
+              <div className="text-sm">보조강사</div>
+            </div>
+          ) : '-'
+          return acc
+        }, {} as Record<string, any>),
+      },
+      {
+        key: 'instructorName',
+        label: '',
+        subLabel: '이름',
         ...sessions.reduce((acc, session, index) => {
           acc[`session${index + 1}`] = session ? (
             isEditMode ? (
-              <div className="flex gap-1">
+              <div className="space-y-2">
                 <Input
-                  value={session.startTime}
-                  onChange={(e) => handleSessionDataChange('startTime', index, e.target.value)}
+                  value={session.mainInstructor}
+                  onChange={(e) => handleSessionDataChange('mainInstructor', index, e.target.value)}
                   className="w-full"
+                  placeholder="주강사 이름"
                 />
-                <span>~</span>
                 <Input
-                  value={session.endTime}
-                  onChange={(e) => handleSessionDataChange('endTime', index, e.target.value)}
+                  value={session.assistantInstructor}
+                  onChange={(e) => handleSessionDataChange('assistantInstructor', index, e.target.value)}
                   className="w-full"
+                  placeholder="보조강사 이름"
                 />
               </div>
             ) : (
-              `${session.startTime} ~ ${session.endTime}`
-            )
-          ) : '-'
-          return acc
-        }, {} as Record<string, any>),
-      },
-      {
-        key: 'mainInstructor',
-        label: '주강사',
-        ...sessions.reduce((acc, session, index) => {
-          acc[`session${index + 1}`] = session ? (
-            isEditMode ? (
-              <Input
-                value={session.mainInstructor}
-                onChange={(e) => handleSessionDataChange('mainInstructor', index, e.target.value)}
-                className="w-full"
-              />
-            ) : (
-              session.mainInstructor
-            )
-          ) : '-'
-          return acc
-        }, {} as Record<string, any>),
-      },
-      {
-        key: 'assistantInstructor',
-        label: '보조강사',
-        ...sessions.reduce((acc, session, index) => {
-          acc[`session${index + 1}`] = session ? (
-            isEditMode ? (
-              <Input
-                value={session.assistantInstructor}
-                onChange={(e) => handleSessionDataChange('assistantInstructor', index, e.target.value)}
-                className="w-full"
-              />
-            ) : (
-              session.assistantInstructor
+              <div className="space-y-2">
+                <div className="text-sm">{session.mainInstructor || '-'}</div>
+                <div className="text-sm">{session.assistantInstructor || '-'}</div>
+              </div>
             )
           ) : '-'
           return acc
@@ -760,64 +879,8 @@ export default function InstructorAttendancePage() {
           return acc
         }, {} as Record<string, any>),
       },
-      {
-        key: 'institutionContacts',
-        label: '기관 담당자',
-        ...sessions.reduce((acc, session, index) => {
-          acc[`session${index + 1}`] = session ? (
-            isEditMode ? (
-              <div className="space-y-2">
-                {session.institutionContacts.map((contact, idx) => (
-                  <Input
-                    key={idx}
-                    value={contact}
-                    onChange={(e) => {
-                      const updated = [...session.institutionContacts]
-                      updated[idx] = e.target.value
-                      handleSessionDataChange('institutionContacts', index, updated)
-                    }}
-                    className="w-full"
-                    placeholder="담당자 이름"
-                  />
-                ))}
-                {session.institutionContacts.length < 2 && (
-                  <Button
-                    size="small"
-                    type="dashed"
-                    onClick={() => {
-                      const updated = [...session.institutionContacts, '']
-                      handleSessionDataChange('institutionContacts', index, updated)
-                    }}
-                    className="w-full"
-                  >
-                    + 담당자 추가
-                  </Button>
-                )}
-                {session.institutionContacts.length > 1 && (
-                  <Button
-                    size="small"
-                    danger
-                    onClick={() => {
-                      const updated = session.institutionContacts.slice(0, -1)
-                      handleSessionDataChange('institutionContacts', index, updated)
-                    }}
-                    className="w-full"
-                  >
-                    삭제
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <div className="text-sm">
-                {session.institutionContacts.filter(Boolean).join(', ') || '-'}
-              </div>
-            )
-          ) : '-'
-          return acc
-        }, {} as Record<string, any>),
-      },
     ]
-  }, [sessions, isEditMode, handleSessionDataChange])
+  }, [sessions, isEditMode, handleSessionDataChange, signatures])
 
   const handleBack = () => {
     router.back()
@@ -1060,30 +1123,41 @@ export default function InstructorAttendancePage() {
 
           {/* SECTION 1: Header (교육 정보) */}
           <DetailSectionCard title="교육 정보" className="mb-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">소재지</div>
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">출석부 코드</div>
+                <div className="text-base font-medium text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded">
+                  {attendanceSheet?.attendanceId || '-'}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">프로그램명</div>
                 {isEditMode ? (
                   <Input
-                    value={headerData.location}
-                    onChange={(e) => setHeaderData({ ...headerData, location: e.target.value })}
+                    value={attendanceSheet?.programName || headerData.programName}
+                    onChange={(e) => {
+                      const programName = e.target.value
+                      setHeaderData({ ...headerData, programName })
+                      if (attendanceSheet) {
+                        const updated = { ...attendanceSheet, programName }
+                        attendanceSheetStore.upsert(updated)
+                        setAttendanceSheet(updated)
+                      }
+                    }}
                     className="w-full"
+                    placeholder="프로그램명"
                   />
                 ) : (
-                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">{headerData.location}</div>
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                    {attendanceSheet?.programName || headerData.programName || '-'}
+                  </div>
                 )}
               </div>
               <div>
                 <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">기관명</div>
-                {isEditMode ? (
-                  <Input
-                    value={headerData.institution}
-                    onChange={(e) => setHeaderData({ ...headerData, institution: e.target.value })}
-                    className="w-full"
-                  />
-                ) : (
-                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">{headerData.institution}</div>
-                )}
+                <div className="text-base font-medium text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded">
+                  {attendanceSheet?.institutionName || headerData.institution || '-'}
+                </div>
               </div>
               <div>
                 <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">
@@ -1094,14 +1168,25 @@ export default function InstructorAttendancePage() {
                 </div>
                 {isEditMode ? (
                   <Input
-                    value={headerData.grade}
+                    value={attendanceSheet?.teacherInfo?.grade || headerData.grade}
                     onChange={(e) => {
                       const grade = e.target.value
                       setHeaderData({ 
                         ...headerData, 
                         grade,
-                        gradeClass: formatGradeClass(grade, headerData.className)
+                        gradeClass: formatGradeClass(grade, attendanceSheet?.teacherInfo?.className || headerData.className)
                       })
+                      if (attendanceSheet) {
+                        const updated = {
+                          ...attendanceSheet,
+                          teacherInfo: {
+                            ...attendanceSheet.teacherInfo,
+                            grade,
+                          }
+                        }
+                        attendanceSheetStore.upsert(updated)
+                        setAttendanceSheet(updated)
+                      }
                     }}
                     className="w-full"
                     disabled={!!teacherEducationInfo}
@@ -1109,7 +1194,9 @@ export default function InstructorAttendancePage() {
                     placeholder="학년"
                   />
                 ) : (
-                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">{headerData.grade}학년</div>
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                    {attendanceSheet?.teacherInfo?.grade || headerData.grade || '-'}학년
+                  </div>
                 )}
               </div>
               <div>
@@ -1121,14 +1208,25 @@ export default function InstructorAttendancePage() {
                 </div>
                 {isEditMode ? (
                   <Input
-                    value={headerData.className}
+                    value={attendanceSheet?.teacherInfo?.className || headerData.className}
                     onChange={(e) => {
                       const className = e.target.value
                       setHeaderData({ 
                         ...headerData, 
                         className,
-                        gradeClass: formatGradeClass(headerData.grade, className)
+                        gradeClass: formatGradeClass(attendanceSheet?.teacherInfo?.grade || headerData.grade, className)
                       })
+                      if (attendanceSheet) {
+                        const updated = {
+                          ...attendanceSheet,
+                          teacherInfo: {
+                            ...attendanceSheet.teacherInfo,
+                            className,
+                          }
+                        }
+                        attendanceSheetStore.upsert(updated)
+                        setAttendanceSheet(updated)
+                      }
                     }}
                     className="w-full"
                     disabled={!!teacherEducationInfo}
@@ -1136,80 +1234,74 @@ export default function InstructorAttendancePage() {
                     placeholder="반"
                   />
                 ) : (
-                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">{headerData.className}반</div>
-                )}
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">프로그램명</div>
-                {isEditMode ? (
-                  <Input
-                    value={headerData.programName}
-                    onChange={(e) => setHeaderData({ ...headerData, programName: e.target.value })}
-                    className="w-full"
-                  />
-                ) : (
-                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">{headerData.programName}</div>
-                )}
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">총차시</div>
-                {isEditMode ? (
-                  <InputNumber
-                    min={1}
-                    value={headerData.totalSessions}
-                    onChange={(val) => setHeaderData({ ...headerData, totalSessions: val || 8 })}
-                    className="w-full"
-                  />
-                ) : (
-                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">{headerData.totalSessions}차시</div>
-                )}
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">성별 인원</div>
-                {isEditMode ? (
-                  <div className="flex gap-2">
-                    <InputNumber
-                      min={0}
-                      value={headerData.maleCount}
-                      onChange={(val) => setHeaderData({ ...headerData, maleCount: val || 0 })}
-                      className="w-full"
-                      addonBefore="남"
-                    />
-                    <InputNumber
-                      min={0}
-                      value={headerData.femaleCount}
-                      onChange={(val) => setHeaderData({ ...headerData, femaleCount: val || 0 })}
-                      className="w-full"
-                      addonBefore="여"
-                    />
-                  </div>
-                ) : (
                   <div className="text-base font-medium text-gray-900 dark:text-gray-100">
-                    남 {headerData.maleCount}명 / 여 {headerData.femaleCount}명
+                    {attendanceSheet?.teacherInfo?.className || headerData.className || '-'}반
                   </div>
                 )}
               </div>
               <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">수강생</div>
-                <div className="text-base font-medium text-gray-900 dark:text-gray-100">{totalStudents}명</div>
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">수료기준</div>
-                <div className="text-base font-medium text-gray-900 dark:text-gray-100">
-                  ※ 수료기준 : 학생 당 출석률 80% 이상
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">교육신청인원</div>
+                <div className="text-base font-medium text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded">
+                  {attendanceSheet?.students?.length || students.length || 0}명
                 </div>
               </div>
               <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">학교 담당자</div>
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">담임/담당자 이름</div>
                 {isEditMode ? (
                   <Input
-                    value={headerData.schoolContactName}
-                    onChange={(e) => setHeaderData({ ...headerData, schoolContactName: e.target.value })}
+                    value={attendanceSheet?.teacherInfo?.teacherName || institutionContact.name || headerData.schoolContactName}
+                    onChange={(e) => {
+                      const teacherName = e.target.value
+                      setHeaderData({ ...headerData, schoolContactName: teacherName })
+                      setInstitutionContact(prev => ({ ...prev, name: teacherName }))
+                      if (attendanceSheet) {
+                        const updated = {
+                          ...attendanceSheet,
+                          teacherInfo: {
+                            ...attendanceSheet.teacherInfo,
+                            teacherName,
+                          }
+                        }
+                        attendanceSheetStore.upsert(updated)
+                        setAttendanceSheet(updated)
+                      }
+                    }}
                     className="w-full"
-                    placeholder="학교 담당자 이름"
+                    placeholder="담임 선생님 이름"
                   />
                 ) : (
-                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">{headerData.schoolContactName}</div>
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                    {attendanceSheet?.teacherInfo?.teacherName || institutionContact.name || headerData.schoolContactName || '-'}
+                  </div>
+                )}
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">담임/담당자 연락처</div>
+                {isEditMode ? (
+                  <Input
+                    value={attendanceSheet?.teacherInfo?.teacherContact || institutionContact.phone || ''}
+                    onChange={(e) => {
+                      const teacherContact = e.target.value
+                      setInstitutionContact(prev => ({ ...prev, phone: teacherContact }))
+                      if (attendanceSheet) {
+                        const updated = {
+                          ...attendanceSheet,
+                          teacherInfo: {
+                            ...attendanceSheet.teacherInfo,
+                            teacherContact,
+                          }
+                        }
+                        attendanceSheetStore.upsert(updated)
+                        setAttendanceSheet(updated)
+                      }
+                    }}
+                    className="w-full"
+                    placeholder="010-1234-5678"
+                  />
+                ) : (
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                    {attendanceSheet?.teacherInfo?.teacherContact || institutionContact.phone || '-'}
+                  </div>
                 )}
               </div>
             </div>
@@ -1432,9 +1524,17 @@ export default function InstructorAttendancePage() {
                     dataIndex: 'label',
                     key: 'label',
                     width: 120,
-                    render: (text: string) => (
-                      <span className="font-semibold text-gray-700 dark:text-gray-300">{text}</span>
-                    ),
+                    render: (text: string, record: any) => {
+                      if (record.subLabel) {
+                        return (
+                          <div>
+                            <div className="font-semibold text-gray-700 dark:text-gray-300">{text || ''}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{record.subLabel}</div>
+                          </div>
+                        )
+                      }
+                      return <span className="font-semibold text-gray-700 dark:text-gray-300">{text}</span>
+                    },
                   },
                   ...sessions.map((session, index) => ({
                     title: `${session.sessionNumber}회차`,
@@ -1447,6 +1547,17 @@ export default function InstructorAttendancePage() {
                 dataSource={sessionTableDataSource}
                 rowKey="key"
                 pagination={false}
+                components={{
+                  body: {
+                    row: (props: any) => {
+                      // 참여강사 관련 행들은 병합된 것처럼 보이도록 처리
+                      const isInstructorRow = ['instructorType', 'instructorName', 'instructorSignature'].includes(props['data-row-key'])
+                      return (
+                        <tr {...props} className={isInstructorRow ? 'border-b-0' : ''} />
+                      )
+                    },
+                  },
+                }}
               />
             </DetailSectionCard>
           )}

@@ -7,7 +7,8 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { StatusChangeToolbar } from '@/components/admin/operations/StatusChangeToolbar'
 import { EducationStatusTable, type EducationStatusItem } from '@/components/admin/operations/EducationStatusTable'
 import { InstructorAssignmentModal } from '@/components/admin/operations/InstructorAssignmentModal'
-import { Card, Input, Button, Select, DatePicker, Modal, message, Space } from 'antd'
+import { ScheduleTimeModal } from '@/components/admin/operations/ScheduleTimeModal'
+import { Card, Input, Button, Select, DatePicker, Modal, message, Space, Badge } from 'antd'
 import { Search, Filter, ChevronRight, RotateCcw } from 'lucide-react'
 import dayjs, { Dayjs } from 'dayjs'
 import { statusOptions } from '@/components/admin/operations/StatusDropdown'
@@ -16,6 +17,9 @@ import {
   isIrreversibleTransition,
   type EducationStatus 
 } from '@/components/admin/operations/statusTransitions'
+import { attendanceSheetStore } from '@/lib/attendanceSheetStore'
+import { dataStore, type Education } from '@/lib/dataStore'
+import { educationScheduler } from '@/lib/educationScheduler'
 
 const { RangePicker } = DatePicker
 
@@ -182,6 +186,57 @@ export default function EducationStatusPage() {
     newStatus: EducationStatus
   } | null>(null)
   const [data, setData] = useState<EducationStatusItem[]>(dummyData)
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false)
+  const [selectedEducationForSchedule, setSelectedEducationForSchedule] = useState<Education | null>(null)
+
+  // 교육 상태 업데이트 이벤트 리스너
+  useEffect(() => {
+    const handleStatusUpdate = () => {
+      // dataStore에서 최신 데이터 가져오기
+      const educations = dataStore.getEducations()
+      const updatedData = educations.map(edu => {
+        const existing = data.find(d => d.educationId === edu.educationId)
+        if (existing) {
+          return {
+            ...existing,
+            status: edu.status,
+            openAt: edu.openAt,
+            closeAt: edu.closeAt,
+          }
+        }
+        // 새로운 교육인 경우
+        return {
+          key: edu.key,
+          status: edu.status,
+          educationId: edu.educationId,
+          name: edu.name,
+          institution: edu.institution,
+          gradeClass: edu.gradeClass,
+          mainInstructorsCount: 0,
+          mainInstructorsRequired: 1,
+          assistantInstructorsCount: 0,
+          assistantInstructorsRequired: 1,
+          mainInstructorNames: [],
+          assistantInstructorNames: [],
+          periodStart: edu.periodStart,
+          periodEnd: edu.periodEnd,
+          period: edu.period,
+          openAt: edu.openAt,
+          closeAt: edu.closeAt,
+        } as EducationStatusItem
+      })
+      
+      setData(updatedData)
+    }
+
+    window.addEventListener('educationStatusUpdated', handleStatusUpdate)
+    window.addEventListener('storage', handleStatusUpdate)
+
+    return () => {
+      window.removeEventListener('educationStatusUpdated', handleStatusUpdate)
+      window.removeEventListener('storage', handleStatusUpdate)
+    }
+  }, [data])
   
   // Bulk status change helpers for scheduled transitions
   const handleBulkOpenToPublic = () => {
@@ -196,6 +251,15 @@ export default function EducationStatusPage() {
       title: '일괄 상태 변경',
       content: `오픈예정 상태인 ${openScheduled.length}개 교육을 강사공개로 변경하시겠습니까?`,
       onOk: () => {
+        // Update dataStore for each education
+        openScheduled.forEach(item => {
+          const education = dataStore.getEducationById(item.educationId)
+          if (education) {
+            dataStore.updateEducation(item.educationId, { status: '강사공개' })
+          }
+        })
+        
+        // Update local state
         setData(prev => prev.map(item => 
           item.status === '오픈예정' ? { ...item, status: '강사공개' } : item
         ))
@@ -217,6 +281,15 @@ export default function EducationStatusPage() {
       title: '일괄 상태 변경',
       content: `강사공개 상태인 ${publicEducations.length}개 교육을 신청마감으로 변경하시겠습니까?`,
       onOk: () => {
+        // Update dataStore for each education
+        publicEducations.forEach(item => {
+          const education = dataStore.getEducationById(item.educationId)
+          if (education) {
+            dataStore.updateEducation(item.educationId, { status: '신청마감' })
+          }
+        })
+        
+        // Update local state
         setData(prev => prev.map(item => 
           item.status === '강사공개' ? { ...item, status: '신청마감' } : item
         ))
@@ -392,7 +465,18 @@ export default function EducationStatusPage() {
 
     const selectedRows = data.filter(item => selectedIds.includes(item.key))
 
-    // Show confirmation modal
+    // "오픈예정"으로 변경하는 경우 시간 설정 모달 표시
+    if (statusValue === '오픈예정' && selectedRows.length === 1) {
+      const row = selectedRows[0]
+      const education = dataStore.getEducationById(row.educationId)
+      if (education) {
+        setSelectedEducationForSchedule(education)
+        setScheduleModalOpen(true)
+        return
+      }
+    }
+
+    // 그 외의 경우 기존 로직
     const isIrreversible = selectedRows.some(row => 
       isIrreversibleTransition(row.status as EducationStatus, statusValue as EducationStatus)
     )
@@ -412,7 +496,17 @@ export default function EducationStatusPage() {
       okText: '변경',
       cancelText: '취소',
       onOk: () => {
-        // Update data
+        // Update dataStore for each selected education
+        selectedRows.forEach(row => {
+          const education = dataStore.getEducationById(row.educationId)
+          if (education) {
+            dataStore.updateEducation(row.educationId, { status: statusValue })
+            // 스케줄러에 알림
+            educationScheduler.scheduleEducation(education)
+          }
+        })
+        
+        // Update local state
         setData(prev => prev.map(item => {
           if (selectedIds.includes(item.key)) {
             return { ...item, status: statusValue }
@@ -424,6 +518,44 @@ export default function EducationStatusPage() {
         message.success('상태가 변경되었습니다.')
       },
     })
+  }
+
+  const handleScheduleTimeConfirm = (openAt: string | null, closeAt: string | null) => {
+    if (!selectedEducationForSchedule) return
+
+    const updates: Partial<Education> = {
+      status: '오픈예정',
+      openAt: openAt || undefined,
+      closeAt: closeAt || undefined,
+    }
+
+    // dataStore 업데이트
+    dataStore.updateEducation(selectedEducationForSchedule.educationId, updates)
+
+    // 스케줄러에 알림
+    const updatedEducation = dataStore.getEducationById(selectedEducationForSchedule.educationId)
+    if (updatedEducation) {
+      educationScheduler.scheduleEducation(updatedEducation)
+    }
+
+    // 로컬 상태 업데이트
+    setData(prev => prev.map(item => {
+      if (item.educationId === selectedEducationForSchedule.educationId) {
+        return { 
+          ...item, 
+          status: '오픈예정',
+          openAt: openAt || undefined,
+          closeAt: closeAt || undefined,
+        }
+      }
+      return item
+    }))
+
+    setSelectedIds([])
+    setStatusValue('')
+    setScheduleModalOpen(false)
+    setSelectedEducationForSchedule(null)
+    message.success('상태가 변경되었고 스케줄이 설정되었습니다.')
   }
 
   const handleRowStatusChange = (id: string, newStatus: EducationStatus) => {
@@ -455,8 +587,48 @@ export default function EducationStatusPage() {
       okText: '변경',
       cancelText: '취소',
       onOk: () => {
+        // "오픈예정"으로 변경하는 경우 시간 설정 모달 표시
+        if (newStatus === '오픈예정') {
+          const education = dataStore.getEducationById(row.educationId)
+          if (education) {
+            setSelectedEducationForSchedule(education)
+            setScheduleModalOpen(true)
+          }
+          return
+        }
+
+        // Update dataStore
+        const education = dataStore.getEducationById(row.educationId)
+        if (education) {
+          dataStore.updateEducation(row.educationId, { status: newStatus })
+          // 스케줄러에 알림
+          educationScheduler.scheduleEducation(education)
+        }
+        
+        // Update local state
         setData(prev => prev.map(item => {
           if (item.key === id) {
+            // Auto-create AttendanceSheet when status reaches "확정" or "교육 진행 중"
+            if ((newStatus === '확정' || newStatus === '교육 진행 중') && item.educationId) {
+              const education = dataStore.getEducationById(item.educationId)
+              if (education) {
+                const existingSheet = attendanceSheetStore.getByEducationId(item.educationId)
+                if (!existingSheet) {
+                  // Create new AttendanceSheet
+                  const institutionId = 'INST-001' // TODO: Get from education
+                  const gradeClass = education.gradeClass || ''
+                  const [grade, className] = gradeClass.split('학년').map(s => s.trim())
+                  
+                  attendanceSheetStore.create(item.educationId, institutionId, {
+                    grade: grade || '',
+                    className: className?.replace('반', '').trim() || '',
+                    teacherName: '',
+                    teacherContact: '',
+                  })
+                }
+              }
+            }
+            
             return { ...item, status: newStatus }
           }
           return item
@@ -518,6 +690,15 @@ export default function EducationStatusPage() {
           </div>
 
           {/* Instructor Assignment Modal */}
+          <ScheduleTimeModal
+            open={scheduleModalOpen}
+            education={selectedEducationForSchedule}
+            onOk={handleScheduleTimeConfirm}
+            onCancel={() => {
+              setScheduleModalOpen(false)
+              setSelectedEducationForSchedule(null)
+            }}
+          />
           <InstructorAssignmentModal
             open={assignmentModalOpen}
             mode={assignmentMode || 'partial'}

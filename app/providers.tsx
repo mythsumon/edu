@@ -1,12 +1,13 @@
 'use client'
 
-import { ReactNode } from 'react'
+import { ReactNode, useEffect } from 'react'
 import { ConfigProvider, theme } from 'antd'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext'
 import { LanguageProvider } from '@/components/localization/LanguageContext'
 import { ErrorBoundary } from './error-boundary'
 import { GlobalErrorHandler } from './error-handler'
+import { educationScheduler } from '@/lib/educationScheduler'
 
 interface AppProvidersProps {
   children: ReactNode
@@ -122,6 +123,28 @@ function ThemedConfigProvider({ children }: { children: ReactNode }) {
   )
 }
 
+function SchedulerInitializer({ children }: { children: ReactNode }) {
+  useEffect(() => {
+    // 스케줄러 시작
+    educationScheduler.start()
+
+    // 상태 업데이트 이벤트 리스너
+    const handleStatusUpdate = (event: CustomEvent) => {
+      // 이벤트가 발생하면 페이지가 자동으로 리렌더링되도록 함
+      window.dispatchEvent(new Event('storage'))
+    }
+
+    window.addEventListener('educationStatusUpdated', handleStatusUpdate as EventListener)
+
+    return () => {
+      educationScheduler.stop()
+      window.removeEventListener('educationStatusUpdated', handleStatusUpdate as EventListener)
+    }
+  }, [])
+
+  return <>{children}</>
+}
+
 export function AppProviders({ children }: AppProvidersProps) {
   return (
     <GlobalErrorHandler>
@@ -130,7 +153,9 @@ export function AppProviders({ children }: AppProvidersProps) {
           <ThemeProvider>
             <ThemedConfigProvider>
               <LanguageProvider>
-                {children}
+                <SchedulerInitializer>
+                  {children}
+                </SchedulerInitializer>
               </LanguageProvider>
             </ThemedConfigProvider>
           </ThemeProvider>

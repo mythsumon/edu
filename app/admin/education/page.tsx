@@ -199,7 +199,7 @@ function getProgramOptions() {
             : programName
           
           return {
-            value: p.programId || p.key,
+          value: p.programId || p.key,
             label: displayLabel,
           }
         })
@@ -232,7 +232,7 @@ function getProgramOptions() {
         : p.name
       
       return {
-        value: p.programId,
+      value: p.programId,
         label: displayLabel,
       }
     })

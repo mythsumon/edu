@@ -46,17 +46,20 @@ export interface EquipmentConfirmationDoc {
   sessionsText: string
   studentCount: number
   instructorsText: string
-  borrowerName: string
-  plannedReturnerName: string
+  borrowerName: string // 교구대여자
+  plannedBorrowerName?: string // 대여 예정자
+  plannedReturnerName: string // 반납예정자
   schedule: EquipmentSchedule
   items: EquipmentItem[]
   returnConditionOk: 'Y' | 'N'
   allowanceTarget: 'Y' | 'N'
+  transportAllowance?: 'Y' | 'N' // 교구 운반 수당 여부
+  returnDate?: string // 교구 반납 날짜/시간 (ISO string)
   createdByName: string
   equipmentManagerName: string
-  actualReturnerName: string
+  actualReturnerName: string // 교구 반납자
   signatures: EquipmentSignatures
-  attachments: string[] // image URLs
+  attachments: string[] // image URLs (deprecated - 사진 필요 없음)
   status: EquipmentConfirmationStatus
   rejectReason?: string
   rejectedAt?: string

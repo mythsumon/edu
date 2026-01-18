@@ -3,21 +3,28 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Button, Space, Table, message, Input, InputNumber, DatePicker } from 'antd'
+import { Button, Space, Table, message, Input, InputNumber, DatePicker, Card, Modal } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { ArrowLeft, Save, Edit, X } from 'lucide-react'
+import { ArrowLeft, Save, Edit, X, CheckCircle } from 'lucide-react'
 import { Badge } from 'antd'
 import { DetailPageHeaderSticky, DetailSectionCard } from '@/components/admin/operations'
 import { getAttendanceDocByEducationId, getAttendanceDocById, getAttendanceDocs, upsertAttendanceDoc, type AttendanceDocument } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import { InstitutionContactAndSignatures } from '@/components/instructor/attendance/InstitutionContactAndSignatures'
 import type { InstitutionContact, AttendanceSignatures, Signature } from '@/components/instructor/attendance/InstitutionContactAndSignatures'
 import { getActivityLogByEducationId } from '@/app/instructor/activity-logs/storage'
+import { teacherEducationInfoStore, attendanceInfoRequestStore } from '@/lib/teacherStore'
+import type { TeacherEducationInfo } from '@/lib/teacherStore'
+import { useAuth } from '@/contexts/AuthContext'
 import dayjs from 'dayjs'
+
+const { TextArea } = Input
 
 export default function InstructorAttendanceDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const { userProfile, userRole } = useAuth()
   const id = params?.id as string
+  const isAdmin = userRole === 'admin'
 
   const [doc, setDoc] = useState<AttendanceDocument | null>(null)
   const [loading, setLoading] = useState(false)
@@ -29,6 +36,9 @@ export default function InstructorAttendanceDetailPage() {
     email: '',
   })
   const [signatures, setSignatures] = useState<AttendanceSignatures>({})
+  const [teacherEducationInfo, setTeacherEducationInfo] = useState<TeacherEducationInfo | null>(null)
+  const [requestModalVisible, setRequestModalVisible] = useState(false)
+  const [requestMessage, setRequestMessage] = useState('')
 
   useEffect(() => {
     if (id) {
@@ -50,6 +60,13 @@ export default function InstructorAttendanceDetailPage() {
         setEditedDoc({ ...attendanceDoc })
         setInstitutionContact(attendanceDoc.institutionContact || { name: '', phone: '', email: '' })
         setSignatures(attendanceDoc.signatures || {})
+        
+        // Load teacher education info
+        const educationId = attendanceDoc.educationId || id
+        const teacherInfo = teacherEducationInfoStore.getByEducationId(educationId)
+        if (teacherInfo) {
+          setTeacherEducationInfo(teacherInfo)
+        }
       } else {
         const allDocs = getAttendanceDocs()
         
@@ -68,6 +85,42 @@ export default function InstructorAttendanceDetailPage() {
       }
     }
   }, [id, router])
+
+  // Listen for teacher education info updates
+  useEffect(() => {
+    if (typeof window === 'undefined' || !doc) return
+
+    const handleTeacherInfoUpdate = () => {
+      const educationId = doc.educationId || id
+      const teacherInfo = teacherEducationInfoStore.getByEducationId(educationId)
+      setTeacherEducationInfo(teacherInfo)
+    }
+
+    window.addEventListener('teacherEducationInfoUpdated', handleTeacherInfoUpdate)
+    return () => {
+      window.removeEventListener('teacherEducationInfoUpdated', handleTeacherInfoUpdate)
+    }
+  }, [doc, id])
+
+  // Request attendance info from teacher
+  const handleRequestAttendanceInfo = () => {
+    if (!doc) return
+    
+    const educationId = doc.educationId || id
+    if (!educationId) return
+    
+    attendanceInfoRequestStore.create({
+      educationId,
+      requesterInstructorId: userProfile?.userId || 'instructor-1',
+      requesterInstructorName: userProfile?.name || '강사',
+      status: 'OPEN',
+      message: requestMessage || '출석부 정보 입력을 요청드립니다.',
+    })
+    
+    message.success('출석부 정보 요청이 전송되었습니다.')
+    setRequestModalVisible(false)
+    setRequestMessage('')
+  }
 
   // Calculate completion status based on attendance rate (80% 이상이면 O, 미만이면 X)
   const calculateCompletionStatus = (attendedSessions: number, totalSessions: number): 'O' | 'X' => {
@@ -291,43 +344,94 @@ export default function InstructorAttendanceDetailPage() {
         )}
 
         <div className="max-w-7xl mx-auto px-6 py-8">
+          {/* Teacher Education Info Alert */}
+          {teacherEducationInfo && (
+            <Card className="mb-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-blue-600" />
+                  <span className="font-medium text-blue-900 dark:text-blue-100">
+                    학교 선생님이 입력한 교육 정보가 자동으로 불러와졌습니다.
+                  </span>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Request Info Button */}
+          {!teacherEducationInfo && !isAdmin && (
+            <Card className="mb-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="font-medium text-yellow-900 dark:text-yellow-100">
+                    학교 선생님의 교육 정보가 아직 입력되지 않았습니다.
+                  </span>
+                </div>
+                <Button
+                  type="primary"
+                  onClick={() => setRequestModalVisible(true)}
+                >
+                  출석부 정보 요청
+                </Button>
+              </div>
+            </Card>
+          )}
+
           {/* 교육 정보 */}
           {currentDoc && (
             <DetailSectionCard title="교육 정보" className="mb-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">소재지</div>
-                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">{currentDoc.location}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">기관명</div>
-                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">{currentDoc.institution}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">학급명</div>
-                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">{currentDoc.gradeClass}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">프로그램명</div>
-                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">{currentDoc.programName}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">총차시</div>
-                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">{currentDoc.totalSessions}차시</div>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">성별 인원</div>
-                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
-                    남 {currentDoc.maleCount}명 / 여 {currentDoc.femaleCount}명
+                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">출석부 코드</div>
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded">
+                    {currentDoc.id || '-'}
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">수강생</div>
-                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">{currentDoc.students.length}명</div>
+                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">프로그램명</div>
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">{currentDoc.programName || '-'}</div>
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">학교 담당자</div>
-                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">{currentDoc.schoolContactName}</div>
+                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">기관명</div>
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded">
+                    {currentDoc.institution || '-'}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">학년</div>
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                    {(() => {
+                      const match = currentDoc.gradeClass?.match(/(\d+)학년/)
+                      return match ? `${match[1]}학년` : '-'
+                    })()}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">반</div>
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                    {(() => {
+                      const match = currentDoc.gradeClass?.match(/(\d+)반/)
+                      return match ? `${match[1]}반` : '-'
+                    })()}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">교육신청인원</div>
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded">
+                    {currentDoc.students.length}명
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">담임/담당자 이름</div>
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                    {currentDoc.schoolContactName || currentDoc.institutionContact?.name || '-'}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">담임/담당자 연락처</div>
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                    {currentDoc.institutionContact?.phone || '-'}
+                  </div>
                 </div>
               </div>
             </DetailSectionCard>
@@ -343,9 +447,17 @@ export default function InstructorAttendanceDetailPage() {
                     dataIndex: 'label',
                     key: 'label',
                     width: 120,
-                    render: (text: string) => (
-                      <span className="font-semibold text-gray-700 dark:text-gray-300">{text}</span>
-                    ),
+                    render: (text: string, record: any) => {
+                      if (record.subLabel) {
+                        return (
+                          <div>
+                            <div className="font-semibold text-gray-700 dark:text-gray-300">{text || ''}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{record.subLabel}</div>
+                          </div>
+                        )
+                      }
+                      return <span className="font-semibold text-gray-700 dark:text-gray-300">{text}</span>
+                    },
                   },
                   ...currentDoc.sessions.map((session, index) => ({
                     title: `${session.sessionNumber}회차`,
@@ -357,56 +469,95 @@ export default function InstructorAttendanceDetailPage() {
                 ]}
                 dataSource={[
                   {
-                    key: 'date',
-                    label: '강의날짜',
+                    key: 'dateTime',
+                    label: '강의날짜 및 시간',
                     ...currentDoc.sessions.reduce((acc, session, index) => {
                       if (isEditMode) {
                         acc[`session${index + 1}`] = (
-                          <DatePicker
-                            value={dayjs(session.date, 'YYYY-MM-DD').isValid() ? dayjs(session.date, 'YYYY-MM-DD') : dayjs(session.date)}
-                            onChange={(date) => {
-                              if (date) {
-                                handleSessionDataChange('date', index, date.format('YYYY-MM-DD'))
-                              }
-                            }}
-                            format="YYYY-MM-DD"
-                            className="w-full"
-                            placeholder="날짜 선택"
-                          />
+                          <div className="space-y-2">
+                            <DatePicker
+                              value={dayjs(session.date, 'YYYY-MM-DD').isValid() ? dayjs(session.date, 'YYYY-MM-DD') : dayjs(session.date)}
+                              onChange={(date) => {
+                                if (date) {
+                                  handleSessionDataChange('date', index, date.format('YYYY-MM-DD'))
+                                }
+                              }}
+                              format="YYYY-MM-DD"
+                              className="w-full"
+                              placeholder="날짜 선택"
+                            />
+                            <div className="flex gap-1 items-center">
+                              <Input
+                                value={session.startTime}
+                                onChange={(e) => handleSessionDataChange('startTime', index, e.target.value)}
+                                className="w-full"
+                                placeholder="시작시간"
+                              />
+                              <span>~</span>
+                              <Input
+                                value={session.endTime}
+                                onChange={(e) => handleSessionDataChange('endTime', index, e.target.value)}
+                                className="w-full"
+                                placeholder="종료시간"
+                              />
+                            </div>
+                          </div>
                         )
                       } else {
                         const normalizedDate = session.date.replace(/\./g, '-')
                         const d = dayjs(normalizedDate)
                         const weekdays = ['일', '월', '화', '수', '목', '금', '토']
-                        acc[`session${index + 1}`] = d.isValid() 
+                        const dateStr = d.isValid() 
                           ? `${d.month() + 1}.${d.date()}(${weekdays[d.day()]})`
                           : session.date
+                        acc[`session${index + 1}`] = `${dateStr}, ${session.startTime} ~ ${session.endTime}`
                       }
                       return acc
                     }, {} as Record<string, any>),
                   },
                   {
-                    key: 'time',
-                    label: '시간',
+                    key: 'instructorType',
+                    label: '참여강사',
+                    subLabel: '강사구분',
+                    ...currentDoc.sessions.reduce((acc, session, index) => {
+                      acc[`session${index + 1}`] = (
+                        <div className="space-y-2">
+                          <div className="text-sm">주강사</div>
+                          <div className="text-sm">보조강사</div>
+                        </div>
+                      )
+                      return acc
+                    }, {} as Record<string, any>),
+                  },
+                  {
+                    key: 'instructorName',
+                    label: '',
+                    subLabel: '이름',
                     ...currentDoc.sessions.reduce((acc, session, index) => {
                       if (isEditMode) {
                         acc[`session${index + 1}`] = (
-                          <div className="flex gap-1">
+                          <div className="space-y-2">
                             <Input
-                              value={session.startTime}
-                              onChange={(e) => handleSessionDataChange('startTime', index, e.target.value)}
+                              value={session.mainInstructor}
+                              onChange={(e) => handleSessionDataChange('mainInstructor', index, e.target.value)}
                               className="w-full"
+                              placeholder="주강사 이름"
                             />
-                            <span>~</span>
                             <Input
-                              value={session.endTime}
-                              onChange={(e) => handleSessionDataChange('endTime', index, e.target.value)}
+                              value={session.assistantInstructor}
+                              onChange={(e) => handleSessionDataChange('assistantInstructor', index, e.target.value)}
                               className="w-full"
+                              placeholder="보조강사 이름"
                             />
                           </div>
                         )
                       } else {
-                        acc[`session${index + 1}`] = `${session.startTime} ~ ${session.endTime}`
+                        acc[`session${index + 1}`] = (
+                          <div className="space-y-2">
+                            <div className="text-sm">{session.mainInstructor || '-'}</div>
+                            <div className="text-sm">{session.assistantInstructor || '-'}</div>
+                          </div>
+                        )
                       }
                       return acc
                     }, {} as Record<string, any>),
@@ -426,50 +577,14 @@ export default function InstructorAttendanceDetailPage() {
                           />
                         )
                       } else {
-                        acc[`session${index + 1}`] = `${session.sessions}차시`
-                      }
-                      return acc
-                    }, {} as Record<string, any>),
-                  },
-                  {
-                    key: 'mainInstructor',
-                    label: '주강사',
-                    ...currentDoc.sessions.reduce((acc, session, index) => {
-                      if (isEditMode) {
-                        acc[`session${index + 1}`] = (
-                          <Input
-                            value={session.mainInstructor}
-                            onChange={(e) => handleSessionDataChange('mainInstructor', index, e.target.value)}
-                            className="w-full"
-                          />
-                        )
-                      } else {
-                        acc[`session${index + 1}`] = session.mainInstructor
-                      }
-                      return acc
-                    }, {} as Record<string, any>),
-                  },
-                  {
-                    key: 'assistantInstructor',
-                    label: '보조강사',
-                    ...currentDoc.sessions.reduce((acc, session, index) => {
-                      if (isEditMode) {
-                        acc[`session${index + 1}`] = (
-                          <Input
-                            value={session.assistantInstructor}
-                            onChange={(e) => handleSessionDataChange('assistantInstructor', index, e.target.value)}
-                            className="w-full"
-                          />
-                        )
-                      } else {
-                        acc[`session${index + 1}`] = session.assistantInstructor || '-'
+                        acc[`session${index + 1}`] = session.sessions
                       }
                       return acc
                     }, {} as Record<string, any>),
                   },
                   {
                     key: 'studentCount',
-                    label: '수강생 수',
+                    label: '학생정원',
                     ...currentDoc.sessions.reduce((acc, session, index) => {
                       if (isEditMode) {
                         acc[`session${index + 1}`] = (
@@ -481,14 +596,14 @@ export default function InstructorAttendanceDetailPage() {
                           />
                         )
                       } else {
-                        acc[`session${index + 1}`] = `${session.studentCount}명`
+                        acc[`session${index + 1}`] = session.studentCount
                       }
                       return acc
                     }, {} as Record<string, any>),
                   },
                   {
                     key: 'attendanceCount',
-                    label: '출석 수',
+                    label: '출석인원',
                     ...currentDoc.sessions.reduce((acc, session, index) => {
                       if (isEditMode) {
                         acc[`session${index + 1}`] = (
@@ -500,7 +615,7 @@ export default function InstructorAttendanceDetailPage() {
                           />
                         )
                       } else {
-                        acc[`session${index + 1}`] = `${session.attendanceCount}명`
+                        acc[`session${index + 1}`] = session.attendanceCount
                       }
                       return acc
                     }, {} as Record<string, any>),
@@ -572,15 +687,18 @@ export default function InstructorAttendanceDetailPage() {
                     key: 'completion',
                     width: 100,
                     align: 'center',
-                    render: (_: any, record: any) => (
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                        record.completionStatus === 'O' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {record.completionStatus === 'O' ? '수료' : '미수료'}
-                      </span>
-                    ),
+                    render: (_: any, record: any) => {
+                      if (record.isTransferred) {
+                        return <span className="text-sm text-gray-400">-</span>
+                      }
+                      return (
+                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-base font-bold ${
+                          record.completionStatus === 'O' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                        }`}>
+                          {record.completionStatus}
+                        </span>
+                      )
+                    },
                   },
                 ]}
                 dataSource={currentDoc.students}
@@ -638,6 +756,36 @@ export default function InstructorAttendanceDetailPage() {
               </div>
             </div>
           )}
+
+          {/* Request Info Modal */}
+          <Modal
+            title="출석부 정보 요청"
+            open={requestModalVisible}
+            onOk={handleRequestAttendanceInfo}
+            onCancel={() => {
+              setRequestModalVisible(false)
+              setRequestMessage('')
+            }}
+            okText="요청 전송"
+            cancelText="취소"
+          >
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                학교 선생님에게 출석부 정보 입력을 요청합니다.
+              </p>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  요청 메시지 (선택)
+                </label>
+                <TextArea
+                  rows={4}
+                  value={requestMessage}
+                  onChange={(e) => setRequestMessage(e.target.value)}
+                  placeholder="요청 메시지를 입력하세요 (선택사항)"
+                />
+              </div>
+            </div>
+          </Modal>
         </div>
       </div>
     </ProtectedRoute>

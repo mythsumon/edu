@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { dataStore } from '@/lib/dataStore'
 import type { Education } from '@/lib/dataStore'
 import { teacherEducationInfoStore } from '@/lib/teacherStore'
+import { attendanceSheetStore } from '@/lib/attendanceSheetStore'
 import dayjs from 'dayjs'
 
 export default function TeacherClassesPage() {
@@ -153,17 +154,22 @@ export default function TeacherClassesPage() {
     {
       title: '관리',
       key: 'actions',
-      width: 120,
+      width: 200,
       align: 'center',
-      render: (_, record) => (
-        <Button
-          size="small"
-          icon={<Eye className="w-3 h-3" />}
-          onClick={() => router.push(`/teacher/classes/${record.educationId}`)}
-        >
-          상세
-        </Button>
-      ),
+      render: (_, record) => {
+        return (
+          <Button
+            size="small"
+            icon={<Eye className="w-3 h-3" />}
+            onClick={(e) => {
+              e.stopPropagation()
+              router.push(`/teacher/attendance/${record.educationId}`)
+            }}
+          >
+            상세
+          </Button>
+        )
+      },
     },
   ]
 
@@ -279,10 +285,6 @@ export default function TeacherClassesPage() {
                 showSizeChanger: true,
                 showTotal: (total) => `총 ${total}건`,
               }}
-              onRow={(record) => ({
-                onClick: () => router.push(`/teacher/classes/${record.educationId}`),
-                className: 'cursor-pointer',
-              })}
             />
           </Card>
         </div>

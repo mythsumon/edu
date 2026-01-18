@@ -1,6 +1,6 @@
 // Submission types for grouping documents by education ID
 
-export type DocumentType = 'attendance' | 'activity' | 'equipment'
+export type DocumentType = 'attendance' | 'activity' | 'equipment' | 'evidence'
 export type SubmissionStatus = 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'
 
 export interface DocumentSubmission {
@@ -25,6 +25,7 @@ export interface EducationSubmissionGroup {
   attendance?: DocumentSubmission
   activity?: DocumentSubmission
   equipment?: DocumentSubmission
+  evidence?: DocumentSubmission
   overallStatus: 'ALL_APPROVED' | 'ALL_SUBMITTED' | 'PARTIAL' | 'PENDING' | 'REJECTED'
   submittedAt?: string
   lastUpdatedAt?: string

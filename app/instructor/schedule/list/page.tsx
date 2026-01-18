@@ -11,6 +11,7 @@ import dayjs from 'dayjs'
 import { getAttendanceDocs } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import { getActivityLogs, getActivityLogByEducationId } from '@/app/instructor/activity-logs/storage'
 import { getDocs as getEquipmentDocs, getDocByEducationId, createDocFromDefault, upsertDoc } from '@/app/instructor/equipment-confirmations/storage'
+import { getEvidenceDocByEducationId } from '@/app/instructor/evidence/storage'
 import {
   getEducationDocSummariesByInstructor,
   type EducationDocSummary,
@@ -87,12 +88,14 @@ export default function MyScheduleListPage() {
     window.addEventListener('attendanceUpdated', handleCustomStorageChange)
     window.addEventListener('activityUpdated', handleCustomStorageChange)
     window.addEventListener('equipmentUpdated', handleCustomStorageChange)
+    window.addEventListener('evidenceUpdated', handleCustomStorageChange)
 
     return () => {
       window.removeEventListener('storage', handleStorageChange)
       window.removeEventListener('attendanceUpdated', handleCustomStorageChange)
       window.removeEventListener('activityUpdated', handleCustomStorageChange)
       window.removeEventListener('equipmentUpdated', handleCustomStorageChange)
+      window.removeEventListener('evidenceUpdated', handleCustomStorageChange)
     }
   }, [currentInstructorName])
 
@@ -169,6 +172,15 @@ export default function MyScheduleListPage() {
       const newDoc = createDocFromDefault({ educationId: id })
       upsertDoc(newDoc)
       router.push(`/instructor/equipment-confirmations/${newDoc.id}`)
+    }
+  }
+
+  const handleViewEvidence = (id: string) => {
+    const evidenceDoc = getEvidenceDocByEducationId(id)
+    if (evidenceDoc?.id) {
+      router.push(`/instructor/evidence/${evidenceDoc.id}`)
+    } else {
+      router.push(`/instructor/evidence/new?educationId=${id}`)
     }
   }
 
@@ -291,6 +303,20 @@ export default function MyScheduleListPage() {
             }}
             educationId={record.educationId}
             documentId={record.equipment?.id}
+          />
+          <DocumentStatusIndicator
+            status={record.evidence?.status}
+            count={record.evidence?.count}
+            label="증빙자료"
+            onClick={() => {
+              if (record.evidence?.id) {
+                router.push(`/instructor/evidence/${record.evidence.id}`)
+              } else {
+                router.push(`/instructor/evidence/new?educationId=${record.educationId}`)
+              }
+            }}
+            educationId={record.educationId}
+            documentId={record.evidence?.id}
           />
         </div>
       ),
@@ -430,6 +456,7 @@ export default function MyScheduleListPage() {
               onViewAttendance={handleViewAttendance}
               onViewActivity={handleViewActivity}
               onViewEquipment={handleViewEquipment}
+              onViewEvidence={handleViewEvidence}
             />
           )}
         </div>

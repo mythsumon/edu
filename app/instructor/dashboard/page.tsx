@@ -29,6 +29,7 @@ import { InstructorCourse, instructorCourses, instructorCalendarEvents, Instruct
 import { getAttendanceDocByEducationId } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import { getActivityLogByEducationId } from '@/app/instructor/activity-logs/storage'
 import { getDocByEducationId as getEquipmentDocByEducationId } from '@/app/instructor/equipment-confirmations/storage'
+import { getEvidenceDocByEducationId } from '@/app/instructor/evidence/storage'
 import { getEducationDocSummariesByInstructor, type EducationDocSummary } from '@/entities/submission'
 import { dataStore } from '@/lib/dataStore'
 import { useAuth } from '@/contexts/AuthContext'
@@ -139,10 +140,12 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
   const attendanceDoc = getAttendanceDocByEducationId(course.id)
   const activityLog = getActivityLogByEducationId(course.id)
   const equipmentDoc = getEquipmentDocByEducationId(course.id)
+  const evidenceDoc = getEvidenceDocByEducationId(course.id)
   
   const attendanceStatus = attendanceDoc?.status || 'DRAFT'
   const activityStatus = activityLog?.status || 'DRAFT'
   const equipmentStatus = equipmentDoc?.status || 'DRAFT'
+  const evidenceStatus = evidenceDoc?.status || 'DRAFT'
   
   const statusColors = {
     '예정': 'from-blue-500 to-blue-600',
@@ -245,6 +248,20 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
                 onClick={handleEquipmentClick}
                 educationId={course.id}
                 documentId={equipmentDoc?.id}
+              />
+              <DocumentStatusIndicator
+                status={evidenceStatus as any}
+                count={evidenceDoc ? evidenceDoc.items.length : 0}
+                label="증빙자료"
+                onClick={() => {
+                  if (evidenceDoc?.id) {
+                    router.push(`/instructor/evidence/${evidenceDoc.id}`)
+                  } else {
+                    router.push(`/instructor/evidence/new?educationId=${course.id}`)
+                  }
+                }}
+                educationId={course.id}
+                documentId={evidenceDoc?.id}
               />
             </div>
           </div>
@@ -1303,6 +1320,7 @@ export default function InstructorDashboard() {
         open={isPasswordChangeModalOpen}
         isRequired={userProfile?.passwordChanged === false}
         onSuccess={handlePasswordChangeSuccess}
+        onCancel={() => setIsPasswordChangeModalOpen(false)}
       />
     </ProtectedRoute>
   )

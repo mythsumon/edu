@@ -59,6 +59,11 @@ export default function TeacherClassDetailPage() {
     const edu = dataStore.getEducationById(educationId)
     setEducation(edu || null)
     
+    if (!edu) {
+      console.warn(`Education not found: ${educationId}`)
+      return
+    }
+    
     // Load education info
     const info = teacherEducationInfoStore.getByEducationId(educationId)
     setEducationInfo(info)
@@ -82,8 +87,9 @@ export default function TeacherClassDetailPage() {
       }
     }
     
-    // Load requests
+    // Load requests - get all requests for this education, not just OPEN
     const eduRequests = attendanceInfoRequestStore.getByEducationId(educationId)
+    console.log(`Loaded ${eduRequests.length} requests for education ${educationId}:`, eduRequests)
     setRequests(eduRequests.filter(r => r.status === 'OPEN'))
   }
 
@@ -189,7 +195,13 @@ export default function TeacherClassDetailPage() {
       <ProtectedRoute requiredRole="teacher">
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
           <Card>
-            <p className="text-center text-gray-500">교육 정보를 찾을 수 없습니다.</p>
+            <div className="text-center py-8">
+              <p className="text-gray-500 mb-4">교육 정보를 찾을 수 없습니다.</p>
+              <p className="text-sm text-gray-400 mb-4">교육ID: {educationId}</p>
+              <Button onClick={() => router.push('/teacher/classes')}>
+                목록으로 돌아가기
+              </Button>
+            </div>
           </Card>
         </div>
       </ProtectedRoute>
@@ -333,30 +345,42 @@ export default function TeacherClassDetailPage() {
           </Card>
 
           {/* Requests Section */}
-          {requests.length > 0 && (
-            <Card className="rounded-xl mb-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">요청함</h2>
+          <Card className="rounded-xl mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">요청함</h2>
+              {requests.length > 0 && (
+                <Badge count={requests.length} showZero style={{ backgroundColor: '#1890ff' }} />
+              )}
+            </div>
+            {requests.length > 0 ? (
               <div className="space-y-4">
                 {requests.map((request) => (
                   <div
                     key={request.id}
                     className="p-4 border border-blue-200 dark:border-blue-800 rounded-lg bg-blue-50 dark:bg-blue-900/20"
                   >
-                    <div className="flex items-start justify-between">
+                    <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <Badge status="processing" text="요청 중" />
                           <span className="font-medium text-gray-900 dark:text-gray-100">
-                            {request.requesterInstructorName} 강사님의 요청
+                            {request.requesterInstructorName || '강사'} 강사님의 요청
                           </span>
                         </div>
-                        {request.message && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                            {request.message}
+                        {request.message ? (
+                          <div className="p-3 bg-white dark:bg-gray-800 rounded mb-2">
+                            <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                              {request.message}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500 dark:text-gray-400 italic mb-2">
+                            (메시지 없음)
                           </p>
                         )}
-                        <div className="text-xs text-gray-500 dark:text-gray-500">
-                          요청일: {dayjs(request.createdAt).format('YYYY-MM-DD HH:mm')}
+                        <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-500">
+                          <span>요청일: {dayjs(request.createdAt).format('YYYY-MM-DD HH:mm')}</span>
+                          <span>요청ID: {request.id}</span>
                         </div>
                       </div>
                       <Button
@@ -364,7 +388,7 @@ export default function TeacherClassDetailPage() {
                         onClick={() => {
                           Modal.confirm({
                             title: '요청 완료',
-                            content: '출석부 정보 입력을 완료하셨나요?',
+                            content: '출석부 정보 입력을 완료하셨나요? 완료 처리하면 강사에게 알림이 전송됩니다.',
                             onOk: () => handleRequestComplete(request.id),
                           })
                         }}
@@ -375,8 +399,17 @@ export default function TeacherClassDetailPage() {
                   </div>
                 ))}
               </div>
-            </Card>
-          )}
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500 dark:text-gray-400 mb-2">
+                  현재 요청된 출석부 정보가 없습니다.
+                </p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">
+                  강사가 출석부 정보를 요청하면 여기에 표시됩니다.
+                </p>
+              </div>
+            )}
+          </Card>
 
           {/* Attendance Sign Section */}
           <Card className="rounded-xl">

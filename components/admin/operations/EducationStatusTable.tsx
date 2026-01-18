@@ -1,9 +1,10 @@
 'use client'
 
-import { Table, Checkbox, Dropdown, Button, Tooltip } from 'antd'
+import { Table, Checkbox, Dropdown, Button, Tooltip, Badge } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import type { MenuProps } from 'antd'
-import { ChevronDown, Edit2 } from 'lucide-react'
+import { ChevronDown, Edit2, Clock } from 'lucide-react'
+import dayjs from 'dayjs'
 import { 
   getAllowedNextStatuses, 
   statusDescriptions, 
@@ -27,6 +28,8 @@ export interface EducationStatusItem {
   periodStart?: string
   periodEnd?: string
   period?: string
+  openAt?: string // ISO datetime string
+  closeAt?: string // ISO datetime string
 }
 
 interface EducationStatusTableProps {
@@ -271,6 +274,50 @@ export function EducationStatusTable({
       render: (_, record) => (
         <span className="text-base font-medium text-gray-900">{getPeriodDisplay(record)}</span>
       ),
+    },
+    {
+      title: '스케줄',
+      key: 'schedule',
+      width: 250,
+      render: (_, record) => {
+        const now = dayjs()
+        const openAt = record.openAt ? dayjs(record.openAt) : null
+        const closeAt = record.closeAt ? dayjs(record.closeAt) : null
+
+        return (
+          <div className="space-y-1">
+            {openAt && (
+              <div className="flex items-center gap-2 text-xs">
+                <Clock className="w-3 h-3 text-blue-500" />
+                <span className="text-gray-600">강사공개 예정:</span>
+                {openAt.isBefore(now) ? (
+                  <Badge status="success" text="완료" />
+                ) : (
+                  <span className="text-blue-600 font-medium">
+                    {openAt.format('YYYY-MM-DD HH:mm')}
+                  </span>
+                )}
+              </div>
+            )}
+            {closeAt && (
+              <div className="flex items-center gap-2 text-xs">
+                <Clock className="w-3 h-3 text-orange-500" />
+                <span className="text-gray-600">신청마감 예정:</span>
+                {closeAt.isBefore(now) ? (
+                  <Badge status="success" text="완료" />
+                ) : (
+                  <span className="text-orange-600 font-medium">
+                    {closeAt.format('YYYY-MM-DD HH:mm')}
+                  </span>
+                )}
+              </div>
+            )}
+            {!openAt && !closeAt && (
+              <span className="text-gray-400 text-xs">스케줄 없음</span>
+            )}
+          </div>
+        )
+      },
     },
   ]
 

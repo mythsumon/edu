@@ -4,9 +4,11 @@
 import { getAttendanceDocs } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import { getActivityLogs } from '@/app/instructor/activity-logs/storage'
 import { getDocs as getEquipmentDocs } from '@/app/instructor/equipment-confirmations/storage'
+import { getEvidenceDocs } from '@/app/instructor/evidence/storage'
 import type { AttendanceDocument } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import type { ActivityLog } from '@/app/instructor/activity-logs/types'
 import type { EquipmentConfirmationDoc, EquipmentConfirmationStatus } from '@/app/instructor/equipment-confirmations/types'
+import type { EvidenceDoc, EvidenceStatus } from '@/app/instructor/evidence/types'
 import type { DocumentSubmission, EducationSubmissionGroup, SubmissionStatus } from './submission-types'
 
 /**
@@ -49,6 +51,13 @@ export interface EducationDocSummary {
     rejectReason?: string
     count: number
   }
+  evidence?: {
+    id: string
+    status: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'
+    submittedAt?: string
+    rejectReason?: string
+    count: number
+  }
   overallStatus: 'ALL_APPROVED' | 'ALL_SUBMITTED' | 'PARTIAL' | 'PENDING' | 'REJECTED'
   lastUpdatedAt?: string
 }
@@ -60,12 +69,14 @@ export function deriveEducationDocSummary(educationId: string): EducationDocSumm
   const attendanceDocs = getAttendanceDocs()
   const activityLogs = getActivityLogs()
   const equipmentDocs = getEquipmentDocs()
+  const evidenceDocs = getEvidenceDocs()
 
   const attendance = attendanceDocs.find(doc => doc.educationId === educationId)
   const activity = activityLogs.find(log => (log.educationId || log.id) === educationId)
   const equipment = equipmentDocs.find(doc => (doc.educationId || doc.id) === educationId)
+  const evidence = evidenceDocs.find(doc => doc.educationId === educationId)
 
-  if (!attendance && !activity && !equipment) {
+  if (!attendance && !activity && !equipment && !evidence) {
     return null
   }
 
@@ -132,8 +143,21 @@ export function deriveEducationDocSummary(educationId: string): EducationDocSumm
     }
   }
 
+  if (evidence) {
+    summary.evidence = {
+      id: evidence.id,
+      status: evidence.status as 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED',
+      submittedAt: evidence.submittedAt,
+      rejectReason: evidence.rejectReason,
+      count: evidence.items.length,
+    }
+    if (evidence.updatedAt && (!summary.lastUpdatedAt || evidence.updatedAt > summary.lastUpdatedAt)) {
+      summary.lastUpdatedAt = evidence.updatedAt
+    }
+  }
+
   // Calculate overall status
-  const docs = [summary.attendance, summary.activity, summary.equipment].filter(Boolean) as any[]
+  const docs = [summary.attendance, summary.activity, summary.equipment, summary.evidence].filter(Boolean) as any[]
   if (docs.length === 0) {
     summary.overallStatus = 'PENDING'
   } else {
@@ -165,6 +189,7 @@ export function getAllEducationDocSummaries(): EducationDocSummary[] {
   const attendanceDocs = getAttendanceDocs()
   const activityLogs = getActivityLogs()
   const equipmentDocs = getEquipmentDocs()
+  const evidenceDocs = getEvidenceDocs()
 
   const educationMap = new Map<string, EducationDocSummary>()
 
@@ -201,6 +226,17 @@ export function getAllEducationDocSummaries(): EducationDocSummary[] {
     }
   })
 
+  // Process evidence docs
+  evidenceDocs.forEach(doc => {
+    const educationId = doc.educationId
+    if (!educationMap.has(educationId)) {
+      const summary = deriveEducationDocSummary(educationId)
+      if (summary) {
+        educationMap.set(educationId, summary)
+      }
+    }
+  })
+
   // Sort by last updated (newest first)
   return Array.from(educationMap.values()).sort((a, b) => {
     const dateA = a.lastUpdatedAt || ''
@@ -223,15 +259,18 @@ export function getEvidenceByEducationGrouped(educationId: string): {
   attendance?: AttendanceDocument
   activity?: ActivityLog
   equipment?: EquipmentConfirmationDoc
+  evidence?: EvidenceDoc
 } {
   const attendanceDocs = getAttendanceDocs()
   const activityLogs = getActivityLogs()
   const equipmentDocs = getEquipmentDocs()
+  const evidenceDocs = getEvidenceDocs()
 
   return {
     attendance: attendanceDocs.find(doc => doc.educationId === educationId),
     activity: activityLogs.find(log => (log.educationId || log.id) === educationId),
     equipment: equipmentDocs.find(doc => (doc.educationId || doc.id) === educationId),
+    evidence: evidenceDocs.find(doc => doc.educationId === educationId),
   }
 }
 
@@ -292,6 +331,19 @@ export function getInstructorSubmissions(instructorName: string): {
         rejectReason: summary.equipment.rejectReason,
       })
     }
+    if (summary.evidence && summary.evidence.status !== 'DRAFT') {
+      submissions.push({
+        id: summary.evidence.id,
+        type: 'evidence',
+        educationId: summary.educationId,
+        educationName: summary.educationName,
+        institutionName: summary.institutionName,
+        instructorName: summary.instructorName,
+        submittedAt: summary.evidence.submittedAt || '',
+        status: summary.evidence.status,
+        rejectReason: summary.evidence.rejectReason,
+      })
+    }
   })
 
   // Sort by submitted date (newest first)
@@ -338,6 +390,15 @@ export function getEducationSubmissionGroups(): EducationSubmissionGroup[] {
       submittedBy: summary.instructorName,
       rejectReason: summary.equipment.rejectReason,
     } : undefined,
+    evidence: summary.evidence ? {
+      id: summary.evidence.id,
+      type: 'evidence',
+      educationId: summary.educationId,
+      status: summary.evidence.status,
+      submittedAt: summary.evidence.submittedAt,
+      submittedBy: summary.instructorName,
+      rejectReason: summary.evidence.rejectReason,
+    } : undefined,
     overallStatus: summary.overallStatus,
     submittedAt: summary.lastUpdatedAt,
     lastUpdatedAt: summary.lastUpdatedAt,
@@ -381,6 +442,15 @@ export function getEducationSubmissionGroupsByInstructor(instructorName: string)
       submittedAt: summary.equipment.submittedAt,
       submittedBy: summary.instructorName,
       rejectReason: summary.equipment.rejectReason,
+    } : undefined,
+    evidence: summary.evidence ? {
+      id: summary.evidence.id,
+      type: 'evidence',
+      educationId: summary.educationId,
+      status: summary.evidence.status,
+      submittedAt: summary.evidence.submittedAt,
+      submittedBy: summary.instructorName,
+      rejectReason: summary.evidence.rejectReason,
     } : undefined,
     overallStatus: summary.overallStatus,
     submittedAt: summary.lastUpdatedAt,

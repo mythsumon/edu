@@ -1,7 +1,7 @@
 'use client'
 
-import { Modal, Form, Input, message } from 'antd'
-import { Key } from 'lucide-react'
+import { Modal, Form, Input, message, Button } from 'antd'
+import { Key, X } from 'lucide-react'
 import { useState } from 'react'
 
 interface PasswordChangeModalProps {
@@ -55,10 +55,21 @@ export function PasswordChangeModal({
         </div>
       }
       open={open}
-      onCancel={isRequired ? undefined : onCancel} // 필수 변경 시 취소 불가
-      footer={null}
+      onCancel={onCancel}
+      footer={
+        onCancel ? (
+          <div className="flex justify-end">
+            <Button
+              onClick={onCancel}
+              className="px-4 py-2 rounded-xl border border-gray-300 hover:bg-gray-50 transition-colors"
+            >
+              닫기
+            </Button>
+          </div>
+        ) : null
+      }
       width={500}
-      closable={!isRequired} // 필수 변경 시 닫기 버튼 숨김
+      closable={true}
       maskClosable={!isRequired} // 필수 변경 시 배경 클릭으로 닫기 불가
     >
       {isRequired && (
@@ -120,7 +131,7 @@ export function PasswordChangeModal({
         </Form.Item>
         
         <div className="flex justify-end gap-2 mt-6">
-          {!isRequired && (
+          {onCancel && (
             <button
               type="button"
               onClick={onCancel}

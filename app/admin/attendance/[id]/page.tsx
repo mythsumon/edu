@@ -3,15 +3,17 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Button, Space, Modal, Input, Table, message } from 'antd'
+import { Button, Space, Modal, Input, Table, message, Card } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { ArrowLeft, CheckCircle2, XCircle } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, XCircle, CheckCircle } from 'lucide-react'
 import { Badge } from 'antd'
 import { DetailPageHeaderSticky, DetailSectionCard } from '@/components/admin/operations'
 import { getAttendanceDocByEducationId, getAttendanceDocById, getAttendanceDocs, upsertAttendanceDoc, type AttendanceDocument } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import { useAuth } from '@/contexts/AuthContext'
 import { InstitutionContactAndSignatures } from '@/components/instructor/attendance/InstitutionContactAndSignatures'
 import { getActivityLogByEducationId } from '@/app/instructor/activity-logs/storage'
+import { teacherEducationInfoStore } from '@/lib/teacherStore'
+import type { TeacherEducationInfo } from '@/lib/teacherStore'
 import dayjs from 'dayjs'
 
 const { TextArea } = Input
@@ -26,6 +28,7 @@ export default function AdminAttendanceDetailPage() {
   const [rejectModalVisible, setRejectModalVisible] = useState(false)
   const [rejectReason, setRejectReason] = useState('')
   const [loading, setLoading] = useState(false)
+  const [teacherEducationInfo, setTeacherEducationInfo] = useState<TeacherEducationInfo | null>(null)
 
   useEffect(() => {
     // Initialize example data if needed (only in development)
@@ -52,6 +55,13 @@ export default function AdminAttendanceDetailPage() {
       
       if (attendanceDoc) {
         setDoc(attendanceDoc)
+        
+        // Load teacher education info
+        const docEducationId = attendanceDoc.educationId || educationId
+        const teacherInfo = teacherEducationInfoStore.getByEducationId(docEducationId)
+        if (teacherInfo) {
+          setTeacherEducationInfo(teacherInfo)
+        }
       } else {
         const allDocs = getAttendanceDocs()
         
@@ -70,6 +80,24 @@ export default function AdminAttendanceDetailPage() {
       }
     }
   }, [educationId, router])
+
+  // Listen for teacher education info updates
+  useEffect(() => {
+    if (typeof window === 'undefined' || !doc) return
+
+    const handleTeacherInfoUpdate = () => {
+      const docEducationId = doc.educationId || educationId
+      if (docEducationId) {
+        const teacherInfo = teacherEducationInfoStore.getByEducationId(docEducationId)
+        setTeacherEducationInfo(teacherInfo)
+      }
+    }
+
+    window.addEventListener('teacherEducationInfoUpdated', handleTeacherInfoUpdate)
+    return () => {
+      window.removeEventListener('teacherEducationInfoUpdated', handleTeacherInfoUpdate)
+    }
+  }, [doc, educationId])
 
   const handleApprove = () => {
     if (!doc) return
@@ -227,43 +255,74 @@ export default function AdminAttendanceDetailPage() {
         )}
 
         <div className="max-w-7xl mx-auto px-6 py-8">
+          {/* Teacher Education Info Alert */}
+          {teacherEducationInfo && (
+            <Card className="mb-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-blue-600" />
+                  <span className="font-medium text-blue-900 dark:text-blue-100">
+                    학교 선생님이 입력한 교육 정보가 자동으로 불러와졌습니다.
+                  </span>
+                </div>
+              </div>
+            </Card>
+          )}
 
           {/* 교육 정보 */}
           <DetailSectionCard title="교육 정보" className="mb-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">소재지</div>
-                <div className="text-base font-medium text-gray-900 dark:text-gray-100">{doc.location}</div>
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">기관명</div>
-                <div className="text-base font-medium text-gray-900 dark:text-gray-100">{doc.institution}</div>
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">학급명</div>
-                <div className="text-base font-medium text-gray-900 dark:text-gray-100">{doc.gradeClass}</div>
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">프로그램명</div>
-                <div className="text-base font-medium text-gray-900 dark:text-gray-100">{doc.programName}</div>
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">총차시</div>
-                <div className="text-base font-medium text-gray-900 dark:text-gray-100">{doc.totalSessions}차시</div>
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">성별 인원</div>
-                <div className="text-base font-medium text-gray-900 dark:text-gray-100">
-                  남 {doc.maleCount}명 / 여 {doc.femaleCount}명
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">출석부 코드</div>
+                <div className="text-base font-medium text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded">
+                  {doc.id || '-'}
                 </div>
               </div>
               <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">수강생</div>
-                <div className="text-base font-medium text-gray-900 dark:text-gray-100">{doc.students.length}명</div>
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">프로그램명</div>
+                <div className="text-base font-medium text-gray-900 dark:text-gray-100">{doc.programName || '-'}</div>
               </div>
               <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">학교 담당자</div>
-                <div className="text-base font-medium text-gray-900 dark:text-gray-100">{doc.schoolContactName}</div>
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">기관명</div>
+                <div className="text-base font-medium text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded">
+                  {doc.institution || '-'}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">학년</div>
+                <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                  {(() => {
+                    const match = doc.gradeClass?.match(/(\d+)학년/)
+                    return match ? `${match[1]}학년` : '-'
+                  })()}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">반</div>
+                <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                  {(() => {
+                    const match = doc.gradeClass?.match(/(\d+)반/)
+                    return match ? `${match[1]}반` : '-'
+                  })()}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">교육신청인원</div>
+                <div className="text-base font-medium text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded">
+                  {doc.students.length}명
+                </div>
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">담임/담당자 이름</div>
+                <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                  {doc.schoolContactName || doc.institutionContact?.name || '-'}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">담임/담당자 연락처</div>
+                <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                  {doc.institutionContact?.phone || '-'}
+                </div>
               </div>
             </div>
           </DetailSectionCard>
@@ -278,9 +337,17 @@ export default function AdminAttendanceDetailPage() {
                     dataIndex: 'label',
                     key: 'label',
                     width: 120,
-                    render: (text: string) => (
-                      <span className="font-semibold text-gray-700 dark:text-gray-300">{text}</span>
-                    ),
+                    render: (text: string, record: any) => {
+                      if (record.subLabel) {
+                        return (
+                          <div>
+                            <div className="font-semibold text-gray-700 dark:text-gray-300">{text || ''}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{record.subLabel}</div>
+                          </div>
+                        )
+                      }
+                      return <span className="font-semibold text-gray-700 dark:text-gray-300">{text}</span>
+                    },
                   },
                   ...doc.sessions.map((session, index) => ({
                     title: `${session.sessionNumber}회차`,
@@ -292,63 +359,68 @@ export default function AdminAttendanceDetailPage() {
                 ]}
                 dataSource={[
                   {
-                    key: 'date',
-                    label: '강의날짜',
+                    key: 'dateTime',
+                    label: '강의날짜 및 시간',
                     ...doc.sessions.reduce((acc, session, index) => {
                       const normalizedDate = session.date.replace(/\./g, '-')
                       const d = dayjs(normalizedDate)
                       const weekdays = ['일', '월', '화', '수', '목', '금', '토']
-                      acc[`session${index + 1}`] = d.isValid() 
+                      const dateStr = d.isValid() 
                         ? `${d.month() + 1}.${d.date()}(${weekdays[d.day()]})`
                         : session.date
+                      acc[`session${index + 1}`] = `${dateStr}, ${session.startTime} ~ ${session.endTime}`
                       return acc
                     }, {} as Record<string, string>),
                   },
                   {
-                    key: 'time',
-                    label: '시간',
+                    key: 'instructorType',
+                    label: '참여강사',
+                    subLabel: '강사구분',
                     ...doc.sessions.reduce((acc, session, index) => {
-                      acc[`session${index + 1}`] = `${session.startTime} ~ ${session.endTime}`
+                      acc[`session${index + 1}`] = (
+                        <div className="space-y-2">
+                          <div className="text-sm">주강사</div>
+                          <div className="text-sm">보조강사</div>
+                        </div>
+                      )
                       return acc
-                    }, {} as Record<string, string>),
+                    }, {} as Record<string, any>),
+                  },
+                  {
+                    key: 'instructorName',
+                    label: '',
+                    subLabel: '이름',
+                    ...doc.sessions.reduce((acc, session, index) => {
+                      acc[`session${index + 1}`] = (
+                        <div className="space-y-2">
+                          <div className="text-sm">{session.mainInstructor || '-'}</div>
+                          <div className="text-sm">{session.assistantInstructor || '-'}</div>
+                        </div>
+                      )
+                      return acc
+                    }, {} as Record<string, any>),
                   },
                   {
                     key: 'sessions',
                     label: '차시',
                     ...doc.sessions.reduce((acc, session, index) => {
-                      acc[`session${index + 1}`] = `${session.sessions}차시`
-                      return acc
-                    }, {} as Record<string, string>),
-                  },
-                  {
-                    key: 'mainInstructor',
-                    label: '주강사',
-                    ...doc.sessions.reduce((acc, session, index) => {
-                      acc[`session${index + 1}`] = session.mainInstructor
-                      return acc
-                    }, {} as Record<string, string>),
-                  },
-                  {
-                    key: 'assistantInstructor',
-                    label: '보조강사',
-                    ...doc.sessions.reduce((acc, session, index) => {
-                      acc[`session${index + 1}`] = session.assistantInstructor || '-'
+                      acc[`session${index + 1}`] = session.sessions
                       return acc
                     }, {} as Record<string, string>),
                   },
                   {
                     key: 'studentCount',
-                    label: '수강생 수',
+                    label: '학생정원',
                     ...doc.sessions.reduce((acc, session, index) => {
-                      acc[`session${index + 1}`] = `${session.studentCount}명`
+                      acc[`session${index + 1}`] = session.studentCount
                       return acc
                     }, {} as Record<string, string>),
                   },
                   {
                     key: 'attendanceCount',
-                    label: '출석 수',
+                    label: '출석인원',
                     ...doc.sessions.reduce((acc, session, index) => {
-                      acc[`session${index + 1}`] = `${session.attendanceCount}명`
+                      acc[`session${index + 1}`] = session.attendanceCount
                       return acc
                     }, {} as Record<string, string>),
                   },
@@ -358,9 +430,16 @@ export default function AdminAttendanceDetailPage() {
             </DetailSectionCard>
           )}
 
-          {/* 학생별 출석 정보 */}
+          {/* 학생별 출석 현황 */}
           {doc.students && doc.students.length > 0 && (
-            <DetailSectionCard title="학생별 출석 정보" className="mb-6">
+            <DetailSectionCard title="학생별 출석 현황" className="mb-6">
+              <div className="mb-4 flex items-center justify-between flex-wrap gap-4">
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    <strong>※ 수료기준 :</strong> 학생 당 출석률 80% 이상
+                  </p>
+                </div>
+              </div>
               <Table
                 columns={[
                   {
@@ -408,15 +487,18 @@ export default function AdminAttendanceDetailPage() {
                     key: 'completion',
                     width: 100,
                     align: 'center',
-                    render: (_: any, record: any) => (
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                        record.completionStatus === 'O' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {record.completionStatus === 'O' ? '수료' : '미수료'}
-                      </span>
-                    ),
+                    render: (_: any, record: any) => {
+                      if (record.isTransferred) {
+                        return <span className="text-sm text-gray-400">-</span>
+                      }
+                      return (
+                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-base font-bold ${
+                          record.completionStatus === 'O' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                        }`}>
+                          {record.completionStatus}
+                        </span>
+                      )
+                    },
                   },
                 ]}
                 dataSource={doc.students}

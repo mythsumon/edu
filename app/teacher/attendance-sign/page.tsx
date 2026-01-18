@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { getAttendanceDocs, type AttendanceDocument } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import { teacherAttendanceSignatureStore } from '@/lib/teacherStore'
 import type { TeacherAttendanceSignature } from '@/lib/teacherStore'
+import { attendanceSheetStore, type AttendanceSheet } from '@/lib/attendanceSheetStore'
 import { dataStore } from '@/lib/dataStore'
 import dayjs from 'dayjs'
 
@@ -25,7 +26,13 @@ export default function TeacherAttendanceSignPage() {
   const [form] = Form.useForm()
 
   const currentTeacherId = userProfile?.userId || 'teacher-1'
+  const currentInstitutionId = 'INST-001' // TODO: Get from teacher profile
   const currentInstitutionName = '평택안일초등학교' // TODO: Get from teacher profile
+
+  // Load all AttendanceSheets for this institution (not just WAITING_TEACHER_SIGNATURE)
+  const attendanceSheets = useMemo(() => {
+    return attendanceSheetStore.getByInstitutionId(currentInstitutionId)
+  }, [currentInstitutionId])
 
   const allAttendanceDocs = useMemo(() => {
     return getAttendanceDocs().filter(doc => {
@@ -38,8 +45,31 @@ export default function TeacherAttendanceSignPage() {
     return teacherAttendanceSignatureStore.getAll()
   }, [])
 
+  // Combine AttendanceSheets and AttendanceDocuments
   const attendanceList = useMemo(() => {
-    return allAttendanceDocs.map(doc => {
+    // First, add all AttendanceSheets (not just those needing signature)
+    const sheetItems = attendanceSheets.map(sheet => {
+      const education = dataStore.getEducationById(sheet.educationId)
+      const isCompleted = education && education.periodEnd 
+        ? dayjs(education.periodEnd).isBefore(dayjs())
+        : false
+      return {
+        id: sheet.attendanceId,
+        educationId: sheet.educationId,
+        programName: sheet.programName || education?.name || '',
+        institution: sheet.institutionName || currentInstitutionName,
+        gradeClass: `${sheet.teacherInfo.grade}학년 ${sheet.teacherInfo.className}반`,
+        hasSigned: !!sheet.teacherSignature,
+        signature: null,
+        isCompleted,
+        education,
+        isAttendanceSheet: true,
+        sheet,
+      }
+    })
+    
+    // Then add old AttendanceDocuments
+    const docItems = allAttendanceDocs.map(doc => {
       const signature = signatures.find(sig => 
         sig.educationId === doc.educationId && sig.teacherId === currentTeacherId
       )
@@ -54,9 +84,12 @@ export default function TeacherAttendanceSignPage() {
         signature,
         isCompleted,
         education,
+        isAttendanceSheet: false,
       }
     })
-  }, [allAttendanceDocs, signatures, currentTeacherId])
+    
+    return [...sheetItems, ...docItems]
+  }, [attendanceSheets, allAttendanceDocs, signatures, currentTeacherId, currentInstitutionName])
 
   const filteredList = useMemo(() => {
     let filtered = attendanceList
@@ -92,10 +125,12 @@ export default function TeacherAttendanceSignPage() {
 
     window.addEventListener('teacherAttendanceSigned', handleUpdate)
     window.addEventListener('attendanceUpdated', handleUpdate)
+    window.addEventListener('attendanceSheetUpdated', handleUpdate)
 
     return () => {
       window.removeEventListener('teacherAttendanceSigned', handleUpdate)
       window.removeEventListener('attendanceUpdated', handleUpdate)
+      window.removeEventListener('attendanceSheetUpdated', handleUpdate)
     }
   }, [])
 
@@ -120,6 +155,55 @@ export default function TeacherAttendanceSignPage() {
       return
     }
 
+    // Check if this is an AttendanceSheet
+    const sheet = attendanceSheetStore.getByEducationId(selectedAttendance.educationId)
+    if (sheet) {
+      // Allow signature for WAITING_TEACHER_SIGNATURE, SIGNED_BY_TEACHER, APPROVED, and completed sheets
+      const canSign = sheet.status === 'WAITING_TEACHER_SIGNATURE' || 
+                      sheet.status === 'SIGNED_BY_TEACHER' || 
+                      sheet.status === 'APPROVED' ||
+                      (selectedAttendance.isCompleted && !sheet.teacherSignature)
+      
+      if (canSign) {
+        const signature = {
+          method: (signatureType === 'image' ? 'PNG' : 'TYPED') as 'PNG' | 'TYPED',
+          signedBy: userProfile?.name || '학교선생님',
+          signedAt: new Date().toISOString(),
+          signatureRef: signatureType === 'typed' ? typedName : signatureImageUrl,
+        }
+        
+        // If already signed, just update the signature
+        if (sheet.teacherSignature) {
+          const updated = {
+            ...sheet,
+            teacherSignature: signature,
+            updatedAt: new Date().toISOString(),
+          }
+          attendanceSheetStore.upsert(updated)
+          message.success('서명이 업데이트되었습니다.')
+        } else {
+          // Use addTeacherSignature for new signatures
+          const result = attendanceSheetStore.addTeacherSignature(sheet.attendanceId, signature)
+          if (result) {
+            message.success('서명이 완료되었습니다.')
+          } else {
+            // If addTeacherSignature fails (e.g., wrong status), just update directly
+            const updated = {
+              ...sheet,
+              teacherSignature: signature,
+              updatedAt: new Date().toISOString(),
+            }
+            attendanceSheetStore.upsert(updated)
+            message.success('서명이 완료되었습니다.')
+          }
+        }
+        setSignatureModalVisible(false)
+        setSelectedAttendance(null)
+        return
+      }
+    }
+
+    // Fallback to old system
     const signature: Omit<TeacherAttendanceSignature, 'id' | 'signedAt'> = {
       educationId: selectedAttendance.educationId,
       teacherId: currentTeacherId,
@@ -213,7 +297,15 @@ export default function TeacherAttendanceSignPage() {
           type={record.hasSigned ? 'default' : 'primary'}
           size="small"
           icon={<FileCheck className="w-3 h-3" />}
-          onClick={() => handleSign(record)}
+          onClick={() => {
+            // Navigate to detail page for review and signature
+            if (record.isAttendanceSheet && record.sheet) {
+              router.push(`/teacher/attendance-sign/${record.sheet.attendanceId}`)
+            } else {
+              // For old AttendanceDocument, use educationId
+              router.push(`/teacher/attendance/${record.educationId}`)
+            }
+          }}
         >
           {record.hasSigned ? '서명 확인' : '서명하기'}
         </Button>

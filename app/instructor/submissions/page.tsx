@@ -13,6 +13,7 @@ import {
 } from '@/entities/submission'
 import { DocumentStatusIndicator, EducationDetailDrawer } from '@/components/shared/common'
 import { getActivityLogByEducationId } from '@/app/instructor/activity-logs/storage'
+import { getEvidenceDocByEducationId } from '@/app/instructor/evidence/storage'
 import dayjs from 'dayjs'
 
 export default function InstructorSubmissionsPage() {
@@ -69,6 +70,10 @@ export default function InstructorSubmissionsPage() {
 
   const handleViewEquipment = (id: string) => {
     router.push(`/instructor/equipment-confirmations/${id}`)
+  }
+
+  const handleViewEvidence = (id: string) => {
+    router.push(`/instructor/evidence/${id}`)
   }
 
   const getOverallStatusBadge = (status: string) => {
@@ -193,6 +198,20 @@ export default function InstructorSubmissionsPage() {
             }}
             educationId={record.educationId}
             documentId={record.equipment?.id}
+          />
+          <DocumentStatusIndicator
+            status={record.evidence?.status}
+            count={record.evidence?.count}
+            label="증빙자료"
+            onClick={() => {
+              if (record.evidence?.id) {
+                router.push(`/instructor/evidence/${record.evidence.id}`)
+              } else {
+                router.push(`/instructor/evidence/new?educationId=${record.educationId}`)
+              }
+            }}
+            educationId={record.educationId}
+            documentId={record.evidence?.id}
           />
         </div>
       ),
@@ -324,6 +343,7 @@ export default function InstructorSubmissionsPage() {
               onViewAttendance={handleViewAttendance}
               onViewActivity={handleViewActivity}
               onViewEquipment={handleViewEquipment}
+              onViewEvidence={handleViewEvidence}
             />
           )}
         </div>

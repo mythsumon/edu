@@ -8,7 +8,6 @@ import { useAuth } from '@/contexts/AuthContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { DetailSectionCard } from '@/components/admin/operations'
 import { EquipmentItemsTableV2 } from '../components/EquipmentItemsTableV2'
-import { SignatureSlotV2 } from '../components/SignatureSlotV2'
 import {
   getEquipmentConfirmationById,
   getEquipmentConfirmationByEducationId,
@@ -152,57 +151,6 @@ export default function EquipmentConfirmationDetailPage() {
     setDoc({
       ...doc,
       lectureDateRange: { ...doc.lectureDateRange, [field]: value },
-    })
-  }
-
-  const handleBorrowerSignatureApply = (signature: NonNullable<EquipmentConfirmation['borrowPlan']['borrowerSignature']>) => {
-    if (!doc) return
-    setDoc({
-      ...doc,
-      borrowPlan: { ...doc.borrowPlan, borrowerSignature: signature },
-    })
-  }
-
-  const handleBorrowerSignatureDelete = () => {
-    if (!doc) return
-    const { borrowerSignature, ...rest } = doc.borrowPlan
-    setDoc({
-      ...doc,
-      borrowPlan: rest,
-    })
-  }
-
-  const handleReturnerSignatureApply = (signature: NonNullable<EquipmentConfirmation['returnConfirm']['returnerSignature']>) => {
-    if (!doc) return
-    setDoc({
-      ...doc,
-      returnConfirm: { ...doc.returnConfirm, returnerSignature: signature },
-    })
-  }
-
-  const handleReturnerSignatureDelete = () => {
-    if (!doc) return
-    const { returnerSignature, ...rest } = doc.returnConfirm
-    setDoc({
-      ...doc,
-      returnConfirm: rest,
-    })
-  }
-
-  const handleAdminManagerSignatureApply = (signature: NonNullable<EquipmentConfirmation['returnConfirm']['adminManagerSignature']>) => {
-    if (!doc) return
-    setDoc({
-      ...doc,
-      returnConfirm: { ...doc.returnConfirm, adminManagerSignature: signature },
-    })
-  }
-
-  const handleAdminManagerSignatureDelete = () => {
-    if (!doc) return
-    const { adminManagerSignature, ...rest } = doc.returnConfirm
-    setDoc({
-      ...doc,
-      returnConfirm: rest,
     })
   }
 
@@ -570,23 +518,14 @@ export default function EquipmentConfirmationDetailPage() {
                     <Input
                       value={doc.borrowPlan.borrowerName}
                       onChange={(e) => handleBorrowPlanChange('borrowerName', e.target.value)}
-                      className="w-full rounded-lg mb-2"
+                      className="w-full rounded-lg"
                       placeholder="교구대여자 이름"
                     />
                   ) : (
-                    <div className="text-base font-medium text-gray-900 dark:text-gray-100 mb-2">
+                    <div className="text-base font-medium text-gray-900 dark:text-gray-100">
                       {doc.borrowPlan.borrowerName || '-'}
                     </div>
                   )}
-                  <SignatureSlotV2
-                    label="교구대여자 서명"
-                    signature={doc.borrowPlan.borrowerSignature}
-                    signerName={doc.borrowPlan.borrowerName}
-                    onApply={handleBorrowerSignatureApply}
-                    onDelete={handleBorrowerSignatureDelete}
-                    disabled={!isEditable}
-                    userProfile={userProfile ? { userId: userProfile.userId || '', name: userProfile.name || '', signatureImageUrl: userProfile.signatureImageUrl } : undefined}
-                  />
                 </div>
               </div>
 
@@ -713,27 +652,21 @@ export default function EquipmentConfirmationDetailPage() {
                     <Input
                       value={doc.returnConfirm.returnerName}
                       onChange={(e) => handleReturnConfirmChange('returnerName', e.target.value)}
-                      className="w-full rounded-lg mb-2"
+                      className="w-full rounded-lg"
                       placeholder="교구 반납자 이름"
                       disabled={!canEditReturn && !isEditable}
                     />
                   ) : (
-                    <div className="text-base font-medium text-gray-900 dark:text-gray-100 mb-2">
+                    <div className="text-base font-medium text-gray-900 dark:text-gray-100">
                       {doc.returnConfirm.returnerName || '-'}
                     </div>
                   )}
-                  <SignatureSlotV2
-                    label="교구 반납자 서명"
-                    signature={doc.returnConfirm.returnerSignature}
-                    signerName={doc.returnConfirm.returnerName}
-                    onApply={handleReturnerSignatureApply}
-                    onDelete={handleReturnerSignatureDelete}
-                    disabled={!canEditReturn && !isEditable}
-                    userProfile={userProfile ? { userId: userProfile.userId || '', name: userProfile.name || '', signatureImageUrl: userProfile.signatureImageUrl } : undefined}
-                  />
                 </div>
                 <div>
-                  {/* Empty space for layout balance */}
+                  <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">서명</label>
+                  <div className="text-sm text-gray-500 italic">
+                    서명은 추후 PNG 할당 방식으로 구현 예정
+                  </div>
                 </div>
               </div>
 
@@ -815,23 +748,21 @@ export default function EquipmentConfirmationDetailPage() {
                     <Input
                       value={doc.returnConfirm.adminManagerName || ''}
                       onChange={(e) => handleReturnConfirmChange('adminManagerName', e.target.value)}
-                      className="w-full rounded-lg mb-2"
+                      className="w-full rounded-lg"
                       placeholder="사업담당자 이름"
                     />
                   ) : (
-                    <div className="text-base font-medium text-gray-900 dark:text-gray-100 mb-2">
+                    <div className="text-base font-medium text-gray-900 dark:text-gray-100">
                       {doc.returnConfirm.adminManagerName || '-'}
                     </div>
                   )}
-                  <SignatureSlotV2
-                    label="사업담당자 서명"
-                    signature={doc.returnConfirm.adminManagerSignature}
-                    signerName={doc.returnConfirm.adminManagerName || ''}
-                    onApply={handleAdminManagerSignatureApply}
-                    onDelete={handleAdminManagerSignatureDelete}
-                    disabled={!isEditable}
-                    userProfile={userProfile ? { userId: userProfile.userId || '', name: userProfile.name || '', signatureImageUrl: userProfile.signatureImageUrl } : undefined}
-                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">사업담당자 서명</label>
+                <div className="text-sm text-gray-500 italic">
+                  서명은 추후 PNG 할당 방식으로 구현 예정
                 </div>
               </div>
             </div>

@@ -27,6 +27,8 @@ export interface Education {
   note?: string
   educationStatus?: 'OPEN' | 'INIT' | 'CANCEL' | '신청 중' | '신청 마감' | '대기'
   applicationDeadline?: string
+  openAt?: string // ISO datetime string: when "오픈예정" -> "강사공개"
+  closeAt?: string // ISO datetime string: when "강사공개" -> "신청마감"
   lessons?: Lesson[]
 }
 
@@ -309,6 +311,22 @@ let educations: Education[] = [
     periodStart: '2024-09-01',
     periodEnd: '2024-09-30',
     educationStatus: 'OPEN',
+    totalSessions: 8,
+  },
+  {
+    key: '11',
+    status: '확정',
+    educationId: 'EDU-2024-100',
+    name: '2024년 하반기 블록코딩 교육',
+    institution: '수원교육청',
+    region: '수원시',
+    gradeClass: '3학년 2반',
+    period: '2024-09-01 ~ 2024-11-30',
+    periodStart: '2024-09-01',
+    periodEnd: '2024-11-30',
+    educationStatus: 'OPEN',
+    programTitle: '2024년 하반기 블록코딩 교육',
+    courseName: '2024년 하반기 블록코딩 교육',
     totalSessions: 8,
   },
 ]
