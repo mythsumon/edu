@@ -190,3 +190,28 @@ CREATE TABLE IF NOT EXISTS samples (
 
 -- Create index on name for faster lookups
 CREATE INDEX IF NOT EXISTS idx_samples_name ON samples(name);
+
+-- Programs table
+CREATE TABLE IF NOT EXISTS programs (
+    id BIGSERIAL PRIMARY KEY,
+    program_id VARCHAR(255) UNIQUE,
+    session_part_id BIGINT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    status_id BIGINT NOT NULL,
+    program_type_id BIGINT,
+    notes TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP,
+    is_delete BOOLEAN NOT NULL DEFAULT FALSE,
+    CONSTRAINT fk_programs_session_part FOREIGN KEY (session_part_id) REFERENCES master_code(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_programs_status FOREIGN KEY (status_id) REFERENCES master_code(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_programs_program_type FOREIGN KEY (program_type_id) REFERENCES master_code(id) ON DELETE RESTRICT
+);
+
+-- Create indexes for programs table
+CREATE INDEX IF NOT EXISTS idx_programs_program_id ON programs(program_id);
+CREATE INDEX IF NOT EXISTS idx_programs_name ON programs(name);
+CREATE INDEX IF NOT EXISTS idx_programs_session_part_id ON programs(session_part_id);
+CREATE INDEX IF NOT EXISTS idx_programs_status_id ON programs(status_id);
+CREATE INDEX IF NOT EXISTS idx_programs_program_type_id ON programs(program_type_id);
+CREATE INDEX IF NOT EXISTS idx_programs_is_delete ON programs(is_delete);

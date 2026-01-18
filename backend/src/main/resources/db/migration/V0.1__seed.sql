@@ -163,6 +163,48 @@ INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALU
     ('900-4', 'Elementary and Primary Mixed', (SELECT id FROM master_code WHERE code = '900' AND parent_id IS NULL), NOW(), FALSE)
 ON CONFLICT DO NOTHING;
 
+-- Insert master codes for Session/Part (1000)
+-- First insert the parent
+INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
+    ('1000', 'Session/Part', NULL, NOW(), FALSE)
+ON CONFLICT DO NOTHING;
+-- Then insert the children
+INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
+    ('1000-1', '1st', (SELECT id FROM master_code WHERE code = '1000' AND parent_id IS NULL), NOW(), FALSE),
+    ('1000-2', '2nd', (SELECT id FROM master_code WHERE code = '1000' AND parent_id IS NULL), NOW(), FALSE),
+    ('1000-3', '3rd', (SELECT id FROM master_code WHERE code = '1000' AND parent_id IS NULL), NOW(), FALSE),
+    ('1000-4', '4th', (SELECT id FROM master_code WHERE code = '1000' AND parent_id IS NULL), NOW(), FALSE),
+    ('1000-5', '5th', (SELECT id FROM master_code WHERE code = '1000' AND parent_id IS NULL), NOW(), FALSE),
+    ('1000-6', '6th', (SELECT id FROM master_code WHERE code = '1000' AND parent_id IS NULL), NOW(), FALSE),
+    ('1000-7', '7th', (SELECT id FROM master_code WHERE code = '1000' AND parent_id IS NULL), NOW(), FALSE),
+    ('1000-8', '8th', (SELECT id FROM master_code WHERE code = '1000' AND parent_id IS NULL), NOW(), FALSE),
+    ('1000-9', '9th', (SELECT id FROM master_code WHERE code = '1000' AND parent_id IS NULL), NOW(), FALSE)
+ON CONFLICT DO NOTHING;
+
+-- Insert master codes for Program Status (1100)
+-- First insert the parent
+INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
+    ('1100', 'Program Status', NULL, NOW(), FALSE)
+ON CONFLICT DO NOTHING;
+-- Then insert the children
+INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
+    ('1100-1', 'Pending', (SELECT id FROM master_code WHERE code = '1100' AND parent_id IS NULL), NOW(), FALSE),
+    ('1100-2', 'Active', (SELECT id FROM master_code WHERE code = '1100' AND parent_id IS NULL), NOW(), FALSE),
+    ('1100-3', 'Inactive', (SELECT id FROM master_code WHERE code = '1100' AND parent_id IS NULL), NOW(), FALSE)
+ON CONFLICT DO NOTHING;
+
+-- Insert master codes for Program Type (1200)
+-- First insert the parent
+INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
+    ('1200', 'Program Type', NULL, NOW(), FALSE)
+ON CONFLICT DO NOTHING;
+-- Then insert the children
+INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
+    ('1200-1', 'AI', (SELECT id FROM master_code WHERE code = '1200' AND parent_id IS NULL), NOW(), FALSE),
+    ('1200-2', 'Software', (SELECT id FROM master_code WHERE code = '1200' AND parent_id IS NULL), NOW(), FALSE),
+    ('1200-3', 'Hardware', (SELECT id FROM master_code WHERE code = '1200' AND parent_id IS NULL), NOW(), FALSE)
+ON CONFLICT DO NOTHING;
+
 -- Insert admin user
 INSERT INTO users (username, password, role_id, enabled)
 VALUES ('admin',

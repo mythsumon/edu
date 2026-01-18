@@ -1,5 +1,6 @@
 import { useLocation, Link } from "react-router-dom";
 import { useMemo, ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -10,27 +11,27 @@ import {
 import { cn } from "@/shared/lib/cn";
 import { ROUTES } from "@/shared/constants/routes";
 
-// Route segment to display name mapping
-const routeSegmentMap: Record<string, string> = {
-  "master-code-setup": "Master Code Setup",
-  create: "Create",
-  edit: "Edit",
-  view: "View",
-  dashboard: "Dashboard",
-  "education-operations": "Education Operations",
-  "instructor-assignment": "Instructor Assignment",
-  "reference-information-management": "Reference Information Management",
-  "system-management": "System Management",
-  "account-management": "Account Management",
-  settings: "Settings",
-  institution: "Institution",
-  program: "Program",
-  instructor: "Instructor",
-  application: "Application",
-  allocation: "Allocation",
-  confirmation: "Confirmation",
-  admins: "Admins",
-  instructors: "Instructors",
+// Route segment to translation key mapping
+const routeSegmentTranslationMap: Record<string, string> = {
+  "master-code-setup": "breadcrumb.masterCodeSetup",
+  create: "breadcrumb.create",
+  edit: "breadcrumb.edit",
+  view: "breadcrumb.view",
+  dashboard: "breadcrumb.dashboard",
+  "education-operations": "breadcrumb.educationOperations",
+  "instructor-assignment": "breadcrumb.instructorAssignment",
+  "reference-information-management": "breadcrumb.referenceInformationManagement",
+  "system-management": "breadcrumb.systemManagement",
+  "account-management": "breadcrumb.accountManagement",
+  settings: "breadcrumb.settings",
+  institution: "breadcrumb.institution",
+  program: "breadcrumb.program",
+  instructor: "breadcrumb.instructor",
+  application: "breadcrumb.application",
+  allocation: "breadcrumb.allocation",
+  confirmation: "breadcrumb.confirmation",
+  admins: "breadcrumb.admins",
+  instructors: "breadcrumb.instructors",
 };
 
 interface CustomBreadcrumbRoot {
@@ -57,6 +58,7 @@ export const PageLayout = ({
   disableBreadcrumb,
   children,
 }: PageLayoutProps) => {
+  const { t } = useTranslation();
   const location = useLocation();
 
   // Build breadcrumb items from current path
@@ -75,12 +77,13 @@ export const PageLayout = ({
       }
 
       const lastSegment = pathSegments[pathSegments.length - 1];
-      const displayName =
-        routeSegmentMap[lastSegment] ||
-        lastSegment
-          .split("-")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ");
+      const lastTranslationKey = routeSegmentTranslationMap[lastSegment];
+      const displayName = lastTranslationKey
+        ? t(lastTranslationKey)
+        : lastSegment
+            .split("-")
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ");
 
       return [
         {
@@ -114,12 +117,13 @@ export const PageLayout = ({
       }
 
       const lastSegment = pathSegments[pathSegments.length - 1];
-      const displayName =
-        routeSegmentMap[lastSegment] ||
-        lastSegment
-          .split("-")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ");
+      const slashTranslationKey = routeSegmentTranslationMap[lastSegment];
+      const displayName = slashTranslationKey
+        ? t(slashTranslationKey)
+        : lastSegment
+            .split("-")
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ");
 
       // Determine dashboard path based on route
       const dashboardPath = location.pathname.startsWith("/admin")
@@ -170,12 +174,14 @@ export const PageLayout = ({
 
     return relevantSegments.map((segment, index) => {
       const isLast = index === relevantSegments.length - 1;
-      const displayName =
-        routeSegmentMap[segment] ||
-        segment
-          .split("-")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ");
+      // Get translation key or fall back to formatted segment name
+      const translationKey = routeSegmentTranslationMap[segment];
+      const displayName = translationKey
+        ? t(translationKey)
+        : segment
+            .split("-")
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ");
 
       // Determine base path (admin or instructor)
       const basePath = location.pathname.startsWith("/admin")
@@ -195,7 +201,7 @@ export const PageLayout = ({
         key: `${segment}-${index}`,
       };
     });
-  }, [location.pathname, breadcrumbRoot, customBreadcrumbRoot]);
+  }, [location.pathname, breadcrumbRoot, customBreadcrumbRoot, t]);
 
 
   return (

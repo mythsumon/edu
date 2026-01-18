@@ -135,6 +135,37 @@ This document describes the database schema structure for the backend applicatio
 
 ---
 
+### programs
+**Description**: Stores program information including session/part, name, status, program type, and notes.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | BIGSERIAL | PRIMARY KEY | Program unique identifier (auto-increment) |
+| program_id | VARCHAR(255) | UNIQUE | Auto-generated program ID in format "PID{serial}" |
+| session_part_id | BIGINT | NOT NULL, FOREIGN KEY | Reference to master_code.id for session/part |
+| name | VARCHAR(255) | NOT NULL | Program name |
+| status_id | BIGINT | NOT NULL, FOREIGN KEY | Reference to master_code.id for program status |
+| program_type_id | BIGINT | FOREIGN KEY | Reference to master_code.id for program type |
+| notes | TEXT | | Additional notes about the program |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT NOW() | Timestamp when record was created |
+| updated_at | TIMESTAMP | | Timestamp when record was last updated |
+| is_delete | BOOLEAN | NOT NULL, DEFAULT FALSE | Soft delete flag |
+
+**Foreign Keys**:
+- `fk_programs_session_part` → `master_code(id)` ON DELETE RESTRICT
+- `fk_programs_status` → `master_code(id)` ON DELETE RESTRICT
+- `fk_programs_program_type` → `master_code(id)` ON DELETE RESTRICT
+
+**Indexes**:
+- `idx_programs_program_id` on `program_id` - For faster program_id lookups
+- `idx_programs_name` on `name` - For faster name-based lookups
+- `idx_programs_session_part_id` on `session_part_id` - For filtering by session/part
+- `idx_programs_status_id` on `status_id` - For filtering by status
+- `idx_programs_program_type_id` on `program_type_id` - For filtering by program type
+- `idx_programs_is_delete` on `is_delete` - For filtering active/deleted records
+
+---
+
 ## Relationships
 - `refresh_token_t.user_id` → `users.id` (Many-to-One)
   - Cascade delete: When a user is deleted, all their refresh tokens are automatically deleted
@@ -161,6 +192,14 @@ This document describes the database schema structure for the backend applicatio
 - `institutions.in_charge_person_id` → `teachers.user_id` (Many-to-One)
   - Restrict delete: Prevents deletion of a teacher if they are assigned as in-charge person for institutions
   - One teacher can be in-charge of multiple institutions
+
+- `programs.session_part_id` → `master_code.id` (Many-to-One)
+  - Restrict delete: Prevents deletion of session/part master code if it has associated programs
+  - References session/part master codes
+
+- `programs.status_id` → `master_code.id` (Many-to-One)
+  - Restrict delete: Prevents deletion of status master code if it has associated programs
+  - References program status master codes
 
 ---
 
