@@ -432,7 +432,7 @@ export const attendanceSheetStore = {
    */
   adminReview(
     attendanceId: string,
-    review: AttendanceSheet['adminReview'],
+    review: NonNullable<AttendanceSheet['adminReview']>,
     reviewedBy: string
   ): AttendanceSheet | null {
     const sheet = this.getById(attendanceId)
