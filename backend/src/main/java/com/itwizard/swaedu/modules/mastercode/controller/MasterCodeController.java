@@ -43,7 +43,7 @@ public class MasterCodeController {
         return ResponseUtil.success("Master codes retrieved successfully", response);
     }
 
-    // 4. GET /api/v1/mastercode/{id} — master code detail
+    // 4. GET /api/v1/mastercode/{id} — master code detail by code
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse> getMasterCodeById(@PathVariable Long id) {
         MasterCodeResponseDto response = masterCodeService.getMasterCodeById(id);
@@ -110,8 +110,8 @@ public class MasterCodeController {
     public ResponseEntity<ApiResponse> listGrandChildren(
             @PathVariable String code,
             @RequestParam(required = false) String q,
-            @RequestParam(required = false, defaultValue = "0") Integer page,
-            @RequestParam(required = false, defaultValue = "20") Integer size,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
             @RequestParam(required = false) String sort) {
         PageResponse<MasterCodeResponseDto> response = masterCodeService.listGrandChildren(code, q, page, size, sort);
         return ResponseUtil.success("Grandchildren retrieved successfully", response);

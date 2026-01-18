@@ -1,6 +1,7 @@
 package com.itwizard.swaedu.modules.institutions.entity;
 
 import com.itwizard.swaedu.modules.mastercode.entity.MasterCodeEntity;
+import com.itwizard.swaedu.modules.teacher.entity.Teacher;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -15,18 +16,28 @@ public class InstitutionEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "institution_id", length = 255, unique = true)
+    private String institutionId;
+
     @Column(nullable = false, length = 255)
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "institution_type_id", foreignKey = @ForeignKey(name = "fk_institutions_institution_type"))
-    private MasterCodeEntity institutionType;
-
-    @Column(name = "institution_type_id", insertable = false, updatable = false)
-    private Long institutionTypeId;
-
     @Column(name = "phone_number", length = 50)
     private String phoneNumber;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "district_id", foreignKey = @ForeignKey(name = "fk_institutions_district"))
+    private MasterCodeEntity district;
+
+    @Column(name = "district_id", insertable = false, updatable = false)
+    private Long districtId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "zone_id", foreignKey = @ForeignKey(name = "fk_institutions_zone"))
+    private MasterCodeEntity zone;
+
+    @Column(name = "zone_id", insertable = false, updatable = false)
+    private Long zoneId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "region_id", foreignKey = @ForeignKey(name = "fk_institutions_region"))
@@ -35,24 +46,49 @@ public class InstitutionEntity {
     @Column(name = "region_id", insertable = false, updatable = false)
     private Long regionId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "education_type_id", foreignKey = @ForeignKey(name = "fk_institutions_education_type"))
-    private MasterCodeEntity educationType;
-
-    @Column(name = "education_type_id", insertable = false, updatable = false)
-    private Long educationTypeId;
-
     @Column(length = 255)
     private String street;
 
-    @Column(name = "additional_address", length = 500)
-    private String additionalAddress;
+    @Column(length = 500)
+    private String address;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "major_category_id", foreignKey = @ForeignKey(name = "fk_institutions_major_category"))
+    private MasterCodeEntity majorCategory;
+
+    @Column(name = "major_category_id", insertable = false, updatable = false)
+    private Long majorCategoryId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_one_id", foreignKey = @ForeignKey(name = "fk_institutions_category_one"))
+    private MasterCodeEntity categoryOne;
+
+    @Column(name = "category_one_id", insertable = false, updatable = false)
+    private Long categoryOneId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_two_id", foreignKey = @ForeignKey(name = "fk_institutions_category_two"))
+    private MasterCodeEntity categoryTwo;
+
+    @Column(name = "category_two_id", insertable = false, updatable = false)
+    private Long categoryTwoId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "classification_id", foreignKey = @ForeignKey(name = "fk_institutions_classification"))
+    private MasterCodeEntity classification;
+
+    @Column(name = "classification_id", insertable = false, updatable = false)
+    private Long classificationId;
 
     @Column(columnDefinition = "TEXT")
-    private String note;
+    private String notes;
 
-    @Column(name = "in_charge_person_id")
-    private Long inChargePersonId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "teacher_id", foreignKey = @ForeignKey(name = "fk_institutions_teacher"))
+    private Teacher teacher;
+
+    @Column(name = "teacher_id", insertable = false, updatable = false)
+    private Long teacherId;
 
     @Column(length = 500)
     private String signature;

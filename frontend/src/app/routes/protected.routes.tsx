@@ -20,7 +20,7 @@ import {
 import { SettingsAndUserManagementPage } from '@/modules/system-management'
 import { MasterCodeSetupPage, MasterCodeCreatePage } from '@/modules/master-code-setup'
 import { CommonCodePage } from '@/modules/common-code'
-import { InstitutionManagementPage } from '@/modules/institution'
+import { InstitutionManagementPage, InstitutionCreatePage, InstitutionEditPage } from '@/modules/institution'
 import {
   AdminAccountManagementPage,
   AddAdminPage,
@@ -114,7 +114,20 @@ export const protectedRoutes: RouteObject[] = [
               },
               {
                 path: ROUTES.ADMIN_INSTITUTION,
-                element: <InstitutionManagementPage />,
+                children: [
+                  {
+                    index: true,
+                    element: <InstitutionManagementPage />,
+                  },
+                  {
+                    path: ROUTES.ADMIN_INSTITUTION_CREATE,
+                    element: <InstitutionCreatePage />,
+                  },
+                  {
+                    path: ROUTES.ADMIN_INSTITUTION_EDIT,
+                    element: <InstitutionEditPage />,
+                  },
+                ],
               },
               {
                 path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT,

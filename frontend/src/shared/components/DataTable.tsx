@@ -19,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/ui/table";
+import { Skeleton } from "@/shared/ui/skeleton";
 import { cn } from "@/shared/lib/cn";
 
 interface DataTableProps<TData> {
@@ -36,6 +37,7 @@ interface DataTableProps<TData> {
   enableColumnPinning?: boolean;
   columnPinning?: ColumnPinningState;
   onColumnPinningChange?: (pinning: ColumnPinningState) => void;
+  isLoading?: boolean;
 }
 
 export function DataTable<TData>({
@@ -52,6 +54,7 @@ export function DataTable<TData>({
   enableColumnPinning = false,
   columnPinning: controlledColumnPinning,
   onColumnPinningChange,
+  isLoading = false,
 }: // enablePagination = false,
 DataTableProps<TData>) {
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
@@ -197,8 +200,19 @@ DataTableProps<TData>) {
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
+        <TableBody className="text-xs">
+          {isLoading ? (
+            // Skeleton loading rows
+            [...Array(10)].map((_, index) => (
+              <TableRow key={`skeleton-${index}`} className="bg-muted/10">
+                {table.getAllColumns().map((column) => (
+                  <TableCell key={column.id} className="h-12">
+                    <Skeleton className="h-4 w-full" />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => {
               const isSelected =
                 selectedRowId !== undefined

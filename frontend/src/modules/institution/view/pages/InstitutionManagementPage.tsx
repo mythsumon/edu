@@ -1,74 +1,83 @@
 import * as React from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, Download, MoreVertical, Edit, Trash2, Search, Filter } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Plus, Download, Eye, Search, Filter } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { ColumnPinningState } from "@tanstack/react-table";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Input } from "@/shared/ui/input";
+import { Card } from "@/shared/ui/card";
 import { DataTable } from "@/shared/components/DataTable";
-import { Popover, PopoverTrigger, PopoverContent } from "@/shared/ui/popover";
-import { cn } from "@/shared/lib/cn";
-import type { Institution } from "../../model/institution.types";
+import { LoadingOverlay } from "@/shared/components/LoadingOverlay";
+import { CustomPagination } from "@/shared/components/CustomPagination";
+import { ROUTES } from "@/shared/constants/routes";
+import { useInstitutionsQuery } from "../../controller/queries";
+import type {
+  Institution,
+  InstitutionResponseDto,
+} from "../../model/institution.types";
+import { debounce } from "@/shared/lib/debounce";
+import {
+  InstitutionFilterDialog,
+  type InstitutionFilterData,
+} from "../components/InstitutionFilterDialog";
+import { exportInstitutionsToExcel } from "../../model/institution.service";
 
 /**
  * Actions Cell Component
  */
 interface ActionsCellProps {
   institution: Institution;
-  onEdit: (institution: Institution) => void;
-  onDelete: (institution: Institution) => void;
+  onDetail: (institution: Institution) => void;
 }
 
-const ActionsCell = ({ institution, onEdit, onDelete }: ActionsCellProps) => {
+const ActionsCell = ({ institution, onDetail }: ActionsCellProps) => {
   const { t } = useTranslation();
-  const [popoverOpen, setPopoverOpen] = React.useState(false);
 
-  const handleEdit = (e: React.MouseEvent) => {
+  const handleDetail = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setPopoverOpen(false);
-    onEdit(institution);
-  };
-
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setPopoverOpen(false);
-    onDelete(institution);
+    onDetail(institution);
   };
 
   return (
     <div className="flex justify-center">
-      <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-        <PopoverTrigger asChild>
-          <button
-            className="flex-shrink-0 p-1 rounded hover:bg-muted transition-color"
-            onClick={(e) => e.stopPropagation()}
-            aria-label={t("institution.actions")}
-          >
-            <MoreVertical className="h-4 w-4" />
-          </button>
-        </PopoverTrigger>
-        <PopoverContent className="w-40 p-2 rounded-xl" align="end">
-          <div className="flex flex-col">
-            <button
-              onClick={handleEdit}
-              className="flex items-center gap-2 px-2 py-1.5 text-xs rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <Edit className="h-4 w-4" />
-              {t("common.edit")}
-            </button>
-            <button
-              onClick={handleDelete}
-              className="flex items-center gap-2 px-2 py-1.5 text-xs rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-              {t("common.delete")}
-            </button>
-          </div>
-        </PopoverContent>
-      </Popover>
+      <button
+        className="flex items-center gap-1.5 flex-shrink-0 px-3 py-1 rounded-lg hover:bg-muted transition-colors border border-secondary-foreground/30"
+        onClick={handleDetail}
+        aria-label={t("common.detail")}
+      >
+        <Eye className="h-4 w-4" />
+        <span className="text-xs">{t("common.detail")}</span>
+      </button>
     </div>
   );
+};
+
+/**
+ * Map InstitutionResponseDto to Institution for table display
+ * Maps address -> street and other fields to match table columns
+ */
+const mapInstitutionDtoToTable = (dto: InstitutionResponseDto): Institution => {
+  return {
+    id: dto.id,
+    institutionId: dto.institutionId,
+    institutionName: dto.name,
+    address: dto.street, // Map street to address column
+    detailAddress: dto.address, // Map address to detailAddress column
+    phoneNumber: dto.phoneNumber,
+    manager: dto.teacher?.name || "", // Extract teacher name from nested object
+    email: "",
+    website: "",
+    status: "",
+    region: "",
+    city: "",
+    postalCode: "",
+    faxNumber: "",
+    contactPerson: "",
+    createdAt: dto.createdAt,
+    updatedAt: dto.updatedAt,
+  };
 };
 
 /**
@@ -77,44 +86,173 @@ const ActionsCell = ({ institution, onEdit, onDelete }: ActionsCellProps) => {
  */
 export const InstitutionManagementPage = () => {
   const { t } = useTranslation();
-  const [selectedRowId, setSelectedRowId] = React.useState<number | null>(null);
+  const navigate = useNavigate();
 
   // Column pinning state - pin select column to left and actions column to right
   const [columnPinning, setColumnPinning] = React.useState<ColumnPinningState>({
-    left: ["select"],
     right: ["actions"],
   });
 
-  // TODO: Replace with actual API call to fetch institutions
-  const institutions: Institution[] = [];
-  
   // Search and filter state
   const [searchQuery, setSearchQuery] = React.useState<string>("");
-  
+  const [debouncedSearchQuery, setDebouncedSearchQuery] =
+    React.useState<string>("");
+  const [page, setPage] = React.useState<number>(0);
+  const [size, setSize] = React.useState<number>(20);
+  const [isFilterDialogOpen, setIsFilterDialogOpen] =
+    React.useState<boolean>(false);
+  const [filters, setFilters] = React.useState<InstitutionFilterData>({});
+  const [isExporting, setIsExporting] = React.useState<boolean>(false);
+
+  // Debounce search query
+  const debouncedSetSearch = React.useMemo(
+    () =>
+      debounce((...args: unknown[]) => {
+        const value = args[0] as string;
+        setDebouncedSearchQuery(value);
+      }, 500),
+    []
+  );
+
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    debouncedSetSearch(value);
+  };
+
+  // Helper function to convert string array to number array
+  const convertStringArrayToNumbers = (
+    arr: string | string[] | undefined
+  ): number[] | undefined => {
+    if (!arr) return undefined;
+    const arrAsArray = Array.isArray(arr) ? arr : [arr];
+    if (arrAsArray.length === 0) return undefined;
+    return arrAsArray.map((id) => Number(id)).filter((id) => !isNaN(id));
+  };
+
+  // Fetch institutions using React Query with debounced search and filters
+  const { data: institutionsData, isLoading } = useInstitutionsQuery({
+    q: debouncedSearchQuery || undefined,
+    page,
+    size,
+    majorCategoryIds: convertStringArrayToNumbers(filters.majorCategory),
+    categoryOneIds: convertStringArrayToNumbers(filters.category1),
+    categoryTwoIds: convertStringArrayToNumbers(filters.category2),
+    classificationIds: convertStringArrayToNumbers(
+      filters.institutionLevelClassification
+    ),
+    zoneIds: convertStringArrayToNumbers(filters.zone),
+    regionIds: convertStringArrayToNumbers(filters.region),
+  });
+
+  // Map DTOs to table format
+  const institutions: Institution[] = React.useMemo(() => {
+    if (!institutionsData?.items) return [];
+    return institutionsData.items.map(mapInstitutionDtoToTable);
+  }, [institutionsData]);
+
+  // Extract pagination metadata
+  const paginationData = React.useMemo(() => {
+    if (!institutionsData) {
+      return {
+        total: 0,
+        page: 0,
+        size: size,
+        totalPages: 0,
+      };
+    }
+    return {
+      total: institutionsData.total,
+      page: institutionsData.page,
+      size: institutionsData.size,
+      totalPages: institutionsData.totalPages,
+    };
+  }, [institutionsData, size]);
+
+  // Reset to first page when search or filters change
+  React.useEffect(() => {
+    setPage(0);
+  }, [debouncedSearchQuery, filters]);
+
+  // Handle page change
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  // Handle size change
+  const handleSizeChange = (newSize: number) => {
+    setSize(newSize);
+    setPage(0); // Reset to first page when size changes
+  };
+
   const handleFilterClick = () => {
-    // TODO: Implement filter functionality
-    console.log("Filter clicked");
+    setIsFilterDialogOpen(true);
+  };
+
+  const handleFilterConfirm = (filterData: InstitutionFilterData) => {
+    setFilters(filterData);
+    setIsFilterDialogOpen(false);
+  };
+
+  const handleFilterReset = () => {
+    setFilters({});
   };
 
   const handleAddInstitution = () => {
-    // TODO: Implement add institution functionality
-    console.log("Add institution clicked");
+    navigate(ROUTES.ADMIN_INSTITUTION_CREATE_FULL);
   };
 
-  const handleDownload = () => {
-    // TODO: Implement download functionality
-    console.log("Download clicked");
+  const handleDownload = async () => {
+    try {
+      setIsExporting(true);
+
+      // Build export parameters from current filters
+      const exportParams = {
+        q: debouncedSearchQuery || undefined,
+        majorCategoryIds: convertStringArrayToNumbers(filters.majorCategory),
+        categoryOneIds: convertStringArrayToNumbers(filters.category1),
+        categoryTwoIds: convertStringArrayToNumbers(filters.category2),
+        classificationIds: convertStringArrayToNumbers(
+          filters.institutionLevelClassification
+        ),
+        zoneIds: convertStringArrayToNumbers(filters.zone),
+        regionIds: convertStringArrayToNumbers(filters.region),
+        // Note: districtId and teacherId are not in filters, but can be added if needed
+      };
+
+      // Call export API
+      const blob = await exportInstitutionsToExcel(exportParams);
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `institutions_${
+        new Date().toISOString().split("T")[0]
+      }.xlsx`;
+
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error exporting institutions:", error);
+      // TODO: Show error toast/notification
+    } finally {
+      setIsExporting(false);
+    }
   };
 
-  const handleEdit = (institution: Institution) => {
-    // TODO: Implement edit institution functionality
-    console.log("Edit institution:", institution);
-  };
-
-  const handleDelete = (institution: Institution) => {
-    // TODO: Implement delete institution functionality
-    console.log("Delete institution:", institution);
-  };
+  const handleDetail = React.useCallback(
+    (institution: Institution) => {
+      navigate(`/admin/institution/${institution.id}/edit?mode=view`);
+    },
+    [navigate]
+  );
 
   const columns = React.useMemo<ColumnDef<Institution>[]>(
     () => [
@@ -285,11 +423,7 @@ export const InstitutionManagementPage = () => {
           const institution = row.original;
           return (
             <div style={{ width: "80px", minWidth: "80px", maxWidth: "80px" }}>
-              <ActionsCell
-                institution={institution}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
+              <ActionsCell institution={institution} onDetail={handleDetail} />
             </div>
           );
         },
@@ -298,7 +432,7 @@ export const InstitutionManagementPage = () => {
         meta: { width: 80 },
       },
     ],
-    [t]
+    [t, handleDetail]
   );
 
   return (
@@ -317,9 +451,15 @@ export const InstitutionManagementPage = () => {
           </div>
           {/* Right side: Action Buttons */}
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={handleDownload}>
+            <Button
+              variant="outline"
+              onClick={handleDownload}
+              disabled={isExporting}
+            >
               <Download className="h-4 w-4" />
-              {t("institution.download")}
+              {isExporting
+                ? t("common.loading") || "Loading..."
+                : t("institution.download")}
             </Button>
             <Button onClick={handleAddInstitution}>
               <Plus className="h-4 w-4" />
@@ -330,19 +470,15 @@ export const InstitutionManagementPage = () => {
       </div>
       {/* Content Area with Card */}
       <div className="px-4 py-5">
-        <div
-          className={cn(
-            "flex w-full flex-col rounded-2xl border border-border/20 bg-card shadow-sm px-4 py-6 space-y-4"
-          )}
-        >
+        <Card>
           {/* Search and Filter Bar */}
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1 max-w-md">
               <Input
                 type="text"
-                placeholder={t("institution.searchPlaceholder") || "Search institutions..."}
+                placeholder={t("institution.searchPlaceholder")}
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
                 icon={<Search className="h-4 w-4" />}
               />
             </div>
@@ -361,18 +497,30 @@ export const InstitutionManagementPage = () => {
                 if (headerId === "actions") return "text-right";
                 return "text-left";
               }}
-              onRowClick={(row) => {
-                setSelectedRowId(row.id);
-              }}
-              selectedRowId={selectedRowId}
               enableRowSelection={true}
               enableColumnPinning={true}
               columnPinning={columnPinning}
               onColumnPinningChange={setColumnPinning}
+              isLoading={isLoading}
             />
           </div>
-        </div>
+        </Card>
+        {/* Pagination */}
+        <CustomPagination
+          total={paginationData.total}
+          page={paginationData.page}
+          size={paginationData.size}
+          totalPages={paginationData.totalPages}
+          onPageChange={handlePageChange}
+          onSizeChange={handleSizeChange}
+        />
       </div>
+      <InstitutionFilterDialog
+        open={isFilterDialogOpen}
+        onOpenChange={setIsFilterDialogOpen}
+        onConfirm={handleFilterConfirm}
+      />
+      <LoadingOverlay isLoading={isExporting} />
     </div>
   );
 };

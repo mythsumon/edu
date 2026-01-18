@@ -100,8 +100,7 @@ CREATE INDEX IF NOT EXISTS idx_admins_phone ON admins(phone);
 -- Teacher table
 CREATE TABLE IF NOT EXISTS teachers (
     user_id BIGINT PRIMARY KEY,
-    first_name VARCHAR(255) NOT NULL,
-    last_name VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
     email VARCHAR(255),
     phone VARCHAR(50),
     profile_photo VARCHAR(500),
@@ -143,30 +142,44 @@ CREATE INDEX IF NOT EXISTS idx_instructors_classification_id ON instructors(clas
 -- Institutions table
 CREATE TABLE IF NOT EXISTS institutions (
     id BIGSERIAL PRIMARY KEY,
+    institution_id VARCHAR(255) UNIQUE,
     name VARCHAR(255) NOT NULL,
-    institution_type_id BIGINT,
     phone_number VARCHAR(50),
+    district_id BIGINT,
+    zone_id BIGINT,
     region_id BIGINT,
-    education_type_id BIGINT,
     street VARCHAR(255),
-    additional_address VARCHAR(500),
-    note TEXT,
-    in_charge_person_id BIGINT,
+    address VARCHAR(500),
+    major_category_id BIGINT,
+    category_one_id BIGINT,
+    category_two_id BIGINT,
+    classification_id BIGINT,
+    notes TEXT,
+    teacher_id BIGINT,
     signature VARCHAR(500),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP,
     is_delete BOOLEAN NOT NULL DEFAULT FALSE,
-    CONSTRAINT fk_institutions_institution_type FOREIGN KEY (institution_type_id) REFERENCES master_code(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_institutions_district FOREIGN KEY (district_id) REFERENCES master_code(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_institutions_zone FOREIGN KEY (zone_id) REFERENCES master_code(id) ON DELETE RESTRICT,
     CONSTRAINT fk_institutions_region FOREIGN KEY (region_id) REFERENCES master_code(id) ON DELETE RESTRICT,
-    CONSTRAINT fk_institutions_education_type FOREIGN KEY (education_type_id) REFERENCES master_code(id) ON DELETE RESTRICT,
-    CONSTRAINT fk_institutions_in_charge_person FOREIGN KEY (in_charge_person_id) REFERENCES teachers(user_id) ON DELETE RESTRICT
+    CONSTRAINT fk_institutions_major_category FOREIGN KEY (major_category_id) REFERENCES master_code(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_institutions_category_one FOREIGN KEY (category_one_id) REFERENCES master_code(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_institutions_category_two FOREIGN KEY (category_two_id) REFERENCES master_code(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_institutions_classification FOREIGN KEY (classification_id) REFERENCES master_code(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_institutions_teacher FOREIGN KEY (teacher_id) REFERENCES teachers(user_id) ON DELETE RESTRICT
 );
 -- Create indexes for institutions table
 CREATE INDEX IF NOT EXISTS idx_institutions_name ON institutions(name);
-CREATE INDEX IF NOT EXISTS idx_institutions_institution_type_id ON institutions(institution_type_id);
+CREATE INDEX IF NOT EXISTS idx_institutions_institution_id ON institutions(institution_id);
+CREATE INDEX IF NOT EXISTS idx_institutions_district_id ON institutions(district_id);
+CREATE INDEX IF NOT EXISTS idx_institutions_zone_id ON institutions(zone_id);
 CREATE INDEX IF NOT EXISTS idx_institutions_region_id ON institutions(region_id);
-CREATE INDEX IF NOT EXISTS idx_institutions_education_type_id ON institutions(education_type_id);
-CREATE INDEX IF NOT EXISTS idx_institutions_in_charge_person_id ON institutions(in_charge_person_id);
+CREATE INDEX IF NOT EXISTS idx_institutions_major_category_id ON institutions(major_category_id);
+CREATE INDEX IF NOT EXISTS idx_institutions_category_one_id ON institutions(category_one_id);
+CREATE INDEX IF NOT EXISTS idx_institutions_category_two_id ON institutions(category_two_id);
+CREATE INDEX IF NOT EXISTS idx_institutions_classification_id ON institutions(classification_id);
+CREATE INDEX IF NOT EXISTS idx_institutions_teacher_id ON institutions(teacher_id);
 CREATE INDEX IF NOT EXISTS idx_institutions_is_delete ON institutions(is_delete);
 
 -- Samples table

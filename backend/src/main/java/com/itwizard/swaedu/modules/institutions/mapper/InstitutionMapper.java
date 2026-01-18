@@ -5,6 +5,9 @@ import com.itwizard.swaedu.modules.institutions.dto.request.InstitutionUpdateDto
 import com.itwizard.swaedu.modules.institutions.dto.response.InstitutionResponseDto;
 import com.itwizard.swaedu.modules.institutions.entity.InstitutionEntity;
 import com.itwizard.swaedu.modules.mastercode.entity.MasterCodeEntity;
+import com.itwizard.swaedu.modules.mastercode.mapper.MasterCodeMapper;
+import com.itwizard.swaedu.modules.teacher.entity.Teacher;
+import com.itwizard.swaedu.modules.teacher.mapper.TeacherMapper;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,15 +31,20 @@ public class InstitutionMapper {
         }
         return InstitutionResponseDto.builder()
                 .id(entity.getId())
+                .institutionId(entity.getInstitutionId())
                 .name(entity.getName())
-                .institutionTypeId(entity.getInstitutionTypeId())
                 .phoneNumber(entity.getPhoneNumber())
-                .regionId(entity.getRegionId())
-                .educationTypeId(entity.getEducationTypeId())
+                .district(MasterCodeMapper.toResponseDto(entity.getDistrict()))
+                .zone(MasterCodeMapper.toResponseDto(entity.getZone()))
+                .region(MasterCodeMapper.toResponseDto(entity.getRegion()))
                 .street(entity.getStreet())
-                .additionalAddress(entity.getAdditionalAddress())
-                .note(entity.getNote())
-                .inChargePersonId(entity.getInChargePersonId())
+                .address(entity.getAddress())
+                .majorCategory(MasterCodeMapper.toResponseDto(entity.getMajorCategory()))
+                .categoryOne(MasterCodeMapper.toResponseDto(entity.getCategoryOne()))
+                .categoryTwo(MasterCodeMapper.toResponseDto(entity.getCategoryTwo()))
+                .classification(MasterCodeMapper.toResponseDto(entity.getClassification()))
+                .notes(entity.getNotes())
+                .teacher(TeacherMapper.toResponseDto(entity.getTeacher()))
                 .signature(entity.getSignature())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
@@ -54,16 +62,26 @@ public class InstitutionMapper {
         entity.setName(dto.getName());
         entity.setPhoneNumber(dto.getPhoneNumber());
         entity.setStreet(dto.getStreet());
-        entity.setAdditionalAddress(dto.getAdditionalAddress());
-        entity.setNote(dto.getNote());
-        entity.setInChargePersonId(dto.getInChargePersonId());
+        entity.setAddress(dto.getAddress());
+        entity.setNotes(dto.getNotes());
         entity.setSignature(dto.getSignature());
 
         // Set foreign key relationships if IDs are provided
-        if (dto.getInstitutionTypeId() != null) {
-            MasterCodeEntity institutionType = new MasterCodeEntity();
-            institutionType.setId(dto.getInstitutionTypeId());
-            entity.setInstitutionType(institutionType);
+        if (dto.getTeacherId() != null) {
+            Teacher teacher = new Teacher();
+            teacher.setUserId(dto.getTeacherId());
+            entity.setTeacher(teacher);
+        }
+        if (dto.getDistrictId() != null) {
+            MasterCodeEntity district = new MasterCodeEntity();
+            district.setId(dto.getDistrictId());
+            entity.setDistrict(district);
+        }
+
+        if (dto.getZoneId() != null) {
+            MasterCodeEntity zone = new MasterCodeEntity();
+            zone.setId(dto.getZoneId());
+            entity.setZone(zone);
         }
 
         if (dto.getRegionId() != null) {
@@ -72,10 +90,28 @@ public class InstitutionMapper {
             entity.setRegion(region);
         }
 
-        if (dto.getEducationTypeId() != null) {
-            MasterCodeEntity educationType = new MasterCodeEntity();
-            educationType.setId(dto.getEducationTypeId());
-            entity.setEducationType(educationType);
+        if (dto.getMajorCategoryId() != null) {
+            MasterCodeEntity majorCategory = new MasterCodeEntity();
+            majorCategory.setId(dto.getMajorCategoryId());
+            entity.setMajorCategory(majorCategory);
+        }
+
+        if (dto.getCategoryOneId() != null) {
+            MasterCodeEntity categoryOne = new MasterCodeEntity();
+            categoryOne.setId(dto.getCategoryOneId());
+            entity.setCategoryOne(categoryOne);
+        }
+
+        if (dto.getCategoryTwoId() != null) {
+            MasterCodeEntity categoryTwo = new MasterCodeEntity();
+            categoryTwo.setId(dto.getCategoryTwoId());
+            entity.setCategoryTwo(categoryTwo);
+        }
+
+        if (dto.getClassificationId() != null) {
+            MasterCodeEntity classification = new MasterCodeEntity();
+            classification.setId(dto.getClassificationId());
+            entity.setClassification(classification);
         }
 
         return entity;
@@ -91,18 +127,32 @@ public class InstitutionMapper {
         entity.setName(dto.getName());
         entity.setPhoneNumber(dto.getPhoneNumber());
         entity.setStreet(dto.getStreet());
-        entity.setAdditionalAddress(dto.getAdditionalAddress());
-        entity.setNote(dto.getNote());
-        entity.setInChargePersonId(dto.getInChargePersonId());
+        entity.setAddress(dto.getAddress());
+        entity.setNotes(dto.getNotes());
         entity.setSignature(dto.getSignature());
 
         // Update foreign key relationships if IDs are provided
-        if (dto.getInstitutionTypeId() != null) {
-            MasterCodeEntity institutionType = new MasterCodeEntity();
-            institutionType.setId(dto.getInstitutionTypeId());
-            entity.setInstitutionType(institutionType);
+        if (dto.getTeacherId() != null) {
+            Teacher teacher = new Teacher();
+            teacher.setUserId(dto.getTeacherId());
+            entity.setTeacher(teacher);
         } else {
-            entity.setInstitutionType(null);
+            entity.setTeacher(null);
+        }
+        if (dto.getDistrictId() != null) {
+            MasterCodeEntity district = new MasterCodeEntity();
+            district.setId(dto.getDistrictId());
+            entity.setDistrict(district);
+        } else {
+            entity.setDistrict(null);
+        }
+
+        if (dto.getZoneId() != null) {
+            MasterCodeEntity zone = new MasterCodeEntity();
+            zone.setId(dto.getZoneId());
+            entity.setZone(zone);
+        } else {
+            entity.setZone(null);
         }
 
         if (dto.getRegionId() != null) {
@@ -113,12 +163,36 @@ public class InstitutionMapper {
             entity.setRegion(null);
         }
 
-        if (dto.getEducationTypeId() != null) {
-            MasterCodeEntity educationType = new MasterCodeEntity();
-            educationType.setId(dto.getEducationTypeId());
-            entity.setEducationType(educationType);
+        if (dto.getMajorCategoryId() != null) {
+            MasterCodeEntity majorCategory = new MasterCodeEntity();
+            majorCategory.setId(dto.getMajorCategoryId());
+            entity.setMajorCategory(majorCategory);
         } else {
-            entity.setEducationType(null);
+            entity.setMajorCategory(null);
+        }
+
+        if (dto.getCategoryOneId() != null) {
+            MasterCodeEntity categoryOne = new MasterCodeEntity();
+            categoryOne.setId(dto.getCategoryOneId());
+            entity.setCategoryOne(categoryOne);
+        } else {
+            entity.setCategoryOne(null);
+        }
+
+        if (dto.getCategoryTwoId() != null) {
+            MasterCodeEntity categoryTwo = new MasterCodeEntity();
+            categoryTwo.setId(dto.getCategoryTwoId());
+            entity.setCategoryTwo(categoryTwo);
+        } else {
+            entity.setCategoryTwo(null);
+        }
+
+        if (dto.getClassificationId() != null) {
+            MasterCodeEntity classification = new MasterCodeEntity();
+            classification.setId(dto.getClassificationId());
+            entity.setClassification(classification);
+        } else {
+            entity.setClassification(null);
         }
     }
 

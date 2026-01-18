@@ -176,24 +176,30 @@ public class MasterCodeServiceImpl implements MasterCodeService {
         // Get all direct children of the grandparent
         List<MasterCodeEntity> children = repository.findByParentIdAndIsDeleteFalse(grandparent.getId());
 
-        // If no children exist, return empty page
-        if (children.isEmpty()) {
-            Pageable pageable = buildPageable(page, size, sort);
-            return PageResponse.<MasterCodeResponseDto>builder()
-                    .items(List.of())
-                    .total(0)
-                    .page(page != null && page >= 0 ? page : 0)
-                    .size(size != null && size > 0 ? size : 20)
-                    .totalPages(0)
-                    .build();
-        }
-
         // Extract parent IDs
         List<Long> parentIds = children.stream()
                 .map(MasterCodeEntity::getId)
                 .toList();
 
-        // Find grandchildren (children of children)
+        // If no children exist, return empty page
+        if (parentIds.isEmpty()) {
+            return PageResponse.<MasterCodeResponseDto>builder()
+                    .items(List.of())
+                    .total(0)
+                    .page(0)
+                    .size(0)
+                    .totalPages(0)
+                    .build();
+        }
+
+        // If both page and size are null, return all results without pagination
+        if (page == null && size == null) {
+            Pageable pageable = buildUnpagedPageable(sort);
+            Page<MasterCodeEntity> pageResult = repository.findGrandChildren(parentIds, q, pageable);
+            return buildPageResponse(pageResult);
+        }
+
+        // Find grandchildren (children of children) with pagination
         Pageable pageable = buildPageable(page, size, sort);
         Page<MasterCodeEntity> pageResult = repository.findGrandChildren(parentIds, q, pageable);
         return buildPageResponse(pageResult);
@@ -306,6 +312,25 @@ public class MasterCodeServiceImpl implements MasterCodeService {
 
         // Default sort uses database column name for native queries
         return PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.ASC, "code_name"));
+    }
+
+    private Pageable buildUnpagedPageable(String sort) {
+        if (sort != null && !sort.isEmpty()) {
+            String[] sortParts = sort.split(",");
+            if (sortParts.length == 2) {
+                String property = sortParts[0].trim();
+                // Map entity property names to database column names for native queries
+                String columnName = mapPropertyToColumnName(property);
+                Sort.Direction direction = "desc".equalsIgnoreCase(sortParts[1].trim()) 
+                        ? Sort.Direction.DESC 
+                        : Sort.Direction.ASC;
+                // Use a very large page size to effectively get all results
+                return PageRequest.of(0, Integer.MAX_VALUE, Sort.by(direction, columnName));
+            }
+        }
+
+        // Default sort uses database column name for native queries, with large page size
+        return PageRequest.of(0, Integer.MAX_VALUE, Sort.by(Sort.Direction.ASC, "code_name"));
     }
 
     /**
