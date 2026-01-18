@@ -36,12 +36,12 @@ export default function EvidenceDetailPage() {
       let loadedDoc: EvidenceDoc | null = null
 
       if (id && id !== 'new') {
-        loadedDoc = getEvidenceDocById(id)
+        loadedDoc = getEvidenceDocById(id) ?? null
       }
 
       // If not found and educationId exists, try to find by educationId
       if (!loadedDoc && educationId) {
-        loadedDoc = getEvidenceDocByEducationId(educationId)
+        loadedDoc = getEvidenceDocByEducationId(educationId) ?? null
       }
 
       // Create new doc if not exists
