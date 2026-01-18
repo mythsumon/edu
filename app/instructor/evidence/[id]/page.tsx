@@ -66,7 +66,7 @@ export default function EvidenceDetailPage() {
           educationId: educationId || '',
           educationName: education?.name || assignment?.educationName || '',
           institutionName: education?.institution || assignment?.institution || '',
-          instructorName: assignment?.instructorName || userProfile?.name || '강사',
+          instructorName: assignment?.lessons?.[0]?.mainInstructors?.[0]?.name || userProfile?.name || '강사',
           assistantInstructorName: assistantInstructorName,
           items: [],
           status: 'DRAFT',
