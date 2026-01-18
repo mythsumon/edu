@@ -411,7 +411,7 @@ export default function TeacherAttendanceSignDetailPage() {
                    },
                  ]}
                  dataSource={studentsWithCompletion}
-                 rowKey={(record: any, index: number) => record.id || `student-${index}`}
+                 rowKey={(record: any, index?: number) => record.id || `student-${index ?? 0}`}
                 pagination={{
                   pageSize: 20,
                   showSizeChanger: true,
