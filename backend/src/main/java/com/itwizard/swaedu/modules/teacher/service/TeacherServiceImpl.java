@@ -14,6 +14,9 @@ import com.itwizard.swaedu.modules.auth.repository.RoleRepository;
 import com.itwizard.swaedu.modules.auth.repository.UserRepository;
 import com.itwizard.swaedu.util.PageResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +25,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -88,6 +95,53 @@ public class TeacherServiceImpl implements TeacherService {
         TeacherMapper.updateEntityFromDto(teacher, request);
         Teacher updatedTeacher = teacherRepository.save(teacher);
         return TeacherMapper.toResponseDto(updatedTeacher);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void exportTeachersToExcel(OutputStream outputStream, String q) throws IOException {
+        // Use SXSSFWorkbook for streaming Excel export (memory-efficient)
+        // Window size of 100: keeps only last 100 rows in memory, flushes older rows to temp files
+        try (SXSSFWorkbook workbook = new SXSSFWorkbook(100)) {
+            // Compress temp files to reduce disk space usage
+            workbook.setCompressTempFiles(true);
+
+            Sheet sheet = workbook.createSheet("Teachers");
+
+            // Create header row
+            Row headerRow = sheet.createRow(0);
+            int colNum = 0;
+            headerRow.createCell(colNum++).setCellValue("Teacher ID");
+            headerRow.createCell(colNum++).setCellValue("Name");
+            headerRow.createCell(colNum++).setCellValue("Username");
+            headerRow.createCell(colNum++).setCellValue("Email");
+            headerRow.createCell(colNum++).setCellValue("Phone");
+
+            // Stream data from database and write rows
+            AtomicInteger rowNum = new AtomicInteger(1);
+            try (Stream<Teacher> teacherStream = teacherRepository.streamForExport(q)) {
+                
+                teacherStream.forEach(teacher -> {
+                    Row row = sheet.createRow(rowNum.getAndIncrement());
+                    int cellNum = 0;
+                    
+                    // Teacher ID
+                    row.createCell(cellNum++).setCellValue(teacher.getUserId() != null ? String.valueOf(teacher.getUserId()) : "");
+                    // Name
+                    row.createCell(cellNum++).setCellValue(teacher.getName() != null ? teacher.getName() : "");
+                    // Username
+                    row.createCell(cellNum++).setCellValue(teacher.getUser() != null && teacher.getUser().getUsername() != null ? teacher.getUser().getUsername() : "");
+                    // Email
+                    row.createCell(cellNum++).setCellValue(teacher.getEmail() != null ? teacher.getEmail() : "");
+                    // Phone
+                    row.createCell(cellNum++).setCellValue(teacher.getPhone() != null ? teacher.getPhone() : "");
+                });
+            }
+
+            // Write workbook to output stream
+            workbook.write(outputStream);
+            workbook.dispose(); // Clean up temp files
+        }
     }
 
     // Private helper methods

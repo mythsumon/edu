@@ -9,8 +9,14 @@ import com.itwizard.swaedu.util.PageResponse;
 import com.itwizard.swaedu.util.ResponseUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/v1/teacher")
@@ -33,6 +39,33 @@ public class TeacherController {
             @RequestParam(required = false) String sort) {
         PageResponse<TeacherResponseDto> response = teacherService.listTeachers(q, page, size, sort);
         return ResponseUtil.success("Teachers retrieved successfully", response);
+    }
+
+    // GET /api/v1/teacher/export — export teachers to Excel
+    // IMPORTANT: This must be defined BEFORE /{userId} to avoid route conflicts
+    @GetMapping("/export")
+    public ResponseEntity<StreamingResponseBody> exportTeachers(
+            @RequestParam(required = false) String q) {
+        
+        StreamingResponseBody responseBody = outputStream -> {
+            try {
+                teacherService.exportTeachersToExcel(outputStream, q);
+            } catch (IOException e) {
+                throw new RuntimeException("Error exporting teachers to Excel", e);
+            }
+        };
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        headers.setContentDisposition(
+                ContentDisposition.attachment()
+                        .filename("teachers.xlsx")
+                        .build()
+        );
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(responseBody);
     }
 
     @GetMapping("/{userId}")

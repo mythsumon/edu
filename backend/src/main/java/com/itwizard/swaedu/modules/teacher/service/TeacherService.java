@@ -5,6 +5,9 @@ import com.itwizard.swaedu.modules.teacher.dto.request.TeacherUpdateDto;
 import com.itwizard.swaedu.modules.teacher.dto.response.TeacherResponseDto;
 import com.itwizard.swaedu.util.PageResponse;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 public interface TeacherService {
     TeacherResponseDto registerTeacher(RegisterTeacherRequestDto request);
     
@@ -13,4 +16,6 @@ public interface TeacherService {
     TeacherResponseDto getTeacherById(Long userId);
     
     TeacherResponseDto updateTeacher(Long userId, TeacherUpdateDto request);
+    
+    void exportTeachersToExcel(OutputStream outputStream, String q) throws IOException;
 }

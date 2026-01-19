@@ -2,6 +2,7 @@ import * as React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Plus, Download, Search } from 'lucide-react'
+import { exportTeachersToExcel } from '../../model/account-management.service'
 import type { ColumnPinningState } from '@tanstack/react-table'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -108,6 +109,7 @@ export const TeacherAccountManagementPage = () => {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = React.useState<string>('')
   const [page, setPage] = React.useState<number>(0)
   const [size, setSize] = React.useState<number>(20)
+  const [isExporting, setIsExporting] = React.useState<boolean>(false)
 
   // Debounce search query
   const debouncedSetSearch = React.useMemo(
@@ -183,6 +185,39 @@ export const TeacherAccountManagementPage = () => {
     navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_CREATE_FULL)
   }, [navigate])
 
+  const handleDownload = React.useCallback(async () => {
+    try {
+      setIsExporting(true)
+
+      // Build export parameters from current search (excluding pagination)
+      const exportParams = {
+        q: debouncedSearchQuery || undefined,
+      }
+
+      // Call export API
+      const blob = await exportTeachersToExcel(exportParams)
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `teachers_${new Date().toISOString().split('T')[0]}.xlsx`
+
+      // Trigger download
+      document.body.appendChild(link)
+      link.click()
+
+      // Cleanup
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Error exporting teachers:', error)
+      // TODO: Show error toast/notification
+    } finally {
+      setIsExporting(false)
+    }
+  }, [debouncedSearchQuery])
+
   const handleDetailClick = React.useCallback((teacher: TeacherAccount) => {
     navigate(`${ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_FULL}/${teacher.id}`)
   }, [navigate])
@@ -212,6 +247,10 @@ export const TeacherAccountManagementPage = () => {
           </div>
           {/* Right side: Action Buttons */}
           <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={handleDownload} disabled={isExporting}>
+              <Download className="h-4 w-4" />
+              {t('accountManagement.download')}
+            </Button>
             <Button onClick={handleAddTeacher}>
               <Plus className="h-4 w-4" />
               {t('accountManagement.addNewTeacher')}
@@ -220,7 +259,7 @@ export const TeacherAccountManagementPage = () => {
         </div>
       </div>
     ),
-    [t, handleAddTeacher]
+    [t, handleDownload, handleAddTeacher, isExporting]
   )
 
   // Memoized search bar component - stable across re-renders
