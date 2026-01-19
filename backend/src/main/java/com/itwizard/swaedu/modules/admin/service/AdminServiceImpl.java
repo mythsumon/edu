@@ -150,7 +150,6 @@ public class AdminServiceImpl implements AdminService {
             // Create header row
             Row headerRow = sheet.createRow(0);
             int colNum = 0;
-            headerRow.createCell(colNum++).setCellValue("Admin ID");
             headerRow.createCell(colNum++).setCellValue("Name");
             headerRow.createCell(colNum++).setCellValue("Username");
             headerRow.createCell(colNum++).setCellValue("Email");
@@ -164,8 +163,6 @@ public class AdminServiceImpl implements AdminService {
                     Row row = sheet.createRow(rowNum.getAndIncrement());
                     int cellNum = 0;
                     
-                    // Admin ID
-                    row.createCell(cellNum++).setCellValue(admin.getUserId() != null ? String.valueOf(admin.getUserId()) : "");
                     // Name
                     row.createCell(cellNum++).setCellValue(admin.getName() != null ? admin.getName() : "");
                     // Username

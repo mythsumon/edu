@@ -367,7 +367,7 @@ public class InstructorServiceImpl implements InstructorService {
                     int cellNum = 0;
                     
                     // Instructor ID
-                    row.createCell(cellNum++).setCellValue(instructor.getUserId() != null ? String.valueOf(instructor.getUserId()) : "");
+                    row.createCell(cellNum++).setCellValue(instructor.getInstructorId() != null ? instructor.getInstructorId() : "");
                     // Name
                     row.createCell(cellNum++).setCellValue(instructor.getName() != null ? instructor.getName() : "");
                     // Username
