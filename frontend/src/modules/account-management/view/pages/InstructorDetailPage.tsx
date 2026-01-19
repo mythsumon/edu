@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { ArrowLeft, Edit } from "lucide-react";
 import { PageLayout } from "@/app/layout/PageLayout";
 import { Card } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
@@ -99,14 +100,16 @@ export const InstructorDetailPage = () => {
       }}
       actions={
         <>
+          <Button variant="outline" onClick={handleBack}>
+            <ArrowLeft className="h-4 w-4" />
+            {t('common.back')}
+          </Button>
           <Button
             variant="default"
             onClick={() => navigate(`${ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL}/${instructorId}/edit`)}
           >
+            <Edit className="h-4 w-4" />
             {t('common.edit')}
-          </Button>
-          <Button variant="outline" onClick={handleBack}>
-            {t('common.back')}
           </Button>
         </>
       }
