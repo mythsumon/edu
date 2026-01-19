@@ -60,7 +60,7 @@ export const EditAdminPage = () => {
         username: adminUsername,
         data: {
           name: data.name,
-          email: data.email || undefined,
+          email: data.email,
           phone: data.phone || undefined,
         },
       })
@@ -170,6 +170,7 @@ export const EditAdminPage = () => {
                 type="email"
                 register={register('email')}
                 error={errors.email}
+                required
                 isSubmitting={isSubmitting}
               />
 

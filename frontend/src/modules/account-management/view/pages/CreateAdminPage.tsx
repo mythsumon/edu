@@ -42,7 +42,7 @@ export const AddAdminPage = () => {
         username: data.username,
         password: data.password,
         name: data.name,
-        email: data.email || undefined,
+        email: data.email,
         phone: data.phone || undefined,
       })
       toast({
@@ -140,6 +140,7 @@ export const AddAdminPage = () => {
                 type="email"
                 register={register('email')}
                 error={errors.email}
+                required
                 isSubmitting={isSubmitting}
               />
 
