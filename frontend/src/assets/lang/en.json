@@ -120,7 +120,9 @@
     "myLectureList": "My lecture list",
     "checkConfirmedClasses": "Check confirmed classes",
     "ongoingTraining": "Ongoing training",
-    "completedTraining": "Completed training"
+    "completedTraining": "Completed training",
+    "applyForLecture": "Apply for lecture",
+    "trainingsIAppliedFor": "The trainings I applied for"
   },
   "errors": {
     "generic": "An error occurred",
@@ -552,6 +554,29 @@
       "complete": "complete",
       "trainingSummary": "Training Summary",
       "reviewsSettlement": "Reviews/Settlement"
+    },
+    "application": {
+      "title": "The trainings I applied for",
+      "description": "Check the status of the training you applied for.",
+      "searchPlaceholder": "Search by education ID, education name, or institution name",
+      "noData": "No applications found",
+      "educationId": "Education ID",
+      "trainingName": "Training name",
+      "educationalInstitutions": "educational institutions",
+      "applicationRole": "Application Role",
+      "applicationDate": "Application date",
+      "situation": "situation",
+      "work": "work",
+      "viewDetails": "View Details",
+      "confirmed": "Confirmed",
+      "atmosphere": "atmosphere",
+      "rejected": "Rejected",
+      "stats": {
+        "entire": "entire",
+        "confirmed": "Confirmed",
+        "atmosphere": "atmosphere",
+        "rejectDelete": "Reject/Delete"
+      }
     }
   }
 }

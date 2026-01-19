@@ -88,6 +88,19 @@ export interface CompletedTrainingItem {
 }
 
 /**
+ * Training Application Item (for applied trainings table)
+ */
+export interface TrainingApplicationItem {
+  id: number
+  educationId: string
+  trainingName: string
+  educationalInstitutions: string
+  applicationRole: string
+  applicationDate: string
+  situation: "confirmed" | "atmosphere" | "rejected" | "deleted"
+}
+
+/**
  * List Schedules Query Parameters
  */
 export interface ListSchedulesParams {

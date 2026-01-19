@@ -120,7 +120,9 @@
     "myLectureList": "내 강의 목록",
     "checkConfirmedClasses": "확정된 강의 확인",
     "ongoingTraining": "진행 중인 교육",
-    "completedTraining": "완료된 교육"
+    "completedTraining": "완료된 교육",
+    "applyForLecture": "강의 신청",
+    "trainingsIAppliedFor": "신청한 교육"
   },
   "errors": {
     "generic": "오류가 발생했습니다",
@@ -552,6 +554,29 @@
       "complete": "완료",
       "trainingSummary": "교육 요약",
       "reviewsSettlement": "리뷰/정산"
+    },
+    "application": {
+      "title": "신청한 교육",
+      "description": "신청한 교육의 상태를 확인하세요.",
+      "searchPlaceholder": "교육 ID, 교육명 또는 기관명으로 검색",
+      "noData": "신청 내역을 찾을 수 없습니다",
+      "educationId": "교육 ID",
+      "trainingName": "교육명",
+      "educationalInstitutions": "교육 기관",
+      "applicationRole": "신청 역할",
+      "applicationDate": "신청일",
+      "situation": "상황",
+      "work": "작업",
+      "viewDetails": "상세 보기",
+      "confirmed": "확정",
+      "atmosphere": "분위기",
+      "rejected": "거부됨",
+      "stats": {
+        "entire": "전체",
+        "confirmed": "확정",
+        "atmosphere": "분위기",
+        "rejectDelete": "거부/삭제"
+      }
     }
   }
 }

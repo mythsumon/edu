@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
 import { StatsContainer } from "../components/StatsContainer";
 import { OngoingTrainingListContent } from "../components/OngoingTrainingListContent";
-import { MOCK_ONGOING_TRAININGS } from "../components/ongoingTraining.mock";
+import { MOCK_ONGOING_TRAININGS } from "../model/ongoingTraining.mock";
 
 /**
  * Ongoing Training List Page

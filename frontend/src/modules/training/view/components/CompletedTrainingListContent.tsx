@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { MapPin, Calendar, Users } from "lucide-react";
 import { TrainingCard } from "@/modules/training/view/components/TrainingCard";
 import { formatDate } from "@/shared/lib/date";
-import { MOCK_COMPLETED_TRAININGS } from "./completedTraining.mock";
+import { MOCK_COMPLETED_TRAININGS } from "../model/completedTraining.mock";
 
 /**
  * Completed Training List Content Component

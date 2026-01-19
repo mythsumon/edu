@@ -162,6 +162,16 @@ export const Sidebar = () => {
           },
         ],
       },
+      {
+        titleKey: "sidebar.applyForLecture",
+        items: [
+          {
+            nameKey: "sidebar.trainingsIAppliedFor",
+            href: ROUTES.INSTRUCTOR_APPLY_MINE_FULL,
+            icon: BookOpen,
+          },
+        ],
+      },
     ],
     []
   );
