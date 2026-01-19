@@ -239,7 +239,7 @@ export const LoginPage = () => {
             <Button
               type="submit"
               className="w-full mt-8"
-              size="default"
+              size="lg"
               disabled={loginMutation.isPending}
             >
               {loginMutation.isPending
