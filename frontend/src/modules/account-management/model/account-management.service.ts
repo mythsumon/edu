@@ -6,6 +6,7 @@ import type {
   TeacherResponseDto,
   ListAccountsParams,
   CreateAdminRequestDto,
+  UpdateAdminRequestDto,
   CreateInstructorRequestDto,
   UpdateInstructorRequestDto,
   CreateTeacherRequestDto,
@@ -144,6 +145,20 @@ export async function listInstructors(
 export async function getAdminById(id: number): Promise<AdminResponseDto> {
   const response = await axiosInstance.get<ApiResponse<AdminResponseDto>>(
     `/admin/${id}`
+  )
+  return response.data.data
+}
+
+/**
+ * Update an existing admin
+ */
+export async function updateAdmin(
+  id: number,
+  data: UpdateAdminRequestDto
+): Promise<AdminResponseDto> {
+  const response = await axiosInstance.put<ApiResponse<AdminResponseDto>>(
+    `/admin/${id}`,
+    data
   )
   return response.data.data
 }

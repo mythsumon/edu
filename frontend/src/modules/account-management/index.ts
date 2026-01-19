@@ -2,6 +2,7 @@
 export { AdminAccountManagementPage } from './view/pages/AdminAccountManagementPage'
 export { AddAdminPage } from './view/pages/CreateAdminPage'
 export { AdminDetailPage } from './view/pages/AdminDetailPage'
+export { EditAdminPage } from './view/pages/EditAdminPage'
 export { InstructorAccountManagementPage } from './view/pages/InstructorAccountManagementPage'
 export { AddInstructorPage } from './view/pages/CreateInstructorPage'
 export { InstructorDetailPage } from './view/pages/InstructorDetailPage'

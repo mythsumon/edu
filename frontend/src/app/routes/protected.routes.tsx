@@ -25,6 +25,7 @@ import {
   AdminAccountManagementPage,
   AddAdminPage,
   AdminDetailPage,
+  EditAdminPage,
   InstructorAccountManagementPage,
   AddInstructorPage,
   InstructorDetailPage,
@@ -174,6 +175,10 @@ export const protectedRoutes: RouteObject[] = [
                       {
                         path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_DETAIL,
                         element: <AdminDetailPage />,
+                      },
+                      {
+                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_EDIT,
+                        element: <EditAdminPage />,
                       },
                     ],
                   },

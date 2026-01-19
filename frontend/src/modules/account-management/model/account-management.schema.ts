@@ -25,6 +25,24 @@ export const createAdminSchema = (t: (key: string) => string) => z.object({
 
 export type CreateAdminFormData = z.infer<ReturnType<typeof createAdminSchema>>
 
+export const updateAdminSchema = (t: (key: string) => string) => z.object({
+  name: z
+    .string()
+    .min(1, t('accountManagement.validation.nameRequired'))
+    .max(255, t('accountManagement.validation.nameMaxLength')),
+  email: z
+    .string()
+    .refine((val) => val === '' || z.string().email().safeParse(val).success, {
+      message: t('accountManagement.validation.emailInvalid'),
+    })
+    .optional(),
+  phone: z
+    .string()
+    .optional(),
+})
+
+export type UpdateAdminFormData = z.infer<ReturnType<typeof updateAdminSchema>>
+
 export const createInstructorSchema = (t: (key: string) => string) => z.object({
   username: z
     .string()

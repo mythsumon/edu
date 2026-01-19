@@ -46,6 +46,12 @@ export const AdminDetailPage = () => {
       }}
       actions={
         <>
+          <Button
+            variant="default"
+            onClick={() => navigate(`${ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL}/${adminId}/edit`)}
+          >
+            {t('common.edit')}
+          </Button>
           <Button variant="outline" onClick={handleBack}>
             {t('common.back')}
           </Button>

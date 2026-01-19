@@ -143,6 +143,15 @@ export interface CreateAdminRequestDto {
 }
 
 /**
+ * Request DTO for updating admin (password excluded, username not updatable)
+ */
+export interface UpdateAdminRequestDto {
+  name: string
+  email?: string
+  phone?: string
+}
+
+/**
  * Request DTO for creating instructor
  */
 export interface CreateInstructorRequestDto {
