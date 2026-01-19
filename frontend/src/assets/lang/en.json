@@ -1,4 +1,7 @@
 {
+  "calendar": {
+    "today": "Today"
+  },
   "common": {
     "login": "Login",
     "logout": "Logout",
@@ -28,7 +31,8 @@
     "expand": "Expand",
     "selectAll": "Select all",
     "paginationInfo": "Showing {{current}} of {{total}} total results",
-    "exporting": "Exporting..."
+    "exporting": "Exporting...",
+    "noResultsFound": "No results found."
   },
   "breadcrumb": {
     "masterCodeSetup": "Master Code Setup",
@@ -49,7 +53,8 @@
     "allocation": "Allocation",
     "confirmation": "Confirmation",
     "admins": "Admins",
-    "instructors": "Instructors"
+    "instructors": "Instructors",
+    "training": "Training"
   },
   "auth": {
     "title": "SWA",
@@ -114,7 +119,9 @@
     "instructorAccounts": "Instructor Accounts",
     "institutionManagement": "Institution Management",
     "masterCodeSetup": "Master Code Setup",
-    "commonCode": "Common Code Setup"
+    "commonCode": "Common Code Setup",
+    "training": "Training",
+    "trainingManagement": "Training Management"
   },
   "errors": {
     "generic": "An error occurred",
@@ -489,6 +496,57 @@
       "checkingCode": "Checking the code",
       "codeAvailable": "Code is available to use",
       "codeUnavailable": "Code already exists!"
+    }
+  },
+  "training": {
+    "title": "Training Management",
+    "description": "Manage training programs and courses",
+    "comingSoon": "Training management features coming soon",
+    "addTraining": "Add Training",
+    "createTraining": "Create Training",
+    "download": "Download",
+    "searchPlaceholder": "Search trainings...",
+    "filter": "Filter",
+    "noData": "No trainings found",
+    "noDataDescription": "There are no trainings available at this time.",
+    "selectAll": "Select all",
+    "selectRow": "Select",
+    "trainingId": "Training ID",
+    "trainingName": "Training Name",
+    "status": "Status",
+    "notes": "Notes",
+    "registrationDate": "Registration Date",
+    "actions": "Actions",
+    "trainingInformation": "Training Information",
+    "trainingInformationDescription": "Enter basic information about your training program",
+    "schoolInformation": "School Information",
+    "schoolInformationDescription": "Enter the school and class information where the training will be conducted.",
+    "classInformation": "Class Information",
+    "classInformationDescription": "Enter your class schedule and instructor assignment information.",
+    "trainingNameLabel": "Training Name",
+    "trainingNamePlaceholder": "Enter your training name",
+    "programLabel": "Program",
+    "programPlaceholder": "Select a training program",
+    "institutionLabel": "Institution",
+    "institutionPlaceholder": "Select an education institution",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Enter description of your training",
+    "startDateLabel": "Start Date",
+    "startDatePlaceholder": "Select start date",
+    "endDateLabel": "End Date",
+    "endDatePlaceholder": "Select end date",
+    "notesLabel": "Notes",
+    "notesPlaceholder": "Enter notes about your training",
+    "validation": {
+      "nameRequired": "Training name is required",
+      "nameMaxLength": "Training name must be at most 255 characters",
+      "trainingNameRequired": "Training name is required",
+      "trainingNameMaxLength": "Training name must be at most 255 characters",
+      "programRequired": "Program is required",
+      "institutionRequired": "Institution is required",
+      "startDateRequired": "Start date is required",
+      "endDateRequired": "End date is required",
+      "endDateMustBeAfterStartDate": "End date must be on or after start date"
     }
   }
 }

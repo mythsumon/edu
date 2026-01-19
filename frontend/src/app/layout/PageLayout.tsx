@@ -32,6 +32,7 @@ const routeSegmentTranslationMap: Record<string, string> = {
   confirmation: "breadcrumb.confirmation",
   admins: "breadcrumb.admins",
   instructors: "breadcrumb.instructors",
+  training: "breadcrumb.training",
 };
 
 interface CustomBreadcrumbRoot {

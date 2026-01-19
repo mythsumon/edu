@@ -1,4 +1,7 @@
 {
+  "calendar": {
+    "today": "오늘"
+  },
   "common": {
     "login": "로그인",
     "logout": "로그아웃",
@@ -28,7 +31,8 @@
     "expand": "펼치기",
     "selectAll": "전체 선택",
     "paginationInfo": "{{total}}개 중 {{current}}개 표시",
-    "exporting": "내보내는 중..."
+    "exporting": "내보내는 중...",
+    "noResultsFound": "결과를 찾을 수 없습니다."
   },
   "breadcrumb": {
     "masterCodeSetup": "마스터 코드 설정",
@@ -49,7 +53,8 @@
     "allocation": "배정",
     "confirmation": "확인",
     "admins": "관리자",
-    "instructors": "강사 목록"
+    "instructors": "강사 목록",
+    "training": "교육"
   },
   "auth": {
     "title": "SWA",
@@ -114,7 +119,9 @@
     "instructorAccounts": "강사 계정",
     "institutionManagement": "기관 관리",
     "masterCodeSetup": "마스터 코드 설정",
-    "commonCode": "공통 코드 설정"
+    "commonCode": "공통 코드 설정",
+    "training": "교육",
+    "trainingManagement": "교육 관리"
   },
   "errors": {
     "generic": "오류가 발생했습니다",
@@ -489,6 +496,57 @@
       "checkingCode": "코드 확인 중",
       "codeAvailable": "코드를 사용할 수 있습니다",
       "codeUnavailable": "코드가 이미 존재합니다!"
+    }
+  },
+  "training": {
+    "title": "교육 관리",
+    "description": "교육 프로그램 및 과정을 관리합니다",
+    "comingSoon": "교육 관리 기능이 곧 제공될 예정입니다",
+    "addTraining": "교육 추가",
+    "createTraining": "교육 생성",
+    "download": "다운로드",
+    "searchPlaceholder": "교육 검색...",
+    "filter": "필터",
+    "noData": "교육을 찾을 수 없습니다",
+    "noDataDescription": "현재 사용 가능한 교육이 없습니다.",
+    "selectAll": "전체 선택",
+    "selectRow": "선택",
+    "trainingId": "교육 ID",
+    "trainingName": "교육 이름",
+    "status": "상태",
+    "notes": "비고",
+    "registrationDate": "등록일",
+    "actions": "작업",
+    "trainingInformation": "교육 정보",
+    "trainingInformationDescription": "교육 프로그램에 대한 기본 정보를 입력하세요",
+    "schoolInformation": "학교 정보",
+    "schoolInformationDescription": "교육이 진행될 학교 및 학급 정보를 입력하세요.",
+    "classInformation": "수업 정보",
+    "classInformationDescription": "수업 일정 및 강사 배정 정보를 입력하세요.",
+    "trainingNameLabel": "교육명",
+    "trainingNamePlaceholder": "교육명을 입력하세요",
+    "programLabel": "프로그램",
+    "programPlaceholder": "프로그램을 선택하세요",
+    "institutionLabel": "교육기관",
+    "institutionPlaceholder": "교육기관을 선택하세요",
+    "descriptionLabel": "설명",
+    "descriptionPlaceholder": "설명을 입력하세요",
+    "startDateLabel": "시작일",
+    "startDatePlaceholder": "날짜를 선택하세요",
+    "endDateLabel": "종료일",
+    "endDatePlaceholder": "날짜를 선택하세요",
+    "notesLabel": "비고",
+    "notesPlaceholder": "비고를 입력하세요",
+    "validation": {
+      "nameRequired": "교육 이름은 필수입니다",
+      "nameMaxLength": "교육 이름은 최대 255자까지 가능합니다",
+      "trainingNameRequired": "교육명을 입력하세요",
+      "trainingNameMaxLength": "교육명은 최대 255자까지 가능합니다",
+      "programRequired": "프로그램을 선택하세요",
+      "institutionRequired": "교육기관을 선택하세요",
+      "startDateRequired": "시작일을 선택하세요",
+      "endDateRequired": "종료일을 선택하세요",
+      "endDateMustBeAfterStartDate": "종료일은 시작일 이후여야 합니다"
     }
   }
 }

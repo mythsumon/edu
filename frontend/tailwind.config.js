@@ -10,6 +10,16 @@ export default {
       fontFamily: {
         sans: ['Noto Sans KR', 'sans-serif'],
       },
+      fontSize: {
+        // Custom fluid font sizes using clamp() for responsive scaling
+        // Format: [fontSize, { lineHeight, letterSpacing }]
+        'xs': ['clamp(0.7rem, 0.65rem + 0.15vw, 0.75rem)', { lineHeight: '1.5' }],
+        'sm': ['clamp(0.8rem, 0.75rem + 0.15vw, 0.875rem)', { lineHeight: '1.5' }],
+        'base': ['clamp(0.9rem, 0.85rem + 0.2vw, 1rem)', { lineHeight: '1.6' }],
+        'lg': ['clamp(1rem, 0.95rem + 0.2vw, 1.125rem)', { lineHeight: '1.6' }],
+        'xl': ['clamp(1.1rem, 1rem + 0.25vw, 1.25rem)', { lineHeight: '1.5' }],
+        '2xl': ['clamp(1.25rem, 1.15rem + 0.35vw, 1.5rem)', { lineHeight: '1.4' }],
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
