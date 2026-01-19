@@ -16,3 +16,5 @@ export const MASTER_CODE_PARENT_CODES = {
 } as const;
 
 export const MASTER_CODE_DISTRICT_CODE = "500-1";
+
+export const MASTER_CODE_PROGRAM_STATUS_ACTIVE = "1100-2";

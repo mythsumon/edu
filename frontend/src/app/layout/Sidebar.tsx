@@ -9,12 +9,10 @@ import type { UserResponseDto } from "@/modules/auth/model/auth.types";
 import {
   LayoutDashboard,
   BookOpen,
-  Calendar,
   Users,
-  ClipboardList,
-  Award,
   FileCode,
   Building2,
+  GraduationCap,
 } from "lucide-react";
 import logoImage from "@/assets/images/logo/logo.png";
 
@@ -113,6 +111,16 @@ export const Sidebar = () => {
         ],
       },
       {
+        titleKey: "sidebar.training",
+        items: [
+          {
+            nameKey: "sidebar.trainingManagement",
+            href: ROUTES.ADMIN_TRAINING_FULL,
+            icon: GraduationCap,
+          },
+        ],
+      },
+      {
         titleKey: "sidebar.system",
         items: [
           {
@@ -134,38 +142,8 @@ export const Sidebar = () => {
         items: [
           {
             nameKey: "sidebar.dashboard",
-            href: ROUTES.INSTRUCTOR_DASHBOARD,
+            href: ROUTES.INSTRUCTOR_DASHBOARD_FULL,
             icon: LayoutDashboard,
-          },
-          {
-            nameKey: "sidebar.myClasses",
-            href: ROUTES.EDUCATION_OPERATIONS,
-            icon: BookOpen,
-          },
-          {
-            nameKey: "sidebar.mySchedule",
-            href: ROUTES.INSTRUCTOR_ASSIGNMENT,
-            icon: Calendar,
-          },
-          {
-            nameKey: "sidebar.myStudents",
-            href: ROUTES.REFERENCE_INFORMATION_MANAGEMENT,
-            icon: Users,
-          },
-        ],
-      },
-      {
-        titleKey: "sidebar.academic",
-        items: [
-          {
-            nameKey: "sidebar.attendance",
-            href: ROUTES.SYSTEM_MANAGEMENT,
-            icon: ClipboardList,
-          },
-          {
-            nameKey: "sidebar.grades",
-            href: ROUTES.SETTINGS_AND_USER_MANAGEMENT,
-            icon: Award,
           },
         ],
       },

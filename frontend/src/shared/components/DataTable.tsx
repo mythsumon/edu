@@ -200,7 +200,7 @@ DataTableProps<TData>) {
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody className="text-xs">
+        <TableBody className="text-sm">
           {isLoading ? (
             // Skeleton loading rows
             [...Array(10)].map((_, index) => (

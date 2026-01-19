@@ -4,6 +4,21 @@
 
 @layer base {
   :root {
+    /* Fluid Font Size System (using clamp for responsive scaling)
+     * xs:   12px - Captions, legal text, minor labels
+     * sm:   14px - Secondary text, sidebars, dense UI
+     * base: 16px - Default body text, main content
+     * lg:   18px - Large body text, sub-headers
+     * xl:   20px - Section headers, intro text
+     * 2xl:  24px - Article titles, prominent headlines
+     */
+    --font-size-xs: clamp(0.7rem, 0.65rem + 0.15vw, 0.75rem);
+    --font-size-sm: clamp(0.8rem, 0.75rem + 0.15vw, 0.875rem);
+    --font-size-base: clamp(0.9rem, 0.85rem + 0.2vw, 1rem);
+    --font-size-lg: clamp(1rem, 0.95rem + 0.2vw, 1.125rem);
+    --font-size-xl: clamp(1.1rem, 1rem + 0.25vw, 1.25rem);
+    --font-size-2xl: clamp(1.25rem, 1.15rem + 0.35vw, 1.5rem);
+
     --background: 210 20% 99%;
     --foreground: 222 84% 5%;
     --card: 210 20% 99%;
