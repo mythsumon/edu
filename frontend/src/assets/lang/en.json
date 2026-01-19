@@ -178,6 +178,7 @@
   },
   "accountManagement": {
     "adminAccountManagement": "Admin Account Management",
+    "adminAccountManagementDescription": "Manage admin accounts and their information.",
     "instructorAccountManagement": "Instructor Account Management",
     "instructorAccountManagementDescription": "Manage instructor accounts and their information.",
     "addNewAdmin": "Add New Admin",

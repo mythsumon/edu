@@ -178,6 +178,7 @@
   },
   "accountManagement": {
     "adminAccountManagement": "관리자 계정 관리",
+    "adminAccountManagementDescription": "관리자 계정 및 정보를 관리합니다.",
     "instructorAccountManagement": "강사 계정 관리",
     "instructorAccountManagementDescription": "강사 계정 및 정보를 관리합니다.",
     "addNewAdmin": "새 관리자 추가",

@@ -28,9 +28,25 @@ export async function createAdmin(
 export async function listAdmins(
   params?: ListAccountsParams
 ): Promise<PageResponse<AdminResponseDto>> {
+  // Build clean params object - filter out undefined and empty arrays
+  const queryParams: Record<string, unknown> = {}
+  
+  if (params?.q) {
+    queryParams.q = params.q
+  }
+  if (params?.page !== undefined) {
+    queryParams.page = params.page
+  }
+  if (params?.size !== undefined) {
+    queryParams.size = params.size
+  }
+  if (params?.sort) {
+    queryParams.sort = params.sort
+  }
+
   const response = await axiosInstance.get<ApiResponse<PageResponse<AdminResponseDto>>>(
     '/admin',
-    { params }
+    { params: queryParams }
   )
   return response.data.data
 }
