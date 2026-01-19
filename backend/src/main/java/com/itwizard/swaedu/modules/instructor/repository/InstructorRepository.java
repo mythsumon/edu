@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -21,6 +22,14 @@ public interface InstructorRepository extends JpaRepository<Instructor, Long> {
            "LOWER(i.name) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
            "LOWER(COALESCE(i.email, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
            "LOWER(COALESCE(i.phone, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
-           "LOWER(u.username) LIKE LOWER(CONCAT('%', :q, '%')))")
-    Page<Instructor> search(@Param("q") String q, Pageable pageable);
+           "LOWER(u.username) LIKE LOWER(CONCAT('%', :q, '%'))) " +
+           "AND (:regionIds IS NULL OR i.regionId IN :regionIds) " +
+           "AND (:classificationIds IS NULL OR i.classificationId IN :classificationIds) " +
+           "AND (:statusIds IS NULL OR i.statusId IN :statusIds)")
+    Page<Instructor> search(
+            @Param("q") String q,
+            @Param("regionIds") List<Long> regionIds,
+            @Param("classificationIds") List<Long> classificationIds,
+            @Param("statusIds") List<Long> statusIds,
+            Pageable pageable);
 }

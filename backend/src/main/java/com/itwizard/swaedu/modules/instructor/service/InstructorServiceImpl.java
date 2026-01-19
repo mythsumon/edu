@@ -106,9 +106,46 @@ public class InstructorServiceImpl implements InstructorService {
     }
 
     @Override
-    public PageResponse<InstructorResponseDto> listInstructors(String q, Integer page, Integer size, String sort) {
+    public PageResponse<InstructorResponseDto> listInstructors(
+            String q, Integer page, Integer size, String sort,
+            List<Long> regionIds, List<Long> classificationIds, List<Long> statusIds, List<Long> zoneIds) {
         Pageable pageable = buildPageable(page, size, sort);
-        Page<Instructor> pageResult = instructorRepository.search(q, pageable);
+        
+        // Normalize empty lists to null for JPQL query (empty lists cause issues with IN clause)
+        List<Long> normalizedRegionIds = (regionIds != null && regionIds.isEmpty()) ? null : regionIds;
+        List<Long> normalizedClassificationIds = (classificationIds != null && classificationIds.isEmpty()) ? null : classificationIds;
+        List<Long> normalizedStatusIds = (statusIds != null && statusIds.isEmpty()) ? null : statusIds;
+        List<Long> normalizedZoneIds = (zoneIds != null && zoneIds.isEmpty()) ? null : zoneIds;
+        
+        // If zoneIds are provided, find all regions that belong to those zones
+        List<Long> finalRegionIds = normalizedRegionIds;
+        if (normalizedZoneIds != null && !normalizedZoneIds.isEmpty()) {
+            // Find all regions where parentId is in the zoneIds list
+            // For multiple zones, we need to find regions for each zone
+            List<Long> regionIdsFromZones = normalizedZoneIds.stream()
+                    .flatMap(zoneId -> masterCodeRepository.findByParentIdAndIsDeleteFalse(zoneId).stream())
+                    .map(MasterCodeEntity::getId)
+                    .distinct()
+                    .toList();
+            
+            // Combine with explicitly provided regionIds
+            if (normalizedRegionIds != null && !normalizedRegionIds.isEmpty()) {
+                // Intersection: only regions that are in both lists
+                finalRegionIds = normalizedRegionIds.stream()
+                        .filter(regionIdsFromZones::contains)
+                        .toList();
+                // If intersection is empty, set to null to return no results
+                if (finalRegionIds.isEmpty()) {
+                    finalRegionIds = null;
+                }
+            } else {
+                // Use regions from zones
+                finalRegionIds = regionIdsFromZones.isEmpty() ? null : regionIdsFromZones;
+            }
+        }
+        
+        Page<Instructor> pageResult = instructorRepository.search(
+                q, finalRegionIds, normalizedClassificationIds, normalizedStatusIds, pageable);
         return buildPageResponse(pageResult);
     }
 

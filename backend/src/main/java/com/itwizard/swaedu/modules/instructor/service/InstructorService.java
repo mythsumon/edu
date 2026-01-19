@@ -6,10 +6,14 @@ import com.itwizard.swaedu.modules.instructor.dto.request.RegisterInstructorRequ
 import com.itwizard.swaedu.modules.instructor.dto.response.InstructorResponseDto;
 import com.itwizard.swaedu.util.PageResponse;
 
+import java.util.List;
+
 public interface InstructorService {
     InstructorResponseDto registerInstructor(RegisterInstructorRequestDto request);
 
-    PageResponse<InstructorResponseDto> listInstructors(String q, Integer page, Integer size, String sort);
+    PageResponse<InstructorResponseDto> listInstructors(
+            String q, Integer page, Integer size, String sort,
+            List<Long> regionIds, List<Long> classificationIds, List<Long> statusIds, List<Long> zoneIds);
 
     InstructorResponseDto getInstructorById(Long userId);
 

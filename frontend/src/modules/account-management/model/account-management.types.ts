@@ -142,4 +142,8 @@ export interface ListAccountsParams {
   page?: number
   size?: number
   sort?: string
+  regionIds?: number[]
+  classificationIds?: number[]
+  statusIds?: number[]
+  zoneIds?: number[]
 }

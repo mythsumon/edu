@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/instructor")
 @RequiredArgsConstructor
@@ -31,8 +33,13 @@ public class InstructorController {
             @RequestParam(required = false) String q,
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "20") Integer size,
-            @RequestParam(required = false) String sort) {
-        PageResponse<InstructorResponseDto> response = instructorService.listInstructors(q, page, size, sort);
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) List<Long> regionIds,
+            @RequestParam(required = false) List<Long> classificationIds,
+            @RequestParam(required = false) List<Long> statusIds,
+            @RequestParam(required = false) List<Long> zoneIds) {
+        PageResponse<InstructorResponseDto> response = instructorService.listInstructors(
+                q, page, size, sort, regionIds, classificationIds, statusIds, zoneIds);
         return ResponseUtil.success("Instructors retrieved successfully", response);
     }
 
