@@ -7,7 +7,7 @@ export const masterCodeSetupQueryKeys = {
   details: () => [...masterCodeSetupQueryKeys.all, 'detail'] as const,
   detail: (id: number) => [...masterCodeSetupQueryKeys.details(), id] as const,
   check: () => [...masterCodeSetupQueryKeys.all, 'check'] as const,
-  checkCode: (code: number) => [...masterCodeSetupQueryKeys.check(), code] as const,
+  checkCode: (code: string) => [...masterCodeSetupQueryKeys.check(), code] as const,
   tree: () => [...masterCodeSetupQueryKeys.all, 'tree'] as const,
   treeWithParams: (rootId?: number, depth?: number) => [
     ...masterCodeSetupQueryKeys.tree(),

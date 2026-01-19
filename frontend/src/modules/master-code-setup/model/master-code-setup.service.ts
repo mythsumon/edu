@@ -73,7 +73,7 @@ export async function deleteMasterCode(id: number): Promise<void> {
  * Returns true if code exists, false if available
  * Uses the success field from ApiResponse instead of HTTP status codes
  */
-export async function checkCodeExists(code: number): Promise<boolean> {
+export async function checkCodeExists(code: string): Promise<boolean> {
   try {
     const response = await axiosInstance.get<ApiResponse<unknown>>('/mastercode/check', {
       params: { code },
@@ -113,7 +113,7 @@ export async function getMasterCodeTree(
  * Get children of a master code by parent code
  */
 export async function getMasterCodeChildrenByCode(
-  parentCode: number,
+  parentCode: string,
   params?: { q?: string; page?: number; size?: number; sort?: string }
 ): Promise<PageResponse<MasterCodeResponseDto>> {
   const response = await axiosInstance.get<ApiResponse<PageResponse<MasterCodeResponseDto>>>(

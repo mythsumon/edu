@@ -23,8 +23,32 @@ export interface InstructorAccount {
   name: string
   username: string
   affiliation?: string
-  region?: string // city/country
-  instructorClassification?: string
+  regionId?: number
+  region?: string // region name from mastercode (codeName)
+  classificationId?: number
+  instructorClassification?: string // classification name from mastercode (codeName)
+}
+
+/**
+ * Instructor detail data for detail page display
+ */
+export interface InstructorDetail {
+  id: number
+  username: string
+  name: string
+  email?: string
+  phone?: string
+  gender?: string
+  dob?: string
+  regionId?: number
+  city?: string
+  street?: string
+  detailAddress?: string
+  statusId?: number
+  classificationId?: number
+  affiliation?: string
+  enabled?: boolean
+  createdAt?: string
 }
 
 /**
@@ -33,8 +57,7 @@ export interface InstructorAccount {
 export interface AdminResponseDto {
   userId: number
   username: string
-  firstName: string
-  lastName: string
+  name: string
   email?: string
   phone?: string
   profilePhoto?: string
@@ -44,8 +67,7 @@ export interface AdminResponseDto {
 export interface InstructorResponseDto {
   userId: number
   username: string
-  firstName: string
-  lastName: string
+  name: string
   email?: string
   phone?: string
   gender?: string
@@ -59,6 +81,7 @@ export interface InstructorResponseDto {
   signature?: string
   profilePhoto?: string
   enabled?: boolean
+  affiliation?: string
 }
 
 /**
@@ -67,8 +90,7 @@ export interface InstructorResponseDto {
 export interface CreateAdminRequestDto {
   username: string
   password: string
-  firstName: string
-  lastName: string
+  name: string
   email?: string
   phone?: string
 }
@@ -79,9 +101,8 @@ export interface CreateAdminRequestDto {
 export interface CreateInstructorRequestDto {
   username: string
   password: string
-  firstName: string
-  lastName: string
-  email?: string
+  name: string
+  email: string
   phone?: string
   gender?: string
   dob?: string
@@ -91,6 +112,7 @@ export interface CreateInstructorRequestDto {
   detailAddress?: string
   statusId?: number
   classificationId?: number
+  affiliation?: string
 }
 
 /**

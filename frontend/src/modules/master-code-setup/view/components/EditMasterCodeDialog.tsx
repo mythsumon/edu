@@ -143,7 +143,7 @@ export const EditMasterCodeDialog = ({
   } = useForm<UpdateMasterCodeFormData>({
     resolver: zodResolver(updateMasterCodeSchema(t)),
     defaultValues: {
-      code: undefined,
+      code: "",
       codeName: "",
       parentId: null,
     },
@@ -152,7 +152,7 @@ export const EditMasterCodeDialog = ({
   // Watch code value for real-time validation
   const codeValue = watch("code");
 
-  const [debouncedCode, setDebouncedCode] = useState<number | undefined>(
+  const [debouncedCode, setDebouncedCode] = useState<string | undefined>(
     undefined
   );
   const [showChecking, setShowChecking] = useState(false);
@@ -196,8 +196,7 @@ export const EditMasterCodeDialog = ({
     useCheckCodeExistsQuery(
       debouncedCode,
       !!debouncedCode &&
-        debouncedCode > 0 &&
-        !isNaN(debouncedCode) &&
+        debouncedCode.trim() !== '' &&
         code !== null &&
         debouncedCode !== code.code
     );
@@ -250,7 +249,7 @@ export const EditMasterCodeDialog = ({
       {
         id: code.id,
         data: {
-          code: data.code!,
+          code: data.code,
           codeName: data.codeName,
           parentId: data.parentId ?? null,
         },
@@ -260,6 +259,7 @@ export const EditMasterCodeDialog = ({
           toast({
             title: t("common.success"),
             description: t("masterCode.updateSuccess"),
+            variant: "success",
           });
 
           // Query invalidation is handled by the mutation hook
@@ -270,7 +270,7 @@ export const EditMasterCodeDialog = ({
           toast({
             title: t("common.error"),
             description: t("masterCode.updateError"),
-            variant: "destructive",
+            variant: "error",
           });
         },
       }
@@ -304,9 +304,9 @@ export const EditMasterCodeDialog = ({
             </Label>
             <Input
               id="code"
-              type="number"
+              type="text"
               placeholder={t("masterCode.codePlaceholder")}
-              {...register("code", { valueAsNumber: true })}
+              {...register("code")}
               className={
                 errors.code || (isCodeChanged && codeAvailable === false)
                   ? "ring-2 ring-destructive"
@@ -321,8 +321,7 @@ export const EditMasterCodeDialog = ({
               isCodeChanged &&
               debouncedCode !== undefined &&
               debouncedCode !== null &&
-              !isNaN(debouncedCode) &&
-              debouncedCode > 0 && (
+              debouncedCode.trim() !== '' && (
                 <>
                   {showChecking || isCheckingCode ? (
                     <p className="text-xs text-muted-foreground flex items-center gap-1">

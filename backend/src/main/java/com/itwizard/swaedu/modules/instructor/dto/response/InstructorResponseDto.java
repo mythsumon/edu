@@ -14,8 +14,7 @@ import java.time.LocalDate;
 public class InstructorResponseDto {
     private Long userId;
     private String username;
-    private String firstName;
-    private String lastName;
+    private String name;
     private String email;
     private String phone;
     private String gender;
@@ -26,6 +25,7 @@ public class InstructorResponseDto {
     private String detailAddress;
     private Long statusId;
     private Long classificationId;
+    private String affiliation;
     private String signature;
     private String profilePhoto;
     private Boolean enabled;

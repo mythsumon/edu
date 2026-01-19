@@ -103,7 +103,7 @@ export const CreateMasterCodeDialog = ({
   } = useForm<CreateMasterCodeFormData>({
     resolver: zodResolver(createMasterCodeSchema(t)),
     defaultValues: {
-      code: undefined,
+      code: "",
       codeName: "",
       parentId: null,
     },
@@ -112,7 +112,7 @@ export const CreateMasterCodeDialog = ({
   // Watch code value for real-time validation
   const codeValue = watch("code");
 
-  const [debouncedCode, setDebouncedCode] = useState<number | undefined>(
+  const [debouncedCode, setDebouncedCode] = useState<string | undefined>(
     undefined
   );
   const [showChecking, setShowChecking] = useState(false);
@@ -133,7 +133,7 @@ export const CreateMasterCodeDialog = ({
   const { data: isCodeAvailable, isLoading: isCheckingCode } =
     useCheckCodeExistsQuery(
       debouncedCode,
-      !!debouncedCode && debouncedCode > 0 && !isNaN(debouncedCode)
+      !!debouncedCode && debouncedCode.trim() !== ''
     );
   const codeAvailable = isCodeAvailable ?? false;
 
@@ -179,7 +179,7 @@ export const CreateMasterCodeDialog = ({
   const onSubmit = (data: CreateMasterCodeFormData) => {
     createMutation.mutate(
       {
-        code: data.code!,
+        code: data.code,
         codeName: data.codeName,
         parentId: data.parentId ?? null,
       },
@@ -188,6 +188,7 @@ export const CreateMasterCodeDialog = ({
           toast({
             title: t("common.success"),
             description: t("masterCode.createSuccess"),
+            variant: "success",
           });
 
           // Query invalidation is handled by the mutation hook
@@ -198,7 +199,7 @@ export const CreateMasterCodeDialog = ({
           toast({
             title: t("common.error"),
             description: t("masterCode.createError"),
-            variant: "destructive",
+            variant: "error",
           });
         },
       }
@@ -225,9 +226,9 @@ export const CreateMasterCodeDialog = ({
             </Label>
             <Input
               id="code"
-              type="number"
+              type="text"
               placeholder={t("masterCode.codePlaceholder")}
-              {...register("code", { valueAsNumber: true })}
+              {...register("code")}
               className={errors.code ? "ring-2 ring-destructive" : ""}
               disabled={createMutation.isPending}
             />
@@ -237,8 +238,7 @@ export const CreateMasterCodeDialog = ({
             {!errors.code &&
               debouncedCode !== undefined &&
               debouncedCode !== null &&
-              !isNaN(debouncedCode) &&
-              debouncedCode > 0 && (
+              debouncedCode.trim() !== '' && (
                 <>
                   {showChecking || isCheckingCode ? (
                     <p className="text-xs text-muted-foreground flex items-center gap-1">

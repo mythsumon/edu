@@ -20,11 +20,11 @@ public interface MasterCodeRepository extends JpaRepository<MasterCodeEntity, Lo
 
     // Find by code excluding soft-deleted - code is globally unique
     @Query("SELECT mc FROM MasterCodeEntity mc WHERE mc.code = :code AND mc.isDelete = FALSE")
-    Optional<MasterCodeEntity> findByCodeAndIsDeleteFalse(@Param("code") Integer code);
+    Optional<MasterCodeEntity> findByCodeAndIsDeleteFalse(@Param("code") String code);
 
     // Check if code exists globally (excluding soft-deleted) - code is globally unique
     @Query("SELECT COUNT(mc) > 0 FROM MasterCodeEntity mc WHERE mc.code = :code AND mc.isDelete = FALSE")
-    boolean existsByCodeAndIsDeleteFalse(@Param("code") Integer code);
+    boolean existsByCodeAndIsDeleteFalse(@Param("code") String code);
 
     // Check if codeName exists under parent (excluding soft-deleted) - codeName is unique within parent
     @Query("SELECT COUNT(mc) > 0 FROM MasterCodeEntity mc WHERE mc.codeName = :codeName AND (mc.parentId = :parentId OR (:parentId IS NULL AND mc.parentId IS NULL)) AND mc.isDelete = FALSE")
@@ -32,7 +32,7 @@ public interface MasterCodeRepository extends JpaRepository<MasterCodeEntity, Lo
 
     // Check code uniqueness excluding current record (for updates) - code is globally unique
     @Query("SELECT COUNT(mc) > 0 FROM MasterCodeEntity mc WHERE mc.code = :code AND mc.id != :excludeId AND mc.isDelete = FALSE")
-    boolean existsByCodeAndIdNotAndIsDeleteFalse(@Param("code") Integer code, @Param("excludeId") Long excludeId);
+    boolean existsByCodeAndIdNotAndIsDeleteFalse(@Param("code") String code, @Param("excludeId") Long excludeId);
 
     // Check codeName uniqueness excluding current record (for updates) - codeName is unique within parent
     @Query("SELECT COUNT(mc) > 0 FROM MasterCodeEntity mc WHERE mc.codeName = :codeName AND (mc.parentId = :parentId OR (:parentId IS NULL AND mc.parentId IS NULL)) AND mc.id != :excludeId AND mc.isDelete = FALSE")
@@ -43,8 +43,8 @@ public interface MasterCodeRepository extends JpaRepository<MasterCodeEntity, Lo
         SELECT mc.* FROM master_code mc
         WHERE mc.is_delete = FALSE
           AND (:q IS NULL OR 
-               CAST(mc.code AS VARCHAR) LIKE '%' || CAST(:q AS VARCHAR) || '%' OR
-               LOWER(mc.code_name) LIKE '%' || LOWER(CAST(:q AS VARCHAR)) || '%')
+               mc.code LIKE '%' || :q || '%' OR
+               LOWER(mc.code_name) LIKE '%' || LOWER(:q) || '%')
           AND (:parentId IS NULL OR mc.parent_id = :parentId)
           AND (:rootOnly IS NULL OR :rootOnly = FALSE OR mc.parent_id IS NULL)
         """, nativeQuery = true)
@@ -60,8 +60,8 @@ public interface MasterCodeRepository extends JpaRepository<MasterCodeEntity, Lo
         WHERE mc.is_delete = FALSE
           AND mc.parent_id IS NULL
           AND (:q IS NULL OR 
-               CAST(mc.code AS VARCHAR) LIKE '%' || CAST(:q AS VARCHAR) || '%' OR
-               LOWER(mc.code_name) LIKE '%' || LOWER(CAST(:q AS VARCHAR)) || '%')
+               mc.code LIKE '%' || :q || '%' OR
+               LOWER(mc.code_name) LIKE '%' || LOWER(:q) || '%')
         """, nativeQuery = true)
     Page<MasterCodeEntity> findRoots(
             @Param("q") String q,
@@ -73,8 +73,8 @@ public interface MasterCodeRepository extends JpaRepository<MasterCodeEntity, Lo
         WHERE mc.is_delete = FALSE
           AND mc.parent_id = :parentId
           AND (:q IS NULL OR 
-               CAST(mc.code AS VARCHAR) LIKE '%' || CAST(:q AS VARCHAR) || '%' OR
-               LOWER(mc.code_name) LIKE '%' || LOWER(CAST(:q AS VARCHAR)) || '%')
+               mc.code LIKE '%' || :q || '%' OR
+               LOWER(mc.code_name) LIKE '%' || LOWER(:q) || '%')
         """, nativeQuery = true)
     Page<MasterCodeEntity> findChildren(
             @Param("parentId") Long parentId,
@@ -92,4 +92,18 @@ public interface MasterCodeRepository extends JpaRepository<MasterCodeEntity, Lo
     // Find root by ID (for tree building)
     @Query("SELECT mc FROM MasterCodeEntity mc WHERE mc.id = :rootId AND mc.parentId IS NULL AND mc.isDelete = FALSE")
     Optional<MasterCodeEntity> findRootById(@Param("rootId") Long rootId);
+
+    // Find grandchildren - children where parent_id is in a list of parent IDs - using native query for proper PostgreSQL type handling
+    @Query(value = """
+        SELECT mc.* FROM master_code mc
+        WHERE mc.is_delete = FALSE
+          AND mc.parent_id IN :parentIds
+          AND (:q IS NULL OR 
+               mc.code LIKE '%' || :q || '%' OR
+               LOWER(mc.code_name) LIKE '%' || LOWER(:q) || '%')
+        """, nativeQuery = true)
+    Page<MasterCodeEntity> findGrandChildren(
+            @Param("parentIds") List<Long> parentIds,
+            @Param("q") String q,
+            Pageable pageable);
 }

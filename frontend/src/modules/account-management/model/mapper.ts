@@ -3,6 +3,7 @@ import type {
   AdminResponseDto,
   InstructorAccount,
   InstructorResponseDto,
+  InstructorDetail,
 } from './account-management.types'
 
 /**
@@ -11,7 +12,7 @@ import type {
 export function mapAdminAccount(dto: AdminResponseDto): AdminAccount {
   return {
     id: dto.userId,
-    name: `${dto.firstName} ${dto.lastName}`.trim(),
+    name: dto.name,
     username: dto.username,
     email: dto.email,
     phoneNumber: dto.phone,
@@ -24,11 +25,13 @@ export function mapAdminAccount(dto: AdminResponseDto): AdminAccount {
 export function mapInstructorAccount(dto: InstructorResponseDto): InstructorAccount {
   return {
     id: dto.userId,
-    name: `${dto.firstName} ${dto.lastName}`.trim(),
+    name: dto.name,
     username: dto.username,
-    affiliation: undefined, // Not available in DTO
-    region: dto.city, // Use city as region for now
-    instructorClassification: undefined, // Only ID available, not name
+    affiliation: dto.affiliation,
+    regionId: dto.regionId,
+    region: undefined, // Will be populated from mastercode lookup using regionId
+    classificationId: dto.classificationId,
+    instructorClassification: undefined, // Will be populated from mastercode lookup using classificationId
   }
 }
 
@@ -44,4 +47,27 @@ export function mapAdminAccountList(dtos: AdminResponseDto[]): AdminAccount[] {
  */
 export function mapInstructorAccountList(dtos: InstructorResponseDto[]): InstructorAccount[] {
   return dtos.map(mapInstructorAccount)
+}
+
+/**
+ * Map InstructorResponseDto to InstructorDetail
+ */
+export function mapInstructorDetail(dto: InstructorResponseDto): InstructorDetail {
+  return {
+    id: dto.userId,
+    username: dto.username,
+    name: dto.name,
+    email: dto.email,
+    phone: dto.phone,
+    gender: dto.gender,
+    dob: dto.dob,
+    regionId: dto.regionId,
+    city: dto.city,
+    street: dto.street,
+    detailAddress: dto.detailAddress,
+    statusId: dto.statusId,
+    classificationId: dto.classificationId,
+    affiliation: dto.affiliation,
+    enabled: dto.enabled,
+  }
 }

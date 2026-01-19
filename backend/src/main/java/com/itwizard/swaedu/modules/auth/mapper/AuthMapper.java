@@ -42,8 +42,7 @@ public class AuthMapper {
         AdminProfileDto adminDto = null;
         if (user.getAdmin() != null) {
             adminDto = AdminProfileDto.builder()
-                    .firstName(user.getAdmin().getFirstName())
-                    .lastName(user.getAdmin().getLastName())
+                    .name(user.getAdmin().getName())
                     .email(user.getAdmin().getEmail())
                     .phone(user.getAdmin().getPhone())
                     .profilePhoto(user.getAdmin().getProfilePhoto())
@@ -53,8 +52,7 @@ public class AuthMapper {
         InstructorProfileDto instructorDto = null;
         if (user.getInstructor() != null) {
             instructorDto = InstructorProfileDto.builder()
-                    .firstName(user.getInstructor().getFirstName())
-                    .lastName(user.getInstructor().getLastName())
+                    .name(user.getInstructor().getName())
                     .email(user.getInstructor().getEmail())
                     .phone(user.getInstructor().getPhone())
                     .gender(user.getInstructor().getGender())
@@ -65,6 +63,7 @@ public class AuthMapper {
                     .detailAddress(user.getInstructor().getDetailAddress())
                     .statusId(user.getInstructor().getStatusId())
                     .classificationId(user.getInstructor().getClassificationId())
+                    .affiliation(user.getInstructor().getAffiliation())
                     .signature(user.getInstructor().getSignature())
                     .profilePhoto(user.getInstructor().getProfilePhoto())
                     .build();

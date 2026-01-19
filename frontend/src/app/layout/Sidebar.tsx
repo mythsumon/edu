@@ -13,7 +13,8 @@ import {
   Users,
   ClipboardList,
   Award,
-  Code2,
+  FileCode,
+  Building2,
 } from "lucide-react";
 import logoImage from "@/assets/images/logo/logo.png";
 
@@ -92,12 +93,32 @@ export const Sidebar = () => {
         ],
       },
       {
+        titleKey: "sidebar.institution",
+        items: [
+          {
+            nameKey: "sidebar.institutionManagement",
+            href: ROUTES.ADMIN_INSTITUTION_FULL,
+            icon: Building2,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.program",
+        items: [
+          {
+            nameKey: "sidebar.programManagement",
+            href: ROUTES.ADMIN_PROGRAM_MANAGEMENT_FULL,
+            icon: BookOpen,
+          },
+        ],
+      },
+      {
         titleKey: "sidebar.system",
         items: [
           {
-            nameKey: "sidebar.masterCodeSetup",
-            href: ROUTES.ADMIN_MASTER_CODE_SETUP_FULL,
-            icon: Code2,
+            nameKey: "sidebar.commonCode",
+            href: ROUTES.ADMIN_COMMON_CODE_FULL,
+            icon: FileCode,
           },
         ],
       },
@@ -291,7 +312,7 @@ export const Sidebar = () => {
                             "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors",
                             sidebarCollapsed ? "justify-center" : "",
                             isActive
-                              ? "bg-primary text-primary-foreground"
+                              ? "bg-badge text-primary font-semibold"
                               : "text-foreground hover:bg-muted"
                           )}
                         >

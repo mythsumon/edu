@@ -43,10 +43,17 @@ public class MasterCodeController {
         return ResponseUtil.success("Master codes retrieved successfully", response);
     }
 
-    // 4. GET /api/v1/mastercode/{id} — master code detail
+    // 4. GET /api/v1/mastercode/{id} — master code detail by code
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse> getMasterCodeById(@PathVariable Long id) {
         MasterCodeResponseDto response = masterCodeService.getMasterCodeById(id);
+        return ResponseUtil.success("Master code retrieved successfully", response);
+    }
+
+    // 4b. GET /api/v1/mastercode/code/{code} — master code detail by code
+    @GetMapping("/code/{code}")
+    public ResponseEntity<ApiResponse> getMasterCodeByCode(@PathVariable String code) {
+        MasterCodeResponseDto response = masterCodeService.getMasterCodeByCode(code);
         return ResponseUtil.success("Master code retrieved successfully", response);
     }
 
@@ -89,13 +96,25 @@ public class MasterCodeController {
     // 9. GET /api/v1/mastercode/{code}/children — list direct children of a master code (by code)
     @GetMapping("/{code}/children")
     public ResponseEntity<ApiResponse> listChildren(
-            @PathVariable Integer code,
+            @PathVariable String code,
             @RequestParam(required = false) String q,
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "20") Integer size,
             @RequestParam(required = false) String sort) {
         PageResponse<MasterCodeResponseDto> response = masterCodeService.listChildren(code, q, page, size, sort);
         return ResponseUtil.success("Children retrieved successfully", response);
+    }
+
+    // 9b. GET /api/v1/mastercode/{code}/grandchildren — list grandchildren of a master code (by code)
+    @GetMapping("/{code}/grandchildren")
+    public ResponseEntity<ApiResponse> listGrandChildren(
+            @PathVariable String code,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String sort) {
+        PageResponse<MasterCodeResponseDto> response = masterCodeService.listGrandChildren(code, q, page, size, sort);
+        return ResponseUtil.success("Grandchildren retrieved successfully", response);
     }
 
     // 10. GET /api/v1/mastercode/tree — retrieve master code hierarchy
@@ -109,7 +128,7 @@ public class MasterCodeController {
 
     // 11. GET /api/v1/mastercode/check — check if master code exists
     @GetMapping("/check")
-    public ResponseEntity<ApiResponse> checkCodeExists(@RequestParam Integer code) {
+    public ResponseEntity<ApiResponse> checkCodeExists(@RequestParam String code) {
         boolean exists = masterCodeService.checkCodeExists(code);
         if (exists) {
             return ResponseUtil.error("Master code already exists");
