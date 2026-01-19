@@ -116,6 +116,25 @@ export interface CreateInstructorRequestDto {
 }
 
 /**
+ * Request DTO for updating instructor (password excluded)
+ */
+export interface UpdateInstructorRequestDto {
+  username: string
+  name: string
+  email: string
+  phone?: string
+  gender?: string
+  dob?: string
+  regionId?: number
+  city?: string
+  street?: string
+  detailAddress?: string
+  statusId?: number
+  classificationId?: number
+  affiliation?: string
+}
+
+/**
  * Query parameters for listing accounts
  */
 export interface ListAccountsParams {

@@ -30,6 +30,7 @@ export const ROUTES = {
   ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS: 'instructors',
   ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_CREATE: 'create',
   ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_DETAIL: ':id',
+  ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_EDIT: ':id/edit',
   // Instructor routes - path segments only
   INSTRUCTOR: '/instructor',
   INSTRUCTOR_DASHBOARD: 'dashboard',
@@ -66,6 +67,7 @@ export const ROUTES = {
   ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL: '/admin/account-management/instructors',
   ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_CREATE_FULL: '/admin/account-management/instructors/create',
   ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_DETAIL_FULL: '/admin/account-management/instructors/:id',
+  ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_EDIT_FULL: '/admin/account-management/instructors/:id/edit',
   INSTRUCTOR_DASHBOARD_FULL: '/instructor/dashboard',
   INSTRUCTOR_EDUCATION_OPERATIONS_FULL: '/instructor/education-operations',
   INSTRUCTOR_SCHEDULE_FULL: '/instructor/instructor-assignment',

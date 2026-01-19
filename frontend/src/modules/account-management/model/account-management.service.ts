@@ -6,6 +6,7 @@ import type {
   ListAccountsParams,
   CreateAdminRequestDto,
   CreateInstructorRequestDto,
+  UpdateInstructorRequestDto,
 } from './account-management.types'
 
 /**
@@ -66,6 +67,20 @@ export async function listInstructors(
 export async function getInstructorById(id: number): Promise<InstructorResponseDto> {
   const response = await axiosInstance.get<ApiResponse<InstructorResponseDto>>(
     `/instructor/${id}`
+  )
+  return response.data.data
+}
+
+/**
+ * Update an existing instructor
+ */
+export async function updateInstructor(
+  id: number,
+  data: UpdateInstructorRequestDto
+): Promise<InstructorResponseDto> {
+  const response = await axiosInstance.put<ApiResponse<InstructorResponseDto>>(
+    `/instructor/${id}`,
+    data
   )
   return response.data.data
 }

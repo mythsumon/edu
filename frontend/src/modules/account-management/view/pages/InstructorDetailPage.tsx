@@ -98,9 +98,17 @@ export const InstructorDetailPage = () => {
         label: t("accountManagement.instructors"),
       }}
       actions={
-        <Button variant="outline" onClick={handleBack}>
-          {t("common.back")}
-        </Button>
+        <>
+          <Button
+            variant="default"
+            onClick={() => navigate(`${ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL}/${instructorId}/edit`)}
+          >
+            {t('common.edit')}
+          </Button>
+          <Button variant="outline" onClick={handleBack}>
+            {t('common.back')}
+          </Button>
+        </>
       }
     >
       <div className="max-w-5xl mx-auto space-y-6 py-6">
