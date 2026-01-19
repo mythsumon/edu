@@ -21,6 +21,7 @@ import {
   InstructorFilterDialog,
   type InstructorFilterData,
 } from '../components/InstructorFilterDialog'
+import { exportInstructorsToExcel } from '../../model/account-management.service'
 
 /**
  * Table Content Component - Extracted to prevent Card re-renders
@@ -116,6 +117,7 @@ export const InstructorAccountManagementPage = () => {
   const [size, setSize] = React.useState<number>(20)
   const [isFilterDialogOpen, setIsFilterDialogOpen] = React.useState<boolean>(false)
   const [filters, setFilters] = React.useState<InstructorFilterData>({})
+  const [isExporting, setIsExporting] = React.useState<boolean>(false)
 
   // Debounce search query
   const debouncedSetSearch = React.useMemo(
@@ -374,10 +376,42 @@ export const InstructorAccountManagementPage = () => {
     navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_CREATE_FULL)
   }, [navigate])
 
-  const handleDownload = React.useCallback(() => {
-    // TODO: Implement download functionality
-    console.log('Download clicked')
-  }, [])
+  const handleDownload = React.useCallback(async () => {
+    try {
+      setIsExporting(true)
+
+      // Build export parameters from current filters (excluding pagination)
+      const exportParams = {
+        q: debouncedSearchQuery || undefined,
+        regionIds: filterRegionIds,
+        classificationIds: filterClassificationIds,
+        statusIds: filterStatusIds,
+        zoneIds: filterZoneIds,
+      }
+
+      // Call export API
+      const blob = await exportInstructorsToExcel(exportParams)
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `instructors_${new Date().toISOString().split('T')[0]}.xlsx`
+
+      // Trigger download
+      document.body.appendChild(link)
+      link.click()
+
+      // Cleanup
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Error exporting instructors:', error)
+      // TODO: Show error toast/notification
+    } finally {
+      setIsExporting(false)
+    }
+  }, [debouncedSearchQuery, filterRegionIds, filterClassificationIds, filterStatusIds, filterZoneIds])
 
   const handleDetailClick = React.useCallback((instructor: InstructorAccount) => {
     navigate(`${ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL}/${instructor.id}`)
@@ -410,7 +444,7 @@ export const InstructorAccountManagementPage = () => {
           </div>
           {/* Right side: Action Buttons */}
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={handleDownload}>
+            <Button variant="outline" onClick={handleDownload} disabled={isExporting}>
               <Download className="h-4 w-4" />
               {t('accountManagement.download')}
             </Button>
@@ -422,7 +456,7 @@ export const InstructorAccountManagementPage = () => {
         </div>
       </div>
     ),
-    [t, handleDownload, handleAddInstructor]
+    [t, handleDownload, handleAddInstructor, isExporting]
   )
 
   // Memoized search bar component - stable across re-renders

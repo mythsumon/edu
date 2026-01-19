@@ -142,3 +142,58 @@ export async function updateInstructor(
   )
   return response.data.data
 }
+
+/**
+ * Export instructors to Excel
+ * Returns a blob that can be downloaded as a file
+ */
+export async function exportInstructorsToExcel(
+  params?: Omit<ListAccountsParams, 'page' | 'size' | 'sort'>
+): Promise<Blob> {
+  // Build clean params object - filter out undefined and empty arrays
+  const queryParams: Record<string, unknown> = {}
+  
+  if (params?.q) {
+    queryParams.q = params.q
+  }
+  
+  // Only include array parameters if they have values
+  if (params?.regionIds && Array.isArray(params.regionIds) && params.regionIds.length > 0) {
+    queryParams.regionIds = params.regionIds
+  }
+  if (params?.classificationIds && Array.isArray(params.classificationIds) && params.classificationIds.length > 0) {
+    queryParams.classificationIds = params.classificationIds
+  }
+  if (params?.statusIds && Array.isArray(params.statusIds) && params.statusIds.length > 0) {
+    queryParams.statusIds = params.statusIds
+  }
+  if (params?.zoneIds && Array.isArray(params.zoneIds) && params.zoneIds.length > 0) {
+    queryParams.zoneIds = params.zoneIds
+  }
+
+  const response = await axiosInstance.get(
+    '/instructor/export',
+    {
+      params: queryParams,
+      // Custom params serializer to ensure arrays are sent as repeated params: param=value1&param=value2
+      paramsSerializer: (params) => {
+        const searchParams = new URLSearchParams()
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            if (Array.isArray(value)) {
+              // For arrays, append each value multiple times: param=value1&param=value2
+              value.forEach((item) => {
+                searchParams.append(key, String(item))
+              })
+            } else {
+              searchParams.append(key, String(value))
+            }
+          }
+        })
+        return searchParams.toString()
+      },
+      responseType: 'blob', // Important: set responseType to 'blob' for file downloads
+    }
+  )
+  return response.data
+}
