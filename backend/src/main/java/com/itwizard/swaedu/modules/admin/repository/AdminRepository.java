@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Repository
 public interface AdminRepository extends JpaRepository<Admin, Long> {
@@ -20,4 +21,16 @@ public interface AdminRepository extends JpaRepository<Admin, Long> {
            "LOWER(COALESCE(a.email, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
            "LOWER(u.username) LIKE LOWER(CONCAT('%', :q, '%')))")
     Page<Admin> search(@Param("q") String q, Pageable pageable);
+
+    // Stream all admins for export (with search filter, no pagination)
+    @Query("""
+        SELECT DISTINCT a FROM Admin a
+        JOIN a.user u
+        WHERE (:q IS NULL OR :q = '' OR 
+               LOWER(a.name) LIKE LOWER(CONCAT('%', :q, '%')) OR
+               LOWER(COALESCE(a.email, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR
+               LOWER(u.username) LIKE LOWER(CONCAT('%', :q, '%')))
+        ORDER BY a.userId
+        """)
+    Stream<Admin> streamForExport(@Param("q") String q);
 }

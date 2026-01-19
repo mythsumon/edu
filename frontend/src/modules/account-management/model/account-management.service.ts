@@ -170,6 +170,30 @@ export async function updateInstructor(
 }
 
 /**
+ * Export admins to Excel
+ * Returns a blob that can be downloaded as a file
+ */
+export async function exportAdminsToExcel(
+  params?: Omit<ListAccountsParams, 'page' | 'size' | 'sort'>
+): Promise<Blob> {
+  // Build clean params object - filter out undefined and empty arrays
+  const queryParams: Record<string, unknown> = {}
+  
+  if (params?.q) {
+    queryParams.q = params.q
+  }
+
+  const response = await axiosInstance.get(
+    '/admin/export',
+    {
+      params: queryParams,
+      responseType: 'blob', // Important: set responseType to 'blob' for file downloads
+    }
+  )
+  return response.data
+}
+
+/**
  * Export instructors to Excel
  * Returns a blob that can be downloaded as a file
  */
