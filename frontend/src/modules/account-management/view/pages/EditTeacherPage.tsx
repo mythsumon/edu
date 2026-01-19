@@ -1,56 +1,73 @@
-import { useNavigate } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { PageLayout } from '@/app/layout/PageLayout'
 import { Button } from '@/shared/ui/button'
 import { useToast } from '@/shared/ui/use-toast'
 import { ROUTES } from '@/shared/constants/routes'
-import { useCreateAdmin } from '../../controller/mutations'
-import { createAdminSchema, type CreateAdminFormData } from '../../model/account-management.schema'
+import { useUpdateTeacher } from '../../controller/mutations'
+import { useTeacherDetailQuery } from '../../controller/queries'
+import { updateTeacherSchema, type UpdateTeacherFormData } from '../../model/account-management.schema'
+import { LoadingState } from '@/shared/components/LoadingState'
+import { ErrorState } from '@/shared/components/ErrorState'
 import { FormInputField } from '../components/FormInputField'
-import { FormPasswordField } from '../components/FormPasswordField'
 import { CollapsibleCard } from '../components/CollapsibleCard'
 
-export const AddAdminPage = () => {
+export const EditTeacherPage = () => {
   const { t } = useTranslation()
   const { toast } = useToast()
   const navigate = useNavigate()
-  const createAdminMutation = useCreateAdmin()
+  const { id } = useParams<{ id: string }>()
+  const teacherId = id ? parseInt(id, 10) : 0
+  const updateTeacherMutation = useUpdateTeacher()
   const formRef = useRef<HTMLFormElement>(null)
+
+  const { data: teacher, isLoading: isLoadingTeacher, error: teacherError } = useTeacherDetailQuery(teacherId)
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
-  } = useForm<CreateAdminFormData>({
-    resolver: zodResolver(createAdminSchema(t)),
+  } = useForm<UpdateTeacherFormData>({
+    resolver: zodResolver(updateTeacherSchema(t)),
     mode: 'onChange',
     defaultValues: {
-      username: '',
-      password: 'admin123',
       name: '',
       email: '',
       phone: '',
     },
   })
 
-  const onSubmit = async (data: CreateAdminFormData) => {
+  // Pre-fill form with teacher data using reset() to properly initialize and clear validation errors
+  useEffect(() => {
+    if (teacher) {
+      reset({
+        name: teacher.name,
+        email: teacher.email || '',
+        phone: teacher.phone || '',
+      })
+    }
+  }, [teacher, reset])
+
+  const onSubmit = async (data: UpdateTeacherFormData) => {
     try {
-      await createAdminMutation.mutateAsync({
-        username: data.username,
-        password: data.password,
-        name: data.name,
-        email: data.email || undefined,
-        phone: data.phone || undefined,
+      await updateTeacherMutation.mutateAsync({
+        id: teacherId,
+        data: {
+          name: data.name,
+          email: data.email || undefined,
+          phone: data.phone || undefined,
+        },
       })
       toast({
         title: t('common.success'),
-        description: t('accountManagement.createAdminSuccess'),
+        description: t('accountManagement.updateTeacherSuccess'),
         variant: 'success',
       })
-      navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL)
+      navigate(`${ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_FULL}/${teacherId}`)
     } catch (error) {
       // Extract error message from the error object
       const errorMessage =
@@ -58,29 +75,37 @@ export const AddAdminPage = () => {
           ? error.message
           : typeof error === 'object' && error !== null && 'message' in error
             ? String(error.message)
-            : t('accountManagement.createAdminError')
+            : t('accountManagement.updateTeacherError')
 
       toast({
         title: t('common.error'),
         description: errorMessage,
         variant: 'error',
       })
-      console.error('Failed to create admin:', error)
+      console.error('Failed to update teacher:', error)
     }
   }
 
   const handleCancel = () => {
-    navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL)
+    navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_DETAIL_FULL.replace(':id', String(teacherId)))
   }
 
   const handleFormSubmit = () => {
     formRef.current?.requestSubmit()
   }
 
+  if (isLoadingTeacher) {
+    return <LoadingState />
+  }
+
+  if (teacherError || !teacher) {
+    return <ErrorState error={teacherError || undefined} />
+  }
+
   return (
     <PageLayout
-      title={t('accountManagement.addNewAdmin')}
-      customBreadcrumbRoot={{ path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL, label: t('accountManagement.admins') }}
+      title={t('accountManagement.editTeacher')}
+      customBreadcrumbRoot={{ path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_FULL, label: t('accountManagement.teachers') }}
       actions={
         <>
           <Button
@@ -96,7 +121,7 @@ export const AddAdminPage = () => {
             onClick={handleFormSubmit}
             disabled={isSubmitting}
           >
-            {isSubmitting ? t('accountManagement.creating') : t('accountManagement.createAdmin')}
+            {isSubmitting ? t('accountManagement.updating') : t('accountManagement.updateTeacher')}
           </Button>
         </>
       }
@@ -110,17 +135,6 @@ export const AddAdminPage = () => {
             defaultExpanded={true}
           >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Admin ID / Username */}
-              <FormInputField
-                id="username"
-                label={t('accountManagement.username')}
-                placeholder={t('accountManagement.usernamePlaceholder')}
-                register={register('username')}
-                error={errors.username}
-                required
-                isSubmitting={isSubmitting}
-              />
-
               {/* Name */}
               <FormInputField
                 id="name"
@@ -140,17 +154,6 @@ export const AddAdminPage = () => {
                 type="email"
                 register={register('email')}
                 error={errors.email}
-                isSubmitting={isSubmitting}
-              />
-
-              {/* Password */}
-              <FormPasswordField
-                id="password"
-                label={t('accountManagement.password')}
-                placeholder={t('accountManagement.passwordPlaceholder')}
-                register={register('password')}
-                error={errors.password}
-                required
                 isSubmitting={isSubmitting}
               />
 

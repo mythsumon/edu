@@ -3,9 +3,14 @@ import type { ApiResponse, PageResponse } from '@/shared/http/types/common'
 import type {
   AdminResponseDto,
   InstructorResponseDto,
+  TeacherResponseDto,
   ListAccountsParams,
   CreateAdminRequestDto,
+  UpdateAdminRequestDto,
   CreateInstructorRequestDto,
+  UpdateInstructorRequestDto,
+  CreateTeacherRequestDto,
+  UpdateTeacherRequestDto,
 } from './account-management.types'
 
 /**
@@ -27,9 +32,25 @@ export async function createAdmin(
 export async function listAdmins(
   params?: ListAccountsParams
 ): Promise<PageResponse<AdminResponseDto>> {
+  // Build clean params object - filter out undefined and empty arrays
+  const queryParams: Record<string, unknown> = {}
+  
+  if (params?.q) {
+    queryParams.q = params.q
+  }
+  if (params?.page !== undefined) {
+    queryParams.page = params.page
+  }
+  if (params?.size !== undefined) {
+    queryParams.size = params.size
+  }
+  if (params?.sort) {
+    queryParams.sort = params.sort
+  }
+
   const response = await axiosInstance.get<ApiResponse<PageResponse<AdminResponseDto>>>(
     '/admin',
-    { params }
+    { params: queryParams }
   )
   return response.data.data
 }
@@ -53,9 +74,91 @@ export async function createInstructor(
 export async function listInstructors(
   params?: ListAccountsParams
 ): Promise<PageResponse<InstructorResponseDto>> {
+  // Build clean params object - filter out undefined and empty arrays
+  // Axios will serialize arrays as repeated query parameters: regionIds=1&regionIds=2
+  const queryParams: Record<string, unknown> = {}
+  
+  if (params?.q) {
+    queryParams.q = params.q
+  }
+  if (params?.page !== undefined) {
+    queryParams.page = params.page
+  }
+  if (params?.size !== undefined) {
+    queryParams.size = params.size
+  }
+  if (params?.sort) {
+    queryParams.sort = params.sort
+  }
+  
+  // Only include array parameters if they have values
+  // This prevents sending empty arrays which might confuse the backend
+  if (params?.regionIds && Array.isArray(params.regionIds) && params.regionIds.length > 0) {
+    queryParams.regionIds = params.regionIds
+  }
+  if (params?.classificationIds && Array.isArray(params.classificationIds) && params.classificationIds.length > 0) {
+    queryParams.classificationIds = params.classificationIds
+  }
+  if (params?.statusIds && Array.isArray(params.statusIds) && params.statusIds.length > 0) {
+    queryParams.statusIds = params.statusIds
+  }
+  if (params?.zoneIds && Array.isArray(params.zoneIds) && params.zoneIds.length > 0) {
+    queryParams.zoneIds = params.zoneIds
+  }
+
+  // Debug: Log the params being sent (remove in production if not needed)
+  if (Object.keys(queryParams).length > 0) {
+    console.log('[listInstructors] Query params:', queryParams)
+  }
+
   const response = await axiosInstance.get<ApiResponse<PageResponse<InstructorResponseDto>>>(
     '/instructor',
-    { params }
+    { 
+      params: queryParams,
+      // Custom params serializer to ensure arrays are sent as repeated params: param=value1&param=value2
+      paramsSerializer: (params) => {
+        const searchParams = new URLSearchParams()
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            if (Array.isArray(value)) {
+              // For arrays, append each value multiple times: param=value1&param=value2
+              value.forEach((item) => {
+                searchParams.append(key, String(item))
+              })
+            } else {
+              searchParams.append(key, String(value))
+            }
+          }
+        })
+        const serialized = searchParams.toString()
+        console.log('[listInstructors] Serialized params:', serialized)
+        return serialized
+      },
+    }
+  )
+  return response.data.data
+}
+
+/**
+ * Get a single admin by ID
+ */
+export async function getAdminById(id: number): Promise<AdminResponseDto> {
+  const response = await axiosInstance.get<ApiResponse<AdminResponseDto>>(
+    `/admin/${id}`
+  )
+  return response.data.data
+}
+
+/**
+ * Update an existing admin
+ */
+export async function updateAdmin(
+  id: number,
+  data: UpdateAdminRequestDto
+): Promise<AdminResponseDto> {
+  const response = await axiosInstance.put<ApiResponse<AdminResponseDto>>(
+    `/admin/${id}`,
+    data
   )
   return response.data.data
 }
@@ -66,6 +169,165 @@ export async function listInstructors(
 export async function getInstructorById(id: number): Promise<InstructorResponseDto> {
   const response = await axiosInstance.get<ApiResponse<InstructorResponseDto>>(
     `/instructor/${id}`
+  )
+  return response.data.data
+}
+
+/**
+ * Update an existing instructor
+ */
+export async function updateInstructor(
+  id: number,
+  data: UpdateInstructorRequestDto
+): Promise<InstructorResponseDto> {
+  const response = await axiosInstance.put<ApiResponse<InstructorResponseDto>>(
+    `/instructor/${id}`,
+    data
+  )
+  return response.data.data
+}
+
+/**
+ * Export admins to Excel
+ * Returns a blob that can be downloaded as a file
+ */
+export async function exportAdminsToExcel(
+  params?: Omit<ListAccountsParams, 'page' | 'size' | 'sort'>
+): Promise<Blob> {
+  // Build clean params object - filter out undefined and empty arrays
+  const queryParams: Record<string, unknown> = {}
+  
+  if (params?.q) {
+    queryParams.q = params.q
+  }
+
+  const response = await axiosInstance.get(
+    '/admin/export',
+    {
+      params: queryParams,
+      responseType: 'blob', // Important: set responseType to 'blob' for file downloads
+    }
+  )
+  return response.data
+}
+
+/**
+ * Export instructors to Excel
+ * Returns a blob that can be downloaded as a file
+ */
+export async function exportInstructorsToExcel(
+  params?: Omit<ListAccountsParams, 'page' | 'size' | 'sort'>
+): Promise<Blob> {
+  // Build clean params object - filter out undefined and empty arrays
+  const queryParams: Record<string, unknown> = {}
+  
+  if (params?.q) {
+    queryParams.q = params.q
+  }
+  
+  // Only include array parameters if they have values
+  if (params?.regionIds && Array.isArray(params.regionIds) && params.regionIds.length > 0) {
+    queryParams.regionIds = params.regionIds
+  }
+  if (params?.classificationIds && Array.isArray(params.classificationIds) && params.classificationIds.length > 0) {
+    queryParams.classificationIds = params.classificationIds
+  }
+  if (params?.statusIds && Array.isArray(params.statusIds) && params.statusIds.length > 0) {
+    queryParams.statusIds = params.statusIds
+  }
+  if (params?.zoneIds && Array.isArray(params.zoneIds) && params.zoneIds.length > 0) {
+    queryParams.zoneIds = params.zoneIds
+  }
+
+  const response = await axiosInstance.get(
+    '/instructor/export',
+    {
+      params: queryParams,
+      // Custom params serializer to ensure arrays are sent as repeated params: param=value1&param=value2
+      paramsSerializer: (params) => {
+        const searchParams = new URLSearchParams()
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            if (Array.isArray(value)) {
+              // For arrays, append each value multiple times: param=value1&param=value2
+              value.forEach((item) => {
+                searchParams.append(key, String(item))
+              })
+            } else {
+              searchParams.append(key, String(value))
+            }
+          }
+        })
+        return searchParams.toString()
+      },
+      responseType: 'blob', // Important: set responseType to 'blob' for file downloads
+    }
+  )
+  return response.data
+}
+
+/**
+ * Create a new teacher
+ */
+export async function createTeacher(
+  data: CreateTeacherRequestDto
+): Promise<TeacherResponseDto> {
+  const response = await axiosInstance.post<ApiResponse<TeacherResponseDto>>(
+    '/teacher/register',
+    data
+  )
+  return response.data.data
+}
+
+/**
+ * List teachers with pagination and filters
+ */
+export async function listTeachers(
+  params?: ListAccountsParams
+): Promise<PageResponse<TeacherResponseDto>> {
+  // Build clean params object - filter out undefined and empty arrays
+  const queryParams: Record<string, unknown> = {}
+  
+  if (params?.q) {
+    queryParams.q = params.q
+  }
+  if (params?.page !== undefined) {
+    queryParams.page = params.page
+  }
+  if (params?.size !== undefined) {
+    queryParams.size = params.size
+  }
+  if (params?.sort) {
+    queryParams.sort = params.sort
+  }
+
+  const response = await axiosInstance.get<ApiResponse<PageResponse<TeacherResponseDto>>>(
+    '/teacher',
+    { params: queryParams }
+  )
+  return response.data.data
+}
+
+/**
+ * Get a single teacher by ID
+ */
+export async function getTeacherById(id: number): Promise<TeacherResponseDto> {
+  const response = await axiosInstance.get<ApiResponse<TeacherResponseDto>>(
+    `/teacher/${id}`
+  )
+  return response.data.data
+}
+
+/**
+ * Update an existing teacher
+ */
+export async function updateTeacher(
+  id: number,
+  data: UpdateTeacherRequestDto
+): Promise<TeacherResponseDto> {
+  const response = await axiosInstance.put<ApiResponse<TeacherResponseDto>>(
+    `/teacher/${id}`,
+    data
   )
   return response.data.data
 }

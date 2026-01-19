@@ -9,13 +9,12 @@ import { Card } from '@/shared/ui/card'
 import { DataTable } from '@/shared/components/DataTable'
 import { CustomPagination } from '@/shared/components/CustomPagination'
 import { debounce } from '@/shared/lib/debounce'
-import type { AdminAccount, ListAccountsParams } from '../../model/account-management.types'
-import { useAdminAccountsQuery } from '../../controller/queries'
+import type { TeacherAccount, ListAccountsParams } from '../../model/account-management.types'
+import { useTeacherAccountsQuery } from '../../controller/queries'
 import { LoadingState } from '@/shared/components/LoadingState'
 import { ErrorState } from '@/shared/components/ErrorState'
 import { ROUTES } from '@/shared/constants/routes'
-import { useAdminAccountColumns } from '../components/AdminAccountColumns'
-import { exportAdminsToExcel } from '../../model/account-management.service'
+import { useTeacherAccountColumns } from '../components/TeacherAccountColumns'
 
 /**
  * Table Content Component - Extracted to prevent Card re-renders
@@ -23,8 +22,8 @@ import { exportAdminsToExcel } from '../../model/account-management.service'
 interface TableContentProps {
   isLoading: boolean
   error: Error | string | undefined
-  adminAccounts: AdminAccount[]
-  columns: ReturnType<typeof useAdminAccountColumns>
+  teacherAccounts: TeacherAccount[]
+  columns: ReturnType<typeof useTeacherAccountColumns>
   handleGetHeaderClassName: (headerId: string) => string
   columnPinning: ColumnPinningState
   onColumnPinningChange: React.Dispatch<React.SetStateAction<ColumnPinningState>>
@@ -42,7 +41,7 @@ const TableContent = React.memo<TableContentProps>(
   ({
     isLoading,
     error,
-    adminAccounts,
+    teacherAccounts,
     columns,
     handleGetHeaderClassName,
     columnPinning,
@@ -65,9 +64,9 @@ const TableContent = React.memo<TableContentProps>(
       <>
         <div className="overflow-x-auto">
           <DataTable
-            data={adminAccounts}
+            data={teacherAccounts}
             columns={columns}
-            emptyMessage={t('accountManagement.noAdminAccountsFound')}
+            emptyMessage={t('accountManagement.noTeacherAccountsFound')}
             getHeaderClassName={handleGetHeaderClassName}
             enableRowSelection={true}
             enableColumnPinning={true}
@@ -91,10 +90,10 @@ const TableContent = React.memo<TableContentProps>(
 TableContent.displayName = 'TableContent'
 
 /**
- * Admin Account Management Page
- * Displays admin account management interface
+ * Teacher Account Management Page
+ * Displays teacher account management interface
  */
-export const AdminAccountManagementPage = () => {
+export const TeacherAccountManagementPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
@@ -109,7 +108,6 @@ export const AdminAccountManagementPage = () => {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = React.useState<string>('')
   const [page, setPage] = React.useState<number>(0)
   const [size, setSize] = React.useState<number>(20)
-  const [isExporting, setIsExporting] = React.useState<boolean>(false)
 
   // Debounce search query
   const debouncedSetSearch = React.useMemo(
@@ -142,10 +140,10 @@ export const AdminAccountManagementPage = () => {
     return params
   }, [debouncedSearchQuery, page, size])
 
-  // Fetch admins using React Query with debounced search and pagination
-  const { data, isLoading, error } = useAdminAccountsQuery(queryParams)
+  // Fetch teachers using React Query with debounced search and pagination
+  const { data, isLoading, error } = useTeacherAccountsQuery(queryParams)
 
-  const adminAccounts = React.useMemo(() => data?.items ?? [], [data?.items])
+  const teacherAccounts = React.useMemo(() => data?.items ?? [], [data?.items])
 
   // Extract pagination metadata
   const paginationData = React.useMemo(() => {
@@ -181,45 +179,12 @@ export const AdminAccountManagementPage = () => {
     setPage(0) // Reset to first page when size changes
   }, [])
 
-  const handleAddAdmin = React.useCallback(() => {
-    navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_CREATE_FULL)
+  const handleAddTeacher = React.useCallback(() => {
+    navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_CREATE_FULL)
   }, [navigate])
 
-  const handleDownload = React.useCallback(async () => {
-    try {
-      setIsExporting(true)
-
-      // Build export parameters from current search (excluding pagination)
-      const exportParams = {
-        q: debouncedSearchQuery || undefined,
-      }
-
-      // Call export API
-      const blob = await exportAdminsToExcel(exportParams)
-
-      // Create download link
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `admins_${new Date().toISOString().split('T')[0]}.xlsx`
-
-      // Trigger download
-      document.body.appendChild(link)
-      link.click()
-
-      // Cleanup
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
-    } catch (error) {
-      console.error('Error exporting admins:', error)
-      // TODO: Show error toast/notification
-    } finally {
-      setIsExporting(false)
-    }
-  }, [debouncedSearchQuery])
-
-  const handleDetailClick = React.useCallback((admin: AdminAccount) => {
-    navigate(`${ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL}/${admin.id}`)
+  const handleDetailClick = React.useCallback((teacher: TeacherAccount) => {
+    navigate(`${ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_FULL}/${teacher.id}`)
   }, [navigate])
 
   const handleGetHeaderClassName = React.useCallback((headerId: string) => {
@@ -227,7 +192,7 @@ export const AdminAccountManagementPage = () => {
     return 'text-left'
   }, [])
 
-  const columns = useAdminAccountColumns({
+  const columns = useTeacherAccountColumns({
     onDetailClick: handleDetailClick,
   })
 
@@ -239,27 +204,23 @@ export const AdminAccountManagementPage = () => {
           {/* Left side: Title and Description */}
           <div>
             <h1 className="text-xl font-semibold text-foreground mb-2">
-              {t('accountManagement.adminAccountManagement')}
+              {t('accountManagement.teacherAccountManagement')}
             </h1>
             <p className="text-xs text-muted-foreground">
-              {t('accountManagement.adminAccountManagementDescription')}
+              {t('accountManagement.teacherAccountManagementDescription')}
             </p>
           </div>
           {/* Right side: Action Buttons */}
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={handleDownload} disabled={isExporting}>
-              <Download className="h-4 w-4" />
-              {t('accountManagement.download')}
-            </Button>
-            <Button onClick={handleAddAdmin}>
+            <Button onClick={handleAddTeacher}>
               <Plus className="h-4 w-4" />
-              {t('accountManagement.newAdmin')}
+              {t('accountManagement.addNewTeacher')}
             </Button>
           </div>
         </div>
       </div>
     ),
-    [t, handleDownload, handleAddAdmin, isExporting]
+    [t, handleAddTeacher]
   )
 
   // Memoized search bar component - stable across re-renders
@@ -292,7 +253,7 @@ export const AdminAccountManagementPage = () => {
           <TableContent
             isLoading={isLoading}
             error={error || undefined}
-            adminAccounts={adminAccounts}
+            teacherAccounts={teacherAccounts}
             columns={columns}
             handleGetHeaderClassName={handleGetHeaderClassName}
             columnPinning={columnPinning}

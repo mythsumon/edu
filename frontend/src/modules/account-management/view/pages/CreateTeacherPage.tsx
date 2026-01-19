@@ -7,38 +7,38 @@ import { PageLayout } from '@/app/layout/PageLayout'
 import { Button } from '@/shared/ui/button'
 import { useToast } from '@/shared/ui/use-toast'
 import { ROUTES } from '@/shared/constants/routes'
-import { useCreateAdmin } from '../../controller/mutations'
-import { createAdminSchema, type CreateAdminFormData } from '../../model/account-management.schema'
+import { useCreateTeacher } from '../../controller/mutations'
+import { createTeacherSchema, type CreateTeacherFormData } from '../../model/account-management.schema'
 import { FormInputField } from '../components/FormInputField'
 import { FormPasswordField } from '../components/FormPasswordField'
 import { CollapsibleCard } from '../components/CollapsibleCard'
 
-export const AddAdminPage = () => {
+export const AddTeacherPage = () => {
   const { t } = useTranslation()
   const { toast } = useToast()
   const navigate = useNavigate()
-  const createAdminMutation = useCreateAdmin()
+  const createTeacherMutation = useCreateTeacher()
   const formRef = useRef<HTMLFormElement>(null)
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<CreateAdminFormData>({
-    resolver: zodResolver(createAdminSchema(t)),
+  } = useForm<CreateTeacherFormData>({
+    resolver: zodResolver(createTeacherSchema(t)),
     mode: 'onChange',
     defaultValues: {
       username: '',
-      password: 'admin123',
+      password: 'teacher123',
       name: '',
       email: '',
       phone: '',
     },
   })
 
-  const onSubmit = async (data: CreateAdminFormData) => {
+  const onSubmit = async (data: CreateTeacherFormData) => {
     try {
-      await createAdminMutation.mutateAsync({
+      await createTeacherMutation.mutateAsync({
         username: data.username,
         password: data.password,
         name: data.name,
@@ -47,10 +47,10 @@ export const AddAdminPage = () => {
       })
       toast({
         title: t('common.success'),
-        description: t('accountManagement.createAdminSuccess'),
+        description: t('accountManagement.createTeacherSuccess'),
         variant: 'success',
       })
-      navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL)
+      navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_FULL)
     } catch (error) {
       // Extract error message from the error object
       const errorMessage =
@@ -58,19 +58,19 @@ export const AddAdminPage = () => {
           ? error.message
           : typeof error === 'object' && error !== null && 'message' in error
             ? String(error.message)
-            : t('accountManagement.createAdminError')
+            : t('accountManagement.createTeacherError')
 
       toast({
         title: t('common.error'),
         description: errorMessage,
         variant: 'error',
       })
-      console.error('Failed to create admin:', error)
+      console.error('Failed to create teacher:', error)
     }
   }
 
   const handleCancel = () => {
-    navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL)
+    navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_FULL)
   }
 
   const handleFormSubmit = () => {
@@ -79,8 +79,8 @@ export const AddAdminPage = () => {
 
   return (
     <PageLayout
-      title={t('accountManagement.addNewAdmin')}
-      customBreadcrumbRoot={{ path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL, label: t('accountManagement.admins') }}
+      title={t('accountManagement.addNewTeacher')}
+      customBreadcrumbRoot={{ path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_FULL, label: t('accountManagement.teachers') }}
       actions={
         <>
           <Button
@@ -96,7 +96,7 @@ export const AddAdminPage = () => {
             onClick={handleFormSubmit}
             disabled={isSubmitting}
           >
-            {isSubmitting ? t('accountManagement.creating') : t('accountManagement.createAdmin')}
+            {isSubmitting ? t('accountManagement.creating') : t('accountManagement.createTeacher')}
           </Button>
         </>
       }
@@ -110,7 +110,7 @@ export const AddAdminPage = () => {
             defaultExpanded={true}
           >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Admin ID / Username */}
+              {/* Teacher ID / Username */}
               <FormInputField
                 id="username"
                 label={t('accountManagement.username')}

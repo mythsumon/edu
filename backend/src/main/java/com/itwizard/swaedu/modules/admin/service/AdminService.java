@@ -6,6 +6,9 @@ import com.itwizard.swaedu.modules.admin.dto.request.RegisterAdminRequestDto;
 import com.itwizard.swaedu.modules.admin.dto.response.AdminResponseDto;
 import com.itwizard.swaedu.util.PageResponse;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 public interface AdminService {
     AdminResponseDto registerAdmin(RegisterAdminRequestDto request);
 
@@ -18,4 +21,6 @@ public interface AdminService {
     AdminResponseDto patchAdmin(Long userId, AdminPatchDto request);
 
     void deleteAdmin(Long userId);
+
+    void exportAdminsToExcel(OutputStream outputStream, String q) throws IOException;
 }

@@ -12,9 +12,16 @@ import { ProgramListPage, ProgramCreatePage, ProgramEditPage } from '@/modules/p
 import {
   AdminAccountManagementPage,
   AddAdminPage,
+  AdminDetailPage,
+  EditAdminPage,
   InstructorAccountManagementPage,
   AddInstructorPage,
   InstructorDetailPage,
+  EditInstructorPage,
+  TeacherAccountManagementPage,
+  AddTeacherPage,
+  TeacherDetailPage,
+  EditTeacherPage,
 } from '@/modules/account-management'
 import { TrainingPage, TrainingCreatePage } from '@/modules/training'
 
@@ -103,6 +110,14 @@ export const protectedRoutes: RouteObject[] = [
                         path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_CREATE,
                         element: <AddAdminPage />,
                       },
+                      {
+                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_DETAIL,
+                        element: <AdminDetailPage />,
+                      },
+                      {
+                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_EDIT,
+                        element: <EditAdminPage />,
+                      },
                     ],
                   },
                   {
@@ -117,8 +132,33 @@ export const protectedRoutes: RouteObject[] = [
                         element: <AddInstructorPage />,
                       },
                       {
+                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_EDIT,
+                        element: <EditInstructorPage />,
+                      },
+                      {
                         path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_DETAIL,
                         element: <InstructorDetailPage />,
+                      },
+                    ],
+                  },
+                  {
+                    path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS,
+                    children: [
+                      {
+                        index: true,
+                        element: <TeacherAccountManagementPage />,
+                      },
+                      {
+                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_CREATE,
+                        element: <AddTeacherPage />,
+                      },
+                      {
+                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_EDIT,
+                        element: <EditTeacherPage />,
+                      },
+                      {
+                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_DETAIL,
+                        element: <TeacherDetailPage />,
                       },
                     ],
                   },
