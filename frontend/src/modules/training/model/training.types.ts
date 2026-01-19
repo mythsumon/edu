@@ -101,6 +101,33 @@ export interface TrainingApplicationItem {
 }
 
 /**
+ * Training Session Role Option
+ */
+export interface TrainingSessionRoleOption {
+  role: "mainLecturer" | "assistantTeacher"
+  status?: "confirmed" | "unconfirmed" | "applied"
+  isSelected?: boolean
+  isDisabled?: boolean
+}
+
+/**
+ * Training Session for Application (for apply for lecture table)
+ */
+export interface TrainingSessionForApplication {
+  id: number
+  educationId: string
+  institutionName: string
+  gradeAndClass: string
+  trainingName: string
+  region: string
+  period: {
+    startDate: string
+    endDate: string
+  }
+  roles: TrainingSessionRoleOption[]
+}
+
+/**
  * List Schedules Query Parameters
  */
 export interface ListSchedulesParams {

@@ -577,6 +577,34 @@
         "atmosphere": "atmosphere",
         "rejectDelete": "Reject/Delete"
       }
+    },
+    "apply": {
+      "title": "Apply for a lecture",
+      "description": "Apply to teach at the training session you are recruiting for.",
+      "noData": "No training sessions found",
+      "noTrainingAvailable": "There are no training courses available for application.",
+      "noTrainingAvailableDescription": "",
+      "institutionName": "Name of educational institution",
+      "gradeAndClass": "Grade-Class",
+      "trainingName": "Training name",
+      "region": "region",
+      "period": "period",
+      "select": "select",
+      "educationId": "Education ID",
+      "mainLecturer": "Main lecturer",
+      "assistantTeacher": "Assistant teacher",
+      "applyForMainLecturer": "Apply for a main lecturer position",
+      "confirmed": "confirmed",
+      "unconfirmed": "Unconfirmed",
+      "stats": {
+        "entire": "entire",
+        "applicationAvailable": "Application available",
+        "deadline": "Deadline"
+      },
+      "tabs": {
+        "availableForApplication": "Available for application",
+        "deadline": "Deadline"
+      }
     }
   }
 }

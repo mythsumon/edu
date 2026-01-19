@@ -4,4 +4,5 @@ export { ConfirmedScheduleListPage } from './view/pages/ConfirmedScheduleListPag
 export { OngoingTrainingListPage } from './view/pages/OngoingTrainingListPage'
 export { CompletedTrainingListPage } from './view/pages/CompletedTrainingListPage'
 export { TrainingApplicationListPage } from './view/pages/TrainingApplicationListPage'
+export { ApplyForLectureListPage } from './view/pages/ApplyForLectureListPage'
 export { useInstructorScheduleListQuery } from './controller/queries'

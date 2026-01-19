@@ -577,6 +577,34 @@
         "atmosphere": "분위기",
         "rejectDelete": "거부/삭제"
       }
+    },
+    "apply": {
+      "title": "강의 신청",
+      "description": "모집 중인 교육 세션에 강의를 신청하세요.",
+      "noData": "교육 세션을 찾을 수 없습니다",
+      "noTrainingAvailable": "신청 가능한 교육 과정이 없습니다.",
+      "noTrainingAvailableDescription": "",
+      "institutionName": "교육 기관명",
+      "gradeAndClass": "학년-반",
+      "trainingName": "교육명",
+      "region": "지역",
+      "period": "기간",
+      "select": "선택",
+      "educationId": "교육 ID",
+      "mainLecturer": "주강사",
+      "assistantTeacher": "보조 교사",
+      "applyForMainLecturer": "주강사 신청",
+      "confirmed": "확정",
+      "unconfirmed": "미확정",
+      "stats": {
+        "entire": "전체",
+        "applicationAvailable": "신청 가능",
+        "deadline": "마감"
+      },
+      "tabs": {
+        "availableForApplication": "신청 가능",
+        "deadline": "마감"
+      }
     }
   }
 }
