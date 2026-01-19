@@ -45,6 +45,7 @@ export const TeacherDetailPage = () => {
         path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_FULL,
         label: t("accountManagement.teachers"),
       }}
+      customBreadcrumbLast={teacher.name}
       actions={
         <>
           <Button variant="outline" onClick={handleBack}>
@@ -68,7 +69,7 @@ export const TeacherDetailPage = () => {
             {/* Top row: ID and Status pills */}
             <div className="flex items-center gap-2">
               <div className="inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium bg-gray-100 text-gray-700">
-                {teacher.id}
+                {teacher.teacherId || teacher.id}
               </div>
               <div
                 className={cn(
@@ -117,7 +118,7 @@ export const TeacherDetailPage = () => {
                     {t("accountManagement.teacherId")}
                   </label>
                   <p className="mt-1 text-sm text-foreground">
-                    {teacher.id}
+                    {teacher.teacherId || teacher.id}
                   </p>
                 </div>
 

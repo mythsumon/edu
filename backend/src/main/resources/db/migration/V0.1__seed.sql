@@ -253,8 +253,9 @@ VALUES ('teacher-a',
         TRUE)
 ON CONFLICT (username) DO NOTHING;
 -- Insert teacher profile
-INSERT INTO teachers (user_id, name, email, phone)
+INSERT INTO teachers (user_id, teacher_id, name, email, phone)
 VALUES ((SELECT id FROM users WHERE username = 'teacher-a'),
+        'TID' || (SELECT id FROM users WHERE username = 'teacher-a'),
         'TeacherA',
         'teachera@example.com',
         '+1234567890')

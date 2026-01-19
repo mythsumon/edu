@@ -50,20 +50,20 @@ export const useTeacherAccountColumns = ({
         meta: { width: 50 },
       },
       {
-        accessorKey: 'id',
+        accessorKey: 'teacherId',
         header: () => (
           <div style={{ width: '120px', minWidth: '120px', maxWidth: '120px' }}>
             {t('accountManagement.teacherId')}
           </div>
         ),
         cell: ({ row }) => {
-          const id = row.getValue('id') as number | undefined
+          const teacherId = row.getValue('teacherId') as string | undefined
           return (
             <div
               className="font-medium"
               style={{ width: '120px', minWidth: '120px', maxWidth: '120px' }}
             >
-              {id || '-'}
+              {teacherId || '-'}
             </div>
           )
         },

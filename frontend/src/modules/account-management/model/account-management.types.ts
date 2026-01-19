@@ -35,6 +35,7 @@ export interface InstructorAccount {
  */
 export interface TeacherAccount {
   id: number
+  teacherId?: string
   name: string
   username: string
   email?: string
@@ -82,6 +83,7 @@ export interface InstructorDetail {
  */
 export interface TeacherDetail {
   id: number
+  teacherId?: string
   username: string
   name: string
   email?: string
@@ -126,6 +128,7 @@ export interface InstructorResponseDto {
 
 export interface TeacherResponseDto {
   userId: number
+  teacherId?: string
   username: string
   name: string
   email?: string

@@ -99,6 +99,7 @@ export function mapInstructorDetail(dto: InstructorResponseDto): InstructorDetai
 export function mapTeacherAccount(dto: TeacherResponseDto): TeacherAccount {
   return {
     id: dto.userId,
+    teacherId: dto.teacherId,
     name: dto.name,
     username: dto.username,
     email: dto.email,
@@ -119,6 +120,7 @@ export function mapTeacherAccountList(dtos: TeacherResponseDto[]): TeacherAccoun
 export function mapTeacherDetail(dto: TeacherResponseDto): TeacherDetail {
   return {
     id: dto.userId,
+    teacherId: dto.teacherId,
     username: dto.username,
     name: dto.name,
     email: dto.email,

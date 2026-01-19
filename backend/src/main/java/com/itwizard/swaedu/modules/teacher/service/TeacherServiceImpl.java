@@ -64,6 +64,7 @@ public class TeacherServiceImpl implements TeacherService {
         // Create teacher profile
         Teacher teacher = new Teacher();
         teacher.setUser(savedUser);
+        teacher.setTeacherId("TID" + savedUser.getId());
         teacher.setName(request.getName());
         teacher.setEmail(request.getEmail());
         teacher.setPhone(request.getPhone());
@@ -126,7 +127,7 @@ public class TeacherServiceImpl implements TeacherService {
                     int cellNum = 0;
                     
                     // Teacher ID
-                    row.createCell(cellNum++).setCellValue(teacher.getUserId() != null ? String.valueOf(teacher.getUserId()) : "");
+                    row.createCell(cellNum++).setCellValue(teacher.getTeacherId() != null ? teacher.getTeacherId() : "");
                     // Name
                     row.createCell(cellNum++).setCellValue(teacher.getName() != null ? teacher.getName() : "");
                     // Username

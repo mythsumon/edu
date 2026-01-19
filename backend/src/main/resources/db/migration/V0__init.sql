@@ -100,6 +100,7 @@ CREATE INDEX IF NOT EXISTS idx_admins_phone ON admins(phone);
 -- Teacher table
 CREATE TABLE IF NOT EXISTS teachers (
     user_id BIGINT PRIMARY KEY,
+    teacher_id VARCHAR(255) UNIQUE,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255),
     phone VARCHAR(50),
@@ -109,6 +110,7 @@ CREATE TABLE IF NOT EXISTS teachers (
 -- Create indexes for teachers table
 CREATE INDEX IF NOT EXISTS idx_teachers_email ON teachers(email);
 CREATE INDEX IF NOT EXISTS idx_teachers_phone ON teachers(phone);
+CREATE INDEX IF NOT EXISTS idx_teachers_teacher_id ON teachers(teacher_id);
 
 -- Instructors table
 CREATE TABLE IF NOT EXISTS instructors (

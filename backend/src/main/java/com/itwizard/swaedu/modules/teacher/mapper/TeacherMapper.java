@@ -28,6 +28,7 @@ public class TeacherMapper {
         User user = teacher.getUser();
         return TeacherResponseDto.builder()
                 .userId(teacher.getUserId())
+                .teacherId(teacher.getTeacherId())
                 .username(user != null ? user.getUsername() : null)
                 .name(teacher.getName())
                 .email(teacher.getEmail())
