@@ -85,12 +85,30 @@ public class AdminServiceImpl implements AdminService {
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with userId: " + userId));
         return AdminMapper.toResponseDto(admin);
     }
+    
+    @Override
+    public AdminResponseDto getAdminByUsername(String username) {
+        Admin admin = adminRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found with username: " + username));
+        return AdminMapper.toResponseDto(admin);
+    }
 
     @Override
     @Transactional
     public AdminResponseDto updateAdmin(Long userId, AdminUpdateDto request) {
         Admin admin = adminRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with userId: " + userId));
+        
+        AdminMapper.updateEntityFromDto(admin, request);
+        Admin updatedAdmin = adminRepository.save(admin);
+        return AdminMapper.toResponseDto(updatedAdmin);
+    }
+    
+    @Override
+    @Transactional
+    public AdminResponseDto updateAdminByUsername(String username, AdminUpdateDto request) {
+        Admin admin = adminRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found with username: " + username));
         
         AdminMapper.updateEntityFromDto(admin, request);
         Admin updatedAdmin = adminRepository.save(admin);

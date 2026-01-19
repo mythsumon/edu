@@ -7,8 +7,8 @@ import { PageLayout } from '@/app/layout/PageLayout'
 import { Button } from '@/shared/ui/button'
 import { useToast } from '@/shared/ui/use-toast'
 import { ROUTES } from '@/shared/constants/routes'
-import { useUpdateAdmin } from '../../controller/mutations'
-import { useAdminDetailQuery } from '../../controller/queries'
+import { useUpdateAdminByUsername } from '../../controller/mutations'
+import { useAdminDetailByUsernameQuery } from '../../controller/queries'
 import { updateAdminSchema, type UpdateAdminFormData } from '../../model/account-management.schema'
 import { LoadingState } from '@/shared/components/LoadingState'
 import { ErrorState } from '@/shared/components/ErrorState'
@@ -21,12 +21,12 @@ export const EditAdminPage = () => {
   const { t } = useTranslation()
   const { toast } = useToast()
   const navigate = useNavigate()
-  const { id } = useParams<{ id: string }>()
-  const adminId = id ? parseInt(id, 10) : 0
-  const updateAdminMutation = useUpdateAdmin()
+  const { username } = useParams<{ username: string }>()
+  const adminUsername = username || ''
+  const updateAdminMutation = useUpdateAdminByUsername()
   const formRef = useRef<HTMLFormElement>(null)
 
-  const { data: admin, isLoading: isLoadingAdmin, error: adminError } = useAdminDetailQuery(adminId)
+  const { data: admin, isLoading: isLoadingAdmin, error: adminError } = useAdminDetailByUsernameQuery(adminUsername)
 
   const {
     register,
@@ -57,7 +57,7 @@ export const EditAdminPage = () => {
   const onSubmit = async (data: UpdateAdminFormData) => {
     try {
       await updateAdminMutation.mutateAsync({
-        id: adminId,
+        username: adminUsername,
         data: {
           name: data.name,
           email: data.email || undefined,
@@ -69,7 +69,7 @@ export const EditAdminPage = () => {
         description: t('accountManagement.updateAdminSuccess'),
         variant: 'success',
       })
-      navigate(`${ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL}/${adminId}`)
+      navigate(`${ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL}/${encodeURIComponent(adminUsername)}`)
     } catch (error) {
       // Extract error message from the error object
       const errorMessage =
@@ -89,7 +89,7 @@ export const EditAdminPage = () => {
   }
 
   const handleCancel = () => {
-    navigate(`${ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL}/${adminId}`)
+    navigate(`${ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL}/${encodeURIComponent(adminUsername)}`)
   }
 
   const handleFormSubmit = () => {

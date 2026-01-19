@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { accountManagementQueryKeys } from './queryKeys'
-import { listAdmins, listInstructors, listTeachers, getAdminById, getInstructorById, getTeacherById } from '../model/account-management.service'
+import { listAdmins, listInstructors, listTeachers, getAdminById, getAdminByUsername, getInstructorById, getTeacherById } from '../model/account-management.service'
 import {
   mapAdminAccountList,
   mapInstructorAccountList,
@@ -60,6 +60,20 @@ export const useAdminDetailQuery = (id: number) => {
       return mapAdminDetail(dto)
     },
     enabled: !!id,
+  })
+}
+
+/**
+ * Query hook for fetching a single admin by username
+ */
+export const useAdminDetailByUsernameQuery = (username: string) => {
+  return useQuery({
+    queryKey: accountManagementQueryKeys.adminDetailByUsername(username),
+    queryFn: async () => {
+      const dto = await getAdminByUsername(username)
+      return mapAdminDetail(dto)
+    },
+    enabled: !!username,
   })
 }
 

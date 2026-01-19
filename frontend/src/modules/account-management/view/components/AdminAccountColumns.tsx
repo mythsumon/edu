@@ -50,26 +50,6 @@ export const useAdminAccountColumns = ({
         meta: { width: 50 },
       },
       {
-        accessorKey: 'id',
-        header: () => (
-          <div style={{ width: '120px', minWidth: '120px', maxWidth: '120px' }}>
-            {t('accountManagement.adminId')}
-          </div>
-        ),
-        cell: ({ row }) => {
-          const id = row.getValue('id') as number | undefined
-          return (
-            <div
-              className="font-medium"
-              style={{ width: '120px', minWidth: '120px', maxWidth: '120px' }}
-            >
-              {id || '-'}
-            </div>
-          )
-        },
-        meta: { width: 120 },
-      },
-      {
         accessorKey: 'name',
         header: () => (
           <div style={{ width: '200px', minWidth: '200px', maxWidth: '200px' }}>

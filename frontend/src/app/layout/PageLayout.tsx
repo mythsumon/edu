@@ -46,6 +46,7 @@ interface PageLayoutProps {
   badge?: ReactNode;
   breadcrumbRoot?: string; // Root segment for breadcrumb (e.g., "master-code-setup") or "/" for "Home > [last segment]"
   customBreadcrumbRoot?: CustomBreadcrumbRoot; // Custom root path and label (e.g., { path: "/admin/dashboard", label: "Dashboard" })
+  customBreadcrumbLast?: string; // Custom label for the last breadcrumb item (overrides auto-generated from URL)
   disableBreadcrumb?: boolean; // If true, breadcrumb will not be displayed
   children?: ReactNode;
 }
@@ -56,6 +57,7 @@ export const PageLayout = ({
   badge,
   breadcrumbRoot,
   customBreadcrumbRoot,
+  customBreadcrumbLast,
   disableBreadcrumb,
   children,
 }: PageLayoutProps) => {
@@ -79,12 +81,14 @@ export const PageLayout = ({
 
       const lastSegment = pathSegments[pathSegments.length - 1];
       const lastTranslationKey = routeSegmentTranslationMap[lastSegment];
-      const displayName = lastTranslationKey
-        ? t(lastTranslationKey)
-        : lastSegment
-            .split("-")
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(" ");
+      const displayName = customBreadcrumbLast
+        ? customBreadcrumbLast
+        : lastTranslationKey
+          ? t(lastTranslationKey)
+          : lastSegment
+              .split("-")
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(" ");
 
       return [
         {
@@ -202,7 +206,7 @@ export const PageLayout = ({
         key: `${segment}-${index}`,
       };
     });
-  }, [location.pathname, breadcrumbRoot, customBreadcrumbRoot, t]);
+  }, [location.pathname, breadcrumbRoot, customBreadcrumbRoot, customBreadcrumbLast, t]);
 
 
   return (

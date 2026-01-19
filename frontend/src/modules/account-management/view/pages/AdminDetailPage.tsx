@@ -8,7 +8,7 @@ import { LoadingState } from "@/shared/components/LoadingState";
 import { ErrorState } from "@/shared/components/ErrorState";
 import { cn } from "@/shared/lib/cn";
 import { ROUTES } from "@/shared/constants/routes";
-import { useAdminDetailQuery } from "../../controller/queries";
+import { useAdminDetailByUsernameQuery } from "../../controller/queries";
 
 /**
  * Admin Detail Page
@@ -17,14 +17,14 @@ import { useAdminDetailQuery } from "../../controller/queries";
 export const AdminDetailPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
-  const adminId = id ? parseInt(id, 10) : 0;
+  const { username } = useParams<{ username: string }>();
+  const adminUsername = username || '';
 
   const {
     data: admin,
     isLoading,
     error,
-  } = useAdminDetailQuery(adminId);
+  } = useAdminDetailByUsernameQuery(adminUsername);
 
   const handleBack = () => {
     navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL);
@@ -45,6 +45,7 @@ export const AdminDetailPage = () => {
         path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL,
         label: t("accountManagement.admins"),
       }}
+      customBreadcrumbLast={admin.name}
       actions={
         <>
           <Button variant="outline" onClick={handleBack}>
@@ -53,7 +54,7 @@ export const AdminDetailPage = () => {
           </Button>
           <Button
             variant="default"
-            onClick={() => navigate(`${ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL}/${adminId}/edit`)}
+            onClick={() => navigate(`${ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL}/${encodeURIComponent(adminUsername)}/edit`)}
           >
             <Edit className="h-4 w-4" />
             {t('common.edit')}
@@ -65,11 +66,8 @@ export const AdminDetailPage = () => {
         {/* Summary Header Card */}
         <Card className="rounded-2xl border border-border/20 bg-card shadow-sm">
           <div className="flex flex-col space-y-4">
-            {/* Top row: ID and Status pills */}
+            {/* Top row: Status pill */}
             <div className="flex items-center gap-2">
-              <div className="inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium bg-gray-100 text-gray-700">
-                {admin.id}
-              </div>
               <div
                 className={cn(
                   "inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium text-white",
@@ -112,15 +110,6 @@ export const AdminDetailPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Left Column */}
               <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    {t("accountManagement.adminId")}
-                  </label>
-                  <p className="mt-1 text-sm text-foreground">
-                    {admin.id}
-                  </p>
-                </div>
-
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
                     {t("accountManagement.account")}

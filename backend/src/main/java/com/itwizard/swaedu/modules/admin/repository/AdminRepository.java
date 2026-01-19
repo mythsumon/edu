@@ -14,6 +14,9 @@ import java.util.stream.Stream;
 @Repository
 public interface AdminRepository extends JpaRepository<Admin, Long> {
     Optional<Admin> findByUserId(Long userId);
+    
+    @Query("SELECT a FROM Admin a JOIN a.user u WHERE u.username = :username")
+    Optional<Admin> findByUsername(@Param("username") String username);
 
     @Query("SELECT a FROM Admin a JOIN a.user u " +
            "WHERE (:q IS NULL OR :q = '' OR " +

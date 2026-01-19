@@ -150,6 +150,16 @@ export async function getAdminById(id: number): Promise<AdminResponseDto> {
 }
 
 /**
+ * Get a single admin by username
+ */
+export async function getAdminByUsername(username: string): Promise<AdminResponseDto> {
+  const response = await axiosInstance.get<ApiResponse<AdminResponseDto>>(
+    `/admin/username/${encodeURIComponent(username)}`
+  )
+  return response.data.data
+}
+
+/**
  * Update an existing admin
  */
 export async function updateAdmin(
@@ -158,6 +168,20 @@ export async function updateAdmin(
 ): Promise<AdminResponseDto> {
   const response = await axiosInstance.put<ApiResponse<AdminResponseDto>>(
     `/admin/${id}`,
+    data
+  )
+  return response.data.data
+}
+
+/**
+ * Update an existing admin by username
+ */
+export async function updateAdminByUsername(
+  username: string,
+  data: UpdateAdminRequestDto
+): Promise<AdminResponseDto> {
+  const response = await axiosInstance.put<ApiResponse<AdminResponseDto>>(
+    `/admin/username/${encodeURIComponent(username)}`,
     data
   )
   return response.data.data

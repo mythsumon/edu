@@ -219,7 +219,7 @@ export const AdminAccountManagementPage = () => {
   }, [debouncedSearchQuery])
 
   const handleDetailClick = React.useCallback((admin: AdminAccount) => {
-    navigate(`${ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL}/${admin.id}`)
+    navigate(`${ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL}/${encodeURIComponent(admin.username)}`)
   }, [navigate])
 
   const handleGetHeaderClassName = React.useCallback((headerId: string) => {

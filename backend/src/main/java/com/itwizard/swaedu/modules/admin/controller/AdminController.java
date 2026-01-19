@@ -68,6 +68,24 @@ public class AdminController {
                 .headers(headers)
                 .body(responseBody);
     }
+    
+    // GET /api/v1/admin/username/{username} — get admin by username
+    // IMPORTANT: This must be defined BEFORE /{userId} to avoid route conflicts
+    @GetMapping("/username/{username}")
+    public ResponseEntity<ApiResponse> getAdminByUsername(@PathVariable String username) {
+        AdminResponseDto response = adminService.getAdminByUsername(username);
+        return ResponseUtil.success("Admin retrieved successfully", response);
+    }
+    
+    // PUT /api/v1/admin/username/{username} — update admin by username
+    // IMPORTANT: This must be defined BEFORE /{userId} to avoid route conflicts
+    @PutMapping("/username/{username}")
+    public ResponseEntity<ApiResponse> updateAdminByUsername(
+            @PathVariable String username,
+            @Valid @RequestBody AdminUpdateDto request) {
+        AdminResponseDto response = adminService.updateAdminByUsername(username, request);
+        return ResponseUtil.success("Admin updated successfully", response);
+    }
 
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponse> getAdminById(@PathVariable Long userId) {
