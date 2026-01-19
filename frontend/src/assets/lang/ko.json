@@ -122,6 +122,7 @@
     "ongoingTraining": "진행 중인 교육",
     "completedTraining": "완료된 교육",
     "applyForLecture": "강의 신청",
+    "trainingScheduledToOpen": "개설 예정 교육",
     "trainingsIAppliedFor": "신청한 교육"
   },
   "errors": {
@@ -604,6 +605,21 @@
       "tabs": {
         "availableForApplication": "신청 가능",
         "deadline": "마감"
+      }
+    },
+    "upcoming": {
+      "title": "개설 예정 교육",
+      "description": "예정된 교육 프로그램을 확인하고 신청하세요.",
+      "noData": "예정된 교육 세션을 찾을 수 없습니다",
+      "noUpcomingSessions": "예정된 교육 세션이 없습니다.",
+      "educationId": "교육 ID",
+      "trainingName": "교육명",
+      "gradeAndClass": "학년-반",
+      "institutionName": "교육 기관명",
+      "region": "지역",
+      "period": "기간",
+      "stats": {
+        "entire": "전체"
       }
     }
   }

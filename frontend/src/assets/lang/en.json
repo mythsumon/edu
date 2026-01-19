@@ -122,6 +122,7 @@
     "ongoingTraining": "Ongoing training",
     "completedTraining": "Completed training",
     "applyForLecture": "Apply for lecture",
+    "trainingScheduledToOpen": "Training scheduled to open",
     "trainingsIAppliedFor": "The trainings I applied for"
   },
   "errors": {
@@ -604,6 +605,21 @@
       "tabs": {
         "availableForApplication": "Available for application",
         "deadline": "Deadline"
+      }
+    },
+    "upcoming": {
+      "title": "Training scheduled to open",
+      "description": "Check out and apply for upcoming training programs.",
+      "noData": "No upcoming training sessions found",
+      "noUpcomingSessions": "There are no upcoming training sessions.",
+      "educationId": "Education ID",
+      "trainingName": "Training name",
+      "gradeAndClass": "Grade-Class",
+      "institutionName": "Name of educational institution",
+      "region": "region",
+      "period": "period",
+      "stats": {
+        "entire": "entire"
       }
     }
   }

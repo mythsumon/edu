@@ -17,7 +17,7 @@ import {
   InstructorManagementPage,
 } from '@/modules/reference-information-management'
 import { SettingsAndUserManagementPage } from '@/modules/system-management'
-import { InstructorScheduleListPage, ConfirmedScheduleListPage, OngoingTrainingListPage, CompletedTrainingListPage, TrainingApplicationListPage, ApplyForLectureListPage } from '@/modules/training'
+import { InstructorScheduleListPage, ConfirmedScheduleListPage, OngoingTrainingListPage, CompletedTrainingListPage, TrainingApplicationListPage, ApplyForLectureListPage, UpcomingTrainingListPage } from '@/modules/training'
 import { MasterCodeSetupPage, MasterCodeCreatePage } from '@/modules/master-code-setup'
 import { CommonCodePage } from '@/modules/common-code'
 import { InstitutionManagementPage, InstitutionCreatePage, InstitutionEditPage } from '@/modules/institution'
@@ -230,6 +230,10 @@ export const protectedRoutes: RouteObject[] = [
               {
                 path: ROUTES.INSTRUCTOR_APPLY_BASE,
                 children: [
+                  {
+                    path: 'upcoming',
+                    element: <UpcomingTrainingListPage />,
+                  },
                   {
                     path: 'open',
                     element: <ApplyForLectureListPage />,

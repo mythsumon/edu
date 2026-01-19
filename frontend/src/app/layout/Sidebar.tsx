@@ -166,6 +166,11 @@ export const Sidebar = () => {
         titleKey: "sidebar.applyForLecture",
         items: [
           {
+            nameKey: "sidebar.trainingScheduledToOpen",
+            href: ROUTES.INSTRUCTOR_APPLY_UPCOMING_FULL,
+            icon: BookOpen,
+          },
+          {
             nameKey: "sidebar.applyForLecture",
             href: ROUTES.INSTRUCTOR_APPLY_OPEN_FULL,
             icon: BookOpen,
