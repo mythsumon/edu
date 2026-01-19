@@ -29,6 +29,10 @@ import {
   AddInstructorPage,
   InstructorDetailPage,
   EditInstructorPage,
+  TeacherAccountManagementPage,
+  AddTeacherPage,
+  TeacherDetailPage,
+  EditTeacherPage,
 } from '@/modules/account-management'
 
 export const protectedRoutes: RouteObject[] = [
@@ -191,6 +195,27 @@ export const protectedRoutes: RouteObject[] = [
                       {
                         path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_DETAIL,
                         element: <InstructorDetailPage />,
+                      },
+                    ],
+                  },
+                  {
+                    path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS,
+                    children: [
+                      {
+                        index: true,
+                        element: <TeacherAccountManagementPage />,
+                      },
+                      {
+                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_CREATE,
+                        element: <AddTeacherPage />,
+                      },
+                      {
+                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_EDIT,
+                        element: <EditTeacherPage />,
+                      },
+                      {
+                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_DETAIL,
+                        element: <TeacherDetailPage />,
                       },
                     ],
                   },

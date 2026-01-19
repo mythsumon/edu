@@ -139,3 +139,46 @@ export const updateInstructorSchema = (t: (key: string) => string) => z.object({
 })
 
 export type UpdateInstructorFormData = z.infer<ReturnType<typeof updateInstructorSchema>>
+
+export const createTeacherSchema = (t: (key: string) => string) => z.object({
+  username: z
+    .string()
+    .nonempty(t('accountManagement.validation.usernameRequired'))
+    .max(50, t('accountManagement.validation.usernameMaxLength')),
+  password: z
+    .string()
+    .min(6, t('accountManagement.validation.passwordMinLength')),
+  name: z
+    .string()
+    .min(1, t('accountManagement.validation.nameRequired'))
+    .max(255, t('accountManagement.validation.nameMaxLength')),
+  email: z
+    .string()
+    .refine((val) => val === '' || z.string().email().safeParse(val).success, {
+      message: t('accountManagement.validation.emailInvalid'),
+    })
+    .optional(),
+  phone: z
+    .string()
+    .optional(),
+})
+
+export type CreateTeacherFormData = z.infer<ReturnType<typeof createTeacherSchema>>
+
+export const updateTeacherSchema = (t: (key: string) => string) => z.object({
+  name: z
+    .string()
+    .min(1, t('accountManagement.validation.nameRequired'))
+    .max(255, t('accountManagement.validation.nameMaxLength')),
+  email: z
+    .string()
+    .refine((val) => val === '' || z.string().email().safeParse(val).success, {
+      message: t('accountManagement.validation.emailInvalid'),
+    })
+    .optional(),
+  phone: z
+    .string()
+    .optional(),
+})
+
+export type UpdateTeacherFormData = z.infer<ReturnType<typeof updateTeacherSchema>>

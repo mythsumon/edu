@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { accountManagementQueryKeys } from './queryKeys'
-import { createAdmin, createInstructor, updateInstructor } from '../model/account-management.service'
-import type { CreateAdminRequestDto, CreateInstructorRequestDto, UpdateInstructorRequestDto } from '../model/account-management.types'
+import { createAdmin, createInstructor, createTeacher, updateInstructor, updateTeacher } from '../model/account-management.service'
+import type { CreateAdminRequestDto, CreateInstructorRequestDto, UpdateInstructorRequestDto, CreateTeacherRequestDto, UpdateTeacherRequestDto } from '../model/account-management.types'
 
 /**
  * Mutation hook for creating a new admin
@@ -48,6 +48,39 @@ export const useUpdateInstructor = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.instructors() })
       queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.detail(variables.id) })
+    },
+  })
+}
+
+/**
+ * Mutation hook for creating a new teacher
+ */
+export const useCreateTeacher = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: async (data: CreateTeacherRequestDto) => {
+      return await createTeacher(data)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.teachers() })
+    },
+  })
+}
+
+/**
+ * Mutation hook for updating an existing teacher
+ */
+export const useUpdateTeacher = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: UpdateTeacherRequestDto }) => {
+      return await updateTeacher(id, data)
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.teachers() })
+      queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.teacherDetail(variables.id) })
     },
   })
 }

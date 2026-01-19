@@ -30,6 +30,17 @@ export interface InstructorAccount {
 }
 
 /**
+ * Teacher account data for table display
+ */
+export interface TeacherAccount {
+  id: number
+  name: string
+  username: string
+  email?: string
+  phoneNumber?: string
+}
+
+/**
  * Admin detail data for detail page display
  */
 export interface AdminDetail {
@@ -65,6 +76,19 @@ export interface InstructorDetail {
 }
 
 /**
+ * Teacher detail data for detail page display
+ */
+export interface TeacherDetail {
+  id: number
+  username: string
+  name: string
+  email?: string
+  phone?: string
+  enabled?: boolean
+  profilePhoto?: string
+}
+
+/**
  * Backend DTOs
  */
 export interface AdminResponseDto {
@@ -95,6 +119,16 @@ export interface InstructorResponseDto {
   profilePhoto?: string
   enabled?: boolean
   affiliation?: string
+}
+
+export interface TeacherResponseDto {
+  userId: number
+  username: string
+  name: string
+  email?: string
+  phone?: string
+  profilePhoto?: string
+  enabled?: boolean
 }
 
 /**
@@ -145,6 +179,26 @@ export interface UpdateInstructorRequestDto {
   statusId?: number
   classificationId?: number
   affiliation?: string
+}
+
+/**
+ * Request DTO for creating teacher
+ */
+export interface CreateTeacherRequestDto {
+  username: string
+  password: string
+  name: string
+  email?: string
+  phone?: string
+}
+
+/**
+ * Request DTO for updating teacher (password excluded)
+ */
+export interface UpdateTeacherRequestDto {
+  name: string
+  email?: string
+  phone?: string
 }
 
 /**

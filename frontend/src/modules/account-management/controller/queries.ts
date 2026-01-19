@@ -1,13 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
 import { accountManagementQueryKeys } from './queryKeys'
-import { listAdmins, listInstructors, getAdminById, getInstructorById } from '../model/account-management.service'
+import { listAdmins, listInstructors, listTeachers, getAdminById, getInstructorById, getTeacherById } from '../model/account-management.service'
 import {
   mapAdminAccountList,
   mapInstructorAccountList,
+  mapTeacherAccountList,
   mapAdminDetail,
   mapInstructorDetail,
+  mapTeacherDetail,
 } from '../model/mapper'
-import type { ListAccountsParams, AdminDetail, InstructorDetail } from '../model/account-management.types'
+import type { ListAccountsParams, AdminDetail, InstructorDetail, TeacherDetail } from '../model/account-management.types'
 
 /**
  * Query hook for listing admin accounts
@@ -70,6 +72,39 @@ export const useInstructorDetailQuery = (id: number) => {
     queryFn: async () => {
       const dto = await getInstructorById(id)
       return mapInstructorDetail(dto)
+    },
+    enabled: !!id,
+  })
+}
+
+/**
+ * Query hook for listing teacher accounts
+ */
+export const useTeacherAccountsQuery = (params?: ListAccountsParams) => {
+  return useQuery({
+    queryKey: accountManagementQueryKeys.teacherList(params),
+    queryFn: async () => {
+      const pageResponse = await listTeachers(params)
+      return {
+        items: mapTeacherAccountList(pageResponse.items),
+        total: pageResponse.total,
+        page: pageResponse.page,
+        size: pageResponse.size,
+        totalPages: pageResponse.totalPages,
+      }
+    },
+  })
+}
+
+/**
+ * Query hook for fetching a single teacher by ID
+ */
+export const useTeacherDetailQuery = (id: number) => {
+  return useQuery({
+    queryKey: accountManagementQueryKeys.teacherDetail(id),
+    queryFn: async () => {
+      const dto = await getTeacherById(id)
+      return mapTeacherDetail(dto)
     },
     enabled: !!id,
   })

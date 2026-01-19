@@ -3,10 +3,13 @@ import type { ApiResponse, PageResponse } from '@/shared/http/types/common'
 import type {
   AdminResponseDto,
   InstructorResponseDto,
+  TeacherResponseDto,
   ListAccountsParams,
   CreateAdminRequestDto,
   CreateInstructorRequestDto,
   UpdateInstructorRequestDto,
+  CreateTeacherRequestDto,
+  UpdateTeacherRequestDto,
 } from './account-management.types'
 
 /**
@@ -246,4 +249,70 @@ export async function exportInstructorsToExcel(
     }
   )
   return response.data
+}
+
+/**
+ * Create a new teacher
+ */
+export async function createTeacher(
+  data: CreateTeacherRequestDto
+): Promise<TeacherResponseDto> {
+  const response = await axiosInstance.post<ApiResponse<TeacherResponseDto>>(
+    '/teacher/register',
+    data
+  )
+  return response.data.data
+}
+
+/**
+ * List teachers with pagination and filters
+ */
+export async function listTeachers(
+  params?: ListAccountsParams
+): Promise<PageResponse<TeacherResponseDto>> {
+  // Build clean params object - filter out undefined and empty arrays
+  const queryParams: Record<string, unknown> = {}
+  
+  if (params?.q) {
+    queryParams.q = params.q
+  }
+  if (params?.page !== undefined) {
+    queryParams.page = params.page
+  }
+  if (params?.size !== undefined) {
+    queryParams.size = params.size
+  }
+  if (params?.sort) {
+    queryParams.sort = params.sort
+  }
+
+  const response = await axiosInstance.get<ApiResponse<PageResponse<TeacherResponseDto>>>(
+    '/teacher',
+    { params: queryParams }
+  )
+  return response.data.data
+}
+
+/**
+ * Get a single teacher by ID
+ */
+export async function getTeacherById(id: number): Promise<TeacherResponseDto> {
+  const response = await axiosInstance.get<ApiResponse<TeacherResponseDto>>(
+    `/teacher/${id}`
+  )
+  return response.data.data
+}
+
+/**
+ * Update an existing teacher
+ */
+export async function updateTeacher(
+  id: number,
+  data: UpdateTeacherRequestDto
+): Promise<TeacherResponseDto> {
+  const response = await axiosInstance.put<ApiResponse<TeacherResponseDto>>(
+    `/teacher/${id}`,
+    data
+  )
+  return response.data.data
 }

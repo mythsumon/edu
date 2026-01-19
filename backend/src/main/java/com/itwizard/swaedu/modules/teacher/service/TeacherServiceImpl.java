@@ -1,17 +1,26 @@
 package com.itwizard.swaedu.modules.teacher.service;
 
 import com.itwizard.swaedu.exception.ResourceNotFoundException;
+import com.itwizard.swaedu.exception.ValidationException;
+import com.itwizard.swaedu.modules.teacher.dto.request.RegisterTeacherRequestDto;
+import com.itwizard.swaedu.modules.teacher.dto.request.TeacherUpdateDto;
 import com.itwizard.swaedu.modules.teacher.dto.response.TeacherResponseDto;
 import com.itwizard.swaedu.modules.teacher.mapper.TeacherMapper;
 import com.itwizard.swaedu.modules.teacher.repository.TeacherRepository;
 import com.itwizard.swaedu.modules.teacher.entity.Teacher;
+import com.itwizard.swaedu.modules.auth.entity.Role;
+import com.itwizard.swaedu.modules.auth.entity.User;
+import com.itwizard.swaedu.modules.auth.repository.RoleRepository;
+import com.itwizard.swaedu.modules.auth.repository.UserRepository;
 import com.itwizard.swaedu.util.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -20,6 +29,41 @@ import java.util.List;
 public class TeacherServiceImpl implements TeacherService {
 
     private final TeacherRepository teacherRepository;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Override
+    @Transactional
+    public TeacherResponseDto registerTeacher(RegisterTeacherRequestDto request) {
+        // Check if user already exists
+        if (userRepository.findByUsername(request.getUsername()) != null) {
+            throw new ValidationException("User already exists");
+        }
+
+        // Get TEACHER role
+        Role teacherRole = roleRepository.findByName("TEACHER")
+                .orElseThrow(() -> new ResourceNotFoundException("TEACHER role not found"));
+
+        // Create user
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(teacherRole);
+        user.setEnabled(true);
+
+        User savedUser = userRepository.save(user);
+
+        // Create teacher profile
+        Teacher teacher = new Teacher();
+        teacher.setUser(savedUser);
+        teacher.setName(request.getName());
+        teacher.setEmail(request.getEmail());
+        teacher.setPhone(request.getPhone());
+
+        Teacher savedTeacher = teacherRepository.save(teacher);
+        return TeacherMapper.toResponseDto(savedTeacher);
+    }
 
     @Override
     public PageResponse<TeacherResponseDto> listTeachers(String q, Integer page, Integer size, String sort) {
@@ -33,6 +77,17 @@ public class TeacherServiceImpl implements TeacherService {
         Teacher teacher = teacherRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with userId: " + userId));
         return TeacherMapper.toResponseDto(teacher);
+    }
+
+    @Override
+    @Transactional
+    public TeacherResponseDto updateTeacher(Long userId, TeacherUpdateDto request) {
+        Teacher teacher = teacherRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with userId: " + userId));
+
+        TeacherMapper.updateEntityFromDto(teacher, request);
+        Teacher updatedTeacher = teacherRepository.save(teacher);
+        return TeacherMapper.toResponseDto(updatedTeacher);
     }
 
     // Private helper methods

@@ -90,6 +90,11 @@ export const Sidebar = () => {
             href: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL,
             icon: Users,
           },
+          {
+            nameKey: "sidebar.teacherAccounts",
+            href: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_FULL,
+            icon: Users,
+          },
         ],
       },
       {
