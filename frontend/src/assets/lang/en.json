@@ -226,6 +226,8 @@
     "createInstructor": "Create Instructor",
     "createInstructorSuccess": "Instructor created successfully",
     "createInstructorError": "Failed to create instructor",
+    "createAdminSuccess": "Admin created successfully",
+    "createAdminError": "Failed to create admin",
     "editInstructor": "Edit Instructor",
     "updateInstructor": "Update Instructor",
     "updating": "Updating...",

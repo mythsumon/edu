@@ -226,6 +226,8 @@
     "createInstructor": "강사 생성",
     "createInstructorSuccess": "강사가 성공적으로 생성되었습니다",
     "createInstructorError": "강사 생성에 실패했습니다",
+    "createAdminSuccess": "관리자가 성공적으로 생성되었습니다",
+    "createAdminError": "관리자 생성에 실패했습니다",
     "editInstructor": "강사 수정",
     "updateInstructor": "강사 업데이트",
     "updating": "업데이트 중...",

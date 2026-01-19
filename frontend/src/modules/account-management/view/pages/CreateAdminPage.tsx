@@ -2,18 +2,23 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
+import { useRef } from 'react'
 import { PageLayout } from '@/app/layout/PageLayout'
 import { Button } from '@/shared/ui/button'
-import { Input } from '@/shared/ui/input'
-import { Label } from '@/shared/ui/label'
+import { useToast } from '@/shared/ui/use-toast'
 import { ROUTES } from '@/shared/constants/routes'
 import { useCreateAdmin } from '../../controller/mutations'
 import { createAdminSchema, type CreateAdminFormData } from '../../model/account-management.schema'
+import { FormInputField } from '../components/FormInputField'
+import { FormPasswordField } from '../components/FormPasswordField'
+import { CollapsibleCard } from '../components/CollapsibleCard'
 
 export const AddAdminPage = () => {
   const { t } = useTranslation()
+  const { toast } = useToast()
   const navigate = useNavigate()
   const createAdminMutation = useCreateAdmin()
+  const formRef = useRef<HTMLFormElement>(null)
 
   const {
     register,
@@ -21,9 +26,10 @@ export const AddAdminPage = () => {
     formState: { errors, isSubmitting },
   } = useForm<CreateAdminFormData>({
     resolver: zodResolver(createAdminSchema(t)),
+    mode: 'onChange',
     defaultValues: {
       username: '',
-      password: '',
+      password: 'admin123',
       name: '',
       email: '',
       phone: '',
@@ -39,9 +45,26 @@ export const AddAdminPage = () => {
         email: data.email || undefined,
         phone: data.phone || undefined,
       })
+      toast({
+        title: t('common.success'),
+        description: t('accountManagement.createAdminSuccess'),
+        variant: 'success',
+      })
       navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL)
     } catch (error) {
-      // Error handling is done by the mutation
+      // Extract error message from the error object
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'object' && error !== null && 'message' in error
+            ? String(error.message)
+            : t('accountManagement.createAdminError')
+
+      toast({
+        title: t('common.error'),
+        description: errorMessage,
+        variant: 'error',
+      })
       console.error('Failed to create admin:', error)
     }
   }
@@ -50,115 +73,99 @@ export const AddAdminPage = () => {
     navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL)
   }
 
+  const handleFormSubmit = () => {
+    formRef.current?.requestSubmit()
+  }
+
   return (
     <PageLayout
       title={t('accountManagement.addNewAdmin')}
       customBreadcrumbRoot={{ path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL, label: t('accountManagement.admins') }}
+      actions={
+        <>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleCancel}
+            disabled={isSubmitting}
+          >
+            {t('common.cancel')}
+          </Button>
+          <Button
+            type="button"
+            onClick={handleFormSubmit}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? t('accountManagement.creating') : t('accountManagement.createAdmin')}
+          </Button>
+        </>
+      }
     >
-      <div className="max-w-4xl p-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Username */}
-            <div className="space-y-2">
-              <Label htmlFor="username">
-                {t('accountManagement.username')} <span className="text-destructive">**</span>
-              </Label>
-              <Input
+      <div className="max-w-4xl p-6 mx-auto">
+        <form ref={formRef} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Basic Information Collapsible Card */}
+          <CollapsibleCard
+            title={t('accountManagement.basicInformation')}
+            description={t('accountManagement.basicInformationDescription')}
+            defaultExpanded={true}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Admin ID / Username */}
+              <FormInputField
                 id="username"
-                type="text"
+                label={t('accountManagement.username')}
                 placeholder={t('accountManagement.usernamePlaceholder')}
-                {...register('username')}
-                className={errors.username ? 'ring-2 ring-destructive' : ''}
-                disabled={isSubmitting}
+                register={register('username')}
+                error={errors.username}
+                required
+                isSubmitting={isSubmitting}
               />
-              {errors.username && (
-                <p className="text-sm text-destructive">{errors.username.message}</p>
-              )}
-            </div>
 
-            {/* Password */}
-            <div className="space-y-2">
-              <Label htmlFor="password">
-                {t('accountManagement.password')} <span className="text-destructive">**</span>
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder={t('accountManagement.passwordPlaceholder')}
-                {...register('password')}
-                className={errors.password ? 'ring-2 ring-destructive' : ''}
-                disabled={isSubmitting}
-              />
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password.message}</p>
-              )}
-            </div>
-
-            {/* Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name">
-                {t('accountManagement.name')} <span className="text-destructive">**</span>
-              </Label>
-              <Input
+              {/* Name */}
+              <FormInputField
                 id="name"
-                type="text"
+                label={t('accountManagement.name')}
                 placeholder={t('accountManagement.namePlaceholder')}
-                {...register('name')}
-                className={errors.name ? 'ring-2 ring-destructive' : ''}
-                disabled={isSubmitting}
+                register={register('name')}
+                error={errors.name}
+                required
+                isSubmitting={isSubmitting}
               />
-              {errors.name && (
-                <p className="text-sm text-destructive">{errors.name.message}</p>
-              )}
-            </div>
 
-            {/* Email */}
-            <div className="space-y-2">
-              <Label htmlFor="email">{t('accountManagement.email')}</Label>
-              <Input
+              {/* Email */}
+              <FormInputField
                 id="email"
-                type="email"
+                label={t('accountManagement.email')}
                 placeholder={t('accountManagement.emailPlaceholder')}
-                {...register('email')}
-                className={errors.email ? 'ring-2 ring-destructive' : ''}
-                disabled={isSubmitting}
+                type="email"
+                register={register('email')}
+                error={errors.email}
+                isSubmitting={isSubmitting}
               />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email.message}</p>
-              )}
-            </div>
 
-            {/* Phone */}
-            <div className="space-y-2">
-              <Label htmlFor="phone">{t('accountManagement.phoneNumber')}</Label>
-              <Input
+              {/* Password */}
+              <FormPasswordField
+                id="password"
+                label={t('accountManagement.password')}
+                placeholder={t('accountManagement.passwordPlaceholder')}
+                register={register('password')}
+                error={errors.password}
+                required
+                isSubmitting={isSubmitting}
+              />
+
+              {/* Phone */}
+              <FormInputField
                 id="phone"
-                type="tel"
+                label={t('accountManagement.phoneNumber')}
                 placeholder={t('accountManagement.phoneNumberPlaceholder')}
-                {...register('phone')}
-                className={errors.phone ? 'ring-2 ring-destructive' : ''}
-                disabled={isSubmitting}
+                type="tel"
+                register={register('phone')}
+                error={errors.phone}
+                isSubmitting={isSubmitting}
               />
-              {errors.phone && (
-                <p className="text-sm text-destructive">{errors.phone.message}</p>
-              )}
             </div>
-          </div>
-
-          {/* Form Actions */}
-          <div className="flex justify-end gap-3 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isSubmitting}
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? t('accountManagement.creating') : t('accountManagement.createAdmin')}
-            </Button>
-          </div>
+          </CollapsibleCard>
         </form>
       </div>
     </PageLayout>
