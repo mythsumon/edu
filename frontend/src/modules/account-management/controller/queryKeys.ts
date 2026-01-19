@@ -5,6 +5,8 @@ export const accountManagementQueryKeys = {
   admins: () => [...accountManagementQueryKeys.all, 'admins'] as const,
   adminList: (params?: ListAccountsParams) =>
     [...accountManagementQueryKeys.admins(), 'list', params] as const,
+  adminDetails: () => [...accountManagementQueryKeys.admins(), 'detail'] as const,
+  adminDetail: (id: number) => [...accountManagementQueryKeys.adminDetails(), id] as const,
   instructors: () => [...accountManagementQueryKeys.all, 'instructors'] as const,
   instructorList: (params?: ListAccountsParams) =>
     [...accountManagementQueryKeys.instructors(), 'list', params] as const,

@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { accountManagementQueryKeys } from './queryKeys'
-import { listAdmins, listInstructors, getInstructorById } from '../model/account-management.service'
+import { listAdmins, listInstructors, getAdminById, getInstructorById } from '../model/account-management.service'
 import {
   mapAdminAccountList,
   mapInstructorAccountList,
+  mapAdminDetail,
   mapInstructorDetail,
 } from '../model/mapper'
-import type { ListAccountsParams, InstructorDetail } from '../model/account-management.types'
+import type { ListAccountsParams, AdminDetail, InstructorDetail } from '../model/account-management.types'
 
 /**
  * Query hook for listing admin accounts
@@ -43,6 +44,20 @@ export const useInstructorAccountsQuery = (params?: ListAccountsParams) => {
         totalPages: pageResponse.totalPages,
       }
     },
+  })
+}
+
+/**
+ * Query hook for fetching a single admin by ID
+ */
+export const useAdminDetailQuery = (id: number) => {
+  return useQuery({
+    queryKey: accountManagementQueryKeys.adminDetail(id),
+    queryFn: async () => {
+      const dto = await getAdminById(id)
+      return mapAdminDetail(dto)
+    },
+    enabled: !!id,
   })
 }
 

@@ -136,6 +136,16 @@ export async function listInstructors(
 }
 
 /**
+ * Get a single admin by ID
+ */
+export async function getAdminById(id: number): Promise<AdminResponseDto> {
+  const response = await axiosInstance.get<ApiResponse<AdminResponseDto>>(
+    `/admin/${id}`
+  )
+  return response.data.data
+}
+
+/**
  * Get a single instructor by ID
  */
 export async function getInstructorById(id: number): Promise<InstructorResponseDto> {

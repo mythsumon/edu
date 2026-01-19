@@ -184,9 +184,8 @@ export const AdminAccountManagementPage = () => {
   }, [navigate])
 
   const handleDetailClick = React.useCallback((admin: AdminAccount) => {
-    // TODO: Implement detail view/navigation
-    console.log('View details for admin:', admin)
-  }, [])
+    navigate(`${ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_FULL}/${admin.id}`)
+  }, [navigate])
 
   const handleGetHeaderClassName = React.useCallback((headerId: string) => {
     if (headerId === 'actions') return 'text-right'

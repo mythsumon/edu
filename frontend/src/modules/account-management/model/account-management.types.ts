@@ -30,6 +30,19 @@ export interface InstructorAccount {
 }
 
 /**
+ * Admin detail data for detail page display
+ */
+export interface AdminDetail {
+  id: number
+  username: string
+  name: string
+  email?: string
+  phone?: string
+  enabled?: boolean
+  profilePhoto?: string
+}
+
+/**
  * Instructor detail data for detail page display
  */
 export interface InstructorDetail {

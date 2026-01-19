@@ -252,6 +252,7 @@
     "addressInformationDescription": "Enter the instructor's address details including city, region, zone, street, and building information.",
     "statusAndClassification": "Status and Classification",
     "statusAndClassificationDescription": "Set the instructor's status and classification which determine their role and permissions in the system.",
+    "adminDetail": "Admin Detail",
     "instructorDetail": "Instructor Detail",
     "instructorInformation": "Instructor Information",
     "account": "Account",

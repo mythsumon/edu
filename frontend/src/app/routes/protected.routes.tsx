@@ -24,6 +24,7 @@ import { ProgramListPage, ProgramCreatePage, ProgramEditPage } from '@/modules/p
 import {
   AdminAccountManagementPage,
   AddAdminPage,
+  AdminDetailPage,
   InstructorAccountManagementPage,
   AddInstructorPage,
   InstructorDetailPage,
@@ -165,6 +166,10 @@ export const protectedRoutes: RouteObject[] = [
                       {
                         path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_CREATE,
                         element: <AddAdminPage />,
+                      },
+                      {
+                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_DETAIL,
+                        element: <AdminDetailPage />,
                       },
                     ],
                   },

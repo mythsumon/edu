@@ -252,6 +252,7 @@
     "addressInformationDescription": "도시, 지역, 구역, 거리 및 건물 정보를 포함한 강사의 주소 정보를 입력하세요.",
     "statusAndClassification": "상태 및 분류",
     "statusAndClassificationDescription": "시스템에서 강사의 역할과 권한을 결정하는 상태 및 분류를 설정하세요.",
+    "adminDetail": "관리자 상세",
     "instructorDetail": "강사 상세",
     "instructorInformation": "강사 정보",
     "account": "계정",

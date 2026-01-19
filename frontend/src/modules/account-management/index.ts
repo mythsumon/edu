@@ -1,9 +1,10 @@
 // Export public API for account-management module
 export { AdminAccountManagementPage } from './view/pages/AdminAccountManagementPage'
 export { AddAdminPage } from './view/pages/CreateAdminPage'
+export { AdminDetailPage } from './view/pages/AdminDetailPage'
 export { InstructorAccountManagementPage } from './view/pages/InstructorAccountManagementPage'
 export { AddInstructorPage } from './view/pages/CreateInstructorPage'
 export { InstructorDetailPage } from './view/pages/InstructorDetailPage'
 export { EditInstructorPage } from './view/pages/EditInstructorPage'
-export { useAdminAccountsQuery, useInstructorAccountsQuery, useInstructorDetailQuery } from './controller/queries'
-export type { AdminAccount, InstructorAccount, InstructorDetail } from './model/account-management.types'
+export { useAdminAccountsQuery, useAdminDetailQuery, useInstructorAccountsQuery, useInstructorDetailQuery } from './controller/queries'
+export type { AdminAccount, AdminDetail, InstructorAccount, InstructorDetail } from './model/account-management.types'

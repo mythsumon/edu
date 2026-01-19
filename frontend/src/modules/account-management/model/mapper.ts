@@ -1,6 +1,7 @@
 import type {
   AdminAccount,
   AdminResponseDto,
+  AdminDetail,
   InstructorAccount,
   InstructorResponseDto,
   InstructorDetail,
@@ -47,6 +48,21 @@ export function mapAdminAccountList(dtos: AdminResponseDto[]): AdminAccount[] {
  */
 export function mapInstructorAccountList(dtos: InstructorResponseDto[]): InstructorAccount[] {
   return dtos.map(mapInstructorAccount)
+}
+
+/**
+ * Map AdminResponseDto to AdminDetail
+ */
+export function mapAdminDetail(dto: AdminResponseDto): AdminDetail {
+  return {
+    id: dto.userId,
+    username: dto.username,
+    name: dto.name,
+    email: dto.email,
+    phone: dto.phone,
+    enabled: dto.enabled,
+    profilePhoto: dto.profilePhoto,
+  }
 }
 
 /**
