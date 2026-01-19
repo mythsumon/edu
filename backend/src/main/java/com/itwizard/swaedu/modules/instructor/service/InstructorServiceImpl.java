@@ -75,13 +75,14 @@ public class InstructorServiceImpl implements InstructorService {
         // Create instructor profile
         Instructor instructor = new Instructor();
         instructor.setUser(savedUser);
+        instructor.setInstructorId("INST" + savedUser.getId());
         instructor.setName(request.getName());
         instructor.setEmail(request.getEmail());
         instructor.setPhone(request.getPhone());
         instructor.setGender(request.getGender());
         instructor.setDob(request.getDob());
         instructor.setRegionId(request.getRegionId());
-        instructor.setCity(request.getCity());
+        instructor.setCityId(request.getCityId());
         instructor.setStreet(request.getStreet());
         instructor.setDetailAddress(request.getDetailAddress());
         instructor.setStatusId(request.getStatusId());
@@ -93,6 +94,13 @@ public class InstructorServiceImpl implements InstructorService {
             MasterCodeEntity region = masterCodeRepository.findByIdAndIsDeleteFalse(request.getRegionId())
                     .orElseThrow(() -> new ResourceNotFoundException("Region master code not found with id: " + request.getRegionId()));
             instructor.setRegion(region);
+        }
+
+        // Set city if provided
+        if (request.getCityId() != null) {
+            MasterCodeEntity city = masterCodeRepository.findByIdAndIsDeleteFalse(request.getCityId())
+                    .orElseThrow(() -> new ResourceNotFoundException("City master code not found with id: " + request.getCityId()));
+            instructor.setCity(city);
         }
 
         // Set status if provided
@@ -189,6 +197,15 @@ public class InstructorServiceImpl implements InstructorService {
             instructor.setRegion(null);
         }
 
+        // Update city if provided
+        if (request.getCityId() != null) {
+            MasterCodeEntity city = masterCodeRepository.findByIdAndIsDeleteFalse(request.getCityId())
+                    .orElseThrow(() -> new ResourceNotFoundException("City master code not found with id: " + request.getCityId()));
+            instructor.setCity(city);
+        } else {
+            instructor.setCity(null);
+        }
+
         // Update status if provided
         if (request.getStatusId() != null) {
             MasterCodeEntity status = masterCodeRepository.findByIdAndIsDeleteFalse(request.getStatusId())
@@ -232,6 +249,13 @@ public class InstructorServiceImpl implements InstructorService {
             MasterCodeEntity region = masterCodeRepository.findByIdAndIsDeleteFalse(request.getRegionId())
                     .orElseThrow(() -> new ResourceNotFoundException("Region master code not found with id: " + request.getRegionId()));
             instructor.setRegion(region);
+        }
+
+        // Update city if provided
+        if (request.getCityId() != null) {
+            MasterCodeEntity city = masterCodeRepository.findByIdAndIsDeleteFalse(request.getCityId())
+                    .orElseThrow(() -> new ResourceNotFoundException("City master code not found with id: " + request.getCityId()));
+            instructor.setCity(city);
         }
 
         // Update status if provided
@@ -365,7 +389,7 @@ public class InstructorServiceImpl implements InstructorService {
                     // Status Name
                     row.createCell(cellNum++).setCellValue(instructor.getStatus() != null && instructor.getStatus().getCodeName() != null ? instructor.getStatus().getCodeName() : "");
                     // City
-                    row.createCell(cellNum++).setCellValue(instructor.getCity() != null ? instructor.getCity() : "");
+                    row.createCell(cellNum++).setCellValue(instructor.getCity() != null && instructor.getCity().getCodeName() != null ? instructor.getCity().getCodeName() : "");
                     // Street
                     row.createCell(cellNum++).setCellValue(instructor.getStreet() != null ? instructor.getStreet() : "");
                     // Building Name / Lake Number

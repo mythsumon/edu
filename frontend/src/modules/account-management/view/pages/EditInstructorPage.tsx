@@ -20,6 +20,7 @@ import { FormInputField } from '../components/FormInputField'
 import { FormDatePickerField } from '../components/FormDatePickerField'
 import { CollapsibleCard } from '../components/CollapsibleCard'
 import { FormField } from '../components/FormField'
+import { Input } from '@/shared/ui/input'
 import { CustomDropdownField, type DropdownOption } from '@/shared/components/CustomDropdown'
 
 export const EditInstructorPage = () => {
@@ -53,7 +54,7 @@ export const EditInstructorPage = () => {
       dob: '',
       zoneId: '',
       regionId: '',
-      city: '',
+      cityId: '',
       street: '',
       detailAddress: '',
       statusId: '',
@@ -80,8 +81,8 @@ export const EditInstructorPage = () => {
   )
   const regions = useMemo(() => regionsData?.items || [], [regionsData?.items])
 
-  // Fetch city common code
-  const { data: cityCommonCode } = useCommonCodeByCodeQuery(MASTER_CODE_DISTRICT_CODE)
+  // Fetch city master code (code '500-1')
+  const { data: cityMasterCode } = useCommonCodeByCodeQuery('500-1')
 
   // Fetch status master codes (parent code 100)
   const { data: statusMasterCodesData, isLoading: isLoadingStatusCodes } = useMasterCodeChildrenByCodeQuery(
@@ -135,9 +136,6 @@ export const EditInstructorPage = () => {
         }
       }
 
-      // Determine city value - use instructor's city or default from common code
-      const cityValue = instructor.city || cityCommonCode?.codeName || ''
-
       // Use reset() to set all values at once and clear validation errors
       reset({
         username: instructor.username,
@@ -148,7 +146,7 @@ export const EditInstructorPage = () => {
         dob: instructor.dob || '',
         zoneId: zoneId,
         regionId: instructor.regionId ? String(instructor.regionId) : '',
-        city: cityValue,
+        cityId: instructor.cityId ? String(instructor.cityId) : (cityMasterCode?.id ? String(cityMasterCode.id) : ''),
         street: instructor.street || '',
         detailAddress: instructor.detailAddress || '',
         statusId: instructor.statusId ? String(instructor.statusId) : '',
@@ -156,7 +154,7 @@ export const EditInstructorPage = () => {
         affiliation: instructor.affiliation || '',
       })
     }
-  }, [instructor, regions, zones, cityCommonCode, reset])
+  }, [instructor, regions, zones, cityMasterCode, reset])
 
   // Auto-select zone when region is selected (using parentId from common code)
   useEffect(() => {
@@ -190,7 +188,7 @@ export const EditInstructorPage = () => {
           gender: data.gender,
           dob: data.dob,
           regionId: Number(data.regionId),
-          city: data.city,
+          cityId: Number(data.cityId),
           street: data.street,
           detailAddress: data.detailAddress,
           statusId: Number(data.statusId),
@@ -362,16 +360,14 @@ export const EditInstructorPage = () => {
               />
 
               {/* City */}
-              <FormInputField
-                id="city"
-                label={t('accountManagement.city')}
-                placeholder={t('accountManagement.cityPlaceholder')}
-                register={register('city')}
-                error={errors.city}
-                required
-                isSubmitting={isSubmitting}
-                disabled
-              />
+              <FormField id="city" label={t('accountManagement.city')} required>
+                <Input
+                  id="city"
+                  placeholder={t('accountManagement.cityPlaceholder')}
+                  value={cityMasterCode?.codeName || ''}
+                  disabled={isSubmitting}
+                />
+              </FormField>
 
               {/* Zone */}
               <FormField id="zoneId" label={t('accountManagement.zone')} required error={errors.zoneId}>

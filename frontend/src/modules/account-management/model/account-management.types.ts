@@ -20,6 +20,7 @@ export interface AdminAccount {
  */
 export interface InstructorAccount {
   id: number
+  instructorId?: string
   name: string
   username: string
   affiliation?: string
@@ -58,6 +59,7 @@ export interface AdminDetail {
  */
 export interface InstructorDetail {
   id: number
+  instructorId?: string
   username: string
   name: string
   email?: string
@@ -65,7 +67,7 @@ export interface InstructorDetail {
   gender?: string
   dob?: string
   regionId?: number
-  city?: string
+  cityId?: number
   street?: string
   detailAddress?: string
   statusId?: number
@@ -103,6 +105,7 @@ export interface AdminResponseDto {
 
 export interface InstructorResponseDto {
   userId: number
+  instructorId?: string
   username: string
   name: string
   email?: string
@@ -110,7 +113,7 @@ export interface InstructorResponseDto {
   gender?: string
   dob?: string
   regionId?: number
-  city?: string
+  cityId?: number
   street?: string
   detailAddress?: string
   statusId?: number
@@ -163,7 +166,7 @@ export interface CreateInstructorRequestDto {
   gender?: string
   dob?: string
   regionId?: number
-  city?: string
+  cityId?: number
   street?: string
   detailAddress?: string
   statusId?: number
@@ -182,7 +185,7 @@ export interface UpdateInstructorRequestDto {
   gender?: string
   dob?: string
   regionId?: number
-  city?: string
+  cityId?: number
   street?: string
   detailAddress?: string
   statusId?: number

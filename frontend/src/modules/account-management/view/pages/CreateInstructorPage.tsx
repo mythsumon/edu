@@ -50,7 +50,7 @@ export const AddInstructorPage = () => {
       dob: '',
       zoneId: '',
       regionId: '',
-      city: '',
+      cityId: '',
       street: '',
       detailAddress: '',
       statusId: '',
@@ -77,8 +77,8 @@ export const AddInstructorPage = () => {
   )
   const regions = useMemo(() => regionsData?.items || [], [regionsData?.items])
 
-  // Fetch city common code
-  const { data: cityCommonCode } = useCommonCodeByCodeQuery(MASTER_CODE_DISTRICT_CODE)
+  // Fetch city master code (code '500-1')
+  const { data: cityMasterCode } = useCommonCodeByCodeQuery('500-1')
 
   // Fetch status master codes (parent code 100)
   const { data: statusMasterCodesData, isLoading: isLoadingStatusCodes } = useMasterCodeChildrenByCodeQuery(
@@ -134,12 +134,12 @@ export const AddInstructorPage = () => {
     }
   }, [selectedRegionId, regions, zones, setValue])
 
-  // Set city default value from common code
+  // Set cityId default value from master code '500-1'
   useEffect(() => {
-    if (cityCommonCode?.codeName) {
-      setValue('city', cityCommonCode.codeName)
+    if (cityMasterCode?.id) {
+      setValue('cityId', String(cityMasterCode.id))
     }
-  }, [cityCommonCode, setValue])
+  }, [cityMasterCode, setValue])
 
   const onSubmit = async (data: CreateInstructorFormData) => {
     try {
@@ -152,7 +152,7 @@ export const AddInstructorPage = () => {
         gender: data.gender,
         dob: data.dob,
         regionId: Number(data.regionId),
-        city: data.city,
+        cityId: Number(data.cityId),
         street: data.street,
         detailAddress: data.detailAddress,
         statusId: Number(data.statusId),
@@ -341,16 +341,14 @@ export const AddInstructorPage = () => {
               />
 
               {/* City */}
-              <FormInputField
-                id="city"
-                label={t('accountManagement.city')}
-                placeholder={t('accountManagement.cityPlaceholder')}
-                register={register('city')}
-                error={errors.city}
-                required
-                isSubmitting={isSubmitting}
-                disabled
-              />
+              <FormField id="city" label={t('accountManagement.city')} required>
+                <Input
+                  id="city"
+                  placeholder={t('accountManagement.cityPlaceholder')}
+                  value={cityMasterCode?.codeName || ''}
+                  disabled={isSubmitting}
+                />
+              </FormField>
 
               {/* Zone */}
               <FormField id="zoneId" label={t('accountManagement.zone')} required error={errors.zoneId}>

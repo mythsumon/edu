@@ -40,6 +40,7 @@ public interface InstructorRepository extends JpaRepository<Instructor, Long> {
         SELECT DISTINCT i FROM Instructor i
         JOIN i.user u
         LEFT JOIN FETCH i.region
+        LEFT JOIN FETCH i.city
         LEFT JOIN FETCH i.status
         LEFT JOIN FETCH i.classification
         WHERE (:q IS NULL OR :q = '' OR 

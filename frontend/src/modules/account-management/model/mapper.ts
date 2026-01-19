@@ -29,6 +29,7 @@ export function mapAdminAccount(dto: AdminResponseDto): AdminAccount {
 export function mapInstructorAccount(dto: InstructorResponseDto): InstructorAccount {
   return {
     id: dto.userId,
+    instructorId: dto.instructorId,
     name: dto.name,
     username: dto.username,
     affiliation: dto.affiliation,
@@ -74,6 +75,7 @@ export function mapAdminDetail(dto: AdminResponseDto): AdminDetail {
 export function mapInstructorDetail(dto: InstructorResponseDto): InstructorDetail {
   return {
     id: dto.userId,
+    instructorId: dto.instructorId,
     username: dto.username,
     name: dto.name,
     email: dto.email,
@@ -81,7 +83,7 @@ export function mapInstructorDetail(dto: InstructorResponseDto): InstructorDetai
     gender: dto.gender,
     dob: dto.dob,
     regionId: dto.regionId,
-    city: dto.city,
+    cityId: dto.cityId,
     street: dto.street,
     detailAddress: dto.detailAddress,
     statusId: dto.statusId,

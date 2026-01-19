@@ -113,13 +113,14 @@ CREATE INDEX IF NOT EXISTS idx_teachers_phone ON teachers(phone);
 -- Instructors table
 CREATE TABLE IF NOT EXISTS instructors (
     user_id BIGINT PRIMARY KEY,
+    instructor_id VARCHAR(255) UNIQUE,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255),
     phone VARCHAR(50),
     gender VARCHAR(20),
     dob DATE,
     region_id BIGINT,
-    city VARCHAR(255),
+    city_id BIGINT,
     street VARCHAR(255),
     detail_address VARCHAR(500),
     status_id BIGINT,
@@ -129,13 +130,16 @@ CREATE TABLE IF NOT EXISTS instructors (
     profile_photo VARCHAR(500),
     CONSTRAINT fk_instructors_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_instructors_region FOREIGN KEY (region_id) REFERENCES master_code(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_instructors_city FOREIGN KEY (city_id) REFERENCES master_code(id) ON DELETE RESTRICT,
     CONSTRAINT fk_instructors_status FOREIGN KEY (status_id) REFERENCES master_code(id) ON DELETE RESTRICT,
     CONSTRAINT fk_instructors_classification FOREIGN KEY (classification_id) REFERENCES master_code(id) ON DELETE RESTRICT
 );
 -- Create indexes for instructors table
 CREATE INDEX IF NOT EXISTS idx_instructors_email ON instructors(email);
 CREATE INDEX IF NOT EXISTS idx_instructors_phone ON instructors(phone);
+CREATE INDEX IF NOT EXISTS idx_instructors_instructor_id ON instructors(instructor_id);
 CREATE INDEX IF NOT EXISTS idx_instructors_region_id ON instructors(region_id);
+CREATE INDEX IF NOT EXISTS idx_instructors_city_id ON instructors(city_id);
 CREATE INDEX IF NOT EXISTS idx_instructors_status_id ON instructors(status_id);
 CREATE INDEX IF NOT EXISTS idx_instructors_classification_id ON instructors(classification_id);
 

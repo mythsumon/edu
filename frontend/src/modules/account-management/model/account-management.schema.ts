@@ -70,10 +70,9 @@ export const createInstructorSchema = (t: (key: string) => string) => z.object({
   regionId: z
     .string()
     .min(1, t('accountManagement.validation.regionRequired')),
-  city: z
+  cityId: z
     .string()
-    .min(1, t('accountManagement.validation.cityRequired'))
-    .max(255, t('accountManagement.validation.cityMaxLength')),
+    .min(1, t('accountManagement.validation.cityRequired')),
   street: z
     .string()
     .min(1, t('accountManagement.validation.streetRequired'))
@@ -126,10 +125,9 @@ export const updateInstructorSchema = (t: (key: string) => string) => z.object({
   regionId: z
     .string()
     .min(1, t('accountManagement.validation.regionRequired')),
-  city: z
+  cityId: z
     .string()
-    .min(1, t('accountManagement.validation.cityRequired'))
-    .max(255, t('accountManagement.validation.cityMaxLength')),
+    .min(1, t('accountManagement.validation.cityRequired')),
   street: z
     .string()
     .min(1, t('accountManagement.validation.streetRequired'))
