@@ -114,7 +114,9 @@
     "instructorAccounts": "Instructor Accounts",
     "institutionManagement": "Institution Management",
     "masterCodeSetup": "Master Code Setup",
-    "commonCode": "Common Code Setup"
+    "commonCode": "Common Code Setup",
+    "lecture": "Lecture",
+    "lectureSchedule": "Lecture Schedule"
   },
   "errors": {
     "generic": "An error occurred",
@@ -489,6 +491,33 @@
       "checkingCode": "Checking the code",
       "codeAvailable": "Code is available to use",
       "codeUnavailable": "Code already exists!"
+    }
+  },
+  "lecture": {
+    "schedule": {
+      "title": "Schedule List",
+      "description": "View and manage your lecture schedule",
+      "searchPlaceholder": "Search by education ID, education name, or institution name",
+      "noData": "No schedules found",
+      "educationId": "Education ID",
+      "trainingName": "Training name",
+      "institutionName": "Institution name",
+      "documentStatus": "Document status",
+      "overallStatus": "Overall status",
+      "lastModifiedDate": "Last modified date",
+      "management": "management",
+      "stats": {
+        "entire": "Entire",
+        "pendingApproval": "Pending approval",
+        "approvalComplete": "Approval complete",
+        "cancelled": "Cancelled"
+      },
+      "tabs": {
+        "all": "My lecture list",
+        "confirmed": "Check confirmed classes",
+        "ongoing": "Ongoing training",
+        "completed": "Completed training"
+      }
     }
   }
 }

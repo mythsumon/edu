@@ -137,35 +137,15 @@ export const Sidebar = () => {
             href: ROUTES.INSTRUCTOR_DASHBOARD,
             icon: LayoutDashboard,
           },
-          {
-            nameKey: "sidebar.myClasses",
-            href: ROUTES.EDUCATION_OPERATIONS,
-            icon: BookOpen,
-          },
-          {
-            nameKey: "sidebar.mySchedule",
-            href: ROUTES.INSTRUCTOR_ASSIGNMENT,
-            icon: Calendar,
-          },
-          {
-            nameKey: "sidebar.myStudents",
-            href: ROUTES.REFERENCE_INFORMATION_MANAGEMENT,
-            icon: Users,
-          },
         ],
       },
       {
-        titleKey: "sidebar.academic",
+        titleKey: "sidebar.lecture",
         items: [
           {
-            nameKey: "sidebar.attendance",
-            href: ROUTES.SYSTEM_MANAGEMENT,
-            icon: ClipboardList,
-          },
-          {
-            nameKey: "sidebar.grades",
-            href: ROUTES.SETTINGS_AND_USER_MANAGEMENT,
-            icon: Award,
+            nameKey: "sidebar.lectureSchedule",
+            href: ROUTES.INSTRUCTOR_SCHEDULE_LIST,
+            icon: Calendar,
           },
         ],
       },

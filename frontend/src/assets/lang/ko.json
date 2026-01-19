@@ -114,7 +114,9 @@
     "instructorAccounts": "강사 계정",
     "institutionManagement": "기관 관리",
     "masterCodeSetup": "마스터 코드 설정",
-    "commonCode": "공통 코드 설정"
+    "commonCode": "공통 코드 설정",
+    "lecture": "강의",
+    "lectureSchedule": "강의 일정"
   },
   "errors": {
     "generic": "오류가 발생했습니다",
@@ -489,6 +491,33 @@
       "checkingCode": "코드 확인 중",
       "codeAvailable": "코드를 사용할 수 있습니다",
       "codeUnavailable": "코드가 이미 존재합니다!"
+    }
+  },
+  "lecture": {
+    "schedule": {
+      "title": "일정 목록",
+      "description": "강의 일정을 확인하고 관리하세요",
+      "searchPlaceholder": "교육 ID, 교육명 또는 기관명으로 검색",
+      "noData": "일정을 찾을 수 없습니다",
+      "educationId": "교육 ID",
+      "trainingName": "교육명",
+      "institutionName": "기관명",
+      "documentStatus": "문서 상태",
+      "overallStatus": "전체 상태",
+      "lastModifiedDate": "최종 수정일",
+      "management": "관리",
+      "stats": {
+        "entire": "전체",
+        "pendingApproval": "승인 대기",
+        "approvalComplete": "승인 완료",
+        "cancelled": "취소됨"
+      },
+      "tabs": {
+        "all": "내 강의 목록",
+        "confirmed": "확정된 강의 확인",
+        "ongoing": "진행 중인 교육",
+        "completed": "완료된 교육"
+      }
     }
   }
 }
