@@ -17,9 +17,10 @@ import { GENDER_OPTIONS } from '@/shared/constants/users'
 import { LoadingState } from '@/shared/components/LoadingState'
 import { ErrorState } from '@/shared/components/ErrorState'
 import { FormInputField } from '../components/FormInputField'
-import { FormSelectField } from '../components/FormSelectField'
 import { FormDatePickerField } from '../components/FormDatePickerField'
 import { CollapsibleCard } from '../components/CollapsibleCard'
+import { FormField } from '../components/FormField'
+import { CustomDropdownField, type DropdownOption } from '@/shared/components/CustomDropdown'
 
 export const EditInstructorPage = () => {
   const { t } = useTranslation()
@@ -62,6 +63,10 @@ export const EditInstructorPage = () => {
   })
 
   const selectedRegionId = watch('regionId')
+  const genderValue = watch('gender')
+  const zoneIdValue = watch('zoneId')
+  const statusIdValue = watch('statusId')
+  const classificationIdValue = watch('classificationId')
 
   // Fetch zones from common code (children of zone/region parent code)
   const { data: zonesData, isLoading: isLoadingZones } = useCommonCodeChildrenByCodeQuery(
@@ -88,6 +93,32 @@ export const EditInstructorPage = () => {
   const { data: classificationMasterCodesData, isLoading: isLoadingClassificationCodes } =
     useMasterCodeChildrenByCodeQuery(MASTER_CODE_PARENT_CODES.INSTRUCTOR_CLASSIFICATION)
   const classificationMasterCodes = classificationMasterCodesData?.items || []
+
+  // Transform options to DropdownOption format
+  const genderOptions: DropdownOption[] = useMemo(
+    () => GENDER_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label })),
+    []
+  )
+
+  const zoneOptions: DropdownOption[] = useMemo(
+    () => zones.map((zone) => ({ value: String(zone.id), label: zone.codeName || '' })),
+    [zones]
+  )
+
+  const regionOptions: DropdownOption[] = useMemo(
+    () => regions.map((region) => ({ value: String(region.id), label: region.codeName || '' })),
+    [regions]
+  )
+
+  const statusOptions: DropdownOption[] = useMemo(
+    () => statusMasterCodes.map((status) => ({ value: String(status.id), label: status.codeName || '' })),
+    [statusMasterCodes]
+  )
+
+  const classificationOptions: DropdownOption[] = useMemo(
+    () => classificationMasterCodes.map((classification) => ({ value: String(classification.id), label: classification.codeName || '' })),
+    [classificationMasterCodes]
+  )
 
   // Pre-fill form with instructor data using reset() to properly initialize and clear validation errors
   useEffect(() => {
@@ -287,19 +318,17 @@ export const EditInstructorPage = () => {
               />
 
               {/* Gender */}
-              <FormSelectField
-                id="gender"
-                name="gender"
-                label={t('accountManagement.gender')}
-                placeholder={t('accountManagement.genderPlaceholder')}
-                control={control}
-                options={GENDER_OPTIONS}
-                getOptionValue={(option) => option.value}
-                getOptionLabel={(option) => option.label}
-                error={errors.gender}
-                required
-                isSubmitting={isSubmitting}
-              />
+              <FormField id="gender" label={t('accountManagement.gender')} required error={errors.gender}>
+                <CustomDropdownField
+                  id="gender"
+                  value={genderValue || ''}
+                  onChange={(value) => setValue('gender', value, { shouldValidate: true })}
+                  placeholder={t('accountManagement.genderPlaceholder')}
+                  options={genderOptions}
+                  disabled={isSubmitting}
+                  hasError={!!errors.gender}
+                />
+              </FormField>
 
               {/* Date of Birth */}
               <FormDatePickerField
@@ -345,42 +374,30 @@ export const EditInstructorPage = () => {
               />
 
               {/* Zone */}
-              <FormSelectField
-                id="zoneId"
-                name="zoneId"
-                label={t('accountManagement.zone')}
-                placeholder={t('accountManagement.zoneAutoSelected')}
-                control={control}
-                options={zones}
-                getOptionValue={(option) => String(option.id)}
-                getOptionLabel={(option) => option.codeName || ''}
-                error={errors.zoneId}
-                required
-                isSubmitting={isSubmitting}
-                disabled
-                isLoading={isLoadingZones}
-                onValueChange={() => { }} // Disabled - auto-selected
-                displayValue={(value) => {
-                  const selectedZone = value ? zones.find((z) => String(z.id) === value) : null
-                  return selectedZone ? selectedZone.codeName : t('accountManagement.zoneAutoSelected')
-                }}
-              />
+              <FormField id="zoneId" label={t('accountManagement.zone')} required error={errors.zoneId}>
+                <CustomDropdownField
+                  id="zoneId"
+                  value={zoneIdValue || ''}
+                  onChange={() => {}} // Disabled - auto-selected
+                  placeholder={t('accountManagement.zoneAutoSelected')}
+                  options={zoneOptions}
+                  disabled={isSubmitting || isLoadingZones}
+                  hasError={!!errors.zoneId}
+                />
+              </FormField>
 
               {/* Region */}
-              <FormSelectField
-                id="regionId"
-                name="regionId"
-                label={t('accountManagement.region')}
-                placeholder={t('accountManagement.regionPlaceholder')}
-                control={control}
-                options={regions}
-                getOptionValue={(option) => String(option.id)}
-                getOptionLabel={(option) => option.codeName || ''}
-                error={errors.regionId}
-                required
-                isSubmitting={isSubmitting}
-                isLoading={isLoadingRegions}
-              />
+              <FormField id="regionId" label={t('accountManagement.region')} required error={errors.regionId}>
+                <CustomDropdownField
+                  id="regionId"
+                  value={selectedRegionId || ''}
+                  onChange={(value) => setValue('regionId', value, { shouldValidate: true })}
+                  placeholder={t('accountManagement.regionPlaceholder')}
+                  options={regionOptions}
+                  disabled={isSubmitting || isLoadingRegions}
+                  hasError={!!errors.regionId}
+                />
+              </FormField>
 
               {/* Street */}
               <FormInputField
@@ -414,35 +431,29 @@ export const EditInstructorPage = () => {
           >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Status */}
-              <FormSelectField
-                id="statusId"
-                name="statusId"
-                label={t('accountManagement.status')}
-                placeholder={t('accountManagement.statusPlaceholder')}
-                control={control}
-                options={statusMasterCodes}
-                getOptionValue={(option) => String(option.id)}
-                getOptionLabel={(option) => option.codeName || ''}
-                error={errors.statusId}
-                required
-                isSubmitting={isSubmitting}
-                isLoading={isLoadingStatusCodes}
-              />
+              <FormField id="statusId" label={t('accountManagement.status')} required error={errors.statusId}>
+                <CustomDropdownField
+                  id="statusId"
+                  value={statusIdValue || ''}
+                  onChange={(value) => setValue('statusId', value, { shouldValidate: true })}
+                  placeholder={t('accountManagement.statusPlaceholder')}
+                  options={statusOptions}
+                  disabled={isSubmitting || isLoadingStatusCodes}
+                  hasError={!!errors.statusId}
+                />
+              </FormField>
               {/* Classification */}
-              <FormSelectField
-                id="classificationId"
-                name="classificationId"
-                label={t('accountManagement.classification')}
-                placeholder={t('accountManagement.classificationPlaceholder')}
-                control={control}
-                options={classificationMasterCodes}
-                getOptionValue={(option) => String(option.id)}
-                getOptionLabel={(option) => option.codeName || ''}
-                error={errors.classificationId}
-                required
-                isSubmitting={isSubmitting}
-                isLoading={isLoadingClassificationCodes}
-              />
+              <FormField id="classificationId" label={t('accountManagement.classification')} required error={errors.classificationId}>
+                <CustomDropdownField
+                  id="classificationId"
+                  value={classificationIdValue || ''}
+                  onChange={(value) => setValue('classificationId', value, { shouldValidate: true })}
+                  placeholder={t('accountManagement.classificationPlaceholder')}
+                  options={classificationOptions}
+                  disabled={isSubmitting || isLoadingClassificationCodes}
+                  hasError={!!errors.classificationId}
+                />
+              </FormField>
             </div>
           </CollapsibleCard>
         </form>
