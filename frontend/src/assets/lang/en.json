@@ -116,7 +116,9 @@
     "masterCodeSetup": "Master Code Setup",
     "commonCode": "Common Code Setup",
     "lecture": "Lecture",
-    "lectureSchedule": "Lecture Schedule"
+    "lectureSchedule": "Lecture Schedule",
+    "myLectureList": "My lecture list",
+    "checkConfirmedClasses": "Check confirmed classes"
   },
   "errors": {
     "generic": "An error occurred",
@@ -518,6 +520,21 @@
         "ongoing": "Ongoing training",
         "completed": "Completed training"
       }
+    },
+    "confirmed": {
+      "title": "Check confirmed classes",
+      "description": "Check the confirmed class schedule.",
+      "entire": "entire",
+      "searchPlaceholder": "Search by education ID, education name, or institution name",
+      "noData": "No confirmed classes found",
+      "educationId": "Education ID",
+      "trainingName": "Training name",
+      "educationalInstitutions": "educational institutions",
+      "region": "region",
+      "gradeAndClass": "Grade and class",
+      "schedule": "schedule",
+      "work": "work",
+      "viewDetails": "View Details"
     }
   }
 }

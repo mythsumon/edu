@@ -11,8 +11,6 @@ import {
   BookOpen,
   Calendar,
   Users,
-  ClipboardList,
-  Award,
   FileCode,
   Building2,
 } from "lucide-react";
@@ -143,8 +141,13 @@ export const Sidebar = () => {
         titleKey: "sidebar.lecture",
         items: [
           {
-            nameKey: "sidebar.lectureSchedule",
-            href: ROUTES.INSTRUCTOR_SCHEDULE_LIST,
+            nameKey: "sidebar.myLectureList",
+            href: ROUTES.INSTRUCTOR_SCHEDULE_LIST_FULL,
+            icon: Calendar,
+          },
+          {
+            nameKey: "sidebar.checkConfirmedClasses",
+            href: ROUTES.INSTRUCTOR_SCHEDULE_CONFIRMED_FULL,
             icon: Calendar,
           },
         ],

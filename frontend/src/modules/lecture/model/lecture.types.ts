@@ -40,6 +40,22 @@ export interface ScheduleItem {
 }
 
 /**
+ * Confirmed Schedule Item (for confirmed classes table)
+ */
+export interface ConfirmedScheduleItem {
+  id: number
+  educationId: string
+  trainingName: string
+  educationalInstitutions: string
+  region: string
+  gradeAndClass: string
+  schedule: {
+    startDate: string
+    endDate: string
+  }
+}
+
+/**
  * List Schedules Query Parameters
  */
 export interface ListSchedulesParams {

@@ -116,7 +116,9 @@
     "masterCodeSetup": "마스터 코드 설정",
     "commonCode": "공통 코드 설정",
     "lecture": "강의",
-    "lectureSchedule": "강의 일정"
+    "lectureSchedule": "강의 일정",
+    "myLectureList": "내 강의 목록",
+    "checkConfirmedClasses": "확정된 강의 확인"
   },
   "errors": {
     "generic": "오류가 발생했습니다",
@@ -518,6 +520,21 @@
         "ongoing": "진행 중인 교육",
         "completed": "완료된 교육"
       }
+    },
+    "confirmed": {
+      "title": "확정된 강의 확인",
+      "description": "확정된 강의 일정을 확인하세요.",
+      "entire": "전체",
+      "searchPlaceholder": "교육 ID, 교육명 또는 기관명으로 검색",
+      "noData": "확정된 강의를 찾을 수 없습니다",
+      "educationId": "교육 ID",
+      "trainingName": "교육명",
+      "educationalInstitutions": "교육 기관",
+      "region": "지역",
+      "gradeAndClass": "학년 및 반",
+      "schedule": "일정",
+      "work": "작업",
+      "viewDetails": "상세 보기"
     }
   }
 }

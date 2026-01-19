@@ -17,7 +17,7 @@ import {
   InstructorManagementPage,
 } from '@/modules/reference-information-management'
 import { SettingsAndUserManagementPage } from '@/modules/system-management'
-import { InstructorScheduleListPage } from '@/modules/lecture'
+import { InstructorScheduleListPage, ConfirmedScheduleListPage } from '@/modules/lecture'
 import { MasterCodeSetupPage, MasterCodeCreatePage } from '@/modules/master-code-setup'
 import { CommonCodePage } from '@/modules/common-code'
 import { InstitutionManagementPage, InstitutionCreatePage, InstitutionEditPage } from '@/modules/institution'
@@ -207,8 +207,17 @@ export const protectedRoutes: RouteObject[] = [
                 element: <EducationOperationsPage />,
               },
               {
-                path: ROUTES.INSTRUCTOR_SCHEDULE_LIST,
-                element: <InstructorScheduleListPage />,
+                path: ROUTES.INSTRUCTOR_SCHEDULE_BASE,
+                children: [
+                  {
+                    path: 'list',
+                    element: <InstructorScheduleListPage />,
+                  },
+                  {
+                    path: 'confirmed',
+                    element: <ConfirmedScheduleListPage />,
+                  },
+                ],
               },
               {
                 path: ROUTES.INSTRUCTOR_STUDENTS,
