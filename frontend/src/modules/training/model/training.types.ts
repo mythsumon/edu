@@ -74,6 +74,20 @@ export interface OngoingTrainingItem {
 }
 
 /**
+ * Completed Training Item (for completed training cards)
+ */
+export interface CompletedTrainingItem {
+  id: number
+  trainingName: string
+  institutionName: string
+  schedule: {
+    startDate: string
+    endDate: string
+  }
+  gradeAndClass: string
+}
+
+/**
  * List Schedules Query Parameters
  */
 export interface ListSchedulesParams {

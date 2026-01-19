@@ -17,7 +17,7 @@ import {
   InstructorManagementPage,
 } from '@/modules/reference-information-management'
 import { SettingsAndUserManagementPage } from '@/modules/system-management'
-import { InstructorScheduleListPage, ConfirmedScheduleListPage, OngoingTrainingListPage } from '@/modules/training'
+import { InstructorScheduleListPage, ConfirmedScheduleListPage, OngoingTrainingListPage, CompletedTrainingListPage } from '@/modules/training'
 import { MasterCodeSetupPage, MasterCodeCreatePage } from '@/modules/master-code-setup'
 import { CommonCodePage } from '@/modules/common-code'
 import { InstitutionManagementPage, InstitutionCreatePage, InstitutionEditPage } from '@/modules/institution'
@@ -220,6 +220,10 @@ export const protectedRoutes: RouteObject[] = [
                   {
                     path: 'in-progress',
                     element: <OngoingTrainingListPage />,
+                  },
+                  {
+                    path: 'completed',
+                    element: <CompletedTrainingListPage />,
                   },
                 ],
               },

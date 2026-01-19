@@ -1,5 +1,5 @@
 import * as React from "react";
-import { type LucideIcon } from "lucide-react";
+import { type LucideIcon, Award } from "lucide-react";
 import { Card } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { cn } from "@/shared/lib/cn";
@@ -45,6 +45,13 @@ export interface TrainingCardProps {
    * Whether to show hover effect
    */
   hoverable?: boolean;
+  /**
+   * Training summary section (optional)
+   */
+  summary?: {
+    label: string;
+    icon?: LucideIcon;
+  };
 }
 
 /**
@@ -58,6 +65,7 @@ export const TrainingCard = ({
   actionButton,
   className,
   hoverable = true,
+  summary,
 }: TrainingCardProps) => {
   const getStatusDotColor = (variant?: string) => {
     switch (variant) {
@@ -118,6 +126,20 @@ export const TrainingCard = ({
             );
           })}
         </div>
+
+        {/* Training Summary Section */}
+        {summary && (
+          <div className="pt-4 border-t border-border">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">{summary.label}</span>
+              {summary.icon ? (
+                <summary.icon className="h-4 w-4 text-primary" />
+              ) : (
+                <Award className="h-4 w-4 text-primary" />
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Action Button */}

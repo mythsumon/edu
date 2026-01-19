@@ -119,7 +119,8 @@
     "lectureSchedule": "Lecture Schedule",
     "myLectureList": "My lecture list",
     "checkConfirmedClasses": "Check confirmed classes",
-    "ongoingTraining": "Ongoing training"
+    "ongoingTraining": "Ongoing training",
+    "completedTraining": "Completed training"
   },
   "errors": {
     "generic": "An error occurred",
@@ -543,6 +544,14 @@
       "entire": "entire",
       "inProgress": "In progress",
       "attendanceConfirmation": "Attendance/Confirmation"
+    },
+    "completed": {
+      "title": "Completed training",
+      "description": "Check your completed training history.",
+      "entire": "entire",
+      "complete": "complete",
+      "trainingSummary": "Training Summary",
+      "reviewsSettlement": "Reviews/Settlement"
     }
   }
 }
