@@ -59,13 +59,19 @@
     "emailPlaceholder": "Enter your email",
     "username": "Username",
     "usernamePlaceholder": "Enter your username",
+    "userId": "User ID",
+    "password": "Password",
     "passwordPlaceholder": "Enter your password",
     "forgotPassword": "Forgot Password?",
     "loggingIn": "Signing in...",
     "loginButton": "Sign In",
     "loginFailed": "Login Failed",
     "invalidCredentials": "Invalid username or password. Please try again.",
-    "accessDenied": "Access denied"
+    "accessDenied": "Access denied",
+    "validation": {
+      "usernameRequired": "User ID is required",
+      "passwordRequired": "Password is required"
+    }
   },
   "header": {
     "title": "Management Dashboard",
