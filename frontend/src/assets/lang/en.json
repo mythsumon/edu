@@ -218,6 +218,8 @@
     "regionPlaceholder": "Select region",
     "street": "Street",
     "streetPlaceholder": "Enter street",
+    "searchAddress": "Search Address",
+    "searchAddressButton": "Search Address",
     "buildingNameLakeNumber": "Building Name / Lake Number",
     "buildingNameLakeNumberPlaceholder": "Enter building name / lake number",
     "status": "Status",

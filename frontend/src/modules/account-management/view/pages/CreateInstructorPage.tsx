@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
 import { useEffect, useRef, useMemo } from 'react'
+import { Search } from 'lucide-react'
 import { PageLayout } from '@/app/layout/PageLayout'
 import { Button } from '@/shared/ui/button'
 import { useToast } from '@/shared/ui/use-toast'
@@ -18,6 +19,9 @@ import { FormPasswordField } from '../components/FormPasswordField'
 import { FormSelectField } from '../components/FormSelectField'
 import { FormDatePickerField } from '../components/FormDatePickerField'
 import { CollapsibleCard } from '../components/CollapsibleCard'
+import { FormField } from '../components/FormField'
+import { Input } from '@/shared/ui/input'
+import { openPostcodeSearch } from '@/shared/lib/postcode'
 
 export const AddInstructorPage = () => {
   const { t } = useTranslation()
@@ -155,6 +159,21 @@ export const AddInstructorPage = () => {
 
   const handleFormSubmit = () => {
     formRef.current?.requestSubmit()
+  }
+
+  const handleSearchAddress = () => {
+    openPostcodeSearch({
+      onComplete: (data) => {
+        // Use roadAddress if available, otherwise use address
+        const address = data.roadAddress || data.address
+        setValue('street', address, { shouldValidate: true })
+      },
+      onClose: (state) => {
+        if (state === 'FORCE_CLOSE') {
+          // User closed the popup without selecting
+        }
+      },
+    })
   }
 
   return (
@@ -344,15 +363,27 @@ export const AddInstructorPage = () => {
               />
 
               {/* Street */}
-              <FormInputField
-                id="street"
-                label={t('accountManagement.street')}
-                placeholder={t('accountManagement.streetPlaceholder')}
-                register={register('street')}
-                error={errors.street}
-                required
-                isSubmitting={isSubmitting}
-              />
+              <FormField id="street" label={t('accountManagement.street')} required error={errors.street}>
+                <div className="flex gap-2">
+                  <Input
+                    id="street"
+                    placeholder={t('accountManagement.streetPlaceholder')}
+                    {...register('street')}
+                    className={errors.street ? 'ring-2 ring-destructive' : ''}
+                    disabled={isSubmitting}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleSearchAddress}
+                    disabled={isSubmitting}
+                    className="shrink-0 whitespace-nowrap"
+                  >
+                    <Search className="h-4 w-4" />
+                    <span>{t('accountManagement.searchAddressButton')}</span>
+                  </Button>
+                </div>
+              </FormField>
 
               {/* Detail Address */}
               <FormInputField
