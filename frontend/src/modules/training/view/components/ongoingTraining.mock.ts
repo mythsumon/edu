@@ -1,4 +1,4 @@
-import type { OngoingTrainingItem } from "../../model/lecture.types";
+import type { OngoingTrainingItem } from "../../model/training.types";
 
 /**
  * Mock data for ongoing training

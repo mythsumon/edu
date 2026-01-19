@@ -7,7 +7,7 @@ import { Input } from "@/shared/ui/input";
 import { Card } from "@/shared/ui/card";
 import { DataTable } from "@/shared/components/DataTable";
 import { CustomPagination } from "@/shared/components/CustomPagination";
-import type { ConfirmedScheduleItem } from "../../model/lecture.types";
+import type { ConfirmedScheduleItem } from "../../model/training.types";
 import { formatDate } from "@/shared/lib/date";
 import { cn } from "@/shared/lib/cn";
 

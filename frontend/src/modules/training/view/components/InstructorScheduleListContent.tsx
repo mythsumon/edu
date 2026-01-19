@@ -5,10 +5,10 @@ import type { ColumnPinningState } from "@tanstack/react-table";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Card } from "@/shared/ui/card";
-import { StatsContainer } from "@/modules/lecture/view/components/StatsContainer";
+import { StatsContainer } from "../components/StatsContainer";
 import { TabContainer, type TabConfig } from "./TabsContainer";
 import { ScheduleTable } from "./ScheduleTable";
-import type { ScheduleItem } from "../../model/lecture.types";
+import type { ScheduleItem } from "../../model/training.types";
 
 // Mock data
 const MOCK_SCHEDULES: ScheduleItem[] = [

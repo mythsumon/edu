@@ -1,4 +1,4 @@
-import type { ScheduleItem, ScheduleResponseDto } from './lecture.types'
+import type { ScheduleItem, ScheduleResponseDto } from './training.types'
 
 /**
  * Map ScheduleResponseDto to ScheduleItem for table display

@@ -1,6 +1,6 @@
 import { axiosInstance } from '@/shared/http/axios/instance'
 import type { ApiResponse, PageResponse } from '@/shared/http/types/common'
-import type { ScheduleResponseDto, ListSchedulesParams } from './lecture.types'
+import type { ScheduleResponseDto, ListSchedulesParams } from './training.types'
 
 /**
  * Fetch instructor schedule list

@@ -5,7 +5,7 @@ import type { ColumnPinningState } from "@tanstack/react-table";
 import { Clock, X, Eye } from "lucide-react";
 import { DataTable } from "@/shared/components/DataTable";
 import { CustomPagination } from "@/shared/components/CustomPagination";
-import type { ScheduleItem } from "../../model/lecture.types";
+import type { ScheduleItem } from "../../model/training.types";
 import { formatDateTime } from "@/shared/lib/date";
 import { cn } from "@/shared/lib/cn";
 
