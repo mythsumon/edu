@@ -118,7 +118,8 @@
     "lecture": "강의",
     "lectureSchedule": "강의 일정",
     "myLectureList": "내 강의 목록",
-    "checkConfirmedClasses": "확정된 강의 확인"
+    "checkConfirmedClasses": "확정된 강의 확인",
+    "ongoingTraining": "진행 중인 교육"
   },
   "errors": {
     "generic": "오류가 발생했습니다",
@@ -535,6 +536,13 @@
       "schedule": "일정",
       "work": "작업",
       "viewDetails": "상세 보기"
+    },
+    "ongoing": {
+      "title": "진행 중인 교육",
+      "description": "현재 교육을 확인하고 출석을 관리하세요.",
+      "entire": "전체",
+      "inProgress": "진행 중",
+      "attendanceConfirmation": "출석/확인"
     }
   }
 }

@@ -56,6 +56,24 @@ export interface ConfirmedScheduleItem {
 }
 
 /**
+ * Ongoing Training Item (for ongoing training cards)
+ */
+export interface OngoingTrainingItem {
+  id: number
+  trainingName: string
+  institutionName: string
+  schedule: {
+    startDate: string
+    endDate: string
+  }
+  gradeAndClass: string
+  time: {
+    startTime: string
+    endTime: string
+  }
+}
+
+/**
  * List Schedules Query Parameters
  */
 export interface ListSchedulesParams {

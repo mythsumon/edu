@@ -150,6 +150,11 @@ export const Sidebar = () => {
             href: ROUTES.INSTRUCTOR_SCHEDULE_CONFIRMED_FULL,
             icon: Calendar,
           },
+          {
+            nameKey: "sidebar.ongoingTraining",
+            href: ROUTES.INSTRUCTOR_SCHEDULE_ONGOING_FULL,
+            icon: Calendar,
+          },
         ],
       },
     ],

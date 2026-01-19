@@ -118,7 +118,8 @@
     "lecture": "Lecture",
     "lectureSchedule": "Lecture Schedule",
     "myLectureList": "My lecture list",
-    "checkConfirmedClasses": "Check confirmed classes"
+    "checkConfirmedClasses": "Check confirmed classes",
+    "ongoingTraining": "Ongoing training"
   },
   "errors": {
     "generic": "An error occurred",
@@ -535,6 +536,13 @@
       "schedule": "schedule",
       "work": "work",
       "viewDetails": "View Details"
+    },
+    "ongoing": {
+      "title": "Ongoing training",
+      "description": "Check your current training and manage your attendance.",
+      "entire": "entire",
+      "inProgress": "In progress",
+      "attendanceConfirmation": "Attendance/Confirmation"
     }
   }
 }

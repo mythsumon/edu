@@ -17,7 +17,7 @@ import {
   InstructorManagementPage,
 } from '@/modules/reference-information-management'
 import { SettingsAndUserManagementPage } from '@/modules/system-management'
-import { InstructorScheduleListPage, ConfirmedScheduleListPage } from '@/modules/lecture'
+import { InstructorScheduleListPage, ConfirmedScheduleListPage, OngoingTrainingListPage } from '@/modules/lecture'
 import { MasterCodeSetupPage, MasterCodeCreatePage } from '@/modules/master-code-setup'
 import { CommonCodePage } from '@/modules/common-code'
 import { InstitutionManagementPage, InstitutionCreatePage, InstitutionEditPage } from '@/modules/institution'
@@ -216,6 +216,10 @@ export const protectedRoutes: RouteObject[] = [
                   {
                     path: 'confirmed',
                     element: <ConfirmedScheduleListPage />,
+                  },
+                  {
+                    path: 'in-progress',
+                    element: <OngoingTrainingListPage />,
                   },
                 ],
               },
