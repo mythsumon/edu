@@ -41,7 +41,7 @@ export const OngoingTrainingListPage = () => {
       </div>
 
       {/* Stats Container */}
-      <div className="px-4 py-5">
+      <div className="px-4 py-2">
         <StatsContainer stats={stats} />
       </div>
 
