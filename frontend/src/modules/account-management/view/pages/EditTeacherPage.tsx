@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useMemo } from 'react'
 import { PageLayout } from '@/app/layout/PageLayout'
 import { Button } from '@/shared/ui/button'
 import { useToast } from '@/shared/ui/use-toast'
@@ -10,9 +10,13 @@ import { ROUTES } from '@/shared/constants/routes'
 import { useUpdateTeacher } from '../../controller/mutations'
 import { useTeacherDetailQuery } from '../../controller/queries'
 import { updateTeacherSchema, type UpdateTeacherFormData } from '../../model/account-management.schema'
+import { useMasterCodeChildrenByCodeQuery } from '@/modules/master-code-setup/controller/queries'
+import { MASTER_CODE_PARENT_CODES } from '@/shared/constants/master-code'
 import { LoadingState } from '@/shared/components/LoadingState'
 import { ErrorState } from '@/shared/components/ErrorState'
 import { FormInputField } from '../components/FormInputField'
+import { FormField } from '../components/FormField'
+import { CustomDropdownField, type DropdownOption } from '@/shared/components/CustomDropdown'
 import { CollapsibleCard } from '../components/CollapsibleCard'
 
 export const EditTeacherPage = () => {
@@ -29,6 +33,8 @@ export const EditTeacherPage = () => {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<UpdateTeacherFormData>({
@@ -38,19 +44,34 @@ export const EditTeacherPage = () => {
       name: '',
       email: '',
       phone: '',
+      statusId: '',
     },
   })
 
+  const statusIdValue = watch('statusId')
+
+  // Fetch status master codes (parent code 100)
+  const { data: statusMasterCodesData, isLoading: isLoadingStatusCodes } = useMasterCodeChildrenByCodeQuery(
+    MASTER_CODE_PARENT_CODES.STATUS
+  )
+  const statusMasterCodes = statusMasterCodesData?.items || []
+
+  const statusOptions: DropdownOption[] = useMemo(
+    () => statusMasterCodes.map((status) => ({ value: String(status.id), label: status.codeName || '' })),
+    [statusMasterCodes]
+  )
+
   // Pre-fill form with teacher data using reset() to properly initialize and clear validation errors
   useEffect(() => {
-    if (teacher) {
+    if (teacher && statusMasterCodes.length > 0) {
       reset({
         name: teacher.name,
         email: teacher.email || '',
         phone: teacher.phone || '',
+        statusId: teacher.statusId ? String(teacher.statusId) : '',
       })
     }
-  }, [teacher, reset])
+  }, [teacher, statusMasterCodes, reset])
 
   const onSubmit = async (data: UpdateTeacherFormData) => {
     try {
@@ -60,6 +81,7 @@ export const EditTeacherPage = () => {
           name: data.name,
           email: data.email || undefined,
           phone: data.phone || undefined,
+          statusId: data.statusId ? parseInt(data.statusId, 10) : undefined,
         },
       })
       toast({
@@ -167,6 +189,19 @@ export const EditTeacherPage = () => {
                 error={errors.phone}
                 isSubmitting={isSubmitting}
               />
+
+              {/* Status */}
+              <FormField id="statusId" label={t('accountManagement.status')} required error={errors.statusId}>
+                <CustomDropdownField
+                  id="statusId"
+                  value={statusIdValue || ''}
+                  onChange={(value) => setValue('statusId', value, { shouldValidate: true })}
+                  placeholder={t('accountManagement.statusPlaceholder')}
+                  options={statusOptions}
+                  disabled={isSubmitting || isLoadingStatusCodes}
+                  hasError={!!errors.statusId}
+                />
+              </FormField>
             </div>
           </CollapsibleCard>
         </form>

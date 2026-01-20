@@ -22,4 +22,6 @@ public class TeacherUpdateDto {
     private String email;
 
     private String phone;
+
+    private Long statusId;
 }

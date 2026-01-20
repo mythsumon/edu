@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { accountManagementQueryKeys } from './queryKeys'
-import { listAdmins, listInstructors, listTeachers, getAdminById, getAdminByUsername, getInstructorById, getTeacherById } from '../model/account-management.service'
+import { listAdmins, listInstructors, listTeachers, getAdminById, getAdminByUsername, getInstructorById, getInstructorMe, getTeacherById } from '../model/account-management.service'
 import {
   mapAdminAccountList,
   mapInstructorAccountList,
@@ -88,6 +88,19 @@ export const useInstructorDetailQuery = (id: number) => {
       return mapInstructorDetail(dto)
     },
     enabled: !!id,
+  })
+}
+
+/**
+ * Query hook for fetching current instructor's profile (for logged-in instructor)
+ */
+export const useInstructorMeQuery = () => {
+  return useQuery({
+    queryKey: accountManagementQueryKeys.instructorMe(),
+    queryFn: async () => {
+      const dto = await getInstructorMe()
+      return mapInstructorDetail(dto)
+    },
   })
 }
 

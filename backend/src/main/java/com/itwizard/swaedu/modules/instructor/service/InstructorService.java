@@ -23,6 +23,10 @@ public interface InstructorService {
 
     InstructorResponseDto patchInstructor(Long userId, InstructorPatchDto request);
 
+    InstructorResponseDto getInstructorByUsername(String username);
+
+    InstructorResponseDto updateInstructorByUsername(String username, InstructorPatchDto request);
+
     void deleteInstructor(Long userId);
 
     void exportInstructorsToExcel(

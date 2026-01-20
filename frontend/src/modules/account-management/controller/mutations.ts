@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { accountManagementQueryKeys } from './queryKeys'
-import { createAdmin, updateAdmin, updateAdminByUsername, createInstructor, createTeacher, updateInstructor, updateTeacher } from '../model/account-management.service'
-import type { CreateAdminRequestDto, UpdateAdminRequestDto, CreateInstructorRequestDto, UpdateInstructorRequestDto, CreateTeacherRequestDto, UpdateTeacherRequestDto } from '../model/account-management.types'
+import { createAdmin, updateAdmin, updateAdminByUsername, createInstructor, createTeacher, updateInstructor, updateTeacher, updateOwnProfile, changePassword } from '../model/account-management.service'
+import type { CreateAdminRequestDto, UpdateAdminRequestDto, CreateInstructorRequestDto, UpdateInstructorRequestDto, CreateTeacherRequestDto, UpdateTeacherRequestDto, ChangePasswordRequestDto } from '../model/account-management.types'
 
 /**
  * Mutation hook for creating a new admin
@@ -130,6 +130,46 @@ export const useUpdateAccountManagement = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.lists() })
+    },
+  })
+}
+
+/**
+ * Mutation hook for updating own profile
+ */
+export const useUpdateOwnProfile = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: async ({ username, roleName, data }: { 
+      username: string
+      roleName: string
+      data: UpdateAdminRequestDto | UpdateInstructorRequestDto | UpdateTeacherRequestDto 
+    }) => {
+      return await updateOwnProfile(username, roleName, data)
+    },
+    onSuccess: (_, variables) => {
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.admins() })
+      queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.instructors() })
+      queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.teachers() })
+      // Also invalidate current user query if it exists
+      queryClient.invalidateQueries({ queryKey: ['user', 'me'] })
+      // Invalidate instructor me query if updating instructor profile
+      if (variables.roleName.toUpperCase() === 'INSTRUCTOR') {
+        queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.instructorMe() })
+      }
+    },
+  })
+}
+
+/**
+ * Mutation hook for changing password
+ */
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: async (data: ChangePasswordRequestDto) => {
+      return await changePassword(data)
     },
   })
 }

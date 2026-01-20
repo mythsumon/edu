@@ -101,11 +101,6 @@ export const EditInstructorPage = () => {
     []
   )
 
-  const zoneOptions: DropdownOption[] = useMemo(
-    () => zones.map((zone) => ({ value: String(zone.id), label: zone.codeName || '' })),
-    [zones]
-  )
-
   const regionOptions: DropdownOption[] = useMemo(
     () => regions.map((region) => ({ value: String(region.id), label: region.codeName || '' })),
     [regions]
@@ -120,6 +115,13 @@ export const EditInstructorPage = () => {
     () => classificationMasterCodes.map((classification) => ({ value: String(classification.id), label: classification.codeName || '' })),
     [classificationMasterCodes]
   )
+
+  // Get zone name from zoneId for display
+  const zoneDisplayName = useMemo(() => {
+    if (!zoneIdValue) return ''
+    const zone = zones.find((z) => String(z.id) === zoneIdValue)
+    return zone?.codeName || ''
+  }, [zoneIdValue, zones])
 
   // Pre-fill form with instructor data using reset() to properly initialize and clear validation errors
   useEffect(() => {
@@ -365,20 +367,18 @@ export const EditInstructorPage = () => {
                   id="city"
                   placeholder={t('accountManagement.cityPlaceholder')}
                   value={cityMasterCode?.codeName || ''}
-                  disabled={isSubmitting}
+                  disabled={true}
                 />
               </FormField>
 
               {/* Zone */}
               <FormField id="zoneId" label={t('accountManagement.zone')} required error={errors.zoneId}>
-                <CustomDropdownField
+                <Input
                   id="zoneId"
-                  value={zoneIdValue || ''}
-                  onChange={() => {}} // Disabled - auto-selected
                   placeholder={t('accountManagement.zoneAutoSelected')}
-                  options={zoneOptions}
-                  disabled={isSubmitting || isLoadingZones}
-                  hasError={!!errors.zoneId}
+                  value={zoneDisplayName}
+                  disabled={true}
+                  className={errors.zoneId ? 'ring-2 ring-destructive' : ''}
                 />
               </FormField>
 
