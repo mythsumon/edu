@@ -126,7 +126,7 @@ export const Sidebar = () => {
         ],
       },
       {
-        titleKey: "sidebar.system",
+        titleKey: "sidebar.settings",
         items: [
           {
             nameKey: "sidebar.commonCode",
