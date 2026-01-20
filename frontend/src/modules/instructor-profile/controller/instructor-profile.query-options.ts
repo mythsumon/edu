@@ -4,6 +4,7 @@ import {
   getMasterCodeByCode, 
   getMasterCodeChildrenByCode,
   getMasterCodeGrandChildrenByCode,
+  getInstructorMe,
 } from '../model/instructor-profile.service'
 import type { MasterCodeChildrenParams } from '../model/instructor-profile.types'
 import { instructorProfileQueryKeys } from './queryKeys'
@@ -74,6 +75,20 @@ export const masterCodeGrandChildrenByCodeQueryOptions = (
         throw new Error('Master code code is required')
       }
       return await getMasterCodeGrandChildrenByCode(code, params)
+    },
+  })
+}
+
+/**
+ * Query options for fetching current instructor profile
+ * Can be used with useQuery or ensureQueryData
+ * Endpoint: GET /api/v1/instructor/me
+ */
+export const instructorMeQueryOptions = () => {
+  return queryOptions({
+    queryKey: instructorProfileQueryKeys.instructorMe(),
+    queryFn: async () => {
+      return await getInstructorMe()
     },
   })
 }

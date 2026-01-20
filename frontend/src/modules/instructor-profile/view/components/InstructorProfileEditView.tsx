@@ -13,7 +13,7 @@ import { updateInstructorProfileSchema, type UpdateInstructorProfileFormData } f
 import { GENDER_OPTIONS } from '@/shared/constants/users'
 import type { MasterCodeResponseDto } from '../../model/instructor-profile.types'
 import type { PageResponse } from '@/shared/http/types/common'
-import { usePatchInstructor } from '../../controller/mutations'
+import { usePatchInstructorMe } from '../../controller/mutations'
 import { useUiStore } from '@/shared/stores/ui.store'
 import i18n from '@/app/config/i18n'
 
@@ -63,7 +63,7 @@ export const InstructorProfileEditView = ({
   const { t } = useTranslation()
   const { toast } = useToast()
   const { setLanguage } = useUiStore()
-  const patchInstructorMutation = usePatchInstructor()
+  const patchInstructorMutation = usePatchInstructorMe()
   const internalFormRef = useRef<HTMLFormElement>(null)
   const formRef = externalFormRef || internalFormRef
 
@@ -153,10 +153,7 @@ export const InstructorProfileEditView = ({
       }
 
       // Call mutation
-      await patchInstructorMutation.mutateAsync({
-        userId: instructor.id,
-        data: requestData,
-      })
+      await patchInstructorMutation.mutateAsync(requestData)
 
       // Show success message
       toast({

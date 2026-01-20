@@ -36,6 +36,18 @@ export const INSTRUCTOR_PROFILE_ENDPOINTS = {
    */
   instructor: {
     /**
+     * Get current instructor profile
+     * GET /api/v1/instructor/me
+     */
+    me: () => '/instructor/me',
+    
+    /**
+     * Update current instructor profile (PATCH - partial update)
+     * PATCH /api/v1/instructor/me
+     */
+    patchMe: () => '/instructor/me',
+    
+    /**
      * Update instructor (PUT - full update)
      * PUT /api/v1/instructor/{userId}
      */

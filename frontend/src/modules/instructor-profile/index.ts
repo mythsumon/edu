@@ -4,14 +4,16 @@ export {
   useMasterCodeByCodeQuery, 
   useMasterCodeChildrenByCodeQuery,
   useMasterCodeGrandChildrenByCodeQuery,
+  useInstructorMeQuery,
 } from './controller/queries'
-export { useUpdateInstructor, usePatchInstructor } from './controller/mutations'
+export { useUpdateInstructor, usePatchInstructor, usePatchInstructorMe } from './controller/mutations'
 export { instructorProfileLoader } from './controller/instructor-profile.loader'
 export { 
   masterCodeByIdQueryOptions, 
   masterCodeByCodeQueryOptions, 
   masterCodeChildrenByCodeQueryOptions,
   masterCodeGrandChildrenByCodeQueryOptions,
+  instructorMeQueryOptions,
 } from './controller/instructor-profile.query-options'
 export { INSTRUCTOR_PROFILE_ENDPOINTS } from './model/instructor-profile.endpoints'
 export type {

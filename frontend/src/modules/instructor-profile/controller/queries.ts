@@ -4,6 +4,7 @@ import {
   masterCodeByCodeQueryOptions,
   masterCodeChildrenByCodeQueryOptions,
   masterCodeGrandChildrenByCodeQueryOptions,
+  instructorMeQueryOptions,
 } from './instructor-profile.query-options'
 import type { MasterCodeChildrenParams } from '../model/instructor-profile.types'
 
@@ -62,5 +63,16 @@ export const useMasterCodeGrandChildrenByCodeQuery = (
   return useQuery({
     ...masterCodeGrandChildrenByCodeQueryOptions(code!, params),
     enabled: enabled && code !== null && code !== undefined && code.trim() !== '',
+  })
+}
+
+/**
+ * Query hook for fetching current instructor profile
+ * Endpoint: GET /api/v1/instructor/me
+ */
+export const useInstructorMeQuery = (enabled: boolean = true) => {
+  return useQuery({
+    ...instructorMeQueryOptions(),
+    enabled,
   })
 }

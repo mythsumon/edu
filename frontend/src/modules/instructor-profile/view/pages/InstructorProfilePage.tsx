@@ -1,16 +1,15 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLoaderData } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { Edit, Save, X } from 'lucide-react'
 import { PageLayout } from '@/app/layout/PageLayout'
 import { Button } from '@/shared/ui/button'
-import { STORAGE_KEYS } from '@/shared/constants/storageKeys'
-import type { UserResponseDto } from '@/modules/auth/model/auth.types'
 import { useUiStore } from '@/shared/stores/ui.store'
 import { 
   masterCodeChildrenByCodeQueryOptions,
   masterCodeGrandChildrenByCodeQueryOptions,
+  instructorMeQueryOptions,
 } from '../../controller/instructor-profile.query-options'
 import { transformArrayToObjectByKey } from '@/shared/lib/convertor'
 import { InstructorProfileDetailView } from '../components/InstructorProfileDetailView'
@@ -21,11 +20,16 @@ export const InstructorProfilePage = () => {
   const { language } = useUiStore()
   const [isEditMode, setIsEditMode] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [currentUser, setCurrentUser] = useState<UserResponseDto | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
 
-  // Get loader data (prefetched master codes)
+  // Get loader data (prefetched data)
   const loaderData = useLoaderData() as Awaited<ReturnType<typeof import('../../controller/instructor-profile.loader').instructorProfileLoader>>
+
+  // Get instructor profile data using Suspense Query (data is prefetched in loader)
+  const { data: instructorData } = useSuspenseQuery({
+    ...instructorMeQueryOptions(),
+    initialData: loaderData.instructorMe,
+  })
 
   // Use the prefetched data from loader - the data is already in the cache from ensureQueryData
   const { data: instructorStatus } = useQuery({
@@ -83,56 +87,43 @@ export const InstructorProfilePage = () => {
     return transformArrayToObjectByKey(instructorRegion.items, 'id')
   }, [instructorRegion?.items])
 
-  // Get current user from localStorage
-  useEffect(() => {
-    try {
-      const userStr = localStorage.getItem(STORAGE_KEYS.USER)
-      if (userStr) {
-        const user: UserResponseDto = JSON.parse(userStr)
-        setCurrentUser(user)
-      }
-    } catch (error) {
-      console.error('Failed to load user from localStorage:', error)
-    }
-  }, [])
-
-  // Static instructor data from user object
+  // Map instructor data from API response
   const instructor = useMemo(() => {
-    if (currentUser?.instructor) {
+    if (!instructorData) {
       return {
-        id: currentUser.id,
-        name: currentUser.instructor.name || currentUser.username || 'Instructor',
-        email: currentUser.instructor.email || '',
-        phone: currentUser.instructor.phone || '',
-        gender: currentUser.instructor.gender || '',
-        dob: currentUser.instructor.dob || '',
-        regionId: (currentUser.instructor as Record<string, unknown>)?.regionId as number | undefined,
-        cityId: (currentUser.instructor as Record<string, unknown>)?.cityId as number | undefined,
-        statusId: (currentUser.instructor as Record<string, unknown>)?.statusId as number | undefined,
-        classificationId: (currentUser.instructor as Record<string, unknown>)?.classificationId as number | undefined,
-        street: currentUser.instructor.street || '',
-        detailAddress: currentUser.instructor.detailAddress || '',
+        id: 0,
+        name: '',
+        email: '',
+        phone: '',
+        gender: '',
+        dob: '',
+        regionId: undefined,
+        cityId: undefined,
+        statusId: undefined,
+        classificationId: undefined,
+        street: '',
+        detailAddress: '',
         profilePhoto: undefined,
-        signature: (currentUser.instructor as Record<string, unknown>)?.signature as string | undefined,
+        signature: undefined,
       }
     }
     return {
-      id: currentUser?.id || 0,
-      name: currentUser?.username || 'Instructor',
-      email: '',
-      phone: '',
-      gender: '',
-      dob: '',
-      regionId: undefined,
-      cityId: undefined,
-      statusId: undefined,
-      classificationId: undefined,
-      street: '',
-      detailAddress: '',
-      profilePhoto: undefined,
-      signature: undefined,
+      id: instructorData.userId,
+      name: instructorData.name || '',
+      email: instructorData.email || '',
+      phone: instructorData.phone || '',
+      gender: instructorData.gender || '',
+      dob: instructorData.dob || '',
+      regionId: instructorData.regionId,
+      cityId: instructorData.cityId,
+      statusId: instructorData.statusId,
+      classificationId: instructorData.classificationId,
+      street: instructorData.street || '',
+      detailAddress: instructorData.detailAddress || '',
+      profilePhoto: instructorData.profilePhoto,
+      signature: instructorData.signature,
     }
-  }, [currentUser])
+  }, [instructorData])
 
   // Transform regions from master code data (Code 1300)
   const regions = useMemo<Array<{ id: number; codeName: string }>>(() => {
@@ -250,9 +241,9 @@ export const InstructorProfilePage = () => {
           instructor={instructor}
           cityMasterCode={instructorCity}
           cityMasterCodeMap={cityMasterCodeMap}
-          regions={regions}
+          districts={regions}
           cities={cities}
-          isLoadingRegions={isLoadingRegions}
+          isLoadingCities={isLoadingRegions}
           language={language}
           onSuccess={handleSuccess}
           getInitials={getInitials}

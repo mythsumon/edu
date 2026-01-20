@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { updateInstructor, patchInstructor } from '../model/instructor-profile.service'
+import { updateInstructor, patchInstructor, patchInstructorMe } from '../model/instructor-profile.service'
 import type {
   InstructorUpdateRequestDto,
   InstructorPatchRequestDto,
@@ -38,6 +38,24 @@ export const usePatchInstructor = () => {
     onSuccess: (_, variables) => {
       // Invalidate instructor query after patch
       queryClient.invalidateQueries({ queryKey: instructorProfileQueryKeys.instructorById(variables.userId) })
+    },
+  })
+}
+
+/**
+ * Patch current instructor profile mutation hook (PATCH - partial update)
+ * Endpoint: PATCH /api/v1/instructor/me
+ */
+export const usePatchInstructorMe = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: InstructorPatchRequestDto) => {
+      return await patchInstructorMe(data)
+    },
+    onSuccess: () => {
+      // Invalidate instructor me query after patch
+      queryClient.invalidateQueries({ queryKey: instructorProfileQueryKeys.instructorMe() })
     },
   })
 }

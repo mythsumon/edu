@@ -78,6 +78,31 @@ export const updateInstructor = async (
 }
 
 /**
+ * Get current instructor profile
+ * Endpoint: GET /api/v1/instructor/me
+ */
+export const getInstructorMe = async (): Promise<InstructorResponseDto> => {
+  const response = await axiosInstance.get<ApiResponse<InstructorResponseDto>>(
+    INSTRUCTOR_PROFILE_ENDPOINTS.instructor.me()
+  )
+  return response.data.data
+}
+
+/**
+ * Patch current instructor profile (PATCH - partial update)
+ * Endpoint: PATCH /api/v1/instructor/me
+ */
+export const patchInstructorMe = async (
+  data: InstructorPatchRequestDto
+): Promise<InstructorResponseDto> => {
+  const response = await axiosInstance.patch<ApiResponse<InstructorResponseDto>>(
+    INSTRUCTOR_PROFILE_ENDPOINTS.instructor.patchMe(),
+    data
+  )
+  return response.data.data
+}
+
+/**
  * Patch instructor (PATCH - partial update)
  * Endpoint: PATCH /api/v1/instructor/{userId}
  */

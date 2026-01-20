@@ -10,5 +10,6 @@ export const instructorProfileQueryKeys = {
   masterCodeGrandChildrenByCode: (code: string, params?: string) => 
     [...instructorProfileQueryKeys.masterCodeGrandChildren(), 'by-code', code, params || ''] as const,
   instructor: () => [...instructorProfileQueryKeys.all, 'instructor'] as const,
+  instructorMe: () => [...instructorProfileQueryKeys.instructor(), 'me'] as const,
   instructorById: (userId: number) => [...instructorProfileQueryKeys.instructor(), userId] as const,
 }
