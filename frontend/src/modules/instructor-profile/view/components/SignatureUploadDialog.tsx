@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Upload, Trash2 } from 'lucide-react'
+import { Upload } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import {
   Dialog,
@@ -164,51 +164,51 @@ export const SignatureUploadDialog = ({
     })
   }
 
-  const handleRemove = () => {
-    if (!currentSignature && !preview) {
-      console.warn('[SignatureUploadDialog] No signature to remove')
-      return
-    }
+  // const handleRemove = () => {
+  //   if (!currentSignature && !preview) {
+  //     console.warn('[SignatureUploadDialog] No signature to remove')
+  //     return
+  //   }
 
-    console.log('[SignatureUploadDialog] Removing signature')
+  //   console.log('[SignatureUploadDialog] Removing signature')
 
-    // Call mutation to remove signature (set to null)
-    patchInstructorMutation.mutate(
-      { signature: null },
-      {
-        onSuccess: () => {
-          console.log('[SignatureUploadDialog] Signature removed successfully')
-          toast({
-            title: t('common.success'),
-            description: t('profile.signatureRemoveSuccess'),
-            variant: 'success',
-          })
-          setPreview(null)
-          setSelectedFile(null)
-          onOpenChange(false)
-          // Reset input
-          if (fileInputRef.current) {
-            fileInputRef.current.value = ''
-          }
-        },
-        onError: (error: unknown) => {
-          console.error('[SignatureUploadDialog] Remove failed:', error)
-          const errorMessage =
-            error instanceof Error
-              ? error.message
-              : typeof error === 'object' && error !== null && 'message' in error
-                ? String((error as { message: string }).message)
-                : t('profile.signatureRemoveError')
+  //   // Call mutation to remove signature (set to null)
+  //   patchInstructorMutation.mutate(
+  //     { signature: null },
+  //     {
+  //       onSuccess: () => {
+  //         console.log('[SignatureUploadDialog] Signature removed successfully')
+  //         toast({
+  //           title: t('common.success'),
+  //           description: t('profile.signatureRemoveSuccess'),
+  //           variant: 'success',
+  //         })
+  //         setPreview(null)
+  //         setSelectedFile(null)
+  //         onOpenChange(false)
+  //         // Reset input
+  //         if (fileInputRef.current) {
+  //           fileInputRef.current.value = ''
+  //         }
+  //       },
+  //       onError: (error: unknown) => {
+  //         console.error('[SignatureUploadDialog] Remove failed:', error)
+  //         const errorMessage =
+  //           error instanceof Error
+  //             ? error.message
+  //             : typeof error === 'object' && error !== null && 'message' in error
+  //               ? String((error as { message: string }).message)
+  //               : t('profile.signatureRemoveError')
 
-          toast({
-            title: t('common.error'),
-            description: errorMessage,
-            variant: 'error',
-          })
-        },
-      }
-    )
-  }
+  //         toast({
+  //           title: t('common.error'),
+  //           description: errorMessage,
+  //           variant: 'error',
+  //         })
+  //       },
+  //     }
+  //   )
+  // }
 
   const handleClick = () => {
     console.log('[SignatureUploadDialog] File input clicked')
@@ -296,7 +296,8 @@ export const SignatureUploadDialog = ({
               <Upload className="w-4 h-4" />
               {preview ? t('profile.changeImage') : t('profile.selectFile')}
             </Button>
-            {(currentSignature || preview) && (
+            {/* Only show delete button if instructor already has a signature uploaded */}
+            {/* {currentSignature && (
               <Button
                 type="button"
                 variant="destructive"
@@ -307,7 +308,7 @@ export const SignatureUploadDialog = ({
                 <Trash2 className="w-4 h-4" />
                 {t('common.delete')}
               </Button>
-            )}
+            )} */}
           </div>
         </div>
 

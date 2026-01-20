@@ -118,7 +118,6 @@ export const InstructorAccountSettingsPage = () => {
                     error={errors.oldPassword}
                     required
                     isSubmitting={isSubmitting || changePasswordMutation.isPending}
-                    autoComplete="current-password"
                   />
 
                   {/* New Password */}
