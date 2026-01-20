@@ -4,19 +4,7 @@ import { ProtectedLayout } from '../layout/ProtectedLayout'
 import { AdminRouteGuard } from '../layout/AdminRouteGuard'
 import { InstructorRouteGuard } from '../layout/InstructorRouteGuard'
 import { ROUTES } from '@/shared/constants/routes'
-import { HomePage } from '@/modules/home'
 import { DashboardPage } from '@/modules/dashboard'
-import { EducationOperationsPage } from '@/modules/education-operations'
-import {
-  InstructorApplicationManagementPage,
-  InstructorAllocationManagementPage,
-  TeachingConfirmationManagementPage,
-} from '@/modules/instructor-assignment'
-import {
-  // InstitutionManagementPage,
-  InstructorManagementPage,
-} from '@/modules/reference-information-management'
-import { SettingsAndUserManagementPage } from '@/modules/system-management'
 import { InstructorScheduleListPage, ConfirmedScheduleListPage, OngoingTrainingListPage, CompletedTrainingListPage, TrainingApplicationListPage, ApplyForLectureListPage, UpcomingTrainingListPage } from '@/modules/instructor-training'
 import { MasterCodeSetupPage, MasterCodeCreatePage } from '@/modules/master-code-setup'
 import { CommonCodePage } from '@/modules/common-code'
@@ -25,10 +13,18 @@ import { ProgramListPage, ProgramCreatePage, ProgramEditPage } from '@/modules/p
 import {
   AdminAccountManagementPage,
   AddAdminPage,
+  AdminDetailPage,
+  EditAdminPage,
   InstructorAccountManagementPage,
   AddInstructorPage,
   InstructorDetailPage,
+  EditInstructorPage,
+  TeacherAccountManagementPage,
+  AddTeacherPage,
+  TeacherDetailPage,
+  EditTeacherPage,
 } from '@/modules/account-management'
+import { TrainingPage, TrainingCreatePage } from '@/modules/training'
 
 export const protectedRoutes: RouteObject[] = [
   {
@@ -37,10 +33,6 @@ export const protectedRoutes: RouteObject[] = [
       {
         element: <AppShell />,
         children: [
-          {
-            path: ROUTES.HOME,
-            element: <HomePage />,
-          },
           // Admin routes grouped under /admin
           {
             path: ROUTES.ADMIN,
@@ -49,44 +41,6 @@ export const protectedRoutes: RouteObject[] = [
               {
                 path: ROUTES.ADMIN_DASHBOARD,
                 element: <DashboardPage />,
-              },
-              {
-                path: ROUTES.ADMIN_EDUCATION_OPERATIONS,
-                element: <EducationOperationsPage />,
-              },
-              {
-                path: ROUTES.ADMIN_INSTRUCTOR_ASSIGNMENT,
-                children: [
-                  {
-                    path: ROUTES.ADMIN_INSTRUCTOR_APPLICATION_MANAGEMENT,
-                    element: <InstructorApplicationManagementPage />,
-                  },
-                  {
-                    path: ROUTES.ADMIN_INSTRUCTOR_ALLOCATION_MANAGEMENT,
-                    element: <InstructorAllocationManagementPage />,
-                  },
-                  {
-                    path: ROUTES.ADMIN_TEACHING_CONFIRMATION_MANAGEMENT,
-                    element: <TeachingConfirmationManagementPage />,
-                  },
-                ],
-              },
-              {
-                path: ROUTES.ADMIN_REFERENCE_INFORMATION_MANAGEMENT,
-                children: [
-                  // {
-                  //   path: ROUTES.ADMIN_INSTITUTION_MANAGEMENT,
-                  //   element: <InstitutionManagementPage />,
-                  // },
-                  {
-                    path: ROUTES.ADMIN_PROGRAM_MANAGEMENT,
-                    element: <ProgramListPage />,
-                  },
-                  {
-                    path: ROUTES.ADMIN_INSTRUCTOR_MANAGEMENT,
-                    element: <InstructorManagementPage />,
-                  },
-                ],
               },
               {
                 path: ROUTES.ADMIN_PROGRAM,
@@ -102,15 +56,6 @@ export const protectedRoutes: RouteObject[] = [
                   {
                     path: ROUTES.ADMIN_PROGRAM_EDIT,
                     element: <ProgramEditPage />,
-                  },
-                ],
-              },
-              {
-                path: ROUTES.ADMIN_SYSTEM_MANAGEMENT,
-                children: [
-                  {
-                    path: ROUTES.ADMIN_SETTINGS_AND_USER_MANAGEMENT,
-                    element: <SettingsAndUserManagementPage />,
                   },
                 ],
               },
@@ -166,6 +111,14 @@ export const protectedRoutes: RouteObject[] = [
                         path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_CREATE,
                         element: <AddAdminPage />,
                       },
+                      {
+                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_DETAIL,
+                        element: <AdminDetailPage />,
+                      },
+                      {
+                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_ADMINS_EDIT,
+                        element: <EditAdminPage />,
+                      },
                     ],
                   },
                   {
@@ -180,10 +133,48 @@ export const protectedRoutes: RouteObject[] = [
                         element: <AddInstructorPage />,
                       },
                       {
+                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_EDIT,
+                        element: <EditInstructorPage />,
+                      },
+                      {
                         path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_DETAIL,
                         element: <InstructorDetailPage />,
                       },
                     ],
+                  },
+                  {
+                    path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS,
+                    children: [
+                      {
+                        index: true,
+                        element: <TeacherAccountManagementPage />,
+                      },
+                      {
+                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_CREATE,
+                        element: <AddTeacherPage />,
+                      },
+                      {
+                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_EDIT,
+                        element: <EditTeacherPage />,
+                      },
+                      {
+                        path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_DETAIL,
+                        element: <TeacherDetailPage />,
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                path: ROUTES.ADMIN_TRAINING,
+                children: [
+                  {
+                    index: true,
+                    element: <TrainingPage />,
+                  },
+                  {
+                    path: ROUTES.ADMIN_TRAINING_CREATE,
+                    element: <TrainingCreatePage />,
                   },
                 ],
               },
@@ -200,11 +191,11 @@ export const protectedRoutes: RouteObject[] = [
               },
               {
                 path: ROUTES.INSTRUCTOR_EDUCATION_OPERATIONS,
-                element: <EducationOperationsPage />,
+                // element: <EducationOperationsPage />,
               },
               {
                 path: ROUTES.INSTRUCTOR_SCHEDULE,
-                element: <EducationOperationsPage />,
+                // element: <EducationOperationsPage />,
               },
               {
                 path: ROUTES.INSTRUCTOR_SCHEDULE_BASE,
@@ -246,14 +237,14 @@ export const protectedRoutes: RouteObject[] = [
               },
               {
                 path: ROUTES.INSTRUCTOR_STUDENTS,
-                element: <EducationOperationsPage />,
+                // element: <EducationOperationsPage />,
               },
               {
                 path: ROUTES.INSTRUCTOR_ATTENDANCE,
                 children: [
                   {
                     path: ROUTES.INSTRUCTOR_GRADES,
-                    element: <SettingsAndUserManagementPage />,
+                    // element: <SettingsAndUserManagementPage />,
                   },
                 ],
               },

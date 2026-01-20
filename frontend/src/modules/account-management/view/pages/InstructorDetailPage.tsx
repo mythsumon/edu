@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { ArrowLeft, Edit } from "lucide-react";
 import { PageLayout } from "@/app/layout/PageLayout";
 import { Card } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
@@ -57,9 +58,16 @@ export const InstructorDetailPage = () => {
     ? statusMasterCodes.find((s) => s.id === instructor.statusId)?.codeName
     : undefined;
 
+  // Fetch city name if cityId exists
+  const { data: cityData } = useCommonCodeByIdQuery(
+    instructor?.cityId,
+    !!instructor?.cityId
+  );
+
   const regionName = regionData?.codeName;
   const zoneName = zoneData?.codeName;
   const classificationName = classificationData?.codeName;
+  const cityName = cityData?.codeName;
 
   // Format date of birth
   const formatDateOfBirth = (dateString?: string) => {
@@ -97,10 +105,21 @@ export const InstructorDetailPage = () => {
         path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL,
         label: t("accountManagement.instructors"),
       }}
+      customBreadcrumbLast={instructor.name}
       actions={
-        <Button variant="outline" onClick={handleBack}>
-          {t("common.back")}
-        </Button>
+        <>
+          <Button variant="outline" onClick={handleBack}>
+            <ArrowLeft className="h-4 w-4" />
+            {t('common.back')}
+          </Button>
+          <Button
+            variant="default"
+            onClick={() => navigate(`${ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL}/${instructorId}/edit`)}
+          >
+            <Edit className="h-4 w-4" />
+            {t('common.edit')}
+          </Button>
+        </>
       }
     >
       <div className="max-w-5xl mx-auto space-y-6 py-6">
@@ -110,7 +129,7 @@ export const InstructorDetailPage = () => {
             {/* Top row: ID and Status pills */}
             <div className="flex items-center gap-2">
               <div className="inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium bg-gray-100 text-gray-700">
-                {instructor.id}
+                {instructor.instructorId || instructor.id}
               </div>
               <div
                 className={cn(
@@ -160,7 +179,7 @@ export const InstructorDetailPage = () => {
                     {t("accountManagement.instructorId")}
                   </label>
                   <p className="mt-1 text-sm text-foreground">
-                    {instructor.id}
+                    {instructor.instructorId || instructor.id}
                   </p>
                 </div>
 
@@ -253,7 +272,7 @@ export const InstructorDetailPage = () => {
                     {t("accountManagement.city")}
                   </label>
                   <p className="mt-1 text-sm text-foreground">
-                    {instructor.city || "-"}
+                    {cityName || "-"}
                   </p>
                 </div>
 

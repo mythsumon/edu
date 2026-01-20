@@ -1,5 +1,6 @@
 package com.itwizard.swaedu.modules.teacher.mapper;
 
+import com.itwizard.swaedu.modules.teacher.dto.request.TeacherUpdateDto;
 import com.itwizard.swaedu.modules.teacher.dto.response.TeacherResponseDto;
 import com.itwizard.swaedu.modules.teacher.entity.Teacher;
 import com.itwizard.swaedu.modules.auth.entity.User;
@@ -27,6 +28,7 @@ public class TeacherMapper {
         User user = teacher.getUser();
         return TeacherResponseDto.builder()
                 .userId(teacher.getUserId())
+                .teacherId(teacher.getTeacherId())
                 .username(user != null ? user.getUsername() : null)
                 .name(teacher.getName())
                 .email(teacher.getEmail())
@@ -34,6 +36,18 @@ public class TeacherMapper {
                 .profilePhoto(teacher.getProfilePhoto())
                 .enabled(user != null ? user.getEnabled() : null)
                 .build();
+    }
+
+    /**
+     * Update existing Teacher entity with data from TeacherUpdateDto
+     */
+    public static void updateEntityFromDto(Teacher teacher, TeacherUpdateDto dto) {
+        if (teacher == null || dto == null) {
+            return;
+        }
+        teacher.setName(dto.getName());
+        teacher.setEmail(dto.getEmail());
+        teacher.setPhone(dto.getPhone());
     }
 
     /**

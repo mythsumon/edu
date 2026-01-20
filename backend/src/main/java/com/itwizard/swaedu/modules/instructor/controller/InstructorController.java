@@ -10,8 +10,15 @@ import com.itwizard.swaedu.util.PageResponse;
 import com.itwizard.swaedu.util.ResponseUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
+import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/instructor")
@@ -31,8 +38,13 @@ public class InstructorController {
             @RequestParam(required = false) String q,
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "20") Integer size,
-            @RequestParam(required = false) String sort) {
-        PageResponse<InstructorResponseDto> response = instructorService.listInstructors(q, page, size, sort);
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) List<Long> regionIds,
+            @RequestParam(required = false) List<Long> classificationIds,
+            @RequestParam(required = false) List<Long> statusIds,
+            @RequestParam(required = false) List<Long> zoneIds) {
+        PageResponse<InstructorResponseDto> response = instructorService.listInstructors(
+                q, page, size, sort, regionIds, classificationIds, statusIds, zoneIds);
         return ResponseUtil.success("Instructors retrieved successfully", response);
     }
 
@@ -56,6 +68,37 @@ public class InstructorController {
             @Valid @RequestBody InstructorPatchDto request) {
         InstructorResponseDto response = instructorService.patchInstructor(userId, request);
         return ResponseUtil.success("Instructor updated successfully", response);
+    }
+
+    // GET /api/v1/instructor/export — export instructors to Excel
+    @GetMapping("/export")
+    public ResponseEntity<StreamingResponseBody> exportInstructors(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) List<Long> regionIds,
+            @RequestParam(required = false) List<Long> classificationIds,
+            @RequestParam(required = false) List<Long> statusIds,
+            @RequestParam(required = false) List<Long> zoneIds) {
+        
+        StreamingResponseBody responseBody = outputStream -> {
+            try {
+                instructorService.exportInstructorsToExcel(
+                        outputStream, q, regionIds, classificationIds, statusIds, zoneIds);
+            } catch (IOException e) {
+                throw new RuntimeException("Error exporting instructors to Excel", e);
+            }
+        };
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        headers.setContentDisposition(
+                ContentDisposition.attachment()
+                        .filename("instructors.xlsx")
+                        .build()
+        );
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(responseBody);
     }
 
     // @DeleteMapping("/{userId}")

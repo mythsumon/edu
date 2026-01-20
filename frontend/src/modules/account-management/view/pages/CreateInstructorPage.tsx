@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
 import { useEffect, useRef, useMemo } from 'react'
+import { Search } from 'lucide-react'
 import { PageLayout } from '@/app/layout/PageLayout'
 import { Button } from '@/shared/ui/button'
 import { useToast } from '@/shared/ui/use-toast'
@@ -15,9 +16,12 @@ import { useCommonCodeByCodeQuery, useCommonCodeGrandChildrenByCodeQuery, useCom
 import { GENDER_OPTIONS } from '@/shared/constants/users'
 import { FormInputField } from '../components/FormInputField'
 import { FormPasswordField } from '../components/FormPasswordField'
-import { FormSelectField } from '../components/FormSelectField'
 import { FormDatePickerField } from '../components/FormDatePickerField'
 import { CollapsibleCard } from '../components/CollapsibleCard'
+import { FormField } from '../components/FormField'
+import { Input } from '@/shared/ui/input'
+import { openPostcodeSearch } from '@/shared/lib/postcode'
+import { CustomDropdownField, type DropdownOption } from '@/shared/components/CustomDropdown'
 
 export const AddInstructorPage = () => {
   const { t } = useTranslation()
@@ -46,7 +50,7 @@ export const AddInstructorPage = () => {
       dob: '',
       zoneId: '',
       regionId: '',
-      city: '',
+      cityId: '',
       street: '',
       detailAddress: '',
       statusId: '',
@@ -56,6 +60,10 @@ export const AddInstructorPage = () => {
   })
 
   const selectedRegionId = watch('regionId')
+  const genderValue = watch('gender')
+  const zoneIdValue = watch('zoneId')
+  const statusIdValue = watch('statusId')
+  const classificationIdValue = watch('classificationId')
 
   // Fetch zones from common code (children of zone/region parent code)
   const { data: zonesData, isLoading: isLoadingZones } = useCommonCodeChildrenByCodeQuery(
@@ -69,8 +77,8 @@ export const AddInstructorPage = () => {
   )
   const regions = useMemo(() => regionsData?.items || [], [regionsData?.items])
 
-  // Fetch city common code
-  const { data: cityCommonCode } = useCommonCodeByCodeQuery(MASTER_CODE_DISTRICT_CODE)
+  // Fetch city master code (code '500-1')
+  const { data: cityMasterCode } = useCommonCodeByCodeQuery('500-1')
 
   // Fetch status master codes (parent code 100)
   const { data: statusMasterCodesData, isLoading: isLoadingStatusCodes } = useMasterCodeChildrenByCodeQuery(
@@ -82,6 +90,32 @@ export const AddInstructorPage = () => {
   const { data: classificationMasterCodesData, isLoading: isLoadingClassificationCodes } =
     useMasterCodeChildrenByCodeQuery(MASTER_CODE_PARENT_CODES.INSTRUCTOR_CLASSIFICATION)
   const classificationMasterCodes = classificationMasterCodesData?.items || []
+
+  // Transform options to DropdownOption format
+  const genderOptions: DropdownOption[] = useMemo(
+    () => GENDER_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label })),
+    []
+  )
+
+  const zoneOptions: DropdownOption[] = useMemo(
+    () => zones.map((zone) => ({ value: String(zone.id), label: zone.codeName || '' })),
+    [zones]
+  )
+
+  const regionOptions: DropdownOption[] = useMemo(
+    () => regions.map((region) => ({ value: String(region.id), label: region.codeName || '' })),
+    [regions]
+  )
+
+  const statusOptions: DropdownOption[] = useMemo(
+    () => statusMasterCodes.map((status) => ({ value: String(status.id), label: status.codeName || '' })),
+    [statusMasterCodes]
+  )
+
+  const classificationOptions: DropdownOption[] = useMemo(
+    () => classificationMasterCodes.map((classification) => ({ value: String(classification.id), label: classification.codeName || '' })),
+    [classificationMasterCodes]
+  )
 
   // Auto-select zone when region is selected (using parentId from common code)
   useEffect(() => {
@@ -100,12 +134,12 @@ export const AddInstructorPage = () => {
     }
   }, [selectedRegionId, regions, zones, setValue])
 
-  // Set city default value from common code
+  // Set cityId default value from master code '500-1'
   useEffect(() => {
-    if (cityCommonCode?.codeName) {
-      setValue('city', cityCommonCode.codeName)
+    if (cityMasterCode?.id) {
+      setValue('cityId', String(cityMasterCode.id))
     }
-  }, [cityCommonCode, setValue])
+  }, [cityMasterCode, setValue])
 
   const onSubmit = async (data: CreateInstructorFormData) => {
     try {
@@ -118,7 +152,7 @@ export const AddInstructorPage = () => {
         gender: data.gender,
         dob: data.dob,
         regionId: Number(data.regionId),
-        city: data.city,
+        cityId: Number(data.cityId),
         street: data.street,
         detailAddress: data.detailAddress,
         statusId: Number(data.statusId),
@@ -155,6 +189,21 @@ export const AddInstructorPage = () => {
 
   const handleFormSubmit = () => {
     formRef.current?.requestSubmit()
+  }
+
+  const handleSearchAddress = () => {
+    openPostcodeSearch({
+      onComplete: (data) => {
+        // Use roadAddress if available, otherwise use address
+        const address = data.roadAddress || data.address
+        setValue('street', address, { shouldValidate: true })
+      },
+      onClose: (state) => {
+        if (state === 'FORCE_CLOSE') {
+          // User closed the popup without selecting
+        }
+      },
+    })
   }
 
   return (
@@ -248,19 +297,17 @@ export const AddInstructorPage = () => {
               />
 
               {/* Gender */}
-              <FormSelectField
-                id="gender"
-                name="gender"
-                label={t('accountManagement.gender')}
-                placeholder={t('accountManagement.genderPlaceholder')}
-                control={control}
-                options={GENDER_OPTIONS}
-                getOptionValue={(option) => option.value}
-                getOptionLabel={(option) => option.label}
-                error={errors.gender}
-                required
-                isSubmitting={isSubmitting}
-              />
+              <FormField id="gender" label={t('accountManagement.gender')} required error={errors.gender}>
+                <CustomDropdownField
+                  id="gender"
+                  value={genderValue || ''}
+                  onChange={(value) => setValue('gender', value, { shouldValidate: true })}
+                  placeholder={t('accountManagement.genderPlaceholder')}
+                  options={genderOptions}
+                  disabled={isSubmitting}
+                  hasError={!!errors.gender}
+                />
+              </FormField>
 
               {/* Date of Birth */}
               <FormDatePickerField
@@ -294,65 +341,63 @@ export const AddInstructorPage = () => {
               />
 
               {/* City */}
-              <FormInputField
-                id="city"
-                label={t('accountManagement.city')}
-                placeholder={t('accountManagement.cityPlaceholder')}
-                register={register('city')}
-                error={errors.city}
-                required
-                isSubmitting={isSubmitting}
-                disabled
-              />
+              <FormField id="city" label={t('accountManagement.city')} required>
+                <Input
+                  id="city"
+                  placeholder={t('accountManagement.cityPlaceholder')}
+                  value={cityMasterCode?.codeName || ''}
+                  disabled={isSubmitting}
+                />
+              </FormField>
 
               {/* Zone */}
-              <FormSelectField
-                id="zoneId"
-                name="zoneId"
-                label={t('accountManagement.zone')}
-                placeholder={t('accountManagement.zoneAutoSelected')}
-                control={control}
-                options={zones}
-                getOptionValue={(option) => String(option.id)}
-                getOptionLabel={(option) => option.codeName || ''}
-                error={errors.zoneId}
-                required
-                isSubmitting={isSubmitting}
-                disabled
-                isLoading={isLoadingZones}
-                onValueChange={() => { }} // Disabled - auto-selected
-                displayValue={(value) => {
-                  const selectedZone = value ? zones.find((z) => String(z.id) === value) : null
-                  return selectedZone ? selectedZone.codeName : t('accountManagement.zoneAutoSelected')
-                }}
-              />
+              <FormField id="zoneId" label={t('accountManagement.zone')} required error={errors.zoneId}>
+                <CustomDropdownField
+                  id="zoneId"
+                  value={zoneIdValue || ''}
+                  onChange={() => {}} // Disabled - auto-selected
+                  placeholder={t('accountManagement.zoneAutoSelected')}
+                  options={zoneOptions}
+                  disabled={isSubmitting || isLoadingZones}
+                  hasError={!!errors.zoneId}
+                />
+              </FormField>
 
               {/* Region */}
-              <FormSelectField
-                id="regionId"
-                name="regionId"
-                label={t('accountManagement.region')}
-                placeholder={t('accountManagement.regionPlaceholder')}
-                control={control}
-                options={regions}
-                getOptionValue={(option) => String(option.id)}
-                getOptionLabel={(option) => option.codeName || ''}
-                error={errors.regionId}
-                required
-                isSubmitting={isSubmitting}
-                isLoading={isLoadingRegions}
-              />
+              <FormField id="regionId" label={t('accountManagement.region')} required error={errors.regionId}>
+                <CustomDropdownField
+                  id="regionId"
+                  value={selectedRegionId || ''}
+                  onChange={(value) => setValue('regionId', value, { shouldValidate: true })}
+                  placeholder={t('accountManagement.regionPlaceholder')}
+                  options={regionOptions}
+                  disabled={isSubmitting || isLoadingRegions}
+                  hasError={!!errors.regionId}
+                />
+              </FormField>
 
               {/* Street */}
-              <FormInputField
-                id="street"
-                label={t('accountManagement.street')}
-                placeholder={t('accountManagement.streetPlaceholder')}
-                register={register('street')}
-                error={errors.street}
-                required
-                isSubmitting={isSubmitting}
-              />
+              <FormField id="street" label={t('accountManagement.street')} required error={errors.street}>
+                <div className="flex gap-2">
+                  <Input
+                    id="street"
+                    placeholder={t('accountManagement.streetPlaceholder')}
+                    {...register('street')}
+                    className={errors.street ? 'ring-2 ring-destructive' : ''}
+                    disabled={isSubmitting}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleSearchAddress}
+                    disabled={isSubmitting}
+                    className="shrink-0 whitespace-nowrap"
+                  >
+                    <Search className="h-4 w-4" />
+                    <span>{t('accountManagement.searchAddressButton')}</span>
+                  </Button>
+                </div>
+              </FormField>
 
               {/* Detail Address */}
               <FormInputField
@@ -375,35 +420,29 @@ export const AddInstructorPage = () => {
           >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Status */}
-              <FormSelectField
-                id="statusId"
-                name="statusId"
-                label={t('accountManagement.status')}
-                placeholder={t('accountManagement.statusPlaceholder')}
-                control={control}
-                options={statusMasterCodes}
-                getOptionValue={(option) => String(option.id)}
-                getOptionLabel={(option) => option.codeName || ''}
-                error={errors.statusId}
-                required
-                isSubmitting={isSubmitting}
-                isLoading={isLoadingStatusCodes}
-              />
+              <FormField id="statusId" label={t('accountManagement.status')} required error={errors.statusId}>
+                <CustomDropdownField
+                  id="statusId"
+                  value={statusIdValue || ''}
+                  onChange={(value) => setValue('statusId', value, { shouldValidate: true })}
+                  placeholder={t('accountManagement.statusPlaceholder')}
+                  options={statusOptions}
+                  disabled={isSubmitting || isLoadingStatusCodes}
+                  hasError={!!errors.statusId}
+                />
+              </FormField>
               {/* Classification */}
-              <FormSelectField
-                id="classificationId"
-                name="classificationId"
-                label={t('accountManagement.classification')}
-                placeholder={t('accountManagement.classificationPlaceholder')}
-                control={control}
-                options={classificationMasterCodes}
-                getOptionValue={(option) => String(option.id)}
-                getOptionLabel={(option) => option.codeName || ''}
-                error={errors.classificationId}
-                required
-                isSubmitting={isSubmitting}
-                isLoading={isLoadingClassificationCodes}
-              />
+              <FormField id="classificationId" label={t('accountManagement.classification')} required error={errors.classificationId}>
+                <CustomDropdownField
+                  id="classificationId"
+                  value={classificationIdValue || ''}
+                  onChange={(value) => setValue('classificationId', value, { shouldValidate: true })}
+                  placeholder={t('accountManagement.classificationPlaceholder')}
+                  options={classificationOptions}
+                  disabled={isSubmitting || isLoadingClassificationCodes}
+                  hasError={!!errors.classificationId}
+                />
+              </FormField>
             </div>
           </CollapsibleCard>
         </form>

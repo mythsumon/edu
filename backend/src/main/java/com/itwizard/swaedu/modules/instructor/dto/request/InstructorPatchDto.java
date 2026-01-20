@@ -29,7 +29,7 @@ public class InstructorPatchDto {
 
     private Long regionId;
 
-    private String city;
+    private Long cityId;
 
     private String street;
 

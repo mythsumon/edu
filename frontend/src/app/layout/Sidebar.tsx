@@ -13,6 +13,7 @@ import {
   Users,
   FileCode,
   Building2,
+  GraduationCap,
 } from "lucide-react";
 import logoImage from "@/assets/images/logo/logo.png";
 
@@ -88,6 +89,11 @@ export const Sidebar = () => {
             href: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL,
             icon: Users,
           },
+          {
+            nameKey: "sidebar.teacherAccounts",
+            href: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_FULL,
+            icon: Users,
+          },
         ],
       },
       {
@@ -107,6 +113,16 @@ export const Sidebar = () => {
             nameKey: "sidebar.programManagement",
             href: ROUTES.ADMIN_PROGRAM_MANAGEMENT_FULL,
             icon: BookOpen,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.training",
+        items: [
+          {
+            nameKey: "sidebar.trainingManagement",
+            href: ROUTES.ADMIN_TRAINING_FULL,
+            icon: GraduationCap,
           },
         ],
       },
@@ -132,7 +148,7 @@ export const Sidebar = () => {
         items: [
           {
             nameKey: "sidebar.dashboard",
-            href: ROUTES.INSTRUCTOR_DASHBOARD,
+            href: ROUTES.INSTRUCTOR_DASHBOARD_FULL,
             icon: LayoutDashboard,
           },
         ],

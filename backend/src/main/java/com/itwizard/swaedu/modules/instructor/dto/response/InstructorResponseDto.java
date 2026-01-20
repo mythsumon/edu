@@ -13,6 +13,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class InstructorResponseDto {
     private Long userId;
+    private String instructorId;
     private String username;
     private String name;
     private String email;
@@ -20,7 +21,7 @@ public class InstructorResponseDto {
     private String gender;
     private LocalDate dob;
     private Long regionId;
-    private String city;
+    private Long cityId;
     private String street;
     private String detailAddress;
     private Long statusId;

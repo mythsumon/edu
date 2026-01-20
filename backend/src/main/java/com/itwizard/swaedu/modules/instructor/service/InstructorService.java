@@ -6,10 +6,16 @@ import com.itwizard.swaedu.modules.instructor.dto.request.RegisterInstructorRequ
 import com.itwizard.swaedu.modules.instructor.dto.response.InstructorResponseDto;
 import com.itwizard.swaedu.util.PageResponse;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.List;
+
 public interface InstructorService {
     InstructorResponseDto registerInstructor(RegisterInstructorRequestDto request);
 
-    PageResponse<InstructorResponseDto> listInstructors(String q, Integer page, Integer size, String sort);
+    PageResponse<InstructorResponseDto> listInstructors(
+            String q, Integer page, Integer size, String sort,
+            List<Long> regionIds, List<Long> classificationIds, List<Long> statusIds, List<Long> zoneIds);
 
     InstructorResponseDto getInstructorById(Long userId);
 
@@ -18,4 +24,12 @@ public interface InstructorService {
     InstructorResponseDto patchInstructor(Long userId, InstructorPatchDto request);
 
     void deleteInstructor(Long userId);
+
+    void exportInstructorsToExcel(
+            OutputStream outputStream,
+            String q,
+            List<Long> regionIds,
+            List<Long> classificationIds,
+            List<Long> statusIds,
+            List<Long> zoneIds) throws IOException;
 }

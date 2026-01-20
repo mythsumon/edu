@@ -18,7 +18,7 @@ public class InstructorProfileDto {
     private String gender;
     private LocalDate dob;
     private Long regionId;
-    private String city;
+    private Long cityId;
     private String street;
     private String detailAddress;
     private Long statusId;

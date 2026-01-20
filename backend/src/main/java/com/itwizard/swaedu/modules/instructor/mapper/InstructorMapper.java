@@ -29,6 +29,7 @@ public class InstructorMapper {
         User user = instructor.getUser();
         return InstructorResponseDto.builder()
                 .userId(instructor.getUserId())
+                .instructorId(instructor.getInstructorId())
                 .username(user != null ? user.getUsername() : null)
                 .name(instructor.getName())
                 .email(instructor.getEmail())
@@ -36,7 +37,7 @@ public class InstructorMapper {
                 .gender(instructor.getGender())
                 .dob(instructor.getDob())
                 .regionId(instructor.getRegionId())
-                .city(instructor.getCity())
+                .cityId(instructor.getCityId())
                 .street(instructor.getStreet())
                 .detailAddress(instructor.getDetailAddress())
                 .statusId(instructor.getStatusId())
@@ -60,7 +61,7 @@ public class InstructorMapper {
         instructor.setPhone(dto.getPhone());
         instructor.setGender(dto.getGender());
         instructor.setDob(dto.getDob());
-        instructor.setCity(dto.getCity());
+        instructor.setCityId(dto.getCityId());
         instructor.setStreet(dto.getStreet());
         instructor.setDetailAddress(dto.getDetailAddress());
         instructor.setAffiliation(dto.getAffiliation());
@@ -88,8 +89,8 @@ public class InstructorMapper {
         if (dto.getDob() != null) {
             instructor.setDob(dto.getDob());
         }
-        if (dto.getCity() != null) {
-            instructor.setCity(dto.getCity());
+        if (dto.getCityId() != null) {
+            instructor.setCityId(dto.getCityId());
         }
         if (dto.getStreet() != null) {
             instructor.setStreet(dto.getStreet());

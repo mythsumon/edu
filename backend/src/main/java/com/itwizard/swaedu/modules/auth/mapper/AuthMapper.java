@@ -58,7 +58,7 @@ public class AuthMapper {
                     .gender(user.getInstructor().getGender())
                     .dob(user.getInstructor().getDob())
                     .regionId(user.getInstructor().getRegionId())
-                    .city(user.getInstructor().getCity())
+                    .cityId(user.getInstructor().getCityId())
                     .street(user.getInstructor().getStreet())
                     .detailAddress(user.getInstructor().getDetailAddress())
                     .statusId(user.getInstructor().getStatusId())
