@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useTranslation } from 'react-i18next'
+// import { useTranslation } from 'react-i18next'
 import { ErrorState } from './ErrorState'
 
 interface ErrorBoundaryProps {
@@ -61,7 +61,7 @@ export class ErrorBoundary extends React.Component<
  * Default Error Boundary Fallback Component
  */
 const ErrorBoundaryFallback = ({ error, resetError }: { error: Error; resetError: () => void }) => {
-  const { t } = useTranslation()
+  // const { t } = useTranslation()
 
   return (
     <div className="flex flex-col h-full">

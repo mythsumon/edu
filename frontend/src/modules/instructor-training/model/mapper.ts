@@ -6,7 +6,7 @@ import type { ScheduleItem, ScheduleResponseDto } from './training.types'
 export const mapScheduleDtoToItem = (dto: ScheduleResponseDto): ScheduleItem => {
   return {
     id: dto.id,
-    programName: dto.programName,
+    programName: dto.programName ?? "",
     institutionName: dto.institutionName,
     date: dto.scheduleDate,
     startTime: dto.startTime,

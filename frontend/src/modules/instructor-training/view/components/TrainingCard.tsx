@@ -1,4 +1,4 @@
-import * as React from "react";
+// import * as React from "react";
 import { type LucideIcon, Award } from "lucide-react";
 import { Card } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
