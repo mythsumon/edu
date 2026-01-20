@@ -1,18 +1,18 @@
-import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
-import { useEffect, useRef, useMemo } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { PageLayout } from '@/app/layout/PageLayout'
 import { Button } from '@/shared/ui/button'
 import { useToast } from '@/shared/ui/use-toast'
 import { ROUTES } from '@/shared/constants/routes'
-import { useUpdateInstructor } from '../../controller/mutations'
-import { useInstructorDetailQuery } from '../../controller/queries'
-import { updateInstructorSchema, type UpdateInstructorFormData } from '../../model/account-management.schema'
-import { useMasterCodeChildrenByCodeQuery } from '@/modules/master-code-setup/controller/queries'
-import { MASTER_CODE_PARENT_CODES, MASTER_CODE_DISTRICT_CODE } from '@/shared/constants/master-code'
-import { useCommonCodeByCodeQuery, useCommonCodeGrandChildrenByCodeQuery, useCommonCodeChildrenByCodeQuery } from '@/modules/common-code/controller/queries'
+import { STORAGE_KEYS } from '@/shared/constants/storageKeys'
+import { useUpdateOwnProfile } from '../../controller/mutations'
+import { useInstructorMeQuery } from '../../controller/queries'
+import { updateOwnProfileInstructorSchema, type UpdateOwnProfileInstructorFormData } from '../../model/account-management.schema'
+import { useCommonCodeChildrenByCodeQuery, useCommonCodeGrandChildrenByCodeQuery, useCommonCodeByCodeQuery } from '@/modules/common-code/controller/queries'
+import { MASTER_CODE_DISTRICT_CODE } from '@/shared/constants/master-code'
 import { GENDER_OPTIONS } from '@/shared/constants/users'
 import { LoadingState } from '@/shared/components/LoadingState'
 import { ErrorState } from '@/shared/components/ErrorState'
@@ -22,17 +22,42 @@ import { CollapsibleCard } from '../components/CollapsibleCard'
 import { FormField } from '../components/FormField'
 import { Input } from '@/shared/ui/input'
 import { CustomDropdownField, type DropdownOption } from '@/shared/components/CustomDropdown'
+import { getCurrentUser } from '@/modules/auth/model/auth.service'
+import type { UserResponseDto } from '@/modules/auth/model/auth.types'
 
-export const EditInstructorPage = () => {
+export const ProfileSettingsInstructorPage = () => {
   const { t } = useTranslation()
   const { toast } = useToast()
   const navigate = useNavigate()
-  const { id } = useParams<{ id: string }>()
-  const instructorId = id ? parseInt(id, 10) : 0
-  const updateInstructorMutation = useUpdateInstructor()
+  const updateProfileMutation = useUpdateOwnProfile()
   const formRef = useRef<HTMLFormElement>(null)
+  const [user, setUser] = useState<UserResponseDto | null>(null)
 
-  const { data: instructor, isLoading: isLoadingInstructor, error: instructorError } = useInstructorDetailQuery(instructorId)
+  // Load user from localStorage
+  useEffect(() => {
+    const loadUser = () => {
+      try {
+        const userStr = localStorage.getItem(STORAGE_KEYS.USER)
+        if (userStr) {
+          setUser(JSON.parse(userStr))
+        }
+      } catch (error) {
+        console.error('Failed to load user from localStorage:', error)
+      }
+    }
+    loadUser()
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEYS.USER) {
+        loadUser()
+      }
+    }
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
+
+  const username = user?.username || ''
+  const { data: instructor, isLoading: isLoadingInstructor, error: instructorError } = useInstructorMeQuery()
 
   const {
     register,
@@ -42,11 +67,10 @@ export const EditInstructorPage = () => {
     reset,
     control,
     formState: { errors, isSubmitting },
-  } = useForm<UpdateInstructorFormData>({
-    resolver: zodResolver(updateInstructorSchema(t)),
+  } = useForm<UpdateOwnProfileInstructorFormData>({
+    resolver: zodResolver(updateOwnProfileInstructorSchema(t)),
     mode: 'onChange',
     defaultValues: {
-      username: '',
       name: '',
       email: '',
       phone: '',
@@ -57,8 +81,6 @@ export const EditInstructorPage = () => {
       cityId: '',
       street: '',
       detailAddress: '',
-      statusId: '',
-      classificationId: '',
       affiliation: '',
     },
   })
@@ -66,36 +88,16 @@ export const EditInstructorPage = () => {
   const selectedRegionId = watch('regionId')
   const genderValue = watch('gender')
   const zoneIdValue = watch('zoneId')
-  const statusIdValue = watch('statusId')
-  const classificationIdValue = watch('classificationId')
 
-  // Fetch zones from common code (children of zone/region parent code)
-  const { data: zonesData, isLoading: isLoadingZones } = useCommonCodeChildrenByCodeQuery(
-    MASTER_CODE_DISTRICT_CODE
-  )
+  // Fetch zones and regions
+  const { data: zonesData } = useCommonCodeChildrenByCodeQuery(MASTER_CODE_DISTRICT_CODE)
   const zones = useMemo(() => zonesData?.items || [], [zonesData?.items])
 
-  // Fetch regions from common code (grandchildren of zone/region parent code)
-  const { data: regionsData, isLoading: isLoadingRegions } = useCommonCodeGrandChildrenByCodeQuery(
-    MASTER_CODE_DISTRICT_CODE
-  )
+  const { data: regionsData } = useCommonCodeGrandChildrenByCodeQuery(MASTER_CODE_DISTRICT_CODE)
   const regions = useMemo(() => regionsData?.items || [], [regionsData?.items])
 
-  // Fetch city master code (code '500-1')
   const { data: cityMasterCode } = useCommonCodeByCodeQuery('500-1')
 
-  // Fetch status master codes (parent code 100)
-  const { data: statusMasterCodesData, isLoading: isLoadingStatusCodes } = useMasterCodeChildrenByCodeQuery(
-    MASTER_CODE_PARENT_CODES.STATUS
-  )
-  const statusMasterCodes = statusMasterCodesData?.items || []
-
-  // Fetch classification master codes (parent code 200)
-  const { data: classificationMasterCodesData, isLoading: isLoadingClassificationCodes } =
-    useMasterCodeChildrenByCodeQuery(MASTER_CODE_PARENT_CODES.INSTRUCTOR_CLASSIFICATION)
-  const classificationMasterCodes = classificationMasterCodesData?.items || []
-
-  // Transform options to DropdownOption format
   const genderOptions: DropdownOption[] = useMemo(
     () => GENDER_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label })),
     []
@@ -106,27 +108,15 @@ export const EditInstructorPage = () => {
     [regions]
   )
 
-  const statusOptions: DropdownOption[] = useMemo(
-    () => statusMasterCodes.map((status) => ({ value: String(status.id), label: status.codeName || '' })),
-    [statusMasterCodes]
-  )
-
-  const classificationOptions: DropdownOption[] = useMemo(
-    () => classificationMasterCodes.map((classification) => ({ value: String(classification.id), label: classification.codeName || '' })),
-    [classificationMasterCodes]
-  )
-
-  // Get zone name from zoneId for display
   const zoneDisplayName = useMemo(() => {
     if (!zoneIdValue) return ''
     const zone = zones.find((z) => String(z.id) === zoneIdValue)
     return zone?.codeName || ''
   }, [zoneIdValue, zones])
 
-  // Pre-fill form with instructor data using reset() to properly initialize and clear validation errors
+  // Pre-fill form with instructor data
   useEffect(() => {
     if (instructor && regions.length > 0 && zones.length > 0) {
-      // Find zoneId if regionId exists
       let zoneId = ''
       if (instructor.regionId) {
         const selectedRegion = regions.find((r) => r.id === instructor.regionId)
@@ -138,9 +128,7 @@ export const EditInstructorPage = () => {
         }
       }
 
-      // Use reset() to set all values at once and clear validation errors
       reset({
-        username: instructor.username,
         name: instructor.name,
         email: instructor.email || '',
         phone: instructor.phone || '',
@@ -151,79 +139,70 @@ export const EditInstructorPage = () => {
         cityId: instructor.cityId ? String(instructor.cityId) : (cityMasterCode?.id ? String(cityMasterCode.id) : ''),
         street: instructor.street || '',
         detailAddress: instructor.detailAddress || '',
-        statusId: instructor.statusId ? String(instructor.statusId) : '',
-        classificationId: instructor.classificationId ? String(instructor.classificationId) : '',
         affiliation: instructor.affiliation || '',
       })
     }
   }, [instructor, regions, zones, cityMasterCode, reset])
 
-  // Auto-select zone when region is selected (using parentId from common code)
+  // Auto-select zone when region is selected
   useEffect(() => {
     if (selectedRegionId) {
       const selectedRegion = regions.find((r) => String(r.id) === selectedRegionId)
       if (selectedRegion && selectedRegion.parentId) {
-        // Find zone by matching parentId
         const matchingZone = zones.find((z) => z.id === selectedRegion.parentId)
         if (matchingZone) {
           setValue('zoneId', String(matchingZone.id))
         }
       }
     } else {
-      // Clear zone when region is cleared
       setValue('zoneId', '')
     }
   }, [selectedRegionId, regions, zones, setValue])
 
-  // Set city default value from common code if not already set (only for new instructors, not when editing)
-  // This is handled in the reset() call above, so this effect is not needed for edit mode
+  const onSubmit = async (data: UpdateOwnProfileInstructorFormData) => {
+    if (!user || !username) return
 
-  const onSubmit = async (data: UpdateInstructorFormData) => {
     try {
-      await updateInstructorMutation.mutateAsync({
-        id: instructorId,
+      await updateProfileMutation.mutateAsync({
+        username,
+        roleName: user.roleName,
         data: {
-          username: data.username,
-          name: data.name,
-          email: data.email,
-          phone: data.phone,
-          gender: data.gender,
-          dob: data.dob,
-          regionId: Number(data.regionId),
-          cityId: Number(data.cityId),
-          street: data.street,
-          detailAddress: data.detailAddress,
-          statusId: Number(data.statusId),
-          classificationId: Number(data.classificationId),
-          affiliation: data.affiliation || undefined,
+          ...data,
+          // username is not needed for /instructor/me endpoint
         },
       })
       toast({
         title: t('common.success'),
-        description: t('accountManagement.updateInstructorSuccess'),
+        description: t('accountManagement.updateProfileSuccess'),
         variant: 'success',
       })
-      navigate(`${ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL}/${instructorId}`)
+      // Refresh user data in localStorage
+      try {
+        const updatedUser = await getCurrentUser()
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(updatedUser))
+        setUser(updatedUser)
+      } catch (error) {
+        console.error('Failed to refresh user data:', error)
+      }
     } catch (error) {
-      // Extract error message from the error object
       const errorMessage =
         error instanceof Error
           ? error.message
           : typeof error === 'object' && error !== null && 'message' in error
             ? String(error.message)
-            : t('accountManagement.updateInstructorError')
+            : t('accountManagement.updateProfileError')
 
       toast({
         title: t('common.error'),
         description: errorMessage,
         variant: 'error',
       })
-      console.error('Failed to update instructor:', error)
+      console.error('Failed to update profile:', error)
     }
   }
 
   const handleCancel = () => {
-    navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_DETAIL_FULL.replace(':id', String(instructorId)))
+    navigate(ROUTES.INSTRUCTOR_DASHBOARD_FULL)
   }
 
   const handleFormSubmit = () => {
@@ -240,8 +219,7 @@ export const EditInstructorPage = () => {
 
   return (
     <PageLayout
-      title={t('accountManagement.editInstructor')}
-      customBreadcrumbRoot={{ path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL, label: t('accountManagement.instructors') }}
+      title={t('accountManagement.profileSettings')}
       actions={
         <>
           <Button
@@ -255,34 +233,33 @@ export const EditInstructorPage = () => {
           <Button
             type="button"
             onClick={handleFormSubmit}
-            disabled={isSubmitting}
+            disabled={isSubmitting || updateProfileMutation.isPending}
           >
-            {isSubmitting ? t('accountManagement.updating') : t('accountManagement.updateInstructor')}
+            {isSubmitting || updateProfileMutation.isPending
+              ? t('accountManagement.updating')
+              : t('common.update')}
           </Button>
         </>
       }
     >
       <div className="max-w-4xl p-6 mx-auto">
         <form ref={formRef} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Basic Information Collapsible Card */}
           <CollapsibleCard
             title={t('accountManagement.basicInformation')}
             description={t('accountManagement.basicInformationDescription')}
             defaultExpanded={true}
           >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Instructor ID */}
-              <FormInputField
-                id="username"
-                label={t('accountManagement.instructorId')}
-                placeholder={t('accountManagement.instructorIdPlaceholder')}
-                register={register('username')}
-                error={errors.username}
-                required
-                isSubmitting={isSubmitting}
-              />
-
-              {/* Name */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  {t('accountManagement.username')}
+                </label>
+                <Input
+                  value={username}
+                  disabled
+                  className="bg-muted"
+                />
+              </div>
               <FormInputField
                 id="name"
                 label={t('accountManagement.name')}
@@ -290,10 +267,8 @@ export const EditInstructorPage = () => {
                 register={register('name')}
                 error={errors.name}
                 required
-                isSubmitting={isSubmitting}
+                isSubmitting={isSubmitting || updateProfileMutation.isPending}
               />
-
-              {/* Email */}
               <FormInputField
                 id="email"
                 label={t('accountManagement.email')}
@@ -302,10 +277,8 @@ export const EditInstructorPage = () => {
                 register={register('email')}
                 error={errors.email}
                 required
-                isSubmitting={isSubmitting}
+                isSubmitting={isSubmitting || updateProfileMutation.isPending}
               />
-
-              {/* Phone */}
               <FormInputField
                 id="phone"
                 label={t('accountManagement.phoneNumber')}
@@ -314,10 +287,8 @@ export const EditInstructorPage = () => {
                 register={register('phone')}
                 error={errors.phone}
                 required
-                isSubmitting={isSubmitting}
+                isSubmitting={isSubmitting || updateProfileMutation.isPending}
               />
-
-              {/* Gender */}
               <FormField id="gender" label={t('accountManagement.gender')} required error={errors.gender}>
                 <CustomDropdownField
                   id="gender"
@@ -325,12 +296,10 @@ export const EditInstructorPage = () => {
                   onChange={(value) => setValue('gender', value, { shouldValidate: true })}
                   placeholder={t('accountManagement.genderPlaceholder')}
                   options={genderOptions}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || updateProfileMutation.isPending}
                   hasError={!!errors.gender}
                 />
               </FormField>
-
-              {/* Date of Birth */}
               <FormDatePickerField
                 id="dob"
                 name="dob"
@@ -339,29 +308,25 @@ export const EditInstructorPage = () => {
                 control={control}
                 error={errors.dob}
                 required
-                isSubmitting={isSubmitting}
+                isSubmitting={isSubmitting || updateProfileMutation.isPending}
               />
             </div>
           </CollapsibleCard>
 
-          {/* Affiliation and Address Information Collapsible Card */}
           <CollapsibleCard
             title={t('accountManagement.addressInformation')}
             description={t('accountManagement.addressInformationDescription')}
             defaultExpanded={true}
           >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Affiliation */}
               <FormInputField
                 id="affiliation"
                 label={t('accountManagement.affiliation')}
                 placeholder={t('accountManagement.affiliationPlaceholder')}
                 register={register('affiliation')}
                 error={errors.affiliation}
-                isSubmitting={isSubmitting}
+                isSubmitting={isSubmitting || updateProfileMutation.isPending}
               />
-
-              {/* City */}
               <FormField id="city" label={t('accountManagement.city')} required>
                 <Input
                   id="city"
@@ -370,8 +335,6 @@ export const EditInstructorPage = () => {
                   disabled={true}
                 />
               </FormField>
-
-              {/* Zone */}
               <FormField id="zoneId" label={t('accountManagement.zone')} required error={errors.zoneId}>
                 <Input
                   id="zoneId"
@@ -381,8 +344,6 @@ export const EditInstructorPage = () => {
                   className={errors.zoneId ? 'ring-2 ring-destructive' : ''}
                 />
               </FormField>
-
-              {/* Region */}
               <FormField id="regionId" label={t('accountManagement.region')} required error={errors.regionId}>
                 <CustomDropdownField
                   id="regionId"
@@ -390,12 +351,10 @@ export const EditInstructorPage = () => {
                   onChange={(value) => setValue('regionId', value, { shouldValidate: true })}
                   placeholder={t('accountManagement.regionPlaceholder')}
                   options={regionOptions}
-                  disabled={isSubmitting || isLoadingRegions}
+                  disabled={isSubmitting || updateProfileMutation.isPending}
                   hasError={!!errors.regionId}
                 />
               </FormField>
-
-              {/* Street */}
               <FormInputField
                 id="street"
                 label={t('accountManagement.street')}
@@ -403,10 +362,8 @@ export const EditInstructorPage = () => {
                 register={register('street')}
                 error={errors.street}
                 required
-                isSubmitting={isSubmitting}
+                isSubmitting={isSubmitting || updateProfileMutation.isPending}
               />
-
-              {/* Detail Address */}
               <FormInputField
                 id="detailAddress"
                 label={t('accountManagement.buildingNameLakeNumber')}
@@ -414,42 +371,8 @@ export const EditInstructorPage = () => {
                 register={register('detailAddress')}
                 error={errors.detailAddress}
                 required
-                isSubmitting={isSubmitting}
+                isSubmitting={isSubmitting || updateProfileMutation.isPending}
               />
-            </div>
-          </CollapsibleCard>
-
-          {/* Status and Classification Collapsible Card */}
-          <CollapsibleCard
-            title={t('accountManagement.statusAndClassification')}
-            description={t('accountManagement.statusAndClassificationDescription')}
-            defaultExpanded={true}
-          >
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Status */}
-              <FormField id="statusId" label={t('accountManagement.status')} required error={errors.statusId}>
-                <CustomDropdownField
-                  id="statusId"
-                  value={statusIdValue || ''}
-                  onChange={(value) => setValue('statusId', value, { shouldValidate: true })}
-                  placeholder={t('accountManagement.statusPlaceholder')}
-                  options={statusOptions}
-                  disabled={isSubmitting || isLoadingStatusCodes}
-                  hasError={!!errors.statusId}
-                />
-              </FormField>
-              {/* Classification */}
-              <FormField id="classificationId" label={t('accountManagement.classification')} required error={errors.classificationId}>
-                <CustomDropdownField
-                  id="classificationId"
-                  value={classificationIdValue || ''}
-                  onChange={(value) => setValue('classificationId', value, { shouldValidate: true })}
-                  placeholder={t('accountManagement.classificationPlaceholder')}
-                  options={classificationOptions}
-                  disabled={isSubmitting || isLoadingClassificationCodes}
-                  hasError={!!errors.classificationId}
-                />
-              </FormField>
             </div>
           </CollapsibleCard>
         </form>

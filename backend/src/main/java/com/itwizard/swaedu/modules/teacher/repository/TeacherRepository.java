@@ -24,9 +24,11 @@ public interface TeacherRepository extends JpaRepository<Teacher, Long> {
     Page<Teacher> search(@Param("q") String q, Pageable pageable);
 
     // Stream all teachers for export (with search filter, no pagination)
+    // Uses LEFT JOIN FETCH to eagerly load status relationship needed for export
     @Query("""
         SELECT DISTINCT t FROM Teacher t
         JOIN t.user u
+        LEFT JOIN FETCH t.status
         WHERE (:q IS NULL OR :q = '' OR 
                LOWER(t.name) LIKE LOWER(CONCAT('%', :q, '%')) OR
                LOWER(COALESCE(t.email, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR

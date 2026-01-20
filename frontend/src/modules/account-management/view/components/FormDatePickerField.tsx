@@ -10,6 +10,7 @@ import {
   PopoverTrigger,
 } from '@/shared/ui/popover'
 import { FormField } from './FormField'
+import { formatDateDot } from '@/shared/lib/date'
 
 interface FormDatePickerFieldProps<TFieldValues extends FieldValues> {
   id: string
@@ -68,7 +69,7 @@ export const FormDatePickerField = <TFieldValues extends FieldValues>({
                     onBlur={field.onBlur}
                   >
                     <span className="flex-1 text-left">
-                      {date ? date.toLocaleDateString() : placeholder}
+                      {date ? formatDateDot(date) : placeholder}
                     </span>
                     <ChevronDownIcon className="h-4 w-4 shrink-0 ml-2" />
                   </Button>
@@ -79,6 +80,7 @@ export const FormDatePickerField = <TFieldValues extends FieldValues>({
                   mode="single"
                   selected={date}
                   captionLayout="dropdown"
+                  disabled={(date) => date > new Date()}
                   onSelect={(selectedDate) => {
                     if (selectedDate) {
                       // Convert Date to YYYY-MM-DD string format

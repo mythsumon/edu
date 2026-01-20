@@ -22,6 +22,10 @@ import {
   AddTeacherPage,
   TeacherDetailPage,
   EditTeacherPage,
+  AccountSettingsPage,
+  ProfileSettingsAdminPage,
+  ProfileSettingsInstructorPage,
+  ProfileSettingsTeacherPage,
 } from '@/modules/account-management'
 import { AdminTrainingPage, AdminTrainingCreatePage } from '@/modules/admin-training'
 
@@ -40,6 +44,19 @@ export const protectedRoutes: RouteObject[] = [
               {
                 path: ROUTES.ADMIN_DASHBOARD,
                 element: <DashboardPage />,
+              },
+              {
+                path: ROUTES.ACCOUNT_SETTINGS,
+                element: <AccountSettingsPage />,
+              },
+              {
+                path: ROUTES.PROFILE_SETTINGS,
+                element: <ProfileSettingsAdminPage />,
+              },
+              // Teacher profile settings (teachers use admin routes)
+              {
+                path: 'teacher-profile-settings',
+                element: <ProfileSettingsTeacherPage />,
               },
               {
                 path: ROUTES.ADMIN_PROGRAM,
@@ -187,6 +204,14 @@ export const protectedRoutes: RouteObject[] = [
               {
                 path: ROUTES.INSTRUCTOR_DASHBOARD,
                 element: <DashboardPage />,
+              },
+              {
+                path: ROUTES.ACCOUNT_SETTINGS,
+                element: <AccountSettingsPage />,
+              },
+              {
+                path: ROUTES.PROFILE_SETTINGS,
+                element: <ProfileSettingsInstructorPage />,
               },
             ],
           },

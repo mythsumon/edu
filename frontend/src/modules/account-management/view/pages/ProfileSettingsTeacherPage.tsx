@@ -1,115 +1,141 @@
-import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
-import { useEffect, useRef, useMemo } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { PageLayout } from '@/app/layout/PageLayout'
 import { Button } from '@/shared/ui/button'
 import { useToast } from '@/shared/ui/use-toast'
 import { ROUTES } from '@/shared/constants/routes'
-import { useUpdateTeacher } from '../../controller/mutations'
+import { STORAGE_KEYS } from '@/shared/constants/storageKeys'
+import { useUpdateOwnProfile } from '../../controller/mutations'
 import { useTeacherDetailQuery } from '../../controller/queries'
-import { updateTeacherSchema, type UpdateTeacherFormData } from '../../model/account-management.schema'
-import { useMasterCodeChildrenByCodeQuery } from '@/modules/master-code-setup/controller/queries'
-import { MASTER_CODE_PARENT_CODES } from '@/shared/constants/master-code'
+import { updateOwnProfileTeacherSchema, type UpdateOwnProfileTeacherFormData } from '../../model/account-management.schema'
 import { LoadingState } from '@/shared/components/LoadingState'
 import { ErrorState } from '@/shared/components/ErrorState'
 import { FormInputField } from '../components/FormInputField'
-import { FormField } from '../components/FormField'
-import { CustomDropdownField, type DropdownOption } from '@/shared/components/CustomDropdown'
 import { CollapsibleCard } from '../components/CollapsibleCard'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
+import { getCurrentUser } from '@/modules/auth/model/auth.service'
+import type { UserResponseDto } from '@/modules/auth/model/auth.types'
 
-export const EditTeacherPage = () => {
+export const ProfileSettingsTeacherPage = () => {
   const { t } = useTranslation()
   const { toast } = useToast()
   const navigate = useNavigate()
-  const { id } = useParams<{ id: string }>()
-  const teacherId = id ? parseInt(id, 10) : 0
-  const updateTeacherMutation = useUpdateTeacher()
+  const updateProfileMutation = useUpdateOwnProfile()
   const formRef = useRef<HTMLFormElement>(null)
+  const [user, setUser] = useState<UserResponseDto | null>(null)
 
-  const { data: teacher, isLoading: isLoadingTeacher, error: teacherError } = useTeacherDetailQuery(teacherId)
+  // Load user from localStorage
+  useEffect(() => {
+    const loadUser = () => {
+      try {
+        const userStr = localStorage.getItem(STORAGE_KEYS.USER)
+        if (userStr) {
+          setUser(JSON.parse(userStr))
+        }
+      } catch (error) {
+        console.error('Failed to load user from localStorage:', error)
+      }
+    }
+    loadUser()
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEYS.USER) {
+        loadUser()
+      }
+    }
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
+
+  const userId = user?.id || 0
+  const username = user?.username || ''
+  const { data: teacher, isLoading: isLoadingTeacher, error: teacherError } = useTeacherDetailQuery(
+    userId,
+    { enabled: !!userId }
+  )
 
   const {
     register,
     handleSubmit,
-    watch,
-    setValue,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<UpdateTeacherFormData>({
-    resolver: zodResolver(updateTeacherSchema(t)),
+  } = useForm<UpdateOwnProfileTeacherFormData>({
+    resolver: zodResolver(updateOwnProfileTeacherSchema(t)),
     mode: 'onChange',
     defaultValues: {
       name: '',
       email: '',
       phone: '',
-      statusId: '',
     },
   })
 
-  const statusIdValue = watch('statusId')
-
-  // Fetch status master codes (parent code 100)
-  const { data: statusMasterCodesData, isLoading: isLoadingStatusCodes } = useMasterCodeChildrenByCodeQuery(
-    MASTER_CODE_PARENT_CODES.STATUS
-  )
-  const statusMasterCodes = statusMasterCodesData?.items || []
-
-  const statusOptions: DropdownOption[] = useMemo(
-    () => statusMasterCodes.map((status) => ({ value: String(status.id), label: status.codeName || '' })),
-    [statusMasterCodes]
-  )
-
-  // Pre-fill form with teacher data using reset() to properly initialize and clear validation errors
+  // Pre-fill form with teacher data
   useEffect(() => {
-    if (teacher && statusMasterCodes.length > 0) {
+    if (teacher) {
       reset({
         name: teacher.name,
         email: teacher.email || '',
         phone: teacher.phone || '',
-        statusId: teacher.statusId ? String(teacher.statusId) : '',
       })
     }
-  }, [teacher, statusMasterCodes, reset])
+  }, [teacher, reset])
 
-  const onSubmit = async (data: UpdateTeacherFormData) => {
+  const onSubmit = async (data: UpdateOwnProfileTeacherFormData) => {
+    if (!user || !username) return
+
     try {
-      await updateTeacherMutation.mutateAsync({
-        id: teacherId,
+      await updateProfileMutation.mutateAsync({
+        username,
+        roleName: user.roleName,
         data: {
           name: data.name,
           email: data.email || undefined,
           phone: data.phone || undefined,
-          statusId: data.statusId ? parseInt(data.statusId, 10) : undefined,
         },
       })
       toast({
         title: t('common.success'),
-        description: t('accountManagement.updateTeacherSuccess'),
+        description: t('accountManagement.updateProfileSuccess'),
         variant: 'success',
       })
-      navigate(`${ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_FULL}/${teacherId}`)
+      // Refresh user data in localStorage
+      try {
+        const updatedUser = await getCurrentUser()
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(updatedUser))
+        setUser(updatedUser)
+      } catch (error) {
+        console.error('Failed to refresh user data:', error)
+      }
     } catch (error) {
-      // Extract error message from the error object
       const errorMessage =
         error instanceof Error
           ? error.message
           : typeof error === 'object' && error !== null && 'message' in error
             ? String(error.message)
-            : t('accountManagement.updateTeacherError')
+            : t('accountManagement.updateProfileError')
 
       toast({
         title: t('common.error'),
         description: errorMessage,
         variant: 'error',
       })
-      console.error('Failed to update teacher:', error)
+      console.error('Failed to update profile:', error)
     }
   }
 
   const handleCancel = () => {
-    navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_DETAIL_FULL.replace(':id', String(teacherId)))
+    // Navigate to appropriate dashboard based on role
+    const userRole = user?.roleName?.toUpperCase()
+    if (userRole === 'TEACHER') {
+      // Assuming teachers might have their own dashboard, or use admin dashboard
+      navigate(ROUTES.ADMIN_DASHBOARD_FULL)
+    } else {
+      navigate(ROUTES.ADMIN_DASHBOARD_FULL)
+    }
   }
 
   const handleFormSubmit = () => {
@@ -126,8 +152,7 @@ export const EditTeacherPage = () => {
 
   return (
     <PageLayout
-      title={t('accountManagement.editTeacher')}
-      customBreadcrumbRoot={{ path: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_FULL, label: t('accountManagement.teachers') }}
+      title={t('accountManagement.profileSettings')}
       actions={
         <>
           <Button
@@ -141,23 +166,35 @@ export const EditTeacherPage = () => {
           <Button
             type="button"
             onClick={handleFormSubmit}
-            disabled={isSubmitting}
+            disabled={isSubmitting || updateProfileMutation.isPending}
           >
-            {isSubmitting ? t('accountManagement.updating') : t('accountManagement.updateTeacher')}
+            {isSubmitting || updateProfileMutation.isPending
+              ? t('accountManagement.updating')
+              : t('common.update')}
           </Button>
         </>
       }
     >
       <div className="max-w-4xl p-6 mx-auto">
         <form ref={formRef} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Basic Information Collapsible Card */}
           <CollapsibleCard
             title={t('accountManagement.basicInformation')}
             description={t('accountManagement.basicInformationDescription')}
             defaultExpanded={true}
           >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Name */}
+              <div className="space-y-2">
+                <Label htmlFor="username">
+                  {t('accountManagement.username')}
+                </Label>
+                <Input
+                  id="username"
+                  type="text"
+                  value={teacher.username}
+                  disabled
+                  className="bg-muted"
+                />
+              </div>
               <FormInputField
                 id="name"
                 label={t('accountManagement.name')}
@@ -165,10 +202,8 @@ export const EditTeacherPage = () => {
                 register={register('name')}
                 error={errors.name}
                 required
-                isSubmitting={isSubmitting}
+                isSubmitting={isSubmitting || updateProfileMutation.isPending}
               />
-
-              {/* Email */}
               <FormInputField
                 id="email"
                 label={t('accountManagement.email')}
@@ -176,10 +211,9 @@ export const EditTeacherPage = () => {
                 type="email"
                 register={register('email')}
                 error={errors.email}
-                isSubmitting={isSubmitting}
+                required
+                isSubmitting={isSubmitting || updateProfileMutation.isPending}
               />
-
-              {/* Phone */}
               <FormInputField
                 id="phone"
                 label={t('accountManagement.phoneNumber')}
@@ -187,21 +221,8 @@ export const EditTeacherPage = () => {
                 type="tel"
                 register={register('phone')}
                 error={errors.phone}
-                isSubmitting={isSubmitting}
+                isSubmitting={isSubmitting || updateProfileMutation.isPending}
               />
-
-              {/* Status */}
-              <FormField id="statusId" label={t('accountManagement.status')} required error={errors.statusId}>
-                <CustomDropdownField
-                  id="statusId"
-                  value={statusIdValue || ''}
-                  onChange={(value) => setValue('statusId', value, { shouldValidate: true })}
-                  placeholder={t('accountManagement.statusPlaceholder')}
-                  options={statusOptions}
-                  disabled={isSubmitting || isLoadingStatusCodes}
-                  hasError={!!errors.statusId}
-                />
-              </FormField>
             </div>
           </CollapsibleCard>
         </form>
