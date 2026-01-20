@@ -171,6 +171,9 @@ export const createTeacherSchema = (t: (key: string) => string) => z.object({
   phone: z
     .string()
     .optional(),
+  statusId: z
+    .string()
+    .min(1, t('accountManagement.validation.statusRequired')),
 })
 
 export type CreateTeacherFormData = z.infer<ReturnType<typeof createTeacherSchema>>
@@ -187,6 +190,9 @@ export const updateTeacherSchema = (t: (key: string) => string) => z.object({
   phone: z
     .string()
     .optional(),
+  statusId: z
+    .string()
+    .min(1, t('accountManagement.validation.statusRequired')),
 })
 
 export type UpdateTeacherFormData = z.infer<ReturnType<typeof updateTeacherSchema>>

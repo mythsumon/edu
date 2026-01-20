@@ -36,10 +36,10 @@ INSERT INTO regions (name, zone_id) VALUES
     ('Central Region 1', (SELECT id FROM zones WHERE name = 'Central Zone'))
 ON CONFLICT DO NOTHING;
 
--- Insert master codes for instructor status
+-- Insert master codes for account status
 -- First insert the parent
 INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
-    ('100', 'Instructor Status', NULL, NOW(), FALSE)
+    ('100', 'Account Status', NULL, NOW(), FALSE)
 ON CONFLICT DO NOTHING;
 -- Then insert the children
 INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES

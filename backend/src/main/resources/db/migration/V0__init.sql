@@ -104,13 +104,16 @@ CREATE TABLE IF NOT EXISTS teachers (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255),
     phone VARCHAR(50),
+    status_id BIGINT,
     profile_photo VARCHAR(500),
-    CONSTRAINT fk_teachers_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    CONSTRAINT fk_teachers_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_teachers_status FOREIGN KEY (status_id) REFERENCES master_code(id) ON DELETE RESTRICT
 );
 -- Create indexes for teachers table
 CREATE INDEX IF NOT EXISTS idx_teachers_email ON teachers(email);
 CREATE INDEX IF NOT EXISTS idx_teachers_phone ON teachers(phone);
 CREATE INDEX IF NOT EXISTS idx_teachers_teacher_id ON teachers(teacher_id);
+CREATE INDEX IF NOT EXISTS idx_teachers_status_id ON teachers(status_id);
 
 -- Instructors table
 CREATE TABLE IF NOT EXISTS instructors (
