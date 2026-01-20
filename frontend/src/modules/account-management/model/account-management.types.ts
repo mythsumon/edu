@@ -28,6 +28,7 @@ export interface InstructorAccount {
   region?: string // region name from mastercode (codeName)
   classificationId?: number
   instructorClassification?: string // classification name from mastercode (codeName)
+  statusId?: number
 }
 
 /**

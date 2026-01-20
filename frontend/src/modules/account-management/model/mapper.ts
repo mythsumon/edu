@@ -37,6 +37,7 @@ export function mapInstructorAccount(dto: InstructorResponseDto): InstructorAcco
     region: undefined, // Will be populated from mastercode lookup using regionId
     classificationId: dto.classificationId,
     instructorClassification: undefined, // Will be populated from mastercode lookup using classificationId
+    statusId: dto.statusId,
   }
 }
 
