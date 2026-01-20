@@ -166,6 +166,44 @@ This document describes the database schema structure for the backend applicatio
 
 ---
 
+### trainings
+**Description**: Stores training information linked to a program and institution, including schedule (date-only), grade/class info, student count, and notes.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | BIGSERIAL | PRIMARY KEY | Training unique identifier (auto-increment) |
+| name | VARCHAR(255) | NOT NULL | Training name |
+| program_id | BIGINT | NOT NULL, FOREIGN KEY | Reference to programs.id |
+| institution_id | BIGINT | NOT NULL, FOREIGN KEY | Reference to institutions.id |
+| description | TEXT | | Training description |
+| start_date | DATE | NOT NULL | Training start date (date only) |
+| end_date | DATE | NOT NULL | Training end date (date only) |
+| note | TEXT | | Additional note |
+| grade | VARCHAR(50) | | Grade info (flexible text) |
+| class | VARCHAR(50) | | Class info (flexible text) |
+| number_students | INT | CHECK (number_students >= 0) | Number of students |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT NOW() | Timestamp when record was created |
+| updated_at | TIMESTAMP | | Timestamp when record was last updated |
+| is_delete | BOOLEAN | NOT NULL, DEFAULT FALSE | Soft delete flag |
+
+**Check Constraints**:
+- `chk_training_date_range` → `end_date >= start_date`
+- `chk_training_number_students` → `number_students >= 0`
+
+**Foreign Keys**:
+- `fk_training_program` → `programs(id)` ON DELETE RESTRICT
+- `fk_training_institution` → `institutions(id)` ON DELETE RESTRICT
+
+**Indexes**:
+- `idx_training_name` on `name` - For faster name-based lookups
+- `idx_training_program_id` on `program_id` - For filtering by program
+- `idx_training_institution_id` on `institution_id` - For filtering by institution
+- `idx_training_start_date` on `start_date` - For schedule filtering/sorting
+- `idx_training_end_date` on `end_date` - For schedule filtering/sorting
+- `idx_training_is_delete` on `is_delete` - For filtering active/deleted records
+
+---
+
 ## Relationships
 - `refresh_token_t.user_id` → `users.id` (Many-to-One)
   - Cascade delete: When a user is deleted, all their refresh tokens are automatically deleted
@@ -200,6 +238,14 @@ This document describes the database schema structure for the backend applicatio
 - `programs.status_id` → `master_code.id` (Many-to-One)
   - Restrict delete: Prevents deletion of status master code if it has associated programs
   - References program status master codes
+
+- `trainings.program_id` → `programs.id` (Many-to-One)
+  - Restrict delete: Prevents deletion of a program if it has associated trainings
+  - One program can have multiple trainings
+
+- `trainings.institution_id` → `institutions.id` (Many-to-One)
+  - Restrict delete: Prevents deletion of an institution if it has associated trainings
+  - One institution can have multiple trainings
 
 ---
 

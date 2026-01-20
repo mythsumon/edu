@@ -109,3 +109,14 @@ export async function listInstitutions(
   )
   return response.data.data
 }
+
+/**
+ * Download class template CSV file
+ * Returns a blob that can be downloaded as a file
+ */
+export async function downloadClassTemplate(): Promise<Blob> {
+  const response = await axiosInstance.get('/trainings/template/classes/download', {
+    responseType: 'blob',
+  })
+  return response.data
+}

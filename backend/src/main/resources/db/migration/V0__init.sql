@@ -215,3 +215,33 @@ CREATE INDEX IF NOT EXISTS idx_programs_session_part_id ON programs(session_part
 CREATE INDEX IF NOT EXISTS idx_programs_status_id ON programs(status_id);
 CREATE INDEX IF NOT EXISTS idx_programs_program_type_id ON programs(program_type_id);
 CREATE INDEX IF NOT EXISTS idx_programs_is_delete ON programs(is_delete);
+
+-- Trainings table
+CREATE TABLE IF NOT EXISTS trainings (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    program_id BIGINT NOT NULL,
+    institution_id BIGINT NOT NULL,
+    description TEXT,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    note TEXT,
+    grade VARCHAR(50),
+    class VARCHAR(50),
+    number_students INT,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP,
+    is_delete BOOLEAN NOT NULL DEFAULT FALSE,
+    CONSTRAINT fk_training_program FOREIGN KEY (program_id) REFERENCES programs(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_training_institution FOREIGN KEY (institution_id) REFERENCES institutions(id) ON DELETE RESTRICT,
+    CONSTRAINT chk_training_date_range CHECK (end_date >= start_date),
+    CONSTRAINT chk_training_number_students CHECK (number_students >= 0)
+);
+
+-- Create indexes for trainings table
+CREATE INDEX IF NOT EXISTS idx_training_name ON trainings(name);
+CREATE INDEX IF NOT EXISTS idx_training_program_id ON trainings(program_id);
+CREATE INDEX IF NOT EXISTS idx_training_institution_id ON trainings(institution_id);
+CREATE INDEX IF NOT EXISTS idx_training_start_date ON trainings(start_date);
+CREATE INDEX IF NOT EXISTS idx_training_end_date ON trainings(end_date);
+CREATE INDEX IF NOT EXISTS idx_training_is_delete ON trainings(is_delete);

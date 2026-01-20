@@ -46,7 +46,7 @@ export const PeriodCard = ({
         <CollapsibleTrigger asChild className="mt-2">
           <button
             type="button"
-            className="w-full flex flex-row justify-between items-center pt-2 pb-2 px-4 transition-colors cursor-pointer"
+            className="w-full flex flex-row justify-between items-center pt-2 pb-2 px-0 transition-colors cursor-pointer"
           >
             <h3 className="text-sm font-normal">
               {t("training.periodTitle", {
@@ -60,7 +60,7 @@ export const PeriodCard = ({
             )}
           </button>
         </CollapsibleTrigger>
-        <CollapsibleContent className="border-t border-border/50 mt-0 pt-4 pb-2 px-4">
+        <CollapsibleContent className="border-t border-border/50 mt-0 pt-2 pb-2 px-0">
           <div className="space-y-4">
             {/* Date - Full width */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
