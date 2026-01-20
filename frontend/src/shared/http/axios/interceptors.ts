@@ -1,6 +1,8 @@
 import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 import { normalizeError } from './errors'
 import { refreshToken } from '@/modules/auth/model/auth.service'
+import { useAuthStore } from '@/shared/stores/auth.store'
+import { STORAGE_KEYS } from '@/shared/constants/storageKeys'
 
 let isRefreshing = false
 let failedQueue: Array<{
@@ -101,7 +103,10 @@ export function setupInterceptors(instance: AxiosInstance): void {
           // Refresh failed, clear auth and redirect to login
           processQueue(refreshError as AxiosError, null)
           sessionStorage.removeItem('access_token')
-          localStorage.removeItem('user')
+          localStorage.removeItem(STORAGE_KEYS.USER)
+          
+          // Clear auth state in Zustand store
+          useAuthStore.getState().clearAuth()
           
           // Redirect to login if not already there
           if (window.location.pathname !== '/login') {
