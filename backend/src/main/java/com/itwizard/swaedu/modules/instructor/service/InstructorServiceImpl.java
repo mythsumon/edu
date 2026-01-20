@@ -68,7 +68,7 @@ public class InstructorServiceImpl implements InstructorService {
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(instructorRole);
-        user.setEnabled(true);
+        // enabled will be set based on status below
 
         User savedUser = userRepository.save(user);
 
@@ -104,8 +104,9 @@ public class InstructorServiceImpl implements InstructorService {
         }
 
         // Set status if provided
+        MasterCodeEntity status = null;
         if (request.getStatusId() != null) {
-            MasterCodeEntity status = masterCodeRepository.findByIdAndIsDeleteFalse(request.getStatusId())
+            status = masterCodeRepository.findByIdAndIsDeleteFalse(request.getStatusId())
                     .orElseThrow(() -> new ResourceNotFoundException("Status master code not found with id: " + request.getStatusId()));
             instructor.setStatus(status);
         }
@@ -115,6 +116,17 @@ public class InstructorServiceImpl implements InstructorService {
             MasterCodeEntity classification = masterCodeRepository.findByIdAndIsDeleteFalse(request.getClassificationId())
                     .orElseThrow(() -> new ResourceNotFoundException("Classification master code not found with id: " + request.getClassificationId()));
             instructor.setClassification(classification);
+        }
+
+        // Update user enabled based on status
+        if (status != null) {
+            boolean isActive = "Active".equals(status.getCodeName());
+            savedUser.setEnabled(isActive);
+            userRepository.save(savedUser);
+        } else {
+            // If status is not provided, set enabled to false
+            savedUser.setEnabled(false);
+            userRepository.save(savedUser);
         }
 
         Instructor savedInstructor = instructorRepository.save(instructor);
@@ -207,8 +219,9 @@ public class InstructorServiceImpl implements InstructorService {
         }
 
         // Update status if provided
+        MasterCodeEntity status = null;
         if (request.getStatusId() != null) {
-            MasterCodeEntity status = masterCodeRepository.findByIdAndIsDeleteFalse(request.getStatusId())
+            status = masterCodeRepository.findByIdAndIsDeleteFalse(request.getStatusId())
                     .orElseThrow(() -> new ResourceNotFoundException("Status master code not found with id: " + request.getStatusId()));
             instructor.setStatus(status);
         } else {
@@ -222,6 +235,19 @@ public class InstructorServiceImpl implements InstructorService {
             instructor.setClassification(classification);
         } else {
             instructor.setClassification(null);
+        }
+
+        // Update user enabled based on status
+        User user = instructor.getUser();
+        if (status != null) {
+            // Status was updated, use the new status
+            boolean isActive = "Active".equals(status.getCodeName());
+            user.setEnabled(isActive);
+            userRepository.save(user);
+        } else {
+            // Status was cleared (set to null), set enabled to false
+            user.setEnabled(false);
+            userRepository.save(user);
         }
 
         Instructor updatedInstructor = instructorRepository.save(instructor);
@@ -259,8 +285,9 @@ public class InstructorServiceImpl implements InstructorService {
         }
 
         // Update status if provided
+        MasterCodeEntity status = null;
         if (request.getStatusId() != null) {
-            MasterCodeEntity status = masterCodeRepository.findByIdAndIsDeleteFalse(request.getStatusId())
+            status = masterCodeRepository.findByIdAndIsDeleteFalse(request.getStatusId())
                     .orElseThrow(() -> new ResourceNotFoundException("Status master code not found with id: " + request.getStatusId()));
             instructor.setStatus(status);
         }
@@ -270,6 +297,14 @@ public class InstructorServiceImpl implements InstructorService {
             MasterCodeEntity classification = masterCodeRepository.findByIdAndIsDeleteFalse(request.getClassificationId())
                     .orElseThrow(() -> new ResourceNotFoundException("Classification master code not found with id: " + request.getClassificationId()));
             instructor.setClassification(classification);
+        }
+
+        // Update user enabled based on status if status was updated
+        if (status != null) {
+            User user = instructor.getUser();
+            boolean isActive = "Active".equals(status.getCodeName());
+            user.setEnabled(isActive);
+            userRepository.save(user);
         }
 
         Instructor updatedInstructor = instructorRepository.save(instructor);
