@@ -25,6 +25,8 @@ import {
   EditTeacherPage,
 } from '@/modules/account-management'
 import { TrainingPage, TrainingCreatePage } from '@/modules/training'
+import { InstructorProfilePage } from '@/modules/instructor-profile'
+import { InstructorAccountSettingsPage } from '@/modules/instructor-account-setting'
 
 export const protectedRoutes: RouteObject[] = [
   {
@@ -247,6 +249,14 @@ export const protectedRoutes: RouteObject[] = [
                     // element: <SettingsAndUserManagementPage />,
                   },
                 ],
+              },
+              {
+                path: ROUTES.INSTRUCTOR_PROFILE,
+                element: <InstructorProfilePage />,
+              },
+              {
+                path: ROUTES.INSTRUCTOR_ACCOUNT_SETTINGS,
+                element: <InstructorAccountSettingsPage />,
               },
             ],
           },

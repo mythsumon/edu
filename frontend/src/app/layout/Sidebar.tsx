@@ -14,6 +14,7 @@ import {
   FileCode,
   Building2,
   GraduationCap,
+  Settings,
 } from "lucide-react";
 import logoImage from "@/assets/images/logo/logo.png";
 
@@ -195,6 +196,21 @@ export const Sidebar = () => {
             nameKey: "sidebar.trainingsIAppliedFor",
             href: ROUTES.INSTRUCTOR_APPLY_MINE_FULL,
             icon: BookOpen,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.settings",
+        items: [
+          {
+            nameKey: "sidebar.profile",
+            href: ROUTES.INSTRUCTOR_PROFILE_FULL,
+            icon: Settings,
+          },
+          {
+            nameKey: "sidebar.accountSettings",
+            href: ROUTES.INSTRUCTOR_ACCOUNT_SETTINGS_FULL,
+            icon: Settings,
           },
         ],
       },

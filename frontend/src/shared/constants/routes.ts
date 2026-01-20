@@ -44,6 +44,8 @@ export const ROUTES = {
   INSTRUCTOR_STUDENTS: 'reference-information-management',
   INSTRUCTOR_ATTENDANCE: 'system-management',
   INSTRUCTOR_GRADES: 'settings',
+  INSTRUCTOR_PROFILE: 'profile',
+  INSTRUCTOR_ACCOUNT_SETTINGS: 'account-settings',
   // Full paths for navigation (computed from segments)
   ADMIN_DASHBOARD_FULL: '/admin/dashboard',
   ADMIN_PROGRAM_MANAGEMENT_FULL: '/admin/program',
@@ -86,6 +88,8 @@ export const ROUTES = {
   INSTRUCTOR_STUDENTS_FULL: '/instructor/reference-information-management',
   INSTRUCTOR_ATTENDANCE_FULL: '/instructor/system-management',
   INSTRUCTOR_GRADES_FULL: '/instructor/system-management/settings',
+  INSTRUCTOR_PROFILE_FULL: '/instructor/profile',
+  INSTRUCTOR_ACCOUNT_SETTINGS_FULL: '/instructor/account-settings',
   // Legacy routes (for backward compatibility)
   // Education Operations
   EDUCATION_OPERATIONS: '/education-operations',
