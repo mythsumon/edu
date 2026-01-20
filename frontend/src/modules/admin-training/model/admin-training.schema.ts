@@ -19,7 +19,7 @@ const periodSchema = (t: (key: string) => string) =>
       .min(0, t('training.validation.assistantLecturersRequired')),
   })
 
-export const createTrainingSchema = (t: (key: string) => string) =>
+export const createAdminTrainingSchema = (t: (key: string) => string) =>
   z.object({
     trainingName: z
       .string()
@@ -65,11 +65,11 @@ export const createTrainingSchema = (t: (key: string) => string) =>
     }
   )
 
-export type CreateTrainingFormData = z.infer<
-  ReturnType<typeof createTrainingSchema>
+export type CreateAdminTrainingFormData = z.infer<
+  ReturnType<typeof createAdminTrainingSchema>
 >
 
-export const updateTrainingSchema = (t: (key: string) => string) =>
+export const updateAdminTrainingSchema = (t: (key: string) => string) =>
   z.object({
     trainingName: z
       .string()
@@ -115,6 +115,6 @@ export const updateTrainingSchema = (t: (key: string) => string) =>
     }
   )
 
-export type UpdateTrainingFormData = z.infer<
-  ReturnType<typeof updateTrainingSchema>
+export type UpdateAdminTrainingFormData = z.infer<
+  ReturnType<typeof updateAdminTrainingSchema>
 >

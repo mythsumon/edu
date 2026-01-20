@@ -23,7 +23,7 @@ import {
   TeacherDetailPage,
   EditTeacherPage,
 } from '@/modules/account-management'
-import { TrainingPage, TrainingCreatePage } from '@/modules/training'
+import { AdminTrainingPage, AdminTrainingCreatePage } from '@/modules/admin-training'
 
 export const protectedRoutes: RouteObject[] = [
   {
@@ -169,11 +169,11 @@ export const protectedRoutes: RouteObject[] = [
                 children: [
                   {
                     index: true,
-                    element: <TrainingPage />,
+                    element: <AdminTrainingPage />,
                   },
                   {
                     path: ROUTES.ADMIN_TRAINING_CREATE,
-                    element: <TrainingCreatePage />,
+                    element: <AdminTrainingCreatePage />,
                   },
                 ],
               },

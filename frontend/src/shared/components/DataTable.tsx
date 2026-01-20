@@ -3,7 +3,6 @@ import {
   useReactTable,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   flexRender,
   type ColumnDef,
@@ -33,7 +32,6 @@ interface DataTableProps<TData> {
   onRowClick?: (row: TData) => void;
   selectedRowId?: string | number | null | ((row: TData) => boolean);
   initialState?: TableOptions<TData>["initialState"];
-  enablePagination?: boolean;
   enableColumnPinning?: boolean;
   columnPinning?: ColumnPinningState;
   onColumnPinningChange?: (pinning: ColumnPinningState) => void;
@@ -55,8 +53,7 @@ export function DataTable<TData>({
   columnPinning: controlledColumnPinning,
   onColumnPinningChange,
   isLoading = false,
-}: // enablePagination = false,
-DataTableProps<TData>) {
+}: DataTableProps<TData>) {
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
   const [columnPinning, setColumnPinning] = React.useState<ColumnPinningState>({
     left: [],
@@ -105,7 +102,6 @@ DataTableProps<TData>) {
     columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onRowSelectionChange: enableRowSelection
       ? handleRowSelectionChange
