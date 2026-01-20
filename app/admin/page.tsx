@@ -26,6 +26,7 @@ import { DocumentStatusIndicator, EducationDetailDrawer } from '@/components/sha
 import { upsertAttendanceDoc } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import { upsertActivityLog } from '@/app/instructor/activity-logs/storage'
 import { upsertDoc } from '@/app/instructor/equipment-confirmations/storage'
+import { getLessonPlans, upsertLessonPlan } from '@/app/instructor/schedule/[educationId]/lesson-plan/storage'
 import dayjs from 'dayjs'
 import { SearchPanel } from '@/components/dashboard/SearchPanel'
 import { ResultPanel } from '@/components/dashboard/ResultPanel'
@@ -260,7 +261,7 @@ export default function AdminDashboardPage() {
     router.push(`/admin/evidence/${id}`)
   }
 
-  const handleApprove = async (type: 'attendance' | 'activity' | 'equipment' | 'evidence', id: string) => {
+  const handleApprove = async (type: 'attendance' | 'activity' | 'equipment' | 'evidence' | 'lessonPlan', id: string) => {
     try {
       if (type === 'attendance') {
         const docs = getAttendanceDocs()
@@ -314,17 +315,34 @@ export default function AdminDashboardPage() {
           upsertEvidenceDoc(updated)
           message.success('증빙자료가 승인되었습니다.')
         }
+      } else if (type === 'lessonPlan') {
+        const docs = getLessonPlans()
+        const doc = docs.find(d => d.id === id)
+        if (doc) {
+          const updated = {
+            ...doc,
+            status: 'APPROVED' as const,
+            approvedAt: new Date().toISOString(),
+            approvedBy: '관리자',
+            updatedAt: new Date().toISOString(),
+          }
+          upsertLessonPlan(updated)
+          message.success('강의계획서가 승인되었습니다.')
+        }
       }
-      // Trigger storage event for other tabs/windows
+      // Trigger custom events for real-time updates
       if (typeof window !== 'undefined') {
-        const storageKey = type === 'attendance' ? 'attendance_documents' : 
-                          type === 'activity' ? 'activity_logs' : 
-                          'equipment_confirmation_docs'
-        window.dispatchEvent(new StorageEvent('storage', {
-          key: storageKey,
-          newValue: localStorage.getItem(storageKey),
-          oldValue: localStorage.getItem(storageKey),
-        }))
+        if (type === 'attendance') {
+          window.dispatchEvent(new CustomEvent('attendanceUpdated'))
+        } else if (type === 'activity') {
+          window.dispatchEvent(new CustomEvent('activityUpdated'))
+        } else if (type === 'equipment') {
+          window.dispatchEvent(new CustomEvent('equipmentUpdated'))
+        } else if (type === 'evidence') {
+          window.dispatchEvent(new CustomEvent('evidenceUpdated'))
+        } else if (type === 'lessonPlan') {
+          window.dispatchEvent(new CustomEvent('lessonPlanUpdated'))
+        }
       }
       loadSummaries()
       setDrawerOpen(false)
@@ -334,7 +352,7 @@ export default function AdminDashboardPage() {
     }
   }
 
-  const handleReject = async (type: 'attendance' | 'activity' | 'equipment' | 'evidence', id: string, reason: string) => {
+  const handleReject = async (type: 'attendance' | 'activity' | 'equipment' | 'evidence' | 'lessonPlan', id: string, reason: string) => {
     if (!reason || reason.trim() === '') {
       message.warning('반려 사유를 입력해주세요.')
       return
@@ -397,20 +415,34 @@ export default function AdminDashboardPage() {
           upsertEvidenceDoc(updated)
           message.success('증빙자료가 반려되었습니다.')
         }
+      } else if (type === 'lessonPlan') {
+        const docs = getLessonPlans()
+        const doc = docs.find(d => d.id === id)
+        if (doc) {
+          const updated = {
+            ...doc,
+            status: 'REJECTED' as const,
+            rejectedAt: new Date().toISOString(),
+            rejectedBy: '관리자',
+            rejectReason: reason,
+            updatedAt: new Date().toISOString(),
+          }
+          upsertLessonPlan(updated)
+          message.success('강의계획서가 반려되었습니다.')
+        }
       }
-      // Trigger storage event for other tabs/windows
+      // Trigger custom events for real-time updates
       if (typeof window !== 'undefined') {
-        const storageKey = type === 'attendance' ? 'attendance_documents' : 
-                          type === 'activity' ? 'activity_logs' : 
-                          type === 'evidence' ? 'evidence_docs' :
-                          'equipment_confirmation_docs'
-        window.dispatchEvent(new StorageEvent('storage', {
-          key: storageKey,
-          newValue: localStorage.getItem(storageKey),
-          oldValue: localStorage.getItem(storageKey),
-        }))
-        if (type === 'evidence') {
+        if (type === 'attendance') {
+          window.dispatchEvent(new CustomEvent('attendanceUpdated'))
+        } else if (type === 'activity') {
+          window.dispatchEvent(new CustomEvent('activityUpdated'))
+        } else if (type === 'equipment') {
+          window.dispatchEvent(new CustomEvent('equipmentUpdated'))
+        } else if (type === 'evidence') {
           window.dispatchEvent(new CustomEvent('evidenceUpdated'))
+        } else if (type === 'lessonPlan') {
+          window.dispatchEvent(new CustomEvent('lessonPlanUpdated'))
         }
       }
       loadSummaries()
