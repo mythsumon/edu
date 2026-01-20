@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { accountManagementQueryKeys } from './queryKeys'
-import { createAdmin, createInstructor } from '../model/account-management.service'
-import type { CreateAdminRequestDto, CreateInstructorRequestDto } from '../model/account-management.types'
+import { createAdmin, updateAdmin, updateAdminByUsername, createInstructor, createTeacher, updateInstructor, updateTeacher } from '../model/account-management.service'
+import type { CreateAdminRequestDto, UpdateAdminRequestDto, CreateInstructorRequestDto, UpdateInstructorRequestDto, CreateTeacherRequestDto, UpdateTeacherRequestDto } from '../model/account-management.types'
 
 /**
  * Mutation hook for creating a new admin
@@ -20,6 +20,40 @@ export const useCreateAdmin = () => {
 }
 
 /**
+ * Mutation hook for updating an existing admin
+ */
+export const useUpdateAdmin = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: UpdateAdminRequestDto }) => {
+      return await updateAdmin(id, data)
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.admins() })
+      queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.adminDetail(variables.id) })
+    },
+  })
+}
+
+/**
+ * Mutation hook for updating an existing admin by username
+ */
+export const useUpdateAdminByUsername = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: async ({ username, data }: { username: string; data: UpdateAdminRequestDto }) => {
+      return await updateAdminByUsername(username, data)
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.admins() })
+      queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.adminDetailByUsername(variables.username) })
+    },
+  })
+}
+
+/**
  * Mutation hook for creating a new instructor
  */
 export const useCreateInstructor = () => {
@@ -31,6 +65,56 @@ export const useCreateInstructor = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.instructors() })
+    },
+  })
+}
+
+/**
+ * Mutation hook for updating an existing instructor
+ */
+export const useUpdateInstructor = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: UpdateInstructorRequestDto }) => {
+      return await updateInstructor(id, data)
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.instructors() })
+      queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.detail(variables.id) })
+    },
+  })
+}
+
+/**
+ * Mutation hook for creating a new teacher
+ */
+export const useCreateTeacher = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: async (data: CreateTeacherRequestDto) => {
+      return await createTeacher(data)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.teachers() })
+    },
+  })
+}
+
+/**
+ * Mutation hook for updating an existing teacher
+ */
+export const useUpdateTeacher = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: UpdateTeacherRequestDto }) => {
+      return await updateTeacher(id, data)
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.teachers() })
+      queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.teacherDetail(variables.id) })
     },
   })
 }

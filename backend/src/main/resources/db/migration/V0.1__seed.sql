@@ -228,15 +228,16 @@ VALUES ('instructor',
         TRUE)
 ON CONFLICT (username) DO NOTHING;
 -- Insert instructor profile
-INSERT INTO instructors (user_id, name, email, phone, gender, dob, region_id, city, street, detail_address, status_id, classification_id, affiliation)
+INSERT INTO instructors (user_id, instructor_id, name, email, phone, gender, dob, region_id, city_id, street, detail_address, status_id, classification_id, affiliation)
 VALUES ((SELECT id FROM users WHERE username = 'instructor'),
+        'INST' || (SELECT id FROM users WHERE username = 'instructor'),
         'Instructor User',
         'instructor@example.com',
         '+1234567890',
         '남자',
         '1990-01-01',
         (SELECT id FROM master_code WHERE code = '500-1-1-1' AND parent_id = (SELECT id FROM master_code WHERE code = '500-1-1')),
-        '경기도',
+        (SELECT id FROM master_code WHERE code = '500-1' AND parent_id = (SELECT id FROM master_code WHERE code = '500' AND parent_id IS NULL)),
         'Street',
         'Detail Address',
         (SELECT id FROM master_code WHERE code = '100-1' AND parent_id = (SELECT id FROM master_code WHERE code = '100' AND parent_id IS NULL)),
@@ -252,8 +253,9 @@ VALUES ('teacher-a',
         TRUE)
 ON CONFLICT (username) DO NOTHING;
 -- Insert teacher profile
-INSERT INTO teachers (user_id, name, email, phone)
+INSERT INTO teachers (user_id, teacher_id, name, email, phone)
 VALUES ((SELECT id FROM users WHERE username = 'teacher-a'),
+        'TID' || (SELECT id FROM users WHERE username = 'teacher-a'),
         'TeacherA',
         'teachera@example.com',
         '+1234567890')

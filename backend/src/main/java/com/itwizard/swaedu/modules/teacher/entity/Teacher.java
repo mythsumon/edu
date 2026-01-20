@@ -17,6 +17,9 @@ public class Teacher {
     @MapsId
     private User user;
 
+    @Column(name = "teacher_id", unique = true)
+    private String teacherId;
+
     @Column(name = "name", nullable = false)
     private String name;
 

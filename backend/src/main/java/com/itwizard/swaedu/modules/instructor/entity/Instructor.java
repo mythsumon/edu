@@ -20,6 +20,9 @@ public class Instructor {
     @MapsId
     private User user;
 
+    @Column(name = "instructor_id", unique = true)
+    private String instructorId;
+
     @Column(name = "name", nullable = false)
     private String name;
 
@@ -42,8 +45,12 @@ public class Instructor {
     @Column(name = "region_id", insertable = false, updatable = false)
     private Long regionId;
 
-    @Column
-    private String city;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "city_id", foreignKey = @ForeignKey(name = "fk_instructors_city"))
+    private MasterCodeEntity city;
+
+    @Column(name = "city_id", insertable = false, updatable = false)
+    private Long cityId;
 
     @Column
     private String street;
