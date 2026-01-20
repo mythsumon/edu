@@ -1,5 +1,10 @@
 import { queryOptions } from '@tanstack/react-query'
-import { getMasterCodeById, getMasterCodeByCode, getMasterCodeChildrenByCode } from '../model/instructor-profile.service'
+import { 
+  getMasterCodeById, 
+  getMasterCodeByCode, 
+  getMasterCodeChildrenByCode,
+  getMasterCodeGrandChildrenByCode,
+} from '../model/instructor-profile.service'
 import type { MasterCodeChildrenParams } from '../model/instructor-profile.types'
 import { instructorProfileQueryKeys } from './queryKeys'
 
@@ -50,6 +55,25 @@ export const masterCodeChildrenByCodeQueryOptions = (
         throw new Error('Master code code is required')
       }
       return await getMasterCodeChildrenByCode(code, params)
+    },
+  })
+}
+
+/**
+ * Query options for fetching master code grandchildren by code
+ * Can be used with useQuery or ensureQueryData
+ */
+export const masterCodeGrandChildrenByCodeQueryOptions = (
+  code: string,
+  params?: MasterCodeChildrenParams
+) => {
+  return queryOptions({
+    queryKey: instructorProfileQueryKeys.masterCodeGrandChildrenByCode(code, JSON.stringify(params || {})),
+    queryFn: async () => {
+      if (!code || code.trim() === '') {
+        throw new Error('Master code code is required')
+      }
+      return await getMasterCodeGrandChildrenByCode(code, params)
     },
   })
 }

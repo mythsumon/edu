@@ -3,6 +3,7 @@ import {
   masterCodeByIdQueryOptions, 
   masterCodeByCodeQueryOptions,
   masterCodeChildrenByCodeQueryOptions,
+  masterCodeGrandChildrenByCodeQueryOptions,
 } from './instructor-profile.query-options'
 import type { MasterCodeChildrenParams } from '../model/instructor-profile.types'
 
@@ -45,6 +46,21 @@ export const useMasterCodeChildrenByCodeQuery = (
 ) => {
   return useQuery({
     ...masterCodeChildrenByCodeQueryOptions(code!, params),
+    enabled: enabled && code !== null && code !== undefined && code.trim() !== '',
+  })
+}
+
+/**
+ * Query hook for fetching master code grandchildren by code
+ * Endpoint: GET /api/v1/mastercode/{code}/grandchildren
+ */
+export const useMasterCodeGrandChildrenByCodeQuery = (
+  code: string | null | undefined,
+  params?: MasterCodeChildrenParams,
+  enabled: boolean = true
+) => {
+  return useQuery({
+    ...masterCodeGrandChildrenByCodeQueryOptions(code!, params),
     enabled: enabled && code !== null && code !== undefined && code.trim() !== '',
   })
 }

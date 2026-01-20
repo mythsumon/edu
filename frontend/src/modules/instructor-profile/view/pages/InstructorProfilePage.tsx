@@ -8,7 +8,10 @@ import { Button } from '@/shared/ui/button'
 import { STORAGE_KEYS } from '@/shared/constants/storageKeys'
 import type { UserResponseDto } from '@/modules/auth/model/auth.types'
 import { useUiStore } from '@/shared/stores/ui.store'
-import { masterCodeChildrenByCodeQueryOptions } from '../../controller/instructor-profile.query-options'
+import { 
+  masterCodeChildrenByCodeQueryOptions,
+  masterCodeGrandChildrenByCodeQueryOptions,
+} from '../../controller/instructor-profile.query-options'
 import { transformArrayToObjectByKey } from '@/shared/lib/convertor'
 import { InstructorProfileDetailView } from '../components/InstructorProfileDetailView'
 import { InstructorProfileEditView } from '../components/InstructorProfileEditView'
@@ -41,21 +44,23 @@ export const InstructorProfilePage = () => {
     initialData: loaderData.instructorClassification,
   })
 
-  const { data: instructorRegion } = useQuery({
-    ...masterCodeChildrenByCodeQueryOptions('1300', {
-      page: 0,
-      size: 100,
-    }),
-    initialData: loaderData.instructorRegion,
-  })
-
   const { data: instructorCity } = useQuery({
-    ...masterCodeChildrenByCodeQueryOptions('1400', {
+    ...masterCodeChildrenByCodeQueryOptions('500', {
       page: 0,
       size: 100,
     }),
     initialData: loaderData.instructorCity,
   })
+
+  const { data: instructorRegion } = useQuery({
+    ...masterCodeGrandChildrenByCodeQueryOptions('500-1', {
+      page: 0,
+      size: 100,
+    }),
+    // initialData: loaderData.instructorRegion,
+  })
+
+  console.log(instructorRegion, "===================")
 
   // Create maps for quick lookup
   const statusMasterCodeMap = useMemo(() => {
@@ -154,6 +159,8 @@ export const InstructorProfilePage = () => {
     }
     return '-'
   }, [instructor.regionId, regionMasterCodeMap])
+
+  console.log(regionMasterCodeMap, instructor.regionId)
   
   // Get city name from map using instructor's cityId
   const cityName = useMemo(() => {
@@ -248,7 +255,6 @@ export const InstructorProfilePage = () => {
           isLoadingRegions={isLoadingRegions}
           language={language}
           onSuccess={handleSuccess}
-          onCancel={handleCancel}
           getInitials={getInitials}
           formRef={formRef}
           onSubmittingChange={setIsSubmitting}

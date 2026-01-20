@@ -23,6 +23,12 @@ export const INSTRUCTOR_PROFILE_ENDPOINTS = {
      * GET /api/v1/mastercode/{code}/children
      */
     childrenByCode: (code: string) => `/mastercode/${code}/children`,
+    
+    /**
+     * Get grandchildren of master code by code
+     * GET /api/v1/mastercode/{code}/grandchildren
+     */
+    grandchildrenByCode: (code: string) => `/mastercode/${code}/grandchildren`,
   },
   
   /**

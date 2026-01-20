@@ -11,7 +11,8 @@ import { Input } from '@/shared/ui/input'
 import { useToast } from '@/shared/ui/use-toast'
 import { updateInstructorProfileSchema, type UpdateInstructorProfileFormData } from '../../model/instructor-profile.schema'
 import { GENDER_OPTIONS } from '@/shared/constants/users'
-import type { PageResponse, MasterCodeResponseDto } from '../../model/instructor-profile.types'
+import type { MasterCodeResponseDto } from '../../model/instructor-profile.types'
+import type { PageResponse } from '@/shared/http/types/common'
 import { usePatchInstructor } from '../../controller/mutations'
 import { useUiStore } from '@/shared/stores/ui.store'
 import i18n from '@/app/config/i18n'
@@ -41,7 +42,6 @@ interface InstructorProfileEditViewProps {
   isLoadingRegions: boolean
   language: string
   onSuccess: () => void
-  onCancel: () => void
   getInitials: (name: string) => string
   formRef?: React.RefObject<HTMLFormElement>
   onSubmittingChange?: (isSubmitting: boolean) => void
@@ -52,11 +52,9 @@ export const InstructorProfileEditView = ({
   cityMasterCode,
   cityMasterCodeMap,
   regions,
-  cities,
   isLoadingRegions,
   language,
   onSuccess,
-  onCancel,
   getInitials,
   formRef: externalFormRef,
   onSubmittingChange,
@@ -194,11 +192,6 @@ export const InstructorProfileEditView = ({
   const regionOptions: DropdownOption[] = useMemo(
     () => regions.map((region: { id: number; codeName: string }) => ({ value: String(region.id), label: region.codeName || '' })),
     [regions]
-  )
-
-  const cityOptions: DropdownOption[] = useMemo(
-    () => cities.map((city: { id: number; codeName: string }) => ({ value: String(city.id), label: city.codeName || '' })),
-    [cities]
   )
 
   return (

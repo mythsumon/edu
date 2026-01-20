@@ -6,6 +6,9 @@ export const instructorProfileQueryKeys = {
   masterCodeChildren: () => [...instructorProfileQueryKeys.masterCode(), 'children'] as const,
   masterCodeChildrenByCode: (code: string, params?: string) => 
     [...instructorProfileQueryKeys.masterCodeChildren(), 'by-code', code, params || ''] as const,
+  masterCodeGrandChildren: () => [...instructorProfileQueryKeys.masterCode(), 'grandchildren'] as const,
+  masterCodeGrandChildrenByCode: (code: string, params?: string) => 
+    [...instructorProfileQueryKeys.masterCodeGrandChildren(), 'by-code', code, params || ''] as const,
   instructor: () => [...instructorProfileQueryKeys.all, 'instructor'] as const,
   instructorById: (userId: number) => [...instructorProfileQueryKeys.instructor(), userId] as const,
 }

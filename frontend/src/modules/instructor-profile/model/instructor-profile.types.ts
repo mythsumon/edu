@@ -7,7 +7,7 @@ export interface MasterCodeResponseDto {
   codeName: string
   parentId: number | null
   createdAt: string
-  updatedAt: string
+  updatedAt: string | null
 }
 
 /**

@@ -47,6 +47,22 @@ export const getMasterCodeChildrenByCode = async (
 }
 
 /**
+ * Get grandchildren of master code by code
+ * Endpoint: GET /api/v1/mastercode/{code}/grandchildren
+ */
+export const getMasterCodeGrandChildrenByCode = async (
+  code: string,
+  params?: MasterCodeChildrenParams
+): Promise<PageResponse<MasterCodeResponseDto>> => {
+  const response = await axiosInstance.get<ApiResponse<PageResponse<MasterCodeResponseDto>>>(
+    INSTRUCTOR_PROFILE_ENDPOINTS.masterCode.grandchildrenByCode(code),
+    { params }
+  )
+  console.log(response.data.data, "===================")
+  return response.data.data
+}
+
+/**
  * Update instructor (PUT - full update)
  * Endpoint: PUT /api/v1/instructor/{userId}
  */
