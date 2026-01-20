@@ -15,8 +15,6 @@ import { LoadingState } from '@/shared/components/LoadingState'
 import { ErrorState } from '@/shared/components/ErrorState'
 import { FormInputField } from '../components/FormInputField'
 import { CollapsibleCard } from '../components/CollapsibleCard'
-import { Input } from '@/shared/ui/input'
-import { Label } from '@/shared/ui/label'
 import { getCurrentUser } from '@/modules/auth/model/auth.service'
 import type { UserResponseDto } from '@/modules/auth/model/auth.types'
 
@@ -175,18 +173,6 @@ export const ProfileSettingsAdminPage = () => {
             defaultExpanded={true}
           >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="username">
-                  {t('accountManagement.username')}
-                </Label>
-                <Input
-                  id="username"
-                  type="text"
-                  value={admin.username}
-                  disabled
-                  className="bg-muted"
-                />
-              </div>
               <FormInputField
                 id="name"
                 label={t('accountManagement.name')}

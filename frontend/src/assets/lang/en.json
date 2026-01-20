@@ -307,6 +307,8 @@
     "inactive": "Inactive",
     "accountSettings": "Account Settings",
     "profileSettings": "Profile Settings",
+    "accountInformation": "Account Information",
+    "accountInformationDescription": "View your account information such as username.",
     "changePassword": "Change Password",
     "changePasswordDescription": "Update your account password. Make sure to use a strong password.",
     "currentPassword": "Current Password",

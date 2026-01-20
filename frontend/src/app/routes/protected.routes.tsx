@@ -22,7 +22,7 @@ import {
   AddTeacherPage,
   TeacherDetailPage,
   EditTeacherPage,
-  AccountSettingsPage,
+  AdminAccountSettingsPage,
   ProfileSettingsAdminPage,
   ProfileSettingsInstructorPage,
   ProfileSettingsTeacherPage,
@@ -47,7 +47,7 @@ export const protectedRoutes: RouteObject[] = [
               },
               {
                 path: ROUTES.ACCOUNT_SETTINGS,
-                element: <AccountSettingsPage />,
+                element: <AdminAccountSettingsPage />,
               },
               {
                 path: ROUTES.PROFILE_SETTINGS,
@@ -207,7 +207,7 @@ export const protectedRoutes: RouteObject[] = [
               },
               {
                 path: ROUTES.ACCOUNT_SETTINGS,
-                element: <AccountSettingsPage />,
+                element: <AdminAccountSettingsPage />,
               },
               {
                 path: ROUTES.PROFILE_SETTINGS,

@@ -336,6 +336,8 @@
     },
     "accountSettings": "계정 설정",
     "profileSettings": "프로필 설정",
+    "accountInformation": "계정 정보",
+    "accountInformationDescription": "사용자 이름과 같은 계정 정보를 확인하세요.",
     "changePassword": "비밀번호 변경",
     "changePasswordDescription": "계정 비밀번호를 업데이트하세요. 강력한 비밀번호를 사용하세요.",
     "currentPassword": "현재 비밀번호",
