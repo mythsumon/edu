@@ -48,9 +48,9 @@ export const createAdminTrainingSchema = (t: (key: string) => string) =>
     numberOfStudents: z
       .number({ error: t('training.validation.numberOfStudentsMustBeNumber') })
       .min(1, t('training.validation.numberOfStudentsRequired')),
-    numberOfClasses: z
-      .number({ error: t('training.validation.numberOfClassesMustBeNumber') })
-      .min(1, t('training.validation.numberOfClassesRequired')),
+    numberOfPeriods: z
+      .number({ error: t('training.validation.numberOfPeriodsMustBeNumber') })
+      .min(1, t('training.validation.numberOfPeriodsRequired')),
     periods: z.array(periodSchema(t)).min(1),
   }).refine(
     (data) => {
@@ -98,9 +98,9 @@ export const updateAdminTrainingSchema = (t: (key: string) => string) =>
     numberOfStudents: z
       .number({ error: t('training.validation.numberOfStudentsMustBeNumber') })
       .min(1, t('training.validation.numberOfStudentsRequired')),
-    numberOfClasses: z
-      .number({ error: t('training.validation.numberOfClassesMustBeNumber') })
-      .min(1, t('training.validation.numberOfClassesRequired')),
+    numberOfPeriods: z
+      .number({ error: t('training.validation.numberOfPeriodsMustBeNumber') })
+      .min(1, t('training.validation.numberOfPeriodsRequired')),
     periods: z.array(periodSchema(t)).min(1),
   }).refine(
     (data) => {

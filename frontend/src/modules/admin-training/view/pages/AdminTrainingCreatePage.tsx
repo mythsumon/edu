@@ -40,7 +40,7 @@ export const AdminTrainingCreatePage = () => {
       grade: "",
       class: "",
       numberOfStudents: undefined,
-      numberOfClasses: 1,
+      numberOfPeriods: 1,
       periods: [
         {
           date: "",
@@ -59,14 +59,14 @@ export const AdminTrainingCreatePage = () => {
     name: "periods",
   });
 
-  // Watch number of classes to sync periods array
-  const numberOfClassesValue = watch("numberOfClasses");
+  // Watch number of periods to sync periods array
+  const numberOfPeriodsValue = watch("numberOfPeriods");
   const periodCount = useMemo(() => {
-    if (!numberOfClassesValue || numberOfClassesValue < 1) return 0;
-    return Math.min(numberOfClassesValue, 100); // Cap at 100 for safety
-  }, [numberOfClassesValue]);
+    if (!numberOfPeriodsValue || numberOfPeriodsValue < 1) return 0;
+    return Math.min(numberOfPeriodsValue, 100); // Cap at 100 for safety
+  }, [numberOfPeriodsValue]);
 
-  // Sync periods array with numberOfClasses
+  // Sync periods array with numberOfPeriods
   useEffect(() => {
     const currentLength = fields.length;
     const targetLength = periodCount;
@@ -89,7 +89,7 @@ export const AdminTrainingCreatePage = () => {
       }
     }
 
-    // Clear period validation errors when numberOfClasses changes
+    // Clear period validation errors when numberOfPeriods changes
     clearErrors("periods");
   }, [periodCount, fields.length, append, remove, clearErrors]);
 
