@@ -24,7 +24,7 @@ import {
   TeacherDetailPage,
   EditTeacherPage,
 } from '@/modules/account-management'
-import { TrainingPage, TrainingCreatePage } from '@/modules/training'
+import { AdminTrainingPage, AdminTrainingCreatePage } from '@/modules/admin-training'
 import { InstructorProfilePage, instructorProfileLoader } from '@/modules/instructor-profile'
 import { InstructorAccountSettingsPage } from '@/modules/instructor-account-setting'
 
@@ -172,11 +172,11 @@ export const protectedRoutes: RouteObject[] = [
                 children: [
                   {
                     index: true,
-                    element: <TrainingPage />,
+                    element: <AdminTrainingPage />,
                   },
                   {
                     path: ROUTES.ADMIN_TRAINING_CREATE,
-                    element: <TrainingCreatePage />,
+                    element: <AdminTrainingCreatePage />,
                   },
                 ],
               },

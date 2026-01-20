@@ -85,7 +85,7 @@ export const ParentCodeCard = ({ onRowClick }: ParentCodeCardProps = {}) => {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = React.useState("");
   const { data: rootLevelCodes, isLoading } = useRootCommonCodesQuery({
     q: debouncedSearchQuery || undefined,
-    sort: "code,desc",
+    sort: "id,asc",
   });
   const deleteMutation = useDeleteCommonCode();
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
