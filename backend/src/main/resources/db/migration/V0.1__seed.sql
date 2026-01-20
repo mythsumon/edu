@@ -44,7 +44,9 @@ ON CONFLICT DO NOTHING;
 -- Then insert the children
 INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALUES
     ('100-1', 'Active', (SELECT id FROM master_code WHERE code = '100' AND parent_id IS NULL), NOW(), FALSE),
-    ('100-2', 'Inactive', (SELECT id FROM master_code WHERE code = '100' AND parent_id IS NULL), NOW(), FALSE)
+    ('100-2', 'Inactive', (SELECT id FROM master_code WHERE code = '100' AND parent_id IS NULL), NOW(), FALSE),
+    ('100-3', 'Suspended', (SELECT id FROM master_code WHERE code = '100' AND parent_id IS NULL), NOW(), FALSE),
+    ('100-4', 'Blocked', (SELECT id FROM master_code WHERE code = '100' AND parent_id IS NULL), NOW(), FALSE)
 ON CONFLICT DO NOTHING;
 
 -- Insert master codes for instructor classification
