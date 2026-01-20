@@ -82,6 +82,7 @@
   },
   "header": {
     "title": "관리 대시보드",
+    "accountSettings": "계정 설정",
     "profileSettings": "프로필 설정",
     "logout": "로그아웃",
     "theme": "테마",
@@ -125,7 +126,10 @@
     "masterCodeSetup": "마스터 코드 설정",
     "commonCode": "공통 코드 설정",
     "training": "교육",
-    "trainingManagement": "교육 관리"
+    "trainingManagement": "교육 관리",
+    "myAccount": "내 계정",
+    "accountSettings": "계정 설정",
+    "profileSettings": "프로필 설정"
   },
   "errors": {
     "generic": "오류가 발생했습니다",
@@ -302,7 +306,8 @@
     "validation": {
       "usernameRequired": "사용자 이름은 필수입니다",
       "usernameMaxLength": "사용자 이름은 최대 50자까지 가능합니다",
-      "passwordMinLength": "비밀번호는 최소 6자 이상이어야 합니다",
+      "passwordMinLength": "비밀번호는 최소 8자 이상이어야 합니다",
+      "passwordMaxLength": "비밀번호는 최대 100자까지 가능합니다",
       "nameRequired": "이름은 필수입니다",
       "nameMaxLength": "이름은 최대 255자까지 가능합니다",
       "emailRequired": "이메일은 필수입니다",
@@ -321,8 +326,27 @@
       "statusRequired": "상태는 필수입니다",
       "classificationRequired": "분류는 필수입니다",
       "affiliationRequired": "소속은 필수입니다",
-      "affiliationMaxLength": "소속은 최대 255자까지 가능합니다"
-    }
+      "affiliationMaxLength": "소속은 최대 255자까지 가능합니다",
+      "currentPasswordRequired": "현재 비밀번호를 입력하세요",
+      "confirmPasswordRequired": "새 비밀번호를 확인하세요",
+      "passwordsDoNotMatch": "비밀번호가 일치하지 않습니다",
+      "newPasswordSameAsCurrent": "새 비밀번호는 현재 비밀번호와 동일할 수 없습니다"
+    },
+    "accountSettings": "계정 설정",
+    "profileSettings": "프로필 설정",
+    "changePassword": "비밀번호 변경",
+    "changePasswordDescription": "계정 비밀번호를 업데이트하세요. 강력한 비밀번호를 사용하세요.",
+    "currentPassword": "현재 비밀번호",
+    "currentPasswordPlaceholder": "현재 비밀번호를 입력하세요",
+    "newPassword": "새 비밀번호",
+    "newPasswordPlaceholder": "새 비밀번호를 입력하세요",
+    "confirmPassword": "비밀번호 확인",
+    "confirmPasswordPlaceholder": "새 비밀번호를 확인하세요",
+    "changingPassword": "변경 중...",
+    "changePasswordSuccess": "비밀번호가 성공적으로 변경되었습니다",
+    "changePasswordError": "비밀번호 변경에 실패했습니다",
+    "updateProfileSuccess": "프로필이 성공적으로 업데이트되었습니다",
+    "updateProfileError": "프로필 업데이트에 실패했습니다"
   },
   "dataTable": {
     "totalCases": "총 {{count}}건",

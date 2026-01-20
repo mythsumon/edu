@@ -1,5 +1,6 @@
 import { axiosInstance } from '@/shared/http/axios/instance'
 import type { ApiResponse, PageResponse } from '@/shared/http/types/common'
+import type { UserResponseDto } from '@/modules/auth/model/auth.types'
 import type {
   AdminResponseDto,
   InstructorResponseDto,
@@ -11,6 +12,7 @@ import type {
   UpdateInstructorRequestDto,
   CreateTeacherRequestDto,
   UpdateTeacherRequestDto,
+  ChangePasswordRequestDto,
 } from './account-management.types'
 
 /**
@@ -378,4 +380,43 @@ export async function exportTeachersToExcel(
     }
   )
   return response.data
+}
+
+/**
+ * Update own profile (for current logged-in user)
+ * Uses username from authentication to update own profile
+ */
+export async function updateOwnProfile(
+  username: string,
+  roleName: string,
+  data: UpdateAdminRequestDto | UpdateInstructorRequestDto | UpdateTeacherRequestDto
+): Promise<AdminResponseDto | InstructorResponseDto | TeacherResponseDto> {
+  if (roleName.toUpperCase() === 'ADMIN') {
+    return await updateAdminByUsername(username, data as UpdateAdminRequestDto)
+  } else if (roleName.toUpperCase() === 'INSTRUCTOR') {
+    // For instructor, we need to get the user ID from the current user
+    // The instructor's userId is the same as the user's id
+    const userResponse = await axiosInstance.get<ApiResponse<UserResponseDto>>('/user/me')
+    const currentUser = userResponse.data.data
+    return await updateInstructor(currentUser.id, data as UpdateInstructorRequestDto)
+  } else if (roleName.toUpperCase() === 'TEACHER') {
+    // Similar for teacher - get user ID from current user
+    const userResponse = await axiosInstance.get<ApiResponse<UserResponseDto>>('/user/me')
+    const currentUser = userResponse.data.data
+    return await updateTeacher(currentUser.id, data as UpdateTeacherRequestDto)
+  }
+  throw new Error(`Unsupported role: ${roleName}`)
+}
+
+/**
+ * Change password for current user
+ * Note: This endpoint may need to be created on the backend
+ */
+export async function changePassword(
+  data: ChangePasswordRequestDto
+): Promise<void> {
+  await axiosInstance.post<ApiResponse<void>>('/user/change-password', {
+    currentPassword: data.currentPassword,
+    newPassword: data.newPassword,
+  })
 }

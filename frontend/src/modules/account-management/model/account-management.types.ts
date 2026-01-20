@@ -234,3 +234,12 @@ export interface ListAccountsParams {
   statusIds?: number[]
   zoneIds?: number[]
 }
+
+/**
+ * Request DTO for changing password
+ */
+export interface ChangePasswordRequestDto {
+  currentPassword: string
+  newPassword: string
+  confirmPassword: string
+}

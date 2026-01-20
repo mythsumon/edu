@@ -50,12 +50,14 @@ export function setupInterceptors(instance: AxiosInstance): void {
       const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
       // Skip token refresh for auth endpoints (login, logout, refresh)
+      // Also skip for change-password endpoint (401 means wrong password, not expired token)
       const isAuthEndpoint = originalRequest.url?.includes('/auth/login') || 
                             originalRequest.url?.includes('/auth/logout') ||
                             originalRequest.url?.includes('/auth/token/refresh')
+      const isChangePasswordEndpoint = originalRequest.url?.includes('/user/change-password')
 
-      // If error is 401 and we haven't already retried, and it's not an auth endpoint
-      if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
+      // If error is 401 and we haven't already retried, and it's not an auth endpoint or change-password endpoint
+      if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint && !isChangePasswordEndpoint) {
         if (isRefreshing) {
           // If already refreshing, queue this request
           return new Promise((resolve, reject) => {
