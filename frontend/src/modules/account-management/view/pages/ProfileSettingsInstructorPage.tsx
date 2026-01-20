@@ -9,7 +9,7 @@ import { useToast } from '@/shared/ui/use-toast'
 import { ROUTES } from '@/shared/constants/routes'
 import { STORAGE_KEYS } from '@/shared/constants/storageKeys'
 import { useUpdateOwnProfile } from '../../controller/mutations'
-import { useInstructorDetailQuery } from '../../controller/queries'
+import { useInstructorMeQuery } from '../../controller/queries'
 import { updateOwnProfileInstructorSchema, type UpdateOwnProfileInstructorFormData } from '../../model/account-management.schema'
 import { useCommonCodeChildrenByCodeQuery, useCommonCodeGrandChildrenByCodeQuery, useCommonCodeByCodeQuery } from '@/modules/common-code/controller/queries'
 import { MASTER_CODE_DISTRICT_CODE } from '@/shared/constants/master-code'
@@ -56,12 +56,8 @@ export const ProfileSettingsInstructorPage = () => {
     return () => window.removeEventListener('storage', handleStorageChange)
   }, [])
 
-  const userId = user?.id || 0
   const username = user?.username || ''
-  const { data: instructor, isLoading: isLoadingInstructor, error: instructorError } = useInstructorDetailQuery(
-    userId,
-    { enabled: !!userId }
-  )
+  const { data: instructor, isLoading: isLoadingInstructor, error: instructorError } = useInstructorMeQuery()
 
   const {
     register,
@@ -172,7 +168,7 @@ export const ProfileSettingsInstructorPage = () => {
         roleName: user.roleName,
         data: {
           ...data,
-          username,
+          // username is not needed for /instructor/me endpoint
         },
       })
       toast({

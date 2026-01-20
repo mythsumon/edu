@@ -255,6 +255,67 @@ public class InstructorServiceImpl implements InstructorService {
     }
 
     @Override
+    public InstructorResponseDto getInstructorByUsername(String username) {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found with username: " + username);
+        }
+        Instructor instructor = instructorRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Instructor not found for user: " + username));
+        return InstructorMapper.toResponseDto(instructor);
+    }
+
+    @Override
+    @Transactional
+    public InstructorResponseDto updateInstructorByUsername(String username, InstructorPatchDto request) {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found with username: " + username);
+        }
+        Instructor instructor = instructorRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Instructor not found for user: " + username));
+
+        // Check email uniqueness if email is being changed
+        if (request.getEmail() != null && !request.getEmail().isBlank()
+                && !request.getEmail().equals(instructor.getEmail())
+                && instructorRepository.existsByEmail(request.getEmail())) {
+            throw new ValidationException("Email already exists for another instructor");
+        }
+
+        // Update basic fields (only non-null fields)
+        InstructorMapper.patchEntityFromDto(instructor, request);
+
+        // Update region if provided
+        if (request.getRegionId() != null) {
+            MasterCodeEntity region = masterCodeRepository.findByIdAndIsDeleteFalse(request.getRegionId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Region master code not found with id: " + request.getRegionId()));
+            instructor.setRegion(region);
+        }
+
+        // Update city if provided
+        if (request.getCityId() != null) {
+            MasterCodeEntity city = masterCodeRepository.findByIdAndIsDeleteFalse(request.getCityId())
+                    .orElseThrow(() -> new ResourceNotFoundException("City master code not found with id: " + request.getCityId()));
+            instructor.setCity(city);
+        }
+
+        // Note: Instructors should not be able to update their own status via /me endpoint
+        // Status updates should be restricted to admin-only endpoints
+
+        // Update classification if provided
+        if (request.getClassificationId() != null) {
+            MasterCodeEntity classification = masterCodeRepository.findByIdAndIsDeleteFalse(request.getClassificationId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Classification master code not found with id: " + request.getClassificationId()));
+            instructor.setClassification(classification);
+        }
+
+        // Note: We don't update user enabled status here since instructors cannot change their own status
+
+        Instructor updatedInstructor = instructorRepository.save(instructor);
+        return InstructorMapper.toResponseDto(updatedInstructor);
+    }
+
+    @Override
     @Transactional
     public InstructorResponseDto patchInstructor(Long userId, InstructorPatchDto request) {
         Instructor instructor = instructorRepository.findByUserId(userId)

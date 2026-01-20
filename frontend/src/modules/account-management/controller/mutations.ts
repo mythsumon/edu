@@ -148,13 +148,17 @@ export const useUpdateOwnProfile = () => {
     }) => {
       return await updateOwnProfile(username, roleName, data)
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.admins() })
       queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.instructors() })
       queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.teachers() })
       // Also invalidate current user query if it exists
       queryClient.invalidateQueries({ queryKey: ['user', 'me'] })
+      // Invalidate instructor me query if updating instructor profile
+      if (variables.roleName.toUpperCase() === 'INSTRUCTOR') {
+        queryClient.invalidateQueries({ queryKey: accountManagementQueryKeys.instructorMe() })
+      }
     },
   })
 }

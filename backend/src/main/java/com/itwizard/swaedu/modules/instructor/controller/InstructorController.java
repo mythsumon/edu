@@ -14,6 +14,7 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
@@ -46,6 +47,20 @@ public class InstructorController {
         PageResponse<InstructorResponseDto> response = instructorService.listInstructors(
                 q, page, size, sort, regionIds, classificationIds, statusIds, zoneIds);
         return ResponseUtil.success("Instructors retrieved successfully", response);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse> getMyProfile(Authentication authentication) {
+        InstructorResponseDto response = instructorService.getInstructorByUsername(authentication.getName());
+        return ResponseUtil.success("Instructor profile retrieved successfully", response);
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<ApiResponse> updateMyProfile(
+            Authentication authentication,
+            @Valid @RequestBody InstructorPatchDto request) {
+        InstructorResponseDto response = instructorService.updateInstructorByUsername(authentication.getName(), request);
+        return ResponseUtil.success("Instructor profile updated successfully", response);
     }
 
     @GetMapping("/{userId}")
