@@ -57,7 +57,9 @@ public class SecurityConfig {
                 .cors((cors) -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/api/v1/auth/**", "/swagger-ui/**", "/sample/**").permitAll()
-                        .requestMatchers("/api/v1/instructor/me").hasAnyRole("INSTRUCTOR", "ADMIN")
+                        // Allow public access to uploaded files (GET requests)
+                        .requestMatchers(HttpMethod.GET, "/files/**").permitAll()
+                        .requestMatchers("/api/v1/instructor/me/**").hasAnyRole("INSTRUCTOR", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/mastercode/**", "/api/v1/zones/**", "/api/v1/regions/**").authenticated()
                         .requestMatchers("/api/v1/mastercode/**", "/api/v1/zones/**", "/api/v1/regions/**", "/api/v1/admin/**", "/api/v1/instructor/**", "/api/v1/teacher/**", "/api/v1/institutions/**", "/api/v1/teacher/**").hasRole("ADMIN")
                         .anyRequest().authenticated()

@@ -317,6 +317,28 @@ public class InstructorServiceImpl implements InstructorService {
 
     @Override
     @Transactional
+    public InstructorResponseDto updateSignatureByUsername(String username, String fileUrl) {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found with username: " + username);
+        }
+        Instructor instructor = instructorRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Instructor not found for user: " + username));
+
+        // Delete old signature if exists
+        if (instructor.getSignature() != null && !instructor.getSignature().isEmpty()) {
+            // Note: StorageService can be injected if needed for deletion
+            // For now, we just replace the URL
+        }
+
+        // Update signature URL
+        instructor.setSignature(fileUrl);
+        Instructor updatedInstructor = instructorRepository.save(instructor);
+        return InstructorMapper.toResponseDto(updatedInstructor);
+    }
+
+    @Override
+    @Transactional
     public InstructorResponseDto patchInstructor(Long userId, InstructorPatchDto request) {
         Instructor instructor = instructorRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Instructor not found with userId: " + userId));

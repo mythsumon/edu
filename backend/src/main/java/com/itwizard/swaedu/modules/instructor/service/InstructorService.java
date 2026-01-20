@@ -27,6 +27,8 @@ public interface InstructorService {
 
     InstructorResponseDto updateInstructorByUsername(String username, InstructorPatchDto request);
 
+    InstructorResponseDto updateSignatureByUsername(String username, String fileUrl);
+
     void deleteInstructor(Long userId);
 
     void exportInstructorsToExcel(
