@@ -3,8 +3,9 @@ import { AppShell } from '../layout/AppShell'
 import { ProtectedLayout } from '../layout/ProtectedLayout'
 import { AdminRouteGuard } from '../layout/AdminRouteGuard'
 import { InstructorRouteGuard } from '../layout/InstructorRouteGuard'
+import { TeacherRouteGuard } from '../layout/TeacherRouteGuard'
 import { ROUTES } from '@/shared/constants/routes'
-import { DashboardPage } from '@/modules/dashboard'
+import { DashboardPage, TeacherDashboardPage } from '@/modules/dashboard'
 import { MasterCodeSetupPage, MasterCodeCreatePage } from '@/modules/master-code-setup'
 import { CommonCodePage } from '@/modules/common-code'
 import { InstitutionManagementPage, InstitutionCreatePage, InstitutionEditPage } from '@/modules/institution'
@@ -220,6 +221,29 @@ export const protectedRoutes: RouteObject[] = [
               {
                 path: ROUTES.PROFILE_SETTINGS,
                 element: <ProfileSettingsInstructorPage />,
+              },
+            ],
+          },
+          // Teacher routes grouped under /teacher
+          {
+            path: ROUTES.TEACHER,
+            element: <TeacherRouteGuard />,
+            children: [
+              {
+                index: true,
+                element: <Navigate to={ROUTES.TEACHER_DASHBOARD_FULL} replace />,
+              },
+              {
+                path: ROUTES.TEACHER_DASHBOARD,
+                element: <TeacherDashboardPage />,
+              },
+              {
+                path: ROUTES.ACCOUNT_SETTINGS,
+                element: <AdminAccountSettingsPage />,
+              },
+              {
+                path: ROUTES.PROFILE_SETTINGS,
+                element: <ProfileSettingsTeacherPage />,
               },
             ],
           },

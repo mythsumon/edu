@@ -29,9 +29,7 @@ export const RootRedirect = () => {
     } else if (roleName === 'INSTRUCTOR') {
       return <Navigate to={ROUTES.INSTRUCTOR_DASHBOARD_FULL} replace />
     } else if (roleName === 'TEACHER') {
-      // Teacher dashboard will be implemented later
-      // For now, redirect to login or show unauthorized
-      return <Navigate to={ROUTES.UNAUTHORIZED} replace />
+      return <Navigate to={ROUTES.TEACHER_DASHBOARD_FULL} replace />
     }
   } catch (error) {
     // If parsing fails, fall through to login redirect

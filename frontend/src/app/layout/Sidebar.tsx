@@ -188,7 +188,7 @@ export const Sidebar = () => {
     []
   );
 
-  // Teacher navigation sections (teachers use admin routes but with teacher-specific profile settings)
+  // Teacher navigation sections
   const teacherSections: MenuSection[] = useMemo(
     () => [
       {
@@ -196,7 +196,7 @@ export const Sidebar = () => {
         items: [
           {
             nameKey: "sidebar.dashboard",
-            href: ROUTES.ADMIN_DASHBOARD_FULL,
+            href: ROUTES.TEACHER_DASHBOARD_FULL,
             icon: LayoutDashboard,
           },
         ],
@@ -206,12 +206,12 @@ export const Sidebar = () => {
         items: [
           {
             nameKey: "sidebar.accountSettings",
-            href: ROUTES.ADMIN_ACCOUNT_SETTINGS_FULL,
+            href: ROUTES.TEACHER_ACCOUNT_SETTINGS_FULL,
             icon: KeyRound,
           },
           {
             nameKey: "sidebar.profileSettings",
-            href: ROUTES.ADMIN_TEACHER_PROFILE_SETTINGS_FULL,
+            href: ROUTES.TEACHER_PROFILE_SETTINGS_FULL,
             icon: UserCircle,
           },
         ],
