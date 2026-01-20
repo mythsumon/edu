@@ -124,7 +124,16 @@
     "masterCodeSetup": "Master Code Setup",
     "commonCode": "Common Code Setup",
     "training": "Training",
-    "trainingManagement": "Training Management"
+    "trainingManagement": "Training Management",
+    "lecture": "Lecture",
+    "lectureSchedule": "Lecture Schedule",
+    "myLectureList": "My lecture list",
+    "checkConfirmedClasses": "Check confirmed classes",
+    "ongoingTraining": "Ongoing training",
+    "completedTraining": "Completed training",
+    "applyForLecture": "Apply for lecture",
+    "trainingScheduledToOpen": "Training scheduled to open",
+    "trainingsIAppliedFor": "The trainings I applied for"
   },
   "errors": {
     "generic": "An error occurred",
@@ -528,6 +537,129 @@
       "checkingCode": "Checking the code",
       "codeAvailable": "Code is available to use",
       "codeUnavailable": "Code already exists!"
+    }
+  },
+  "lecture": {
+    "schedule": {
+      "title": "Schedule List",
+      "description": "View and manage your lecture schedule",
+      "searchPlaceholder": "Search by education ID, education name, or institution name",
+      "noData": "No schedules found",
+      "educationId": "Education ID",
+      "trainingName": "Training name",
+      "institutionName": "Institution name",
+      "documentStatus": "Document status",
+      "overallStatus": "Overall status",
+      "lastModifiedDate": "Last modified date",
+      "management": "management",
+      "stats": {
+        "entire": "Entire",
+        "pendingApproval": "Pending approval",
+        "approvalComplete": "Approval complete",
+        "cancelled": "Cancelled"
+      },
+      "tabs": {
+        "all": "My lecture list",
+        "confirmed": "Check confirmed classes",
+        "ongoing": "Ongoing training",
+        "completed": "Completed training"
+      }
+    },
+    "confirmed": {
+      "title": "Check confirmed classes",
+      "description": "Check the confirmed class schedule.",
+      "entire": "entire",
+      "searchPlaceholder": "Search by education ID, education name, or institution name",
+      "noData": "No confirmed classes found",
+      "educationId": "Education ID",
+      "trainingName": "Training name",
+      "educationalInstitutions": "educational institutions",
+      "region": "region",
+      "gradeAndClass": "Grade and class",
+      "schedule": "schedule",
+      "work": "work",
+      "viewDetails": "View Details"
+    },
+    "ongoing": {
+      "title": "Ongoing training",
+      "description": "Check your current training and manage your attendance.",
+      "entire": "entire",
+      "inProgress": "In progress",
+      "attendanceConfirmation": "Attendance/Confirmation"
+    },
+    "completed": {
+      "title": "Completed training",
+      "description": "Check your completed training history.",
+      "entire": "entire",
+      "complete": "complete",
+      "trainingSummary": "Training Summary",
+      "reviewsSettlement": "Reviews/Settlement"
+    },
+    "application": {
+      "title": "The trainings I applied for",
+      "description": "Check the status of the training you applied for.",
+      "searchPlaceholder": "Search by education ID, education name, or institution name",
+      "noData": "No applications found",
+      "educationId": "Education ID",
+      "trainingName": "Training name",
+      "educationalInstitutions": "educational institutions",
+      "applicationRole": "Application Role",
+      "applicationDate": "Application date",
+      "situation": "situation",
+      "work": "work",
+      "viewDetails": "View Details",
+      "confirmed": "Confirmed",
+      "atmosphere": "atmosphere",
+      "rejected": "Rejected",
+      "stats": {
+        "entire": "entire",
+        "confirmed": "Confirmed",
+        "atmosphere": "atmosphere",
+        "rejectDelete": "Reject/Delete"
+      }
+    },
+    "apply": {
+      "title": "Apply for a lecture",
+      "description": "Apply to teach at the training session you are recruiting for.",
+      "noData": "No training sessions found",
+      "noTrainingAvailable": "There are no training courses available for application.",
+      "noTrainingAvailableDescription": "",
+      "institutionName": "Name of educational institution",
+      "gradeAndClass": "Grade-Class",
+      "trainingName": "Training name",
+      "region": "region",
+      "period": "period",
+      "select": "select",
+      "educationId": "Education ID",
+      "mainLecturer": "Main lecturer",
+      "assistantTeacher": "Assistant teacher",
+      "applyForMainLecturer": "Apply for a main lecturer position",
+      "confirmed": "confirmed",
+      "unconfirmed": "Unconfirmed",
+      "stats": {
+        "entire": "entire",
+        "applicationAvailable": "Application available",
+        "deadline": "Deadline"
+      },
+      "tabs": {
+        "availableForApplication": "Available for application",
+        "deadline": "Deadline"
+      }
+    },
+    "upcoming": {
+      "title": "Training scheduled to open",
+      "description": "Check out and apply for upcoming training programs.",
+      "noData": "No upcoming training sessions found",
+      "noUpcomingSessions": "There are no upcoming training sessions.",
+      "educationId": "Education ID",
+      "trainingName": "Training name",
+      "gradeAndClass": "Grade-Class",
+      "institutionName": "Name of educational institution",
+      "region": "region",
+      "period": "period",
+      "stats": {
+        "entire": "entire"
+      }
     }
   },
   "training": {

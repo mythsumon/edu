@@ -5,6 +5,7 @@ import { AdminRouteGuard } from '../layout/AdminRouteGuard'
 import { InstructorRouteGuard } from '../layout/InstructorRouteGuard'
 import { ROUTES } from '@/shared/constants/routes'
 import { DashboardPage } from '@/modules/dashboard'
+import { InstructorScheduleListPage, ConfirmedScheduleListPage, OngoingTrainingListPage, CompletedTrainingListPage, TrainingApplicationListPage, ApplyForLectureListPage, UpcomingTrainingListPage } from '@/modules/instructor-training'
 import { MasterCodeSetupPage, MasterCodeCreatePage } from '@/modules/master-code-setup'
 import { CommonCodePage } from '@/modules/common-code'
 import { InstitutionManagementPage, InstitutionCreatePage, InstitutionEditPage } from '@/modules/institution'
@@ -187,6 +188,65 @@ export const protectedRoutes: RouteObject[] = [
               {
                 path: ROUTES.INSTRUCTOR_DASHBOARD,
                 element: <DashboardPage />,
+              },
+              {
+                path: ROUTES.INSTRUCTOR_EDUCATION_OPERATIONS,
+                // element: <EducationOperationsPage />,
+              },
+              {
+                path: ROUTES.INSTRUCTOR_SCHEDULE,
+                // element: <EducationOperationsPage />,
+              },
+              {
+                path: ROUTES.INSTRUCTOR_SCHEDULE_BASE,
+                children: [
+                  {
+                    path: 'list',
+                    element: <InstructorScheduleListPage />,
+                  },
+                  {
+                    path: 'confirmed',
+                    element: <ConfirmedScheduleListPage />,
+                  },
+                  {
+                    path: 'in-progress',
+                    element: <OngoingTrainingListPage />,
+                  },
+                  {
+                    path: 'completed',
+                    element: <CompletedTrainingListPage />,
+                  },
+                ],
+              },
+              {
+                path: ROUTES.INSTRUCTOR_APPLY_BASE,
+                children: [
+                  {
+                    path: 'upcoming',
+                    element: <UpcomingTrainingListPage />,
+                  },
+                  {
+                    path: 'open',
+                    element: <ApplyForLectureListPage />,
+                  },
+                  {
+                    path: 'mine',
+                    element: <TrainingApplicationListPage />,
+                  },
+                ],
+              },
+              {
+                path: ROUTES.INSTRUCTOR_STUDENTS,
+                // element: <EducationOperationsPage />,
+              },
+              {
+                path: ROUTES.INSTRUCTOR_ATTENDANCE,
+                children: [
+                  {
+                    path: ROUTES.INSTRUCTOR_GRADES,
+                    // element: <SettingsAndUserManagementPage />,
+                  },
+                ],
               },
             ],
           },

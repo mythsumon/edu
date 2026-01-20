@@ -9,6 +9,7 @@ import type { UserResponseDto } from "@/modules/auth/model/auth.types";
 import {
   LayoutDashboard,
   BookOpen,
+  Calendar,
   Users,
   FileCode,
   Building2,
@@ -149,6 +150,51 @@ export const Sidebar = () => {
             nameKey: "sidebar.dashboard",
             href: ROUTES.INSTRUCTOR_DASHBOARD_FULL,
             icon: LayoutDashboard,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.lecture",
+        items: [
+          {
+            nameKey: "sidebar.myLectureList",
+            href: ROUTES.INSTRUCTOR_SCHEDULE_LIST_FULL,
+            icon: Calendar,
+          },
+          {
+            nameKey: "sidebar.checkConfirmedClasses",
+            href: ROUTES.INSTRUCTOR_SCHEDULE_CONFIRMED_FULL,
+            icon: Calendar,
+          },
+          {
+            nameKey: "sidebar.ongoingTraining",
+            href: ROUTES.INSTRUCTOR_SCHEDULE_ONGOING_FULL,
+            icon: Calendar,
+          },
+          {
+            nameKey: "sidebar.completedTraining",
+            href: ROUTES.INSTRUCTOR_SCHEDULE_COMPLETED_FULL,
+            icon: Calendar,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.applyForLecture",
+        items: [
+          {
+            nameKey: "sidebar.trainingScheduledToOpen",
+            href: ROUTES.INSTRUCTOR_APPLY_UPCOMING_FULL,
+            icon: BookOpen,
+          },
+          {
+            nameKey: "sidebar.applyForLecture",
+            href: ROUTES.INSTRUCTOR_APPLY_OPEN_FULL,
+            icon: BookOpen,
+          },
+          {
+            nameKey: "sidebar.trainingsIAppliedFor",
+            href: ROUTES.INSTRUCTOR_APPLY_MINE_FULL,
+            icon: BookOpen,
           },
         ],
       },

@@ -124,7 +124,16 @@
     "masterCodeSetup": "마스터 코드 설정",
     "commonCode": "공통 코드 설정",
     "training": "교육",
-    "trainingManagement": "교육 관리"
+    "trainingManagement": "교육 관리",
+    "lecture": "강의",
+    "lectureSchedule": "강의 일정",
+    "myLectureList": "내 강의 목록",
+    "checkConfirmedClasses": "확정된 강의 확인",
+    "ongoingTraining": "진행 중인 교육",
+    "completedTraining": "완료된 교육",
+    "applyForLecture": "강의 신청",
+    "trainingScheduledToOpen": "개설 예정 교육",
+    "trainingsIAppliedFor": "신청한 교육"
   },
   "errors": {
     "generic": "오류가 발생했습니다",
@@ -528,6 +537,129 @@
       "checkingCode": "코드 확인 중",
       "codeAvailable": "코드를 사용할 수 있습니다",
       "codeUnavailable": "코드가 이미 존재합니다!"
+    }
+  },
+  "lecture": {
+    "schedule": {
+      "title": "일정 목록",
+      "description": "강의 일정을 확인하고 관리하세요",
+      "searchPlaceholder": "교육 ID, 교육명 또는 기관명으로 검색",
+      "noData": "일정을 찾을 수 없습니다",
+      "educationId": "교육 ID",
+      "trainingName": "교육명",
+      "institutionName": "기관명",
+      "documentStatus": "문서 상태",
+      "overallStatus": "전체 상태",
+      "lastModifiedDate": "최종 수정일",
+      "management": "관리",
+      "stats": {
+        "entire": "전체",
+        "pendingApproval": "승인 대기",
+        "approvalComplete": "승인 완료",
+        "cancelled": "취소됨"
+      },
+      "tabs": {
+        "all": "내 강의 목록",
+        "confirmed": "확정된 강의 확인",
+        "ongoing": "진행 중인 교육",
+        "completed": "완료된 교육"
+      }
+    },
+    "confirmed": {
+      "title": "확정된 강의 확인",
+      "description": "확정된 강의 일정을 확인하세요.",
+      "entire": "전체",
+      "searchPlaceholder": "교육 ID, 교육명 또는 기관명으로 검색",
+      "noData": "확정된 강의를 찾을 수 없습니다",
+      "educationId": "교육 ID",
+      "trainingName": "교육명",
+      "educationalInstitutions": "교육 기관",
+      "region": "지역",
+      "gradeAndClass": "학년 및 반",
+      "schedule": "일정",
+      "work": "작업",
+      "viewDetails": "상세 보기"
+    },
+    "ongoing": {
+      "title": "진행 중인 교육",
+      "description": "현재 교육을 확인하고 출석을 관리하세요.",
+      "entire": "전체",
+      "inProgress": "진행 중",
+      "attendanceConfirmation": "출석/확인"
+    },
+    "completed": {
+      "title": "완료된 교육",
+      "description": "완료된 교육 이력을 확인하세요.",
+      "entire": "전체",
+      "complete": "완료",
+      "trainingSummary": "교육 요약",
+      "reviewsSettlement": "리뷰/정산"
+    },
+    "application": {
+      "title": "신청한 교육",
+      "description": "신청한 교육의 상태를 확인하세요.",
+      "searchPlaceholder": "교육 ID, 교육명 또는 기관명으로 검색",
+      "noData": "신청 내역을 찾을 수 없습니다",
+      "educationId": "교육 ID",
+      "trainingName": "교육명",
+      "educationalInstitutions": "교육 기관",
+      "applicationRole": "신청 역할",
+      "applicationDate": "신청일",
+      "situation": "상황",
+      "work": "작업",
+      "viewDetails": "상세 보기",
+      "confirmed": "확정",
+      "atmosphere": "분위기",
+      "rejected": "거부됨",
+      "stats": {
+        "entire": "전체",
+        "confirmed": "확정",
+        "atmosphere": "분위기",
+        "rejectDelete": "거부/삭제"
+      }
+    },
+    "apply": {
+      "title": "강의 신청",
+      "description": "모집 중인 교육 세션에 강의를 신청하세요.",
+      "noData": "교육 세션을 찾을 수 없습니다",
+      "noTrainingAvailable": "신청 가능한 교육 과정이 없습니다.",
+      "noTrainingAvailableDescription": "",
+      "institutionName": "교육 기관명",
+      "gradeAndClass": "학년-반",
+      "trainingName": "교육명",
+      "region": "지역",
+      "period": "기간",
+      "select": "선택",
+      "educationId": "교육 ID",
+      "mainLecturer": "주강사",
+      "assistantTeacher": "보조 교사",
+      "applyForMainLecturer": "주강사 신청",
+      "confirmed": "확정",
+      "unconfirmed": "미확정",
+      "stats": {
+        "entire": "전체",
+        "applicationAvailable": "신청 가능",
+        "deadline": "마감"
+      },
+      "tabs": {
+        "availableForApplication": "신청 가능",
+        "deadline": "마감"
+      }
+    },
+    "upcoming": {
+      "title": "개설 예정 교육",
+      "description": "예정된 교육 프로그램을 확인하고 신청하세요.",
+      "noData": "예정된 교육 세션을 찾을 수 없습니다",
+      "noUpcomingSessions": "예정된 교육 세션이 없습니다.",
+      "educationId": "교육 ID",
+      "trainingName": "교육명",
+      "gradeAndClass": "학년-반",
+      "institutionName": "교육 기관명",
+      "region": "지역",
+      "period": "기간",
+      "stats": {
+        "entire": "전체"
+      }
     }
   },
   "training": {
