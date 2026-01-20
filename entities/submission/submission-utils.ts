@@ -5,10 +5,12 @@ import { getAttendanceDocs } from '@/app/instructor/schedule/[educationId]/atten
 import { getActivityLogs } from '@/app/instructor/activity-logs/storage'
 import { getDocs as getEquipmentDocs } from '@/app/instructor/equipment-confirmations/storage'
 import { getEvidenceDocs } from '@/app/instructor/evidence/storage'
+import { getLessonPlans } from '@/app/instructor/schedule/[educationId]/lesson-plan/storage'
 import type { AttendanceDocument } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import type { ActivityLog } from '@/app/instructor/activity-logs/types'
 import type { EquipmentConfirmationDoc, EquipmentConfirmationStatus } from '@/app/instructor/equipment-confirmations/types'
 import type { EvidenceDoc, EvidenceStatus } from '@/app/instructor/evidence/types'
+import type { LessonPlanDoc } from '@/app/instructor/schedule/[educationId]/lesson-plan/types'
 import type { DocumentSubmission, EducationSubmissionGroup, SubmissionStatus } from './submission-types'
 
 /**
@@ -58,6 +60,13 @@ export interface EducationDocSummary {
     rejectReason?: string
     count: number
   }
+  lessonPlan?: {
+    id: string
+    status: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'
+    submittedAt?: string
+    rejectReason?: string
+    count: number
+  }
   overallStatus: 'ALL_APPROVED' | 'ALL_SUBMITTED' | 'PARTIAL' | 'PENDING' | 'REJECTED'
   lastUpdatedAt?: string
 }
@@ -70,13 +79,15 @@ export function deriveEducationDocSummary(educationId: string): EducationDocSumm
   const activityLogs = getActivityLogs()
   const equipmentDocs = getEquipmentDocs()
   const evidenceDocs = getEvidenceDocs()
+  const lessonPlans = getLessonPlans()
 
   const attendance = attendanceDocs.find(doc => doc.educationId === educationId)
   const activity = activityLogs.find(log => (log.educationId || log.id) === educationId)
   const equipment = equipmentDocs.find(doc => (doc.educationId || doc.id) === educationId)
   const evidence = evidenceDocs.find(doc => doc.educationId === educationId)
+  const lessonPlan = lessonPlans.find(doc => doc.educationId === educationId)
 
-  if (!attendance && !activity && !equipment && !evidence) {
+  if (!attendance && !activity && !equipment && !evidence && !lessonPlan) {
     return null
   }
 
@@ -84,15 +95,18 @@ export function deriveEducationDocSummary(educationId: string): EducationDocSumm
   const educationName = attendance?.programName || 
                        (activity ? `${activity.educationType} - ${activity.institutionName}` : '') ||
                        equipment?.materialName || 
+                       lessonPlan?.educationName ||
                        '미상'
   const institutionName = attendance?.institution || 
                          activity?.institutionName || 
                          equipment?.organizationName || 
+                         lessonPlan?.institutionName ||
                          '미상'
   const instructorName = attendance?.submittedBy || 
                         activity?.submittedBy || 
                         activity?.createdBy || 
                         equipment?.createdByName || 
+                        lessonPlan?.authorInstructorName ||
                         '미상'
 
   const summary: EducationDocSummary = {
@@ -156,8 +170,21 @@ export function deriveEducationDocSummary(educationId: string): EducationDocSumm
     }
   }
 
+  if (lessonPlan) {
+    summary.lessonPlan = {
+      id: lessonPlan.id,
+      status: lessonPlan.status,
+      submittedAt: lessonPlan.submittedAt,
+      rejectReason: lessonPlan.rejectReason,
+      count: 1,
+    }
+    if (lessonPlan.updatedAt && (!summary.lastUpdatedAt || lessonPlan.updatedAt > summary.lastUpdatedAt)) {
+      summary.lastUpdatedAt = lessonPlan.updatedAt
+    }
+  }
+
   // Calculate overall status
-  const docs = [summary.attendance, summary.activity, summary.equipment, summary.evidence].filter(Boolean) as any[]
+  const docs = [summary.attendance, summary.activity, summary.equipment, summary.evidence, summary.lessonPlan].filter(Boolean) as any[]
   if (docs.length === 0) {
     summary.overallStatus = 'PENDING'
   } else {
@@ -190,6 +217,7 @@ export function getAllEducationDocSummaries(): EducationDocSummary[] {
   const activityLogs = getActivityLogs()
   const equipmentDocs = getEquipmentDocs()
   const evidenceDocs = getEvidenceDocs()
+  const lessonPlans = getLessonPlans()
 
   const educationMap = new Map<string, EducationDocSummary>()
 
@@ -237,6 +265,17 @@ export function getAllEducationDocSummaries(): EducationDocSummary[] {
     }
   })
 
+  // Process lesson plans
+  lessonPlans.forEach(doc => {
+    const educationId = doc.educationId
+    if (!educationMap.has(educationId)) {
+      const summary = deriveEducationDocSummary(educationId)
+      if (summary) {
+        educationMap.set(educationId, summary)
+      }
+    }
+  })
+
   // Sort by last updated (newest first)
   return Array.from(educationMap.values()).sort((a, b) => {
     const dateA = a.lastUpdatedAt || ''
@@ -260,17 +299,20 @@ export function getEvidenceByEducationGrouped(educationId: string): {
   activity?: ActivityLog
   equipment?: EquipmentConfirmationDoc
   evidence?: EvidenceDoc
+  lessonPlan?: LessonPlanDoc
 } {
   const attendanceDocs = getAttendanceDocs()
   const activityLogs = getActivityLogs()
   const equipmentDocs = getEquipmentDocs()
   const evidenceDocs = getEvidenceDocs()
+  const lessonPlans = getLessonPlans()
 
   return {
     attendance: attendanceDocs.find(doc => doc.educationId === educationId),
     activity: activityLogs.find(log => (log.educationId || log.id) === educationId),
     equipment: equipmentDocs.find(doc => (doc.educationId || doc.id) === educationId),
     evidence: evidenceDocs.find(doc => doc.educationId === educationId),
+    lessonPlan: lessonPlans.find(doc => doc.educationId === educationId),
   }
 }
 

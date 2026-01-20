@@ -12,11 +12,13 @@ import { getAttendanceDocs } from '@/app/instructor/schedule/[educationId]/atten
 import { getActivityLogs, getActivityLogByEducationId } from '@/app/instructor/activity-logs/storage'
 import { getDocs as getEquipmentDocs, getDocByEducationId, createDocFromDefault, upsertDoc } from '@/app/instructor/equipment-confirmations/storage'
 import { getEvidenceDocByEducationId } from '@/app/instructor/evidence/storage'
+import { getLessonPlanByEducationId } from '@/app/instructor/schedule/[educationId]/lesson-plan/storage'
 import {
   getEducationDocSummariesByInstructor,
   type EducationDocSummary,
 } from '@/entities/submission'
 import { DocumentStatusIndicator, EducationDetailDrawer } from '@/components/shared/common'
+import { dataStore } from '@/lib/dataStore'
 import type { AttendanceDocument } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import type { ActivityLog } from '@/app/instructor/activity-logs/types'
 import type { EquipmentConfirmationDoc } from '@/app/instructor/equipment-confirmations/types'
@@ -89,6 +91,7 @@ export default function MyScheduleListPage() {
     window.addEventListener('activityUpdated', handleCustomStorageChange)
     window.addEventListener('equipmentUpdated', handleCustomStorageChange)
     window.addEventListener('evidenceUpdated', handleCustomStorageChange)
+    window.addEventListener('lessonPlanUpdated', handleCustomStorageChange)
 
     return () => {
       window.removeEventListener('storage', handleStorageChange)
@@ -96,12 +99,53 @@ export default function MyScheduleListPage() {
       window.removeEventListener('activityUpdated', handleCustomStorageChange)
       window.removeEventListener('equipmentUpdated', handleCustomStorageChange)
       window.removeEventListener('evidenceUpdated', handleCustomStorageChange)
+      window.removeEventListener('lessonPlanUpdated', handleCustomStorageChange)
     }
-  }, [currentInstructorName])
+  }, [currentInstructorName, userProfile])
 
   const loadSummaries = () => {
-    const mySummaries = getEducationDocSummariesByInstructor(currentInstructorName)
-    setSummaries(mySummaries)
+    const allSummaries = getEducationDocSummariesByInstructor(currentInstructorName)
+    
+    // Filter: Only show educations where current instructor is assigned as main or assistant instructor
+    const assignedSummaries = allSummaries.filter(summary => {
+      if (!userProfile) return false
+      
+      const assignment = dataStore.getInstructorAssignmentByEducationId(summary.educationId)
+      if (!assignment || !assignment.lessons || assignment.lessons.length === 0) {
+        return false // No assignment data = not assigned
+      }
+
+      // Check if user is main or assistant instructor in any lesson
+      let isAssigned = false
+
+      assignment.lessons.forEach(lesson => {
+        // Check main instructors
+        if (lesson.mainInstructors && lesson.mainInstructors.length > 0) {
+          const isMain = lesson.mainInstructors.some(instructor => {
+            return instructor.id === userProfile.userId || 
+                   instructor.name === userProfile.name ||
+                   (instructor.id && userProfile.userId && 
+                    instructor.id.replace('instructor-', '') === userProfile.userId.replace('instructor-', ''))
+          })
+          if (isMain) isAssigned = true
+        }
+
+        // Check assistant instructors
+        if (lesson.assistantInstructors && lesson.assistantInstructors.length > 0) {
+          const isAssistant = lesson.assistantInstructors.some(instructor => {
+            return instructor.id === userProfile.userId || 
+                   instructor.name === userProfile.name ||
+                   (instructor.id && userProfile.userId && 
+                    instructor.id.replace('instructor-', '') === userProfile.userId.replace('instructor-', ''))
+          })
+          if (isAssistant) isAssigned = true
+        }
+      })
+
+      return isAssigned
+    })
+    
+    setSummaries(assignedSummaries)
   }
 
   const filteredSummaries = useMemo(() => {
@@ -184,6 +228,52 @@ export default function MyScheduleListPage() {
     }
   }
 
+  const handleViewLessonPlan = (id: string) => {
+    router.push(`/instructor/schedule/${id}/lesson-plan`)
+  }
+
+  // Get instructor role for a specific education
+  const getInstructorRole = (educationId: string): '주강사' | '보조강사' | '-' => {
+    if (!userProfile) return '-'
+    
+    const assignment = dataStore.getInstructorAssignmentByEducationId(educationId)
+    if (!assignment || !assignment.lessons || assignment.lessons.length === 0) {
+      return '-'
+    }
+
+    // Check all lessons to find if user is main or assistant instructor
+    let isMainInstructor = false
+    let isAssistantInstructor = false
+
+    assignment.lessons.forEach(lesson => {
+      // Check main instructors
+      if (lesson.mainInstructors && lesson.mainInstructors.length > 0) {
+        const isMain = lesson.mainInstructors.some(instructor => {
+          return instructor.id === userProfile.userId || 
+                 instructor.name === userProfile.name ||
+                 (instructor.id && userProfile.userId && 
+                  instructor.id.replace('instructor-', '') === userProfile.userId.replace('instructor-', ''))
+        })
+        if (isMain) isMainInstructor = true
+      }
+
+      // Check assistant instructors
+      if (lesson.assistantInstructors && lesson.assistantInstructors.length > 0) {
+        const isAssistant = lesson.assistantInstructors.some(instructor => {
+          return instructor.id === userProfile.userId || 
+                 instructor.name === userProfile.name ||
+                 (instructor.id && userProfile.userId && 
+                  instructor.id.replace('instructor-', '') === userProfile.userId.replace('instructor-', ''))
+        })
+        if (isAssistant) isAssistantInstructor = true
+      }
+    })
+
+    if (isMainInstructor) return '주강사'
+    if (isAssistantInstructor) return '보조강사'
+    return '-'
+  }
+
   const getOverallStatusBadge = (status: string) => {
     if (status === 'ALL_APPROVED') {
       return (
@@ -239,6 +329,36 @@ export default function MyScheduleListPage() {
       dataIndex: 'institutionName',
       key: 'institutionName',
       width: 150,
+    },
+    {
+      title: '역할',
+      key: 'role',
+      width: 100,
+      align: 'center',
+      render: (_, record) => {
+        const role = getInstructorRole(record.educationId)
+        if (role === '주강사') {
+          return (
+            <Badge
+              status="success"
+              text={
+                <span className="font-semibold text-blue-600 dark:text-blue-400">주강사</span>
+              }
+            />
+          )
+        }
+        if (role === '보조강사') {
+          return (
+            <Badge
+              status="default"
+              text={
+                <span className="font-semibold text-gray-600 dark:text-gray-400">보조강사</span>
+              }
+            />
+          )
+        }
+        return <span className="text-gray-400">-</span>
+      },
     },
     {
       title: '문서 상태',
@@ -457,6 +577,7 @@ export default function MyScheduleListPage() {
               onViewActivity={handleViewActivity}
               onViewEquipment={handleViewEquipment}
               onViewEvidence={handleViewEvidence}
+              onViewLessonPlan={handleViewLessonPlan}
             />
           )}
         </div>

@@ -17,6 +17,8 @@ import { upsertAttendanceDoc } from '@/app/instructor/schedule/[educationId]/att
 import { upsertActivityLog } from '@/app/instructor/activity-logs/storage'
 import { upsertDoc } from '@/app/instructor/equipment-confirmations/storage'
 import { upsertEvidenceDoc } from '@/app/instructor/evidence/storage'
+import { upsertLessonPlan } from '@/app/instructor/schedule/[educationId]/lesson-plan/storage'
+import { getLessonPlans } from '@/app/instructor/schedule/[educationId]/lesson-plan/storage'
 import type { ActivityLog } from '@/app/instructor/activity-logs/types'
 import { getAttendanceDocs } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import { getActivityLogs } from '@/app/instructor/activity-logs/storage'
@@ -76,6 +78,7 @@ export default function SubmissionsPage() {
     window.addEventListener('activityUpdated', handleCustomStorageChange)
     window.addEventListener('equipmentUpdated', handleCustomStorageChange)
     window.addEventListener('evidenceUpdated', handleCustomStorageChange)
+    window.addEventListener('lessonPlanUpdated', handleCustomStorageChange)
 
     return () => {
       window.removeEventListener('storage', handleStorageChange)
@@ -84,6 +87,7 @@ export default function SubmissionsPage() {
       window.removeEventListener('activityUpdated', handleCustomStorageChange)
       window.removeEventListener('equipmentUpdated', handleCustomStorageChange)
       window.removeEventListener('evidenceUpdated', handleCustomStorageChange)
+      window.removeEventListener('lessonPlanUpdated', handleCustomStorageChange)
     }
   }, [])
 
@@ -141,7 +145,11 @@ export default function SubmissionsPage() {
     router.push(`/admin/evidence/${id}`)
   }
 
-  const handleApprove = async (type: 'attendance' | 'activity' | 'equipment' | 'evidence', id: string) => {
+  const handleViewLessonPlan = (id: string) => {
+    router.push(`/admin/lesson-plans/${id}`)
+  }
+
+  const handleApprove = async (type: 'attendance' | 'activity' | 'equipment' | 'evidence' | 'lessonPlan', id: string) => {
     try {
       // Check if this is an AttendanceSheet
       if (type === 'attendance') {
@@ -216,6 +224,20 @@ export default function SubmissionsPage() {
           upsertEvidenceDoc(updated)
           message.success('증빙자료가 승인되었습니다.')
         }
+      } else if (type === 'lessonPlan') {
+        const docs = getLessonPlans()
+        const doc = docs.find(d => d.id === id)
+        if (doc) {
+          const updated = {
+            ...doc,
+            status: 'APPROVED' as const,
+            approvedAt: new Date().toISOString(),
+            approvedBy: userProfile?.name || '관리자',
+            updatedAt: new Date().toISOString(),
+          }
+          upsertLessonPlan(updated)
+          message.success('강의계획서가 승인되었습니다.')
+        }
       }
       // Trigger custom events for real-time updates
       if (typeof window !== 'undefined') {
@@ -227,6 +249,8 @@ export default function SubmissionsPage() {
           window.dispatchEvent(new CustomEvent('equipmentUpdated'))
         } else if (type === 'evidence') {
           window.dispatchEvent(new CustomEvent('evidenceUpdated'))
+        } else if (type === 'lessonPlan') {
+          window.dispatchEvent(new CustomEvent('lessonPlanUpdated'))
         }
       }
       loadSummaries()
@@ -237,7 +261,7 @@ export default function SubmissionsPage() {
     }
   }
 
-  const handleReject = async (type: 'attendance' | 'activity' | 'equipment' | 'evidence', id: string, reason: string) => {
+  const handleReject = async (type: 'attendance' | 'activity' | 'equipment' | 'evidence' | 'lessonPlan', id: string, reason: string) => {
     if (!reason || reason.trim() === '') {
       message.warning('반려 사유를 입력해주세요.')
       return
@@ -300,6 +324,21 @@ export default function SubmissionsPage() {
           upsertEvidenceDoc(updated)
           message.success('증빙자료가 반려되었습니다.')
         }
+      } else if (type === 'lessonPlan') {
+        const docs = getLessonPlans()
+        const doc = docs.find(d => d.id === id)
+        if (doc) {
+          const updated = {
+            ...doc,
+            status: 'REJECTED' as const,
+            rejectedAt: new Date().toISOString(),
+            rejectedBy: userProfile?.name || '관리자',
+            rejectReason: reason,
+            updatedAt: new Date().toISOString(),
+          }
+          upsertLessonPlan(updated)
+          message.success('강의계획서가 반려되었습니다.')
+        }
       }
       // Trigger custom events for real-time updates
       if (typeof window !== 'undefined') {
@@ -311,6 +350,8 @@ export default function SubmissionsPage() {
           window.dispatchEvent(new CustomEvent('equipmentUpdated'))
         } else if (type === 'evidence') {
           window.dispatchEvent(new CustomEvent('evidenceUpdated'))
+        } else if (type === 'lessonPlan') {
+          window.dispatchEvent(new CustomEvent('lessonPlanUpdated'))
         }
       }
       loadSummaries()
@@ -585,6 +626,7 @@ export default function SubmissionsPage() {
               onViewActivity={handleViewActivity}
               onViewEquipment={handleViewEquipment}
               onViewEvidence={handleViewEvidence}
+              onViewLessonPlan={handleViewLessonPlan}
               onApprove={handleApprove}
               onReject={handleReject}
             />

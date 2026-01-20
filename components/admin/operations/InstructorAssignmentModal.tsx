@@ -204,16 +204,29 @@ export function InstructorAssignmentModal({
     >
       <div className="bg-white rounded-xl">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">
-            {mode === 'partial' ? '부분 주강사 배정' : '전체 주강사 배정'}
-          </h3>
-          <button
-            onClick={handleCancel}
-            className="p-1 rounded-md hover:bg-gray-100 transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-500" />
-          </button>
+        <div className="px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-semibold text-gray-900">
+              {mode === 'partial' ? '부분 권역 배정' : '전체 권역 배정'}
+            </h3>
+            <button
+              onClick={handleCancel}
+              className="p-1 rounded-md hover:bg-gray-100 transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
+          </div>
+          <div className="text-sm text-gray-600">
+            {mode === 'partial' ? (
+              <p>
+                <strong>부분 권역 배정:</strong> 기관의 권역과 일치하는 권역에 배정된 강사만 신청할 수 있습니다.
+              </p>
+            ) : (
+              <p>
+                <strong>전체 권역 배정:</strong> 권역과 관계없이 모든 강사가 신청할 수 있습니다.
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Content */}

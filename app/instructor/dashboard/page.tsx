@@ -30,6 +30,7 @@ import { getAttendanceDocByEducationId } from '@/app/instructor/schedule/[educat
 import { getActivityLogByEducationId } from '@/app/instructor/activity-logs/storage'
 import { getDocByEducationId as getEquipmentDocByEducationId } from '@/app/instructor/equipment-confirmations/storage'
 import { getEvidenceDocByEducationId } from '@/app/instructor/evidence/storage'
+import { getLessonPlanByEducationId } from '@/app/instructor/schedule/[educationId]/lesson-plan/storage'
 import { getEducationDocSummariesByInstructor, type EducationDocSummary } from '@/entities/submission'
 import { dataStore } from '@/lib/dataStore'
 import { useAuth } from '@/contexts/AuthContext'
@@ -141,11 +142,13 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
   const activityLog = getActivityLogByEducationId(course.id)
   const equipmentDoc = getEquipmentDocByEducationId(course.id)
   const evidenceDoc = getEvidenceDocByEducationId(course.id)
+  const lessonPlanDoc = getLessonPlanByEducationId(course.id)
   
   const attendanceStatus = attendanceDoc?.status || 'DRAFT'
   const activityStatus = activityLog?.status || 'DRAFT'
   const equipmentStatus = equipmentDoc?.status || 'DRAFT'
   const evidenceStatus = evidenceDoc?.status || 'DRAFT'
+  const lessonPlanStatus = lessonPlanDoc?.status || 'DRAFT'
   
   const statusColors = {
     '예정': 'from-blue-500 to-blue-600',
@@ -262,6 +265,16 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
                 }}
                 educationId={course.id}
                 documentId={evidenceDoc?.id}
+              />
+              <DocumentStatusIndicator
+                status={lessonPlanStatus as any}
+                count={lessonPlanDoc ? 1 : 0}
+                label="강의계획서"
+                onClick={() => {
+                  router.push(`/instructor/schedule/${course.id}/lesson-plan`)
+                }}
+                educationId={course.id}
+                documentId={lessonPlanDoc?.id}
               />
             </div>
           </div>

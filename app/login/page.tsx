@@ -47,21 +47,28 @@ export default function LoginPage() {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 800))
       
-      // Instructor credentials
-      if (email === 'instructor@example.com' && password === 'Instructor@1234') {
+      // Instructor credentials - Multiple instructor accounts
+      const instructorAccounts = [
+        { email: 'instructor@example.com', password: 'Instructor@1234', userId: 'instructor-1', name: '홍길동', phone: '010-1234-5678' },
+        { email: 'instructor2@example.com', password: 'Instructor@1234', userId: 'instructor-2', name: '김보조', phone: '010-2345-6789' },
+        { email: 'instructor3@example.com', password: 'Instructor@1234', userId: 'instructor-3', name: '이보조', phone: '010-3456-7890' },
+        { email: 'instructor4@example.com', password: 'Instructor@1234', userId: 'instructor-4', name: '박정아', phone: '010-4567-8901' },
+        { email: 'instructor5@example.com', password: 'Instructor@1234', userId: 'instructor-5', name: '김윤미', phone: '010-5678-9012' },
+      ]
+
+      const matchedInstructor = instructorAccounts.find(acc => acc.email === email && acc.password === password)
+      if (matchedInstructor) {
         login('instructor')
-        // 기본 비밀번호로 로그인한 경우 passwordChanged를 false로 설정
         const defaultPassword = 'Instructor@1234'
         const isDefaultPassword = password === defaultPassword
         setUserProfile({
-          userId: 'instructor-1',
-          name: '홍길동',
-          email: 'instructor@example.com',
-          phone: '010-1234-5678',
-          passwordChanged: !isDefaultPassword, // 기본 비밀번호면 false, 아니면 true
+          userId: matchedInstructor.userId,
+          name: matchedInstructor.name,
+          email: matchedInstructor.email,
+          phone: matchedInstructor.phone,
+          passwordChanged: !isDefaultPassword,
         })
-        message.success('강사로 로그인되었습니다.')
-        // Add small delay before redirect to show success message
+        message.success(`${matchedInstructor.name} 강사로 로그인되었습니다.`)
         await new Promise(resolve => setTimeout(resolve, 500))
         router.push('/instructor/dashboard')
         return
@@ -229,8 +236,17 @@ export default function LoginPage() {
               
               {/* Account Info Display */}
               <div className="mt-3 p-3 bg-slate-50 dark:bg-gray-800 rounded-lg">
-                <div className="text-xs text-slate-600 dark:text-gray-400 mb-1">
-                  {loginType === 'instructor' && '기본 계정: instructor@example.com / Instructor@1234'}
+                <div className="text-xs text-slate-600 dark:text-gray-400 space-y-1">
+                  {loginType === 'instructor' && (
+                    <>
+                      <div>강사 계정 (모두 동일 비밀번호: Instructor@1234)</div>
+                      <div>• 홍길동: instructor@example.com</div>
+                      <div>• 김보조: instructor2@example.com</div>
+                      <div>• 이보조: instructor3@example.com</div>
+                      <div>• 박정아: instructor4@example.com</div>
+                      <div>• 김윤미: instructor5@example.com</div>
+                    </>
+                  )}
                   {loginType === 'admin' && '기본 계정: admin@example.com / Admin@1234'}
                   {loginType === 'teacher' && '기본 계정: teacher@example.com / Teacher@1234'}
                 </div>

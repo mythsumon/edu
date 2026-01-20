@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Card, Badge } from 'antd'
-import { FileCheck, ClipboardList, GraduationCap, AlertCircle } from 'lucide-react'
+import { Card } from 'antd'
+import { FileCheck, ClipboardList, GraduationCap } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { dataStore } from '@/lib/dataStore'
@@ -25,6 +25,76 @@ export default function TeacherDashboard() {
   const currentInstitutionId = 'INST-001' // TODO: Get from teacher profile
   const currentInstitutionName = '평택안일초등학교' // TODO: Get from teacher profile
 
+  const loadStats = useCallback(() => {
+    try {
+      // Count signature required (attendance docs without teacher signature)
+      const attendanceDocs = getAttendanceDocs() || []
+      const signatures = teacherAttendanceSignatureStore.getAll() || []
+      const signatureRequired = attendanceDocs.filter(doc => {
+        if (!doc || !doc.educationId) return false
+        // Check if this education belongs to teacher's institution
+        const education = dataStore.getEducationById(doc.educationId)
+        if (!education || education.institution !== currentInstitutionName) return false
+        
+        // Check if teacher has signed
+        const hasSigned = signatures.some(sig => 
+          sig && sig.educationId === doc.educationId && sig.teacherId === currentTeacherId
+        )
+        return !hasSigned
+      }).length
+
+      // Count open requests
+      const openRequests = attendanceInfoRequestStore.getOpenRequests(currentInstitutionId) || []
+
+      // Count educations by status
+      const allEducations = dataStore.getEducations() || []
+      const myEducations = allEducations.filter(edu => edu && edu.institution === currentInstitutionName)
+      const now = dayjs()
+      
+      const inProgress = myEducations.filter(edu => {
+        if (!edu) return false
+        if (edu.periodStart && edu.periodEnd) {
+          try {
+            const start = dayjs(edu.periodStart)
+            const end = dayjs(edu.periodEnd)
+            return now.isAfter(start) && now.isBefore(end)
+          } catch {
+            return false
+          }
+        }
+        return false
+      }).length
+
+      const scheduled = myEducations.filter(edu => {
+        if (!edu) return false
+        if (edu.periodStart) {
+          try {
+            return dayjs(edu.periodStart).isAfter(now)
+          } catch {
+            return false
+          }
+        }
+        return false
+      }).length
+
+      setStats({
+        signatureRequired,
+        infoRequestCount: openRequests.length,
+        inProgressCount: inProgress,
+        scheduledCount: scheduled,
+      })
+    } catch (error) {
+      console.error('Error loading teacher dashboard stats:', error)
+      // Set default stats on error
+      setStats({
+        signatureRequired: 0,
+        infoRequestCount: 0,
+        inProgressCount: 0,
+        scheduledCount: 0,
+      })
+    }
+  }, [currentTeacherId, currentInstitutionId, currentInstitutionName])
+
   useEffect(() => {
     loadStats()
 
@@ -44,55 +114,7 @@ export default function TeacherDashboard() {
       window.removeEventListener('teacherAttendanceSigned', handleUpdate)
       window.removeEventListener('attendanceUpdated', handleUpdate)
     }
-  }, [])
-
-  const loadStats = () => {
-    // Count signature required (attendance docs without teacher signature)
-    const attendanceDocs = getAttendanceDocs()
-    const signatures = teacherAttendanceSignatureStore.getAll()
-    const signatureRequired = attendanceDocs.filter(doc => {
-      // Check if this education belongs to teacher's institution
-      const education = dataStore.getEducationById(doc.educationId)
-      if (!education || education.institution !== currentInstitutionName) return false
-      
-      // Check if teacher has signed
-      const hasSigned = signatures.some(sig => 
-        sig.educationId === doc.educationId && sig.teacherId === currentTeacherId
-      )
-      return !hasSigned
-    }).length
-
-    // Count open requests
-    const openRequests = attendanceInfoRequestStore.getOpenRequests(currentInstitutionId)
-
-    // Count educations by status
-    const allEducations = dataStore.getEducations()
-    const myEducations = allEducations.filter(edu => edu.institution === currentInstitutionName)
-    const now = dayjs()
-    
-    const inProgress = myEducations.filter(edu => {
-      if (edu.periodStart && edu.periodEnd) {
-        const start = dayjs(edu.periodStart)
-        const end = dayjs(edu.periodEnd)
-        return now.isAfter(start) && now.isBefore(end)
-      }
-      return false
-    }).length
-
-    const scheduled = myEducations.filter(edu => {
-      if (edu.periodStart) {
-        return dayjs(edu.periodStart).isAfter(now)
-      }
-      return false
-    }).length
-
-    setStats({
-      signatureRequired,
-      infoRequestCount: openRequests.length,
-      inProgressCount: inProgress,
-      scheduledCount: scheduled,
-    })
-  }
+  }, [loadStats])
 
   return (
     <ProtectedRoute requiredRole="teacher">

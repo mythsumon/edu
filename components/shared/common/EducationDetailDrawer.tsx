@@ -19,8 +19,9 @@ interface EducationDetailDrawerProps {
   onViewActivity?: (id: string) => void
   onViewEquipment?: (id: string) => void
   onViewEvidence?: (id: string) => void
-  onApprove?: (type: 'attendance' | 'activity' | 'equipment' | 'evidence', id: string) => void
-  onReject?: (type: 'attendance' | 'activity' | 'equipment' | 'evidence', id: string, reason: string) => void
+  onViewLessonPlan?: (id: string) => void
+  onApprove?: (type: 'attendance' | 'activity' | 'equipment' | 'evidence' | 'lessonPlan', id: string) => void
+  onReject?: (type: 'attendance' | 'activity' | 'equipment' | 'evidence' | 'lessonPlan', id: string, reason: string) => void
 }
 
 export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
@@ -33,6 +34,7 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
   onViewActivity,
   onViewEquipment,
   onViewEvidence,
+  onViewLessonPlan,
   onApprove,
   onReject,
 }) => {
@@ -514,6 +516,104 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
                               onClick={() => {
                                 // 증빙자료가 없으면 educationId를 전달하여 새로 생성하거나 찾기
                                 onViewEvidence(summary.educationId)
+                              }}
+                            >
+                              작성하기
+                            </Button>
+                          )}
+                        </Space>
+                      </div>
+                    )}
+                  </div>
+                ),
+              },
+              {
+                key: 'lessonPlan',
+                label: `강의계획서 ${summary.lessonPlan ? `(${summary.lessonPlan.count})` : ''}`,
+                children: (
+                  <div className="space-y-4">
+                    {summary.lessonPlan ? (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            {getStatusBadge(summary.lessonPlan.status)}
+                            {summary.lessonPlan.rejectReason && (
+                              <div className="mt-2 text-sm text-red-600">
+                                반려 사유: {summary.lessonPlan.rejectReason}
+                              </div>
+                            )}
+                            {summary.lessonPlan.submittedAt && (
+                              <div className="mt-1 text-xs text-gray-500">
+                                제출일: {dayjs(summary.lessonPlan.submittedAt).format('YYYY-MM-DD HH:mm')}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <Space>
+                          {!isAdmin && onViewLessonPlan && (
+                            <Button
+                              type="primary"
+                              icon={<Eye className="w-4 h-4" />}
+                              onClick={() => {
+                                if (summary.lessonPlan?.id) {
+                                  router.push(`/instructor/schedule/${summary.educationId}/lesson-plan`)
+                                } else {
+                                  router.push(`/instructor/schedule/${summary.educationId}/lesson-plan`)
+                                }
+                              }}
+                            >
+                              {summary.lessonPlan.status === 'DRAFT' ? '작성하기' : '수정하기'}
+                            </Button>
+                          )}
+                          {isAdmin && onViewLessonPlan && (
+                            <Button
+                              icon={<Eye className="w-4 h-4" />}
+                              onClick={() => onViewLessonPlan(summary.lessonPlan!.id)}
+                            >
+                              상세보기
+                            </Button>
+                          )}
+                          {isAdmin && summary.lessonPlan.status === 'SUBMITTED' && (
+                            <>
+                              {onApprove && (
+                                <Button
+                                  type="primary"
+                                  icon={<CheckCircle2 className="w-4 h-4" />}
+                                  onClick={() => onApprove('lessonPlan', summary.lessonPlan!.id)}
+                                >
+                                  승인
+                                </Button>
+                              )}
+                              {onReject && (
+                                <Button
+                                  danger
+                                  icon={<XCircle className="w-4 h-4" />}
+                                  onClick={() => {
+                                    const reason = prompt('반려 사유를 입력하세요:')
+                                    if (reason) {
+                                      onReject('lessonPlan', summary.lessonPlan!.id, reason)
+                                    }
+                                  }}
+                                >
+                                  반려
+                                </Button>
+                              )}
+                            </>
+                          )}
+                        </Space>
+                      </>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="text-center py-4 text-gray-400">
+                          강의계획서가 제출되지 않았습니다.
+                        </div>
+                        <Space>
+                          {onViewLessonPlan && (
+                            <Button
+                              type="primary"
+                              icon={<Eye className="w-4 h-4" />}
+                              onClick={() => {
+                                router.push(`/instructor/schedule/${summary.educationId}/lesson-plan`)
                               }}
                             >
                               작성하기

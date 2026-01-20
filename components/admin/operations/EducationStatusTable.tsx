@@ -227,21 +227,13 @@ export function EducationStatusTable({
       key: 'mainInstructorNames',
       width: 200,
       render: (names: string[] | undefined, record: EducationStatusItem) => {
-        if (names && names.length > 0) {
-          return (
-            <div className="flex flex-wrap gap-1">
-              {names.map((name, index) => (
-                <span
-                  key={index}
-                  className="inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-blue-50 text-blue-700"
-                >
-                  {name}
-                </span>
-              ))}
-            </div>
-          )
-        }
-        return <span className="text-base font-medium text-gray-400">-</span>
+        // Show first main instructor name only, or "—" if none
+        const mainInstructorName = names && names.length > 0 ? names[0] : null
+        return (
+          <span className="text-base font-medium text-gray-900">
+            {mainInstructorName || '—'}
+          </span>
+        )
       },
     },
     {
@@ -250,21 +242,15 @@ export function EducationStatusTable({
       key: 'assistantInstructorNames',
       width: 200,
       render: (names: string[] | undefined, record: EducationStatusItem) => {
-        if (names && names.length > 0) {
-          return (
-            <div className="flex flex-wrap gap-1">
-              {names.map((name, index) => (
-                <span
-                  key={index}
-                  className="inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-purple-50 text-purple-700"
-                >
-                  {name}
-                </span>
-              ))}
-            </div>
-          )
-        }
-        return <span className="text-base font-medium text-gray-400">-</span>
+        // Show comma-separated list of assistant instructor names, or "—" if none
+        const assistantNames = names && names.length > 0 
+          ? names.join(', ') 
+          : null
+        return (
+          <span className="text-base font-medium text-gray-900">
+            {assistantNames || '—'}
+          </span>
+        )
       },
     },
     {

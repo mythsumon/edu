@@ -44,55 +44,59 @@ export function ModernKPICard({ kpi, loading = false }: ModernKPICardProps) {
   const gradient = kpi.gradient || cardGradients[0]
 
   return (
-    <div className="group relative overflow-hidden bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-lg hover:border-slate-200 transition-all duration-300">
-      {/* Subtle gradient accent */}
-      <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${gradient}`} />
+    <div className="group relative overflow-hidden bg-white rounded-3xl border border-slate-200/60 p-6 shadow-sm hover:shadow-xl hover:border-slate-300/80 transition-all duration-300 hover:-translate-y-1">
+      {/* Gradient background accent */}
+      <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${gradient} opacity-5 rounded-full blur-3xl group-hover:opacity-10 transition-opacity duration-300`} />
       
-      {/* Icon with clean background */}
-      <div className="flex items-start justify-between mb-4">
-        {kpi.icon && (
-          <div className={`p-2.5 rounded-xl bg-gradient-to-br ${gradient} shadow-sm`}>
-            <div className="text-white text-base">{kpi.icon}</div>
+      {/* Content Layout */}
+      <div className="relative">
+        {/* Header: Icon and Label */}
+        <div className="flex items-start justify-between mb-5">
+          <div className="flex-1">
+            <p className="text-sm font-medium text-slate-600 mb-1">{kpi.label}</p>
           </div>
-        )}
-      </div>
-      
-      {/* Content */}
-      <div className="space-y-3">
-        {/* Label */}
-        <p className="text-sm font-semibold text-slate-700 leading-tight">{kpi.label}</p>
+          {kpi.icon && (
+            <div className={`p-3 rounded-2xl bg-gradient-to-br ${gradient} shadow-lg flex-shrink-0`}>
+              <div className="text-white text-xl">{kpi.icon}</div>
+            </div>
+          )}
+        </div>
         
-        {/* Value */}
-        <p className="text-3xl font-bold text-slate-900 leading-none">{kpi.value}</p>
+        {/* Main Value */}
+        <div className="mb-4">
+          <p className="text-4xl font-bold text-slate-900 leading-tight tracking-tight">{kpi.value}</p>
+        </div>
         
-        {/* Delta */}
+        {/* Delta with improved styling */}
         {kpi.delta && (
-          <div className="flex items-center gap-1.5">
-            {kpi.delta.isPositive ? (
-              <TrendingUp className={`w-4 h-4 ${kpi.delta.isPositive ? 'text-green-600' : 'text-red-600'}`} />
-            ) : (
-              <TrendingDown className={`w-4 h-4 ${kpi.delta.isPositive ? 'text-green-600' : 'text-red-600'}`} />
-            )}
-            <span className={`text-xs font-medium ${
+          <div className="flex items-center gap-2 mb-3">
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${
               kpi.delta.isPositive 
-                ? 'text-green-600' 
-                : 'text-red-600'
+                ? 'bg-green-50 text-green-700' 
+                : 'bg-red-50 text-red-700'
             }`}>
-              {kpi.delta.value}
-            </span>
+              {kpi.delta.isPositive ? (
+                <TrendingUp className="w-3.5 h-3.5" />
+              ) : (
+                <TrendingDown className="w-3.5 h-3.5" />
+              )}
+              <span className={`text-xs font-semibold`}>
+                {kpi.delta.value}
+              </span>
+            </div>
           </div>
         )}
         
         {/* Description */}
         {kpi.description && (
-          <p className="text-xs text-slate-500 leading-relaxed pt-1 border-t border-slate-50">
+          <p className="text-xs text-slate-500 leading-relaxed pt-3 border-t border-slate-100">
             {kpi.description}
           </p>
         )}
       </div>
       
-      {/* Hover effect overlay */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-[0.02] transition-opacity duration-300 pointer-events-none`} />
+      {/* Subtle top border accent */}
+      <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${gradient}`} />
     </div>
   )
 }

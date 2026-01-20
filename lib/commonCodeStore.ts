@@ -306,5 +306,31 @@ export function getSchoolLevelTypeByValue(value: string): GroupKey | undefined {
   return codes.find((key) => key.value === value || key.label === value)
 }
 
+/**
+ * Get all region city codes (지역 시/군)
+ * @returns Array of all enabled region city keys sorted by sortOrder
+ */
+export function getAllRegionCityCodes(): GroupKey[] {
+  const title = store.titles.find((t) => t.name === '지역' && t.status === 'Active')
+  if (!title) return []
+
+  const groups = store.groups.filter(
+    (g) => g.titleId === title.id && g.status === 'Active'
+  )
+
+  const allKeys: GroupKey[] = []
+  groups.forEach((group) => {
+    const keys = store.groupKeys
+      .filter((key) => key.groupId === group.id && key.enabled)
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+    allKeys.push(...keys)
+  })
+
+  return allKeys.sort((a, b) => {
+    // Sort by label for easier selection
+    return a.label.localeCompare(b.label, 'ko')
+  })
+}
+
 
 

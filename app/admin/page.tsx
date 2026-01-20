@@ -8,11 +8,9 @@ import { Card } from 'antd'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 import { ModernKPICard, KPIData } from '@/components/dashboard/ModernKPICard'
-import { AssignmentsTrendChart } from '@/components/dashboard/AssignmentsTrendChart'
 import { StatusBreakdownChart } from '@/components/dashboard/StatusBreakdownChart'
-import { EvidenceReviewChart } from '@/components/dashboard/EvidenceReviewChart'
-import { CompletionRateCard } from '@/components/dashboard/CompletionRateCard'
 import { PendingApplicationsPanel } from '@/components/dashboard/PendingApplicationsPanel'
+import { PendingEvidencePanel } from '@/components/dashboard/PendingEvidencePanel'
 import { Table, Badge, Space, Tabs, Button, Input } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { Eye, Search } from 'lucide-react'
@@ -37,20 +35,13 @@ import { EntryCards } from '@/components/dashboard/EntryCards'
 import { CompactSearchControls } from '@/components/dashboard/CompactSearchControls'
 import { EnhancedResultPanel } from '@/components/dashboard/EnhancedResultPanel'
 import { CollapsibleSection } from '@/components/dashboard/CollapsibleSection'
-import { ArrowLeft, BookOpen, Users, GraduationCap, MapPin, ChevronDown, ChevronUp } from 'lucide-react'
+import { ArrowLeft, BookOpen, Users, MapPin, ChevronDown, ChevronUp, FileCheck, GraduationCap } from 'lucide-react'
 import { 
-  generateAssignmentsTrendData, 
   statusBreakdownData, 
-  evidenceReviewData, 
   kpiMetrics 
 } from '@/mock/dashboardAnalytics'
 import { dataStore } from '@/lib/dataStore'
 import { message } from 'antd'
-import { 
-  AlertCircle, 
-  FileCheck, 
-  XCircle 
-} from 'lucide-react'
 import { type SpecialCategory } from '@/types/region'
 
 interface SubmissionItem {
@@ -71,9 +62,7 @@ export default function AdminDashboardPage() {
   const [selectedRegion, setSelectedRegion] = useState<number | undefined>()
   const [loading, setLoading] = useState(false)
   const [kpiData, setKpiData] = useState<KPIData[]>([])
-  const [trendData, setTrendData] = useState<any[]>([])
   const [statusData, setStatusData] = useState<any[]>([])
-  const [reviewData, setReviewData] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState<string>('dashboard')
   const [submissionTab, setSubmissionTab] = useState<'all' | 'pending' | 'rejected' | 'approved'>('pending')
   const [summaries, setSummaries] = useState<EducationDocSummary[]>([])
@@ -81,8 +70,6 @@ export default function AdminDashboardPage() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [searchText, setSearchText] = useState<string>('')
   const [collapsedSections, setCollapsedSections] = useState<{ [key: string]: boolean }>({
-    charts: false,
-    secondCharts: false,
     operational: false,
   })
   
@@ -118,7 +105,6 @@ export default function AdminDashboardPage() {
         const assignments = dataStore.getInstructorAssignments()
 
         const totalPrograms = educations.length
-        const totalClasses = educations.reduce((sum, e) => sum + (e.totalSessions || 0), 0)
         const assignedInstructors = new Set(
           assignments.flatMap(a => 
             a.lessons?.flatMap(l => 
@@ -130,15 +116,9 @@ export default function AdminDashboardPage() {
           ) || []
         ).size
 
-        const unassignedClasses = assignments.reduce((sum, a) => {
-          return sum + (a.lessons?.filter(l => {
-            const mainCount = Array.isArray(l.mainInstructors) ? l.mainInstructors.length : (typeof l.mainInstructors === 'number' ? l.mainInstructors : 0)
-            return mainCount < (l.mainInstructorRequired || 0)
-          }).length || 0)
-        }, 0)
-
-        const pendingEvidence = 45 // Mock data
-        const rejectedEvidence = 12 // Mock data
+        // Get actual pending evidence count from storage
+        const evidenceDocs = getEvidenceDocs()
+        const pendingEvidence = evidenceDocs.filter(doc => doc.status === 'SUBMITTED').length
 
         // Calculate status breakdown from educations
         const statusCounts: { [key: string]: number } = {}
@@ -158,13 +138,7 @@ export default function AdminDashboardPage() {
           { name: '취소', value: statusCounts['CANCEL'] || statusCounts['취소'] || 0, color: '#ef4444' },
         ].filter(item => item.value > 0)
 
-        // Calculate trend data from assignments and applications
-        const trendDataPoints = generateAssignmentsTrendData()
-        
-        // Calculate review data (mock for now, can be enhanced with actual evidence data)
-        const reviewDataPoints = evidenceReviewData
-
-        // Update KPIs with icons and gradients
+        // Update KPIs with icons and gradients - Main cards only
         const kpis: KPIData[] = [
           {
             label: '전체 프로그램',
@@ -175,28 +149,12 @@ export default function AdminDashboardPage() {
             gradient: 'from-blue-500 via-blue-600 to-blue-700',
           },
           {
-            label: '전체 수업',
-            value: totalClasses.toLocaleString(),
-            delta: { value: '지난 주 대비 +124개', isPositive: true },
-            description: '전체 수업 세션 수',
-            icon: <GraduationCap className="w-5 h-5" />,
-            gradient: 'from-emerald-500 via-emerald-600 to-emerald-700',
-          },
-          {
             label: '배정된 강사',
             value: assignedInstructors.toString(),
             delta: { value: '지난 주 대비 +12명', isPositive: true },
             description: '현재 배정된 강사 수',
             icon: <Users className="w-5 h-5" />,
             gradient: 'from-purple-500 via-purple-600 to-purple-700',
-          },
-          {
-            label: '미배정 수업',
-            value: unassignedClasses.toString(),
-            delta: { value: '지난 주 대비 -5개', isPositive: true },
-            description: '강사가 배정되지 않은 수업',
-            icon: <AlertCircle className="w-5 h-5" />,
-            gradient: 'from-orange-500 via-orange-600 to-orange-700',
           },
           {
             label: '검토 대기 증빙',
@@ -206,20 +164,10 @@ export default function AdminDashboardPage() {
             icon: <FileCheck className="w-5 h-5" />,
             gradient: 'from-purple-500 via-purple-600 to-purple-700',
           },
-          {
-            label: '거절된 증빙',
-            value: rejectedEvidence.toString(),
-            delta: { value: '지난 주 대비 +2개', isPositive: false },
-            description: '거절된 증빙 자료 수',
-            icon: <XCircle className="w-5 h-5" />,
-            gradient: 'from-indigo-500 via-indigo-600 to-indigo-700',
-          },
         ]
 
         setKpiData(kpis)
-        setTrendData(trendDataPoints)
         setStatusData(statusBreakdown)
-        setReviewData(reviewDataPoints)
       } catch (error) {
         console.error('Error loading dashboard data:', error)
         message.error('데이터를 불러오는 중 오류가 발생했습니다.')
@@ -834,74 +782,28 @@ export default function AdminDashboardPage() {
               <div className="pt-8 px-2">
                 {activeTab === 'dashboard' ? (
                 <div className="space-y-6">
-                  {/* KPI Cards Row */}
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+                  {/* KPI Cards Row - Modern Layout */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {kpiData.map((kpi, index) => (
                       <ModernKPICard key={index} kpi={kpi} loading={loading} />
                     ))}
                   </div>
 
-                  {/* Charts Section - Collapsible */}
+                  {/* Charts Section - Main Chart Only */}
                   <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <button
-                      onClick={() => setCollapsedSections({ ...collapsedSections, charts: !collapsedSections.charts })}
-                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-colors"
-                    >
+                    <div className="px-6 py-4 border-b border-slate-100">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
                           <BookOpen className="w-4 h-4 text-white" />
                         </div>
                         <h3 className="text-lg font-bold text-slate-900">차트 분석</h3>
                       </div>
-                      {collapsedSections.charts ? (
-                        <ChevronDown className="w-5 h-5 text-slate-500" />
-                      ) : (
-                        <ChevronUp className="w-5 h-5 text-slate-500" />
-                      )}
-                    </button>
-                    {!collapsedSections.charts && (
-                      <div className="px-6 pb-6 border-t border-slate-100">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6">
-                          <AssignmentsTrendChart data={trendData} loading={loading} />
-                          <StatusBreakdownChart data={statusData} loading={loading} />
-                        </div>
+                    </div>
+                    <div className="px-6 pb-6 pt-6">
+                      <div className="grid grid-cols-1 gap-6">
+                        <StatusBreakdownChart data={statusData} loading={loading} />
                       </div>
-                    )}
-                  </div>
-                  
-                  {/* Second Row Charts - Collapsible */}
-                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <button
-                      onClick={() => setCollapsedSections({ ...collapsedSections, secondCharts: !collapsedSections.secondCharts })}
-                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg">
-                          <FileCheck className="w-4 h-4 text-white" />
-                        </div>
-                        <h3 className="text-lg font-bold text-slate-900">검토 및 출석 현황</h3>
-                      </div>
-                      {collapsedSections.secondCharts ? (
-                        <ChevronDown className="w-5 h-5 text-slate-500" />
-                      ) : (
-                        <ChevronUp className="w-5 h-5 text-slate-500" />
-                      )}
-                    </button>
-                    {!collapsedSections.secondCharts && (
-                      <div className="px-6 pb-6 border-t border-slate-100">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6">
-                          <EvidenceReviewChart data={reviewData} loading={loading} />
-                          <CompletionRateCard
-                            rate={82}
-                            completed={328}
-                            total={400}
-                            pending={45}
-                            rejected={12}
-                            loading={loading}
-                          />
-                        </div>
-                      </div>
-                    )}
+                    </div>
                   </div>
 
                   {/* Operational Panels - Collapsible */}
@@ -926,20 +828,7 @@ export default function AdminDashboardPage() {
                       <div className="px-6 pb-6 border-t border-slate-100">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6">
                           <PendingApplicationsPanel />
-                          <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex items-center gap-3 mb-6">
-                              <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
-                                <FileCheck className="w-5 h-5 text-white" />
-                              </div>
-                              <h3 className="text-lg font-bold text-slate-900">증빙 검토 대기열</h3>
-                            </div>
-                            <div className="text-center py-12">
-                              <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
-                                <FileCheck className="w-8 h-8 text-slate-400" />
-                              </div>
-                              <p className="text-slate-600 font-medium">검토 대기 중인 증빙 자료가 없습니다.</p>
-                            </div>
-                          </div>
+                          <PendingEvidencePanel />
                         </div>
                       </div>
                     )}

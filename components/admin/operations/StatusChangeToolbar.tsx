@@ -57,26 +57,36 @@ export function StatusChangeToolbar({
       <div className="flex items-center justify-between gap-4">
         {/* Left Group: Primary Action Buttons */}
         <div className="flex items-center gap-3">
-          <Button
-            onClick={handlePartialClick}
-            className={`h-10 px-6 rounded-xl border font-medium transition-all ${
-              assignmentMode === 'partial'
-                ? 'bg-blue-600 border-blue-600 text-white'
-                : 'border-slate-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 text-slate-700'
-            }`}
+          <Tooltip
+            title="부분 권역 배정: 기관의 권역과 일치하는 권역에 배정된 강사만 신청 가능"
+            placement="top"
           >
-            부분 주강사 배정
-          </Button>
-          <Button
-            onClick={handleAllClick}
-            className={`h-10 px-6 rounded-xl border font-medium transition-all ${
-              assignmentMode === 'full'
-                ? 'bg-blue-600 border-blue-600 text-white'
-                : 'border-slate-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 text-slate-700'
-            }`}
+            <Button
+              onClick={handlePartialClick}
+              className={`h-10 px-6 rounded-xl border font-medium transition-all ${
+                assignmentMode === 'partial'
+                  ? 'bg-blue-600 border-blue-600 text-white'
+                  : 'border-slate-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 text-slate-700'
+              }`}
+            >
+              부분 권역 배정
+            </Button>
+          </Tooltip>
+          <Tooltip
+            title="전체 권역 배정: 권역과 관계없이 모든 강사가 신청 가능"
+            placement="top"
           >
-            전체 주강사 배정
-          </Button>
+            <Button
+              onClick={handleAllClick}
+              className={`h-10 px-6 rounded-xl border font-medium transition-all ${
+                assignmentMode === 'full'
+                  ? 'bg-blue-600 border-blue-600 text-white'
+                  : 'border-slate-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 text-slate-700'
+              }`}
+            >
+              전체 권역 배정
+            </Button>
+          </Tooltip>
         </div>
 
         {/* Right Group: Status Change Controls */}

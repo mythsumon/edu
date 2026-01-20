@@ -20,6 +20,7 @@ import {
 import { attendanceSheetStore } from '@/lib/attendanceSheetStore'
 import { dataStore, type Education } from '@/lib/dataStore'
 import { educationScheduler } from '@/lib/educationScheduler'
+import { educationToStatusItem } from '@/entities/education/education-utils'
 
 const { RangePicker } = DatePicker
 
@@ -194,49 +195,48 @@ export default function EducationStatusPage() {
     const handleStatusUpdate = () => {
       // dataStore에서 최신 데이터 가져오기
       const educations = dataStore.getEducations()
+      const assignments = dataStore.getInstructorAssignments()
       const updatedData = educations.map(edu => {
         const existing = data.find(d => d.educationId === edu.educationId)
         if (existing) {
+          // Update existing item with instructor names
+          const instructorNames = educationToStatusItem(edu, assignments)
           return {
             ...existing,
             status: edu.status,
             openAt: edu.openAt,
             closeAt: edu.closeAt,
+            mainInstructorNames: instructorNames.mainInstructorNames,
+            assistantInstructorNames: instructorNames.assistantInstructorNames,
+            mainInstructorsCount: instructorNames.mainInstructorNames.length,
+            assistantInstructorsCount: instructorNames.assistantInstructorNames.length,
           }
         }
-        // 새로운 교육인 경우
-        return {
-          key: edu.key,
-          status: edu.status,
-          educationId: edu.educationId,
-          name: edu.name,
-          institution: edu.institution,
-          gradeClass: edu.gradeClass,
-          mainInstructorsCount: 0,
-          mainInstructorsRequired: 1,
-          assistantInstructorsCount: 0,
-          assistantInstructorsRequired: 1,
-          mainInstructorNames: [],
-          assistantInstructorNames: [],
-          periodStart: edu.periodStart,
-          periodEnd: edu.periodEnd,
-          period: edu.period,
-          openAt: edu.openAt,
-          closeAt: edu.closeAt,
-        } as EducationStatusItem
+        // 새로운 교육인 경우 - 강사 이름 매핑 포함
+        return educationToStatusItem(edu, assignments)
       })
       
       setData(updatedData)
     }
 
     window.addEventListener('educationStatusUpdated', handleStatusUpdate)
+    window.addEventListener('educationUpdated', handleStatusUpdate)
     window.addEventListener('storage', handleStatusUpdate)
 
     return () => {
       window.removeEventListener('educationStatusUpdated', handleStatusUpdate)
+      window.removeEventListener('educationUpdated', handleStatusUpdate)
       window.removeEventListener('storage', handleStatusUpdate)
     }
   }, [data])
+  
+  // 초기 데이터 로드 시 강사 이름 매핑
+  useEffect(() => {
+    const educations = dataStore.getEducations()
+    const assignments = dataStore.getInstructorAssignments()
+    const mappedData = educations.map(edu => educationToStatusItem(edu, assignments))
+    setData(mappedData)
+  }, [])
   
   // Bulk status change helpers for scheduled transitions
   const handleBulkOpenToPublic = () => {
@@ -433,15 +433,47 @@ export default function EducationStatusPage() {
 
   const handleAssignAll = () => {
     if (selectedIds.length === 0) {
-      // Show message or return early if no selection
+      message.warning('교육을 선택해주세요.')
       return
     }
-    setAssignmentMode('full')
-    setAssignmentModalOpen(true)
+
+    // Show confirmation popup for full region assignment
+    Modal.confirm({
+      title: '전체 권역 배정',
+      content: (
+        <div className="space-y-2">
+          <p className="text-gray-700">
+            선택한 {selectedIds.length}개 교육에 대해 <strong>전체 권역 배정</strong>을 진행하시겠습니까?
+          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
+            <p className="text-sm text-blue-900 font-medium mb-1">전체 권역 배정이란?</p>
+            <p className="text-sm text-blue-800">
+              권역과 관계없이 <strong>모든 강사</strong>가 신청할 수 있습니다.
+            </p>
+          </div>
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+            <p className="text-sm text-gray-700 font-medium mb-1">부분 권역 배정과의 차이:</p>
+            <p className="text-sm text-gray-600">
+              • <strong>부분 권역 배정</strong>: 기관의 권역과 일치하는 권역에 배정된 강사만 신청 가능
+            </p>
+            <p className="text-sm text-gray-600">
+              • <strong>전체 권역 배정</strong>: 권역과 관계없이 모든 강사가 신청 가능
+            </p>
+          </div>
+        </div>
+      ),
+      okText: '확인',
+      cancelText: '취소',
+      width: 500,
+      onOk: () => {
+        setAssignmentMode('full')
+        setAssignmentModalOpen(true)
+      },
+    })
   }
 
   const handleAssignmentConfirm = (selectedInstructorIds: string[]) => {
-    console.log(`${assignmentMode === 'partial' ? '부분' : '전체'} 주강사 배정:`, {
+    console.log(`${assignmentMode === 'partial' ? '부분' : '전체'} 권역 배정:`, {
       educationIds: selectedIds,
       instructorIds: selectedInstructorIds,
     })
@@ -496,15 +528,27 @@ export default function EducationStatusPage() {
       okText: '변경',
       cancelText: '취소',
       onOk: () => {
-        // Update dataStore for each selected education
+        const affectedEducationIds: string[] = []
+        
+        // Update dataStore for each selected education (allow mixed statuses)
         selectedRows.forEach(row => {
           const education = dataStore.getEducationById(row.educationId)
           if (education) {
             dataStore.updateEducation(row.educationId, { status: statusValue })
+            affectedEducationIds.push(row.educationId)
             // 스케줄러에 알림
             educationScheduler.scheduleEducation(education)
           }
         })
+        
+        // Dispatch event for status updates
+        if (affectedEducationIds.length > 0) {
+          window.dispatchEvent(
+            new CustomEvent('educationStatusUpdated', {
+              detail: { educationIds: affectedEducationIds },
+            })
+          )
+        }
         
         // Update local state
         setData(prev => prev.map(item => {
@@ -515,7 +559,7 @@ export default function EducationStatusPage() {
         }))
         setSelectedIds([])
         setStatusValue('')
-        message.success('상태가 변경되었습니다.')
+        message.success(`${selectedIds.length}개 교육의 상태가 변경되었습니다.`)
       },
     })
   }

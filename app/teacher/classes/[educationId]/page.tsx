@@ -265,7 +265,7 @@ export default function TeacherClassDetailPage() {
                   type="primary"
                   onClick={() => setIsEditMode(true)}
                 >
-                  수정하기
+                  {educationInfo ? '수정하기' : '작성하기'}
                 </Button>
               ) : (
                 <Space>

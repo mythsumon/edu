@@ -29,6 +29,9 @@ export interface Education {
   applicationDeadline?: string
   openAt?: string // ISO datetime string: when "오픈예정" -> "강사공개"
   closeAt?: string // ISO datetime string: when "강사공개" -> "신청마감"
+  regionAssignmentMode?: 'PARTIAL' | 'FULL' // Default: 'PARTIAL'
+  mainInstructorId?: string // Single main instructor ID
+  assistantInstructorIds?: string[] // Array of assistant instructor IDs
   lessons?: Lesson[]
 }
 
@@ -329,6 +332,205 @@ let educations: Education[] = [
     courseName: '2024년 하반기 블록코딩 교육',
     totalSessions: 8,
   },
+  // 신청 가능한 교육 예시 데이터 (강사공개 상태)
+  {
+    key: '12',
+    status: '강사공개',
+    educationId: 'EDU-2025-201',
+    name: '12차시 스크래치 기초 프로그래밍',
+    institution: '서울교육청',
+    region: '1권역',
+    gradeClass: '3학년 1반',
+    period: '2025-06-01 ~ 2025-06-30',
+    periodStart: '2025-06-01',
+    periodEnd: '2025-06-30',
+    educationStatus: 'OPEN',
+    applicationDeadline: '2025-05-25',
+    totalSessions: 12,
+    regionAssignmentMode: 'PARTIAL',
+    lessons: [
+      {
+        title: '1차시',
+        date: '2025.06.01',
+        startTime: '09:00',
+        endTime: '10:40',
+        mainInstructors: 1,
+        mainInstructorRequired: 1,
+        assistantInstructors: 1,
+        assistantInstructorRequired: 1,
+      },
+      {
+        title: '2차시',
+        date: '2025.06.08',
+        startTime: '09:00',
+        endTime: '10:40',
+        mainInstructors: 1,
+        mainInstructorRequired: 1,
+        assistantInstructors: 1,
+        assistantInstructorRequired: 1,
+      },
+    ],
+  },
+  {
+    key: '13',
+    status: '강사공개',
+    educationId: 'EDU-2025-202',
+    name: '16차시 AI와 메타버스 체험 교육',
+    institution: '인천교육청',
+    region: '2권역',
+    gradeClass: '4학년 2반',
+    period: '2025-07-01 ~ 2025-08-15',
+    periodStart: '2025-07-01',
+    periodEnd: '2025-08-15',
+    educationStatus: 'OPEN',
+    applicationDeadline: '2025-06-20',
+    totalSessions: 16,
+    regionAssignmentMode: 'FULL',
+    lessons: [
+      {
+        title: '1차시',
+        date: '2025.07.01',
+        startTime: '10:00',
+        endTime: '12:00',
+        mainInstructors: 2,
+        mainInstructorRequired: 2,
+        assistantInstructors: 1,
+        assistantInstructorRequired: 1,
+      },
+      {
+        title: '2차시',
+        date: '2025.07.08',
+        startTime: '10:00',
+        endTime: '12:00',
+        mainInstructors: 2,
+        mainInstructorRequired: 2,
+        assistantInstructors: 1,
+        assistantInstructorRequired: 1,
+      },
+    ],
+  },
+  {
+    key: '14',
+    status: '강사공개',
+    educationId: 'EDU-2025-203',
+    name: '8차시 엔트리 블록코딩 기초',
+    institution: '부산교육청',
+    region: '3권역',
+    gradeClass: '2학년 3반',
+    period: '2025-05-15 ~ 2025-06-05',
+    periodStart: '2025-05-15',
+    periodEnd: '2025-06-05',
+    educationStatus: 'OPEN',
+    applicationDeadline: '2025-05-10',
+    totalSessions: 8,
+    regionAssignmentMode: 'PARTIAL',
+    lessons: [
+      {
+        title: '1차시',
+        date: '2025.05.15',
+        startTime: '13:00',
+        endTime: '14:40',
+        mainInstructors: 1,
+        mainInstructorRequired: 1,
+        assistantInstructors: 0,
+        assistantInstructorRequired: 0,
+      },
+      {
+        title: '2차시',
+        date: '2025.05.22',
+        startTime: '13:00',
+        endTime: '14:40',
+        mainInstructors: 1,
+        mainInstructorRequired: 1,
+        assistantInstructors: 0,
+        assistantInstructorRequired: 0,
+      },
+    ],
+  },
+  {
+    key: '15',
+    status: '강사공개',
+    educationId: 'EDU-2025-204',
+    name: '20차시 파이썬 기초 프로그래밍',
+    institution: '대전교육청',
+    region: '4권역',
+    gradeClass: '5학년 4반',
+    period: '2025-08-01 ~ 2025-09-30',
+    periodStart: '2025-08-01',
+    periodEnd: '2025-09-30',
+    educationStatus: 'OPEN',
+    applicationDeadline: '2025-07-20',
+    totalSessions: 20,
+    regionAssignmentMode: 'FULL',
+    lessons: [
+      {
+        title: '1차시',
+        date: '2025.08.01',
+        startTime: '14:00',
+        endTime: '15:40',
+        mainInstructors: 1,
+        mainInstructorRequired: 1,
+        assistantInstructors: 1,
+        assistantInstructorRequired: 1,
+      },
+    ],
+  },
+  {
+    key: '16',
+    status: '강사공개',
+    educationId: 'EDU-2025-205',
+    name: '특수학급 맞춤형 코딩 교육 (12차시)',
+    institution: '광주교육청',
+    region: '5권역',
+    gradeClass: '특수학급',
+    period: '2025-06-10 ~ 2025-07-10',
+    periodStart: '2025-06-10',
+    periodEnd: '2025-07-10',
+    educationStatus: 'OPEN',
+    applicationDeadline: '2025-06-05',
+    totalSessions: 12,
+    regionAssignmentMode: 'PARTIAL',
+    lessons: [
+      {
+        title: '1차시',
+        date: '2025.06.10',
+        startTime: '09:00',
+        endTime: '10:40',
+        mainInstructors: 1,
+        mainInstructorRequired: 1,
+        assistantInstructors: 1,
+        assistantInstructorRequired: 1,
+      },
+    ],
+  },
+  {
+    key: '17',
+    status: '강사공개',
+    educationId: 'EDU-2025-206',
+    name: '도서벽지 지역 특별 코딩 교육',
+    institution: '제주교육청',
+    region: '6권역',
+    gradeClass: '4학년 1반',
+    period: '2025-07-15 ~ 2025-08-15',
+    periodStart: '2025-07-15',
+    periodEnd: '2025-08-15',
+    educationStatus: 'OPEN',
+    applicationDeadline: '2025-07-10',
+    totalSessions: 10,
+    regionAssignmentMode: 'FULL',
+    lessons: [
+      {
+        title: '1차시',
+        date: '2025.07.15',
+        startTime: '10:00',
+        endTime: '11:40',
+        mainInstructors: 1,
+        mainInstructorRequired: 1,
+        assistantInstructors: 0,
+        assistantInstructorRequired: 0,
+      },
+    ],
+  },
 ]
 
 let instructorApplications: InstructorApplication[] = [
@@ -438,12 +640,12 @@ let instructorAssignments: InstructorAssignment[] = [
         startTime: '09:00',
         endTime: '09:40',
         mainInstructors: [
-          { id: '1', name: '홍길동', status: 'confirmed' },
+          { id: 'instructor-1', name: '홍길동', status: 'confirmed' },
         ],
         mainInstructorRequired: 1,
         assistantInstructors: [
-          { id: '2', name: '김보조', status: 'confirmed' },
-          { id: '3', name: '이보조', status: 'confirmed' },
+          { id: 'instructor-2', name: '김보조', status: 'confirmed' },
+          { id: 'instructor-3', name: '이보조', status: 'confirmed' },
         ],
         assistantInstructorRequired: 2,
       },
@@ -453,11 +655,11 @@ let instructorAssignments: InstructorAssignment[] = [
         startTime: '10:00',
         endTime: '10:40',
         mainInstructors: [
-          { id: '1', name: '홍길동', status: 'confirmed' },
+          { id: 'instructor-1', name: '홍길동', status: 'confirmed' },
         ],
         mainInstructorRequired: 1,
         assistantInstructors: [
-          { id: '2', name: '김보조', status: 'confirmed' },
+          { id: 'instructor-2', name: '김보조', status: 'confirmed' },
         ],
         assistantInstructorRequired: 1,
       },
@@ -474,8 +676,8 @@ let instructorAssignments: InstructorAssignment[] = [
     periodStart: '2025-03-01',
     periodEnd: '2025-05-30',
     assignmentStatus: 'confirmed',
-    mainInstructorCount: 1,
-    mainInstructorRequired: 1,
+    mainInstructorCount: 2,
+    mainInstructorRequired: 2,
     assistantInstructorCount: 1,
     assistantInstructorRequired: 1,
     program: '프로그래밍 심화',
@@ -490,11 +692,12 @@ let instructorAssignments: InstructorAssignment[] = [
         startTime: '09:00',
         endTime: '10:40',
         mainInstructors: [
-          { id: '5', name: '다른강사', status: 'confirmed' },
+          { id: 'instructor-1', name: '홍길동', status: 'confirmed' }, // 홍길동이 주강사
+          { id: 'instructor-2', name: '김보조', status: 'confirmed' }, // 김보조도 주강사
         ],
-        mainInstructorRequired: 1,
+        mainInstructorRequired: 2,
         assistantInstructors: [
-          { id: '1', name: '홍길동', status: 'confirmed' },
+          { id: 'instructor-1', name: '홍길동', status: 'confirmed' }, // 홍길동이 보조강사도 겸임
         ],
         assistantInstructorRequired: 1,
       },
@@ -527,7 +730,7 @@ let instructorAssignments: InstructorAssignment[] = [
         startTime: '10:00',
         endTime: '11:40',
         mainInstructors: [
-          { id: '1', name: '홍길동', status: 'confirmed' },
+          { id: 'instructor-1', name: '홍길동', status: 'confirmed' },
         ],
         mainInstructorRequired: 1,
         assistantInstructors: [],
@@ -546,8 +749,8 @@ let instructorAssignments: InstructorAssignment[] = [
     periodStart: '2024-09-01',
     periodEnd: '2024-11-30',
     assignmentStatus: 'confirmed',
-    mainInstructorCount: 1,
-    mainInstructorRequired: 1,
+    mainInstructorCount: 2,
+    mainInstructorRequired: 2,
     assistantInstructorCount: 1,
     assistantInstructorRequired: 1,
     program: '블록코딩',
@@ -562,11 +765,12 @@ let instructorAssignments: InstructorAssignment[] = [
         startTime: '09:00',
         endTime: '09:40',
         mainInstructors: [
-          { id: '1', name: '홍길동', status: 'confirmed' },
+          { id: 'instructor-1', name: '홍길동', status: 'confirmed' }, // 홍길동이 주강사
+          { id: 'instructor-3', name: '이보조', status: 'confirmed' }, // 이보조도 주강사
         ],
-        mainInstructorRequired: 1,
+        mainInstructorRequired: 2,
         assistantInstructors: [
-          { id: '6', name: '보조강사1', status: 'confirmed' },
+          { id: 'instructor-1', name: '홍길동', status: 'confirmed' }, // 홍길동이 보조강사도 겸임
         ],
         assistantInstructorRequired: 1,
       },
@@ -599,7 +803,7 @@ let instructorAssignments: InstructorAssignment[] = [
         startTime: '10:00',
         endTime: '11:40',
         mainInstructors: [
-          { id: '1', name: '홍길동', status: 'confirmed' },
+          { id: 'instructor-1', name: '홍길동', status: 'confirmed' },
         ],
         mainInstructorRequired: 1,
         assistantInstructors: [],
@@ -635,11 +839,11 @@ let instructorAssignments: InstructorAssignment[] = [
         startTime: '09:00',
         endTime: '12:10',
         mainInstructors: [
-          { id: '1', name: '박정아', status: 'confirmed' },
+          { id: 'instructor-4', name: '박정아', status: 'confirmed' },
         ],
         mainInstructorRequired: 1,
         assistantInstructors: [
-          { id: '2', name: '김윤미', status: 'confirmed' },
+          { id: 'instructor-5', name: '김윤미', status: 'confirmed' },
         ],
         assistantInstructorRequired: 1,
       },
@@ -649,11 +853,102 @@ let instructorAssignments: InstructorAssignment[] = [
         startTime: '09:00',
         endTime: '12:10',
         mainInstructors: [
-          { id: '1', name: '박정아', status: 'confirmed' },
+          { id: 'instructor-4', name: '박정아', status: 'confirmed' },
         ],
         mainInstructorRequired: 1,
         assistantInstructors: [
-          { id: '2', name: '김윤미', status: 'confirmed' },
+          { id: 'instructor-5', name: '김윤미', status: 'confirmed' },
+        ],
+        assistantInstructorRequired: 1,
+      },
+    ],
+  },
+  // 추가 교육 배정 데이터 - 같은 강사가 다른 역할로
+  {
+    key: '7',
+    educationId: 'EDU-2025-102',
+    educationName: '12차시 스크래치 프로그래밍 기초',
+    institution: '평택안일초등학교',
+    region: '평택시',
+    gradeClass: '4학년 3반',
+    period: '2025-10-01 ~ 2025-10-15',
+    periodStart: '2025-10-01',
+    periodEnd: '2025-10-15',
+    assignmentStatus: 'confirmed',
+    mainInstructorCount: 2,
+    mainInstructorRequired: 2,
+    assistantInstructorCount: 1,
+    assistantInstructorRequired: 1,
+    program: '스크래치 프로그래밍',
+    description: '12차시 스크래치 프로그래밍 기초',
+    approvalStatus: '승인됨',
+    status: '진행중',
+    note: '-',
+    lessons: [
+      {
+        session: 1,
+        date: '2025-10-01',
+        startTime: '10:00',
+        endTime: '11:40',
+        mainInstructors: [
+          { id: 'instructor-1', name: '홍길동', status: 'confirmed' }, // 홍길동이 주강사
+          { id: 'instructor-2', name: '김보조', status: 'confirmed' }, // 김보조도 주강사
+        ],
+        mainInstructorRequired: 2,
+        assistantInstructors: [
+          { id: 'instructor-1', name: '홍길동', status: 'confirmed' }, // 홍길동이 보조강사도 겸임
+        ],
+        assistantInstructorRequired: 1,
+      },
+      {
+        session: 2,
+        date: '2025-10-08',
+        startTime: '10:00',
+        endTime: '11:40',
+        mainInstructors: [
+          { id: 'instructor-1', name: '홍길동', status: 'confirmed' }, // 홍길동이 주강사
+          { id: 'instructor-2', name: '김보조', status: 'confirmed' }, // 김보조도 주강사
+        ],
+        mainInstructorRequired: 2,
+        assistantInstructors: [
+          { id: 'instructor-1', name: '홍길동', status: 'confirmed' }, // 홍길동이 보조강사도 겸임
+        ],
+        assistantInstructorRequired: 1,
+      },
+    ],
+  },
+  {
+    key: '8',
+    educationId: 'EDU-2025-103',
+    educationName: '6차시 AI 체험 교육',
+    institution: '평택안일초등학교',
+    region: '평택시',
+    gradeClass: '6학년 2반',
+    period: '2025-09-15 ~ 2025-09-30',
+    periodStart: '2025-09-15',
+    periodEnd: '2025-09-30',
+    assignmentStatus: 'confirmed',
+    mainInstructorCount: 1,
+    mainInstructorRequired: 1,
+    assistantInstructorCount: 1,
+    assistantInstructorRequired: 1,
+    program: 'AI 체험',
+    description: '6차시 AI 체험 교육',
+    approvalStatus: '승인됨',
+    status: '진행중',
+    note: '-',
+    lessons: [
+      {
+        session: 1,
+        date: '2025-09-15',
+        startTime: '14:00',
+        endTime: '15:40',
+        mainInstructors: [
+          { id: 'instructor-3', name: '이보조', status: 'confirmed' }, // 이보조가 주강사
+        ],
+        mainInstructorRequired: 1,
+        assistantInstructors: [
+          { id: 'instructor-2', name: '김보조', status: 'confirmed' }, // 김보조가 보조강사
         ],
         assistantInstructorRequired: 1,
       },
@@ -676,13 +971,36 @@ export const dataStore = {
   updateEducation: (educationId: string, updates: Partial<Education>): void => {
     const index = educations.findIndex((e) => e.educationId === educationId)
     if (index !== -1) {
-      educations[index] = { ...educations[index], ...updates }
-      // Notify listeners if needed
+      // Ensure regionAssignmentMode defaults to 'PARTIAL' if not provided
+      const finalUpdates = {
+        ...updates,
+        regionAssignmentMode: updates.regionAssignmentMode || educations[index].regionAssignmentMode || 'PARTIAL',
+      }
+      educations[index] = { ...educations[index], ...finalUpdates }
+      // Dispatch event for status updates
+      if (updates.status) {
+        window.dispatchEvent(
+          new CustomEvent('educationStatusUpdated', {
+            detail: { educationIds: [educationId] },
+          })
+        )
+      }
+      // Dispatch general education update event
+      window.dispatchEvent(
+        new CustomEvent('educationUpdated', {
+          detail: { educationIds: [educationId] },
+        })
+      )
     }
   },
 
   addEducation: (education: Education): void => {
-    educations.push(education)
+    // Ensure regionAssignmentMode defaults to 'PARTIAL' if not provided
+    const educationWithDefaults = {
+      ...education,
+      regionAssignmentMode: education.regionAssignmentMode || 'PARTIAL',
+    }
+    educations.push(educationWithDefaults)
   },
 
   deleteEducation: (educationId: string): void => {

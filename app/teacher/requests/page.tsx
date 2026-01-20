@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Card, Table, Input, Badge, Button, Modal, message } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { Search, CheckCircle, Clock, Eye } from 'lucide-react'
+import { Search, Edit } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { attendanceInfoRequestStore } from '@/lib/teacherStore'
@@ -60,17 +60,6 @@ export default function TeacherRequestsPage() {
     }
   }, [])
 
-  const handleComplete = (request: AttendanceInfoRequest) => {
-    Modal.confirm({
-      title: '요청 완료',
-      content: '출석부 정보 입력을 완료하셨나요? 완료 처리하면 강사에게 알림이 전송됩니다.',
-      onOk: () => {
-        attendanceInfoRequestStore.update(request.id, { status: 'DONE' })
-        message.success('요청이 완료 처리되었습니다.')
-        window.location.reload()
-      },
-    })
-  }
 
   const columns: ColumnsType<AttendanceInfoRequest> = [
     {
@@ -122,28 +111,17 @@ export default function TeacherRequestsPage() {
     {
       title: '관리',
       key: 'actions',
-      width: 200,
+      width: 150,
       align: 'center',
       render: (_, record) => (
-        <div className="flex items-center gap-2">
-          <Button
-            size="small"
-            icon={<Eye className="w-3 h-3" />}
-            onClick={() => router.push(`/teacher/classes/${record.educationId}`)}
-          >
-            상세
-          </Button>
-          {record.status === 'OPEN' && (
-            <Button
-              type="primary"
-              size="small"
-              icon={<CheckCircle className="w-3 h-3" />}
-              onClick={() => handleComplete(record)}
-            >
-              완료
-            </Button>
-          )}
-        </div>
+        <Button
+          type="primary"
+          size="small"
+          icon={<Edit className="w-3 h-3" />}
+          onClick={() => router.push(`/teacher/classes/${record.educationId}`)}
+        >
+          작성하기
+        </Button>
       ),
     },
   ]
