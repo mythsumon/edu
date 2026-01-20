@@ -4,8 +4,9 @@ import { ProtectedLayout } from '../layout/ProtectedLayout'
 import { AdminRouteGuard } from '../layout/AdminRouteGuard'
 import { InstructorRouteGuard } from '../layout/InstructorRouteGuard'
 import { TeacherRouteGuard } from '../layout/TeacherRouteGuard'
+import { StaffRouteGuard } from '../layout/StaffRouteGuard'
 import { ROUTES } from '@/shared/constants/routes'
-import { DashboardPage, TeacherDashboardPage } from '@/modules/dashboard'
+import { DashboardPage, TeacherDashboardPage, StaffDashboardPage } from '@/modules/dashboard'
 import { MasterCodeSetupPage, MasterCodeCreatePage } from '@/modules/master-code-setup'
 import { CommonCodePage } from '@/modules/common-code'
 import { InstitutionManagementPage, InstitutionCreatePage, InstitutionEditPage } from '@/modules/institution'
@@ -244,6 +245,76 @@ export const protectedRoutes: RouteObject[] = [
               {
                 path: ROUTES.PROFILE_SETTINGS,
                 element: <ProfileSettingsTeacherPage />,
+              },
+            ],
+          },
+          // Staff routes grouped under /staff
+          {
+            path: ROUTES.STAFF,
+            element: <StaffRouteGuard />,
+            children: [
+              {
+                index: true,
+                element: <Navigate to={ROUTES.STAFF_DASHBOARD_FULL} replace />,
+              },
+              {
+                path: ROUTES.STAFF_DASHBOARD,
+                element: <StaffDashboardPage />,
+              },
+              {
+                path: ROUTES.STAFF_INSTITUTION,
+                children: [
+                  {
+                    index: true,
+                    element: <InstitutionManagementPage />,
+                  },
+                  {
+                    path: ROUTES.ADMIN_INSTITUTION_CREATE,
+                    element: <InstitutionCreatePage />,
+                  },
+                  {
+                    path: ROUTES.ADMIN_INSTITUTION_EDIT,
+                    element: <InstitutionEditPage />,
+                  },
+                ],
+              },
+              {
+                path: ROUTES.STAFF_PROGRAM,
+                children: [
+                  {
+                    index: true,
+                    element: <ProgramListPage />,
+                  },
+                  {
+                    path: ROUTES.ADMIN_PROGRAM_CREATE,
+                    element: <ProgramCreatePage />,
+                  },
+                  {
+                    path: ROUTES.ADMIN_PROGRAM_EDIT,
+                    element: <ProgramEditPage />,
+                  },
+                ],
+              },
+              {
+                path: ROUTES.STAFF_TRAINING,
+                children: [
+                  {
+                    index: true,
+                    element: <AdminTrainingPage />,
+                  },
+                  {
+                    path: ROUTES.ADMIN_TRAINING_CREATE,
+                    element: <AdminTrainingCreatePage />,
+                  },
+                ],
+              },
+              {
+                path: ROUTES.ACCOUNT_SETTINGS,
+                element: <AdminAccountSettingsPage />,
+              },
+              {
+                path: ROUTES.PROFILE_SETTINGS,
+                element: <ProfileSettingsAdminPage />,
               },
             ],
           },

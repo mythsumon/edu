@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS roles (
 CREATE INDEX IF NOT EXISTS idx_roles_name ON roles(name);
 
 -- Insert default roles
-INSERT INTO roles (name) VALUES ('ADMIN'), ('INSTRUCTOR'), ('TEACHER')
+INSERT INTO roles (name) VALUES ('ADMIN'), ('INSTRUCTOR'), ('TEACHER'), ('STAFF')
 ON CONFLICT (name) DO NOTHING;
 
 -- Users table
@@ -147,6 +147,24 @@ CREATE INDEX IF NOT EXISTS idx_instructors_region_id ON instructors(region_id);
 CREATE INDEX IF NOT EXISTS idx_instructors_city_id ON instructors(city_id);
 CREATE INDEX IF NOT EXISTS idx_instructors_status_id ON instructors(status_id);
 CREATE INDEX IF NOT EXISTS idx_instructors_classification_id ON instructors(classification_id);
+
+-- Staff table
+CREATE TABLE IF NOT EXISTS staff (
+    user_id BIGINT PRIMARY KEY,
+    staff_id VARCHAR(255) UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    phone VARCHAR(50),
+    status_id BIGINT,
+    profile_photo VARCHAR(500),
+    CONSTRAINT fk_staff_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_staff_status FOREIGN KEY (status_id) REFERENCES master_code(id) ON DELETE RESTRICT
+);
+-- Create indexes for staff table
+CREATE INDEX IF NOT EXISTS idx_staff_email ON staff(email);
+CREATE INDEX IF NOT EXISTS idx_staff_phone ON staff(phone);
+CREATE INDEX IF NOT EXISTS idx_staff_staff_id ON staff(staff_id);
+CREATE INDEX IF NOT EXISTS idx_staff_status_id ON staff(status_id);
 
 -- Institutions table
 CREATE TABLE IF NOT EXISTS institutions (

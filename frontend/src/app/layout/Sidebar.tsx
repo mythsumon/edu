@@ -220,6 +220,68 @@ export const Sidebar = () => {
     []
   );
 
+  // Staff navigation sections
+  const staffSections: MenuSection[] = useMemo(
+    () => [
+      {
+        titleKey: "sidebar.menu",
+        items: [
+          {
+            nameKey: "sidebar.dashboard",
+            href: ROUTES.STAFF_DASHBOARD_FULL,
+            icon: LayoutDashboard,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.institution",
+        items: [
+          {
+            nameKey: "sidebar.institutionManagement",
+            href: ROUTES.STAFF_INSTITUTION_FULL,
+            icon: Building2,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.program",
+        items: [
+          {
+            nameKey: "sidebar.programManagement",
+            href: ROUTES.STAFF_PROGRAM_FULL,
+            icon: BookOpen,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.training",
+        items: [
+          {
+            nameKey: "sidebar.trainingManagement",
+            href: ROUTES.STAFF_TRAINING_FULL,
+            icon: GraduationCap,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.myAccount",
+        items: [
+          {
+            nameKey: "sidebar.accountSettings",
+            href: ROUTES.STAFF_ACCOUNT_SETTINGS_FULL,
+            icon: KeyRound,
+          },
+          {
+            nameKey: "sidebar.profileSettings",
+            href: ROUTES.STAFF_PROFILE_SETTINGS_FULL,
+            icon: UserCircle,
+          },
+        ],
+      },
+    ],
+    []
+  );
+
   // Select navigation based on role
   const sections: MenuSection[] = useMemo(() => {
     if (userRole === "ADMIN") {
@@ -231,8 +293,11 @@ export const Sidebar = () => {
     if (userRole === "TEACHER") {
       return teacherSections;
     }
+    if (userRole === "STAFF") {
+      return staffSections;
+    }
     return adminSections;
-  }, [userRole, adminSections, instructorSections, teacherSections]);
+  }, [userRole, adminSections, instructorSections, teacherSections, staffSections]);
 
   const isActiveRoute = (href: string) => {
     // Exact match

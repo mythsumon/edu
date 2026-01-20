@@ -6,6 +6,7 @@ import { Textarea } from "@/shared/ui/textarea";
 import { ArrowLeft, Save, Edit, ChevronUp, ChevronDown, Search } from "lucide-react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/shared/constants/routes";
+import { getInstitutionBasePath } from "../../lib/navigation";
 import { useTranslation } from "react-i18next";
 import { useState, useRef, useMemo, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
@@ -344,7 +345,7 @@ export const InstitutionEditPage = () => {
       <PageLayout
         title={t("institution.editInstitution")}
         customBreadcrumbRoot={{
-          path: ROUTES.ADMIN_INSTITUTION_FULL,
+          path: getInstitutionBasePath(),
           label: t("sidebar.institution"),
         }}
       >
@@ -358,7 +359,7 @@ export const InstitutionEditPage = () => {
       <PageLayout
         title={t("institution.editInstitution")}
         customBreadcrumbRoot={{
-          path: ROUTES.ADMIN_INSTITUTION_FULL,
+          path: getInstitutionBasePath(),
           label: t("sidebar.institution"),
         }}
       >
@@ -369,7 +370,7 @@ export const InstitutionEditPage = () => {
             </p>
             <Button
               variant="outline"
-              onClick={() => navigate(ROUTES.ADMIN_INSTITUTION_FULL)}
+              onClick={() => navigate(getInstitutionBasePath())}
               className="mt-4"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -391,7 +392,7 @@ export const InstitutionEditPage = () => {
             : t("institution.institutionDetails")
         }
         customBreadcrumbRoot={{
-          path: ROUTES.ADMIN_INSTITUTION_FULL,
+          path: getInstitutionBasePath(),
           label: t("sidebar.institution"),
         }}
         actions={
@@ -440,7 +441,7 @@ export const InstitutionEditPage = () => {
                   }
                   setIsEditMode(false);
                 } else {
-                  navigate(ROUTES.ADMIN_INSTITUTION_FULL);
+                  navigate(getInstitutionBasePath());
                 }
               }}
             >

@@ -6,6 +6,7 @@ import { Textarea } from "@/shared/ui/textarea";
 import { ArrowLeft, Save, Edit, ChevronUp, ChevronDown } from "lucide-react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/shared/constants/routes";
+import { getProgramBasePath } from "../../lib/navigation";
 import { useTranslation } from "react-i18next";
 import { useState, useRef, useMemo, useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -196,7 +197,7 @@ export const ProgramEditPage = () => {
       <PageLayout
         title={t("program.editProgram")}
         customBreadcrumbRoot={{
-          path: ROUTES.ADMIN_PROGRAM_FULL,
+          path: getProgramBasePath(),
           label: t("sidebar.program"),
         }}
       >
@@ -210,7 +211,7 @@ export const ProgramEditPage = () => {
       <PageLayout
         title={t("program.editProgram")}
         customBreadcrumbRoot={{
-          path: ROUTES.ADMIN_PROGRAM_FULL,
+          path: getProgramBasePath(),
           label: t("sidebar.program"),
         }}
       >
@@ -221,7 +222,7 @@ export const ProgramEditPage = () => {
             </p>
             <Button
               variant="outline"
-              onClick={() => navigate(ROUTES.ADMIN_PROGRAM_FULL)}
+              onClick={() => navigate(getProgramBasePath())}
               className="mt-4"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -243,7 +244,7 @@ export const ProgramEditPage = () => {
             : t("program.programDetails")
         }
         customBreadcrumbRoot={{
-          path: ROUTES.ADMIN_PROGRAM_FULL,
+          path: getProgramBasePath(),
           label: t("sidebar.program"),
         }}
         actions={
@@ -270,7 +271,7 @@ export const ProgramEditPage = () => {
                   }
                   setIsEditMode(false);
                 } else {
-                  navigate(ROUTES.ADMIN_PROGRAM_FULL);
+                  navigate(getProgramBasePath());
                 }
               }}
             >

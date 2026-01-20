@@ -33,6 +33,12 @@ export const ROUTES = {
   // Teacher routes - path segments only
   TEACHER: '/teacher',
   TEACHER_DASHBOARD: 'dashboard',
+  // Staff routes - path segments only
+  STAFF: '/staff',
+  STAFF_DASHBOARD: 'dashboard',
+  STAFF_INSTITUTION: 'institution',
+  STAFF_PROGRAM: 'program',
+  STAFF_TRAINING: 'training',
   // Account settings routes (for all account types)
   ACCOUNT_SETTINGS: 'account-settings',
   PROFILE_SETTINGS: 'profile-settings',
@@ -65,6 +71,10 @@ export const ROUTES = {
   ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_EDIT_FULL: '/admin/account-management/teachers/:id/edit',
   INSTRUCTOR_DASHBOARD_FULL: '/instructor/dashboard',
   TEACHER_DASHBOARD_FULL: '/teacher/dashboard',
+  STAFF_DASHBOARD_FULL: '/staff/dashboard',
+  STAFF_INSTITUTION_FULL: '/staff/institution',
+  STAFF_PROGRAM_FULL: '/staff/program',
+  STAFF_TRAINING_FULL: '/staff/training',
   // Account settings full paths
   ADMIN_ACCOUNT_SETTINGS_FULL: '/admin/account-settings',
   ADMIN_PROFILE_SETTINGS_FULL: '/admin/profile-settings',
@@ -73,6 +83,8 @@ export const ROUTES = {
   INSTRUCTOR_PROFILE_SETTINGS_FULL: '/instructor/profile-settings',
   TEACHER_ACCOUNT_SETTINGS_FULL: '/teacher/account-settings',
   TEACHER_PROFILE_SETTINGS_FULL: '/teacher/profile-settings',
+  STAFF_ACCOUNT_SETTINGS_FULL: '/staff/account-settings',
+  STAFF_PROFILE_SETTINGS_FULL: '/staff/profile-settings',
   // Auth
   LOGIN: '/login',
   NOT_FOUND: '/404',

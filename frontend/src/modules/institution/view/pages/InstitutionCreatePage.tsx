@@ -5,7 +5,7 @@ import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
 import { ArrowLeft, Save, ChevronUp, ChevronDown, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/shared/constants/routes";
+import { getInstitutionBasePath } from "../../lib/navigation";
 import { useTranslation } from "react-i18next";
 import { useState, useRef, useMemo, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
@@ -282,8 +282,8 @@ export const InstitutionCreatePage = () => {
       };
 
       await createInstitutionMutation.mutateAsync(createDto);
-      // Navigate to institution list page on success
-      navigate(ROUTES.ADMIN_INSTITUTION_FULL);
+      // Navigate to institution list page on success (role-aware)
+      navigate(getInstitutionBasePath());
     } catch (error) {
       // Error handling is done by the mutation
       // Stay on current page on error
@@ -301,7 +301,7 @@ export const InstitutionCreatePage = () => {
           <>
             <Button
               variant="outline"
-              onClick={() => navigate(ROUTES.ADMIN_INSTITUTION_FULL)}
+              onClick={() => navigate(getInstitutionBasePath())}
             >
               <ArrowLeft className="h-4 w-4" />
               {t("common.cancel")}

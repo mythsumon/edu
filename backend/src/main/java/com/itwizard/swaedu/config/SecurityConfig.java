@@ -58,8 +58,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/api/v1/auth/**", "/swagger-ui/**", "/sample/**").permitAll()
                         .requestMatchers("/api/v1/instructor/me").hasAnyRole("INSTRUCTOR", "ADMIN")
+                        .requestMatchers("/api/v1/staff/me").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/mastercode/**", "/api/v1/zones/**", "/api/v1/regions/**").authenticated()
-                        .requestMatchers("/api/v1/mastercode/**", "/api/v1/zones/**", "/api/v1/regions/**", "/api/v1/admin/**", "/api/v1/instructor/**", "/api/v1/teacher/**", "/api/v1/institutions/**", "/api/v1/teacher/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/teacher/**").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers("/api/v1/institutions/**", "/api/v1/programs/**", "/api/v1/trainings/**").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers("/api/v1/mastercode/**", "/api/v1/zones/**", "/api/v1/regions/**", "/api/v1/admin/**", "/api/v1/instructor/**", "/api/v1/teacher/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)

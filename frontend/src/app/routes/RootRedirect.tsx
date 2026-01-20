@@ -30,6 +30,8 @@ export const RootRedirect = () => {
       return <Navigate to={ROUTES.INSTRUCTOR_DASHBOARD_FULL} replace />
     } else if (roleName === 'TEACHER') {
       return <Navigate to={ROUTES.TEACHER_DASHBOARD_FULL} replace />
+    } else if (roleName === 'STAFF') {
+      return <Navigate to={ROUTES.STAFF_DASHBOARD_FULL} replace />
     }
   } catch (error) {
     // If parsing fails, fall through to login redirect

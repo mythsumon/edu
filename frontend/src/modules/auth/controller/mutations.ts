@@ -49,6 +49,8 @@ export const useLoginMutation = () => {
         navigate(ROUTES.INSTRUCTOR_DASHBOARD_FULL, { replace: true })
       } else if (userRole === 'TEACHER') {
         navigate(ROUTES.TEACHER_DASHBOARD_FULL, { replace: true })
+      } else if (userRole === 'STAFF') {
+        navigate(ROUTES.STAFF_DASHBOARD_FULL, { replace: true })
       } else {
         // Fallback for unknown roles
         navigate(ROUTES.LOGIN, { replace: true })

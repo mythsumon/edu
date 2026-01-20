@@ -80,17 +80,21 @@ export const LoginPage = () => {
           const user = JSON.parse(userStr);
           const userRole = user?.roleName?.toUpperCase();
           if (userRole === "ADMIN") {
-            navigate(ROUTES.ADMIN_DASHBOARD, { replace: true });
+            navigate(ROUTES.ADMIN_DASHBOARD_FULL, { replace: true });
           } else if (userRole === "INSTRUCTOR") {
-            navigate(ROUTES.INSTRUCTOR_DASHBOARD, { replace: true });
+            navigate(ROUTES.INSTRUCTOR_DASHBOARD_FULL, { replace: true });
+          } else if (userRole === "TEACHER") {
+            navigate(ROUTES.TEACHER_DASHBOARD_FULL, { replace: true });
+          } else if (userRole === "STAFF") {
+            navigate(ROUTES.STAFF_DASHBOARD_FULL, { replace: true });
           } else {
-            navigate(ROUTES.DASHBOARD, { replace: true });
+            navigate(ROUTES.LOGIN, { replace: true });
           }
         } else {
-          navigate(ROUTES.DASHBOARD, { replace: true });
+          navigate(ROUTES.LOGIN, { replace: true });
         }
       } catch (error) {
-        navigate(ROUTES.DASHBOARD, { replace: true });
+        navigate(ROUTES.LOGIN, { replace: true });
       }
     }
   }, [isAuthenticated, navigate]);

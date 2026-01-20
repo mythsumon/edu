@@ -11,6 +11,11 @@
 -- Password: instructor123
 -- Role: INSTRUCTOR
 --
+-- Insert default staff user
+-- Username: staff
+-- Password: staff123
+-- Role: STAFF
+--
 -- Note: It is recommended to change the default password after first login
 -- To generate a new BCrypt hash, use BCryptPasswordEncoder in your application:
 -- BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -261,6 +266,23 @@ VALUES ((SELECT id FROM users WHERE username = 'teacher-a'),
         'TeacherA',
         'teachera@example.com',
         '+1234567890')
+ON CONFLICT (user_id) DO NOTHING;
+
+-- Insert staff user
+INSERT INTO users (username, password, role_id, enabled)
+VALUES ('staff',
+        '$2a$10$rZ81l6FyUHNKbtfJNz1SBeaOnCNLQq5yyrrBPN2DBKHJs7P5zQBCm',
+        (SELECT id FROM roles WHERE name = 'STAFF'),
+        TRUE)
+ON CONFLICT (username) DO NOTHING;
+-- Insert staff profile
+INSERT INTO staff (user_id, staff_id, name, email, phone, status_id)
+VALUES ((SELECT id FROM users WHERE username = 'staff'),
+        'STAFF' || (SELECT id FROM users WHERE username = 'staff'),
+        'Staff Member',
+        'staff@example.com',
+        '+1234567890',
+        (SELECT id FROM master_code WHERE code = '100-1' AND parent_id = (SELECT id FROM master_code WHERE code = '100' AND parent_id IS NULL)))
 ON CONFLICT (user_id) DO NOTHING;
 
 
