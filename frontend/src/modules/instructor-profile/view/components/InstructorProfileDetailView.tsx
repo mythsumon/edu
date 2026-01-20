@@ -1,10 +1,14 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/shared/ui/card'
 import { Label } from '@/shared/ui/label'
+import { Button } from '@/shared/ui/button'
+import { Upload } from 'lucide-react'
 import { formatDateDot } from '@/shared/lib/date'
 import { GENDER_OPTIONS } from '@/shared/constants/users'
 import { StatusBadge } from '@/shared/components/StatusBadge'
 import { ClassificationBadge } from '@/shared/components/ClassificationBadge'
+import { SignatureUploadDialog } from './SignatureUploadDialog'
 
 const INTERFACE_LANGUAGES = [
   { value: 'en', label: 'English' },
@@ -45,6 +49,7 @@ export const InstructorProfileDetailView = ({
   getInitials,
 }: InstructorProfileDetailViewProps) => {
   const { t } = useTranslation()
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false)
 
   // Get gender label
   const getGenderLabel = (gender?: string) => {
@@ -207,9 +212,24 @@ export const InstructorProfileDetailView = ({
       <Card className="rounded-2xl border border-border/20 bg-card shadow-sm p-6">
         <div className="space-y-6">
           <div>
-            <Label className="text-sm font-medium text-muted-foreground">
-              {t('profile.signatureImage')}
-            </Label>
+            <div className="flex items-center justify-between mb-2">
+              <Label className="text-sm font-medium text-muted-foreground">
+                {t('profile.signatureImage')}
+              </Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  console.log('[InstructorProfileDetailView] Open upload dialog')
+                  setIsUploadDialogOpen(true)
+                }}
+                className="gap-2"
+              >
+                <Upload className="w-4 h-4" />
+                {instructor.signature ? t('profile.changeSignature') : t('profile.uploadSignature')}
+              </Button>
+            </div>
             {instructor.signature ? (
               <div className="mt-2">
                 <img
@@ -226,6 +246,13 @@ export const InstructorProfileDetailView = ({
           </div>
         </div>
       </Card>
+
+      {/* Signature Upload Dialog */}
+      <SignatureUploadDialog
+        open={isUploadDialogOpen}
+        onOpenChange={setIsUploadDialogOpen}
+        currentSignature={instructor.signature}
+      />
     </div>
   )
 }

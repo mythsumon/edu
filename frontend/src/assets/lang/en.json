@@ -818,6 +818,14 @@
     "uploadAvatar": "Upload Avatar",
     "uploading": "Uploading...",
     "selectFile": "Select File",
+    "changeSignature": "Change Signature",
+    "changeImage": "Change Image",
+    "clickToUpload": "Click to upload or drag and drop",
+    "new": "New",
+    "signatureUploadSuccess": "Signature uploaded successfully",
+    "signatureUploadError": "Failed to upload signature",
+    "signatureRemoveSuccess": "Signature removed successfully",
+    "signatureRemoveError": "Failed to remove signature",
     "updateSuccess": "Profile updated successfully",
     "updateError": "Failed to update profile",
     "avatarUploadPending": "Avatar upload will be implemented soon",
@@ -825,7 +833,8 @@
     "validation": {
       "interfaceLanguageRequired": "Interface language is required",
       "invalidImageType": "Please select a valid image file",
-      "imageTooLarge": "Image size must be less than 5MB"
+      "imageTooLarge": "Image size must be less than 5MB",
+      "fileReadError": "Failed to read file"
     }
   },
   "accountSettings": {

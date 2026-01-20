@@ -68,6 +68,7 @@ export interface InstructorPatchRequestDto {
   statusId?: number
   classificationId?: number
   affiliation?: string
+  signature?: string | null
 }
 
 /**

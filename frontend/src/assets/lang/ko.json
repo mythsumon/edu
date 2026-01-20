@@ -821,6 +821,14 @@
     "uploadAvatar": "아바타 업로드",
     "uploading": "업로드 중...",
     "selectFile": "파일 선택",
+    "changeSignature": "서명 변경",
+    "changeImage": "이미지 변경",
+    "clickToUpload": "클릭하여 업로드하거나 드래그 앤 드롭",
+    "new": "새로운",
+    "signatureUploadSuccess": "서명이 성공적으로 업로드되었습니다",
+    "signatureUploadError": "서명 업로드에 실패했습니다",
+    "signatureRemoveSuccess": "서명이 성공적으로 삭제되었습니다",
+    "signatureRemoveError": "서명 삭제에 실패했습니다",
     "updateSuccess": "프로필이 성공적으로 업데이트되었습니다",
     "updateError": "프로필 업데이트에 실패했습니다",
     "avatarUploadPending": "아바타 업로드는 곧 구현될 예정입니다",
@@ -828,7 +836,8 @@
     "validation": {
       "interfaceLanguageRequired": "인터페이스 언어는 필수입니다",
       "invalidImageType": "유효한 이미지 파일을 선택하세요",
-      "imageTooLarge": "이미지 크기는 5MB 미만이어야 합니다"
+      "imageTooLarge": "이미지 크기는 5MB 미만이어야 합니다",
+      "fileReadError": "파일 읽기에 실패했습니다"
     }
   },
   "accountSettings": {
