@@ -1,25 +1,25 @@
 import { axiosInstance } from '@/shared/http/axios/instance'
 import type { ApiResponse, PageResponse } from '@/shared/http/types/common'
 import type {
-  TrainingResponseDto,
-  ListTrainingsParams,
-  TrainingCreateDto,
-  TrainingUpdateDto,
+  AdminTrainingResponseDto,
+  ListAdminTrainingsParams,
+  AdminTrainingCreateDto,
+  AdminTrainingUpdateDto,
   MasterCodeResponseDto,
   MasterCodeChildrenParams,
   ProgramResponseDto,
   ListProgramsParams,
   InstitutionResponseDto,
   ListInstitutionsParams,
-} from './training.types'
+} from './admin-training.types'
 
 /**
- * List trainings with pagination and filters
+ * List admin trainings with pagination and filters
  */
-export async function listTrainings(
-  params?: ListTrainingsParams
-): Promise<PageResponse<TrainingResponseDto>> {
-  const response = await axiosInstance.get<ApiResponse<PageResponse<TrainingResponseDto>>>(
+export async function listAdminTrainings(
+  params?: ListAdminTrainingsParams
+): Promise<PageResponse<AdminTrainingResponseDto>> {
+  const response = await axiosInstance.get<ApiResponse<PageResponse<AdminTrainingResponseDto>>>(
     '/trainings',
     { params }
   )
@@ -27,22 +27,22 @@ export async function listTrainings(
 }
 
 /**
- * Get training by ID
+ * Get admin training by ID
  */
-export async function getTrainingById(id: number): Promise<TrainingResponseDto> {
-  const response = await axiosInstance.get<ApiResponse<TrainingResponseDto>>(
+export async function getAdminTrainingById(id: number): Promise<AdminTrainingResponseDto> {
+  const response = await axiosInstance.get<ApiResponse<AdminTrainingResponseDto>>(
     `/trainings/${id}`
   )
   return response.data.data
 }
 
 /**
- * Create training
+ * Create admin training
  */
-export async function createTraining(
-  data: TrainingCreateDto
-): Promise<TrainingResponseDto> {
-  const response = await axiosInstance.post<ApiResponse<TrainingResponseDto>>(
+export async function createAdminTraining(
+  data: AdminTrainingCreateDto
+): Promise<AdminTrainingResponseDto> {
+  const response = await axiosInstance.post<ApiResponse<AdminTrainingResponseDto>>(
     '/trainings',
     data
   )
@@ -50,13 +50,13 @@ export async function createTraining(
 }
 
 /**
- * Update training
+ * Update admin training
  */
-export async function updateTraining(
+export async function updateAdminTraining(
   id: number,
-  data: TrainingUpdateDto
-): Promise<TrainingResponseDto> {
-  const response = await axiosInstance.put<ApiResponse<TrainingResponseDto>>(
+  data: AdminTrainingUpdateDto
+): Promise<AdminTrainingResponseDto> {
+  const response = await axiosInstance.put<ApiResponse<AdminTrainingResponseDto>>(
     `/trainings/${id}`,
     data
   )
@@ -64,9 +64,9 @@ export async function updateTraining(
 }
 
 /**
- * Delete training
+ * Delete admin training
  */
-export async function deleteTraining(id: number): Promise<void> {
+export async function deleteAdminTraining(id: number): Promise<void> {
   await axiosInstance.delete(`/trainings/${id}`)
 }
 

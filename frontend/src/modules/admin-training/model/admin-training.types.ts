@@ -73,9 +73,9 @@ export interface ListInstitutionsParams {
 }
 
 /**
- * Training Response DTO (matches backend TrainingResponseDto)
+ * Admin Training Response DTO (matches backend TrainingResponseDto)
  */
-export interface TrainingResponseDto {
+export interface AdminTrainingResponseDto {
   id: number
   trainingId?: string | null
   name: string
@@ -86,9 +86,9 @@ export interface TrainingResponseDto {
 }
 
 /**
- * List Trainings Query Parameters
+ * List Admin Trainings Query Parameters
  */
-export interface ListTrainingsParams {
+export interface ListAdminTrainingsParams {
   q?: string
   page?: number
   size?: number
@@ -97,9 +97,9 @@ export interface ListTrainingsParams {
 }
 
 /**
- * Training type for table display
+ * Admin Training type for table display
  */
-export interface Training {
+export interface AdminTraining {
   id: number
   trainingId: string
   name: string
@@ -110,18 +110,18 @@ export interface Training {
 }
 
 /**
- * Training Create DTO (matches backend TrainingCreateDto)
+ * Admin Training Create DTO (matches backend TrainingCreateDto)
  */
-export interface TrainingCreateDto {
+export interface AdminTrainingCreateDto {
   name: string
   description?: string | null
   statusId?: number | null
 }
 
 /**
- * Training Update DTO (matches backend TrainingUpdateDto)
+ * Admin Training Update DTO (matches backend TrainingUpdateDto)
  */
-export interface TrainingUpdateDto {
+export interface AdminTrainingUpdateDto {
   name: string
   description?: string | null
   statusId?: number | null

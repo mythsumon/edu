@@ -11,14 +11,14 @@ import { Input } from "@/shared/ui/input";
 import { Card } from "@/shared/ui/card";
 import { DataTable } from "@/shared/components/DataTable";
 import { CustomPagination } from "@/shared/components/CustomPagination";
-import type { Training } from "../../model/training.types";
+import type { AdminTraining } from "../../model/admin-training.types";
 
 /**
  * Actions Cell Component
  */
 interface ActionsCellProps {
-  training: Training;
-  onDetail: (training: Training) => void;
+  training: AdminTraining;
+  onDetail: (training: AdminTraining) => void;
 }
 
 const ActionsCell = ({ training, onDetail }: ActionsCellProps) => {
@@ -44,10 +44,10 @@ const ActionsCell = ({ training, onDetail }: ActionsCellProps) => {
 };
 
 /**
- * Training Page
- * Displays training management interface
+ * Admin Training Page
+ * Displays admin training management interface
  */
-export const TrainingPage = () => {
+export const AdminTrainingPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -65,7 +65,7 @@ export const TrainingPage = () => {
   const [filterCount] = React.useState<number>(0);
 
   // Mock empty data - will be replaced with actual API calls later
-  const trainings: Training[] = [];
+  const trainings: AdminTraining[] = [];
 
   // Mock pagination data
   const paginationData = React.useMemo(() => {
@@ -107,12 +107,12 @@ export const TrainingPage = () => {
     console.log("Filter clicked");
   };
 
-  const handleDetail = React.useCallback((training: Training) => {
-    // TODO: Navigate to training detail page
+  const handleDetail = React.useCallback((training: AdminTraining) => {
+    // TODO: Navigate to admin training detail page
     console.log("View detail:", training);
   }, []);
 
-  const columns = React.useMemo<ColumnDef<Training>[]>(
+  const columns = React.useMemo<ColumnDef<AdminTraining>[]>(
     () => [
       {
         id: "select",

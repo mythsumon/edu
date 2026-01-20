@@ -1,34 +1,34 @@
 import { useQuery } from '@tanstack/react-query'
-import { listTrainings, getTrainingById, getMasterCodeChildren, listPrograms, listInstitutions } from '../model/training.service'
-import type { ListTrainingsParams, MasterCodeChildrenParams, ListProgramsParams, ListInstitutionsParams } from '../model/training.types'
-import { trainingQueryKeys } from './queryKeys'
+import { listAdminTrainings, getAdminTrainingById, getMasterCodeChildren, listPrograms, listInstitutions } from '../model/admin-training.service'
+import type { ListAdminTrainingsParams, MasterCodeChildrenParams, ListProgramsParams, ListInstitutionsParams } from '../model/admin-training.types'
+import { adminTrainingQueryKeys } from './queryKeys'
 
 /**
- * Query hook for listing trainings with pagination and filters
+ * Query hook for listing admin trainings with pagination and filters
  */
-export const useTrainingsQuery = (params?: ListTrainingsParams) => {
+export const useAdminTrainingsQuery = (params?: ListAdminTrainingsParams) => {
   return useQuery({
-    queryKey: trainingQueryKeys.list(JSON.stringify(params || {})),
+    queryKey: adminTrainingQueryKeys.list(JSON.stringify(params || {})),
     queryFn: async () => {
-      return await listTrainings(params)
+      return await listAdminTrainings(params)
     },
   })
 }
 
 /**
- * Query hook for fetching training by ID
+ * Query hook for fetching admin training by ID
  */
-export const useTrainingByIdQuery = (
+export const useAdminTrainingByIdQuery = (
   id: number | null | undefined,
   enabled: boolean = true
 ) => {
   return useQuery({
-    queryKey: trainingQueryKeys.detail(id!),
+    queryKey: adminTrainingQueryKeys.detail(id!),
     queryFn: async () => {
       if (!id) {
-        throw new Error('Training ID is required')
+        throw new Error('Admin Training ID is required')
       }
-      return await getTrainingById(id)
+      return await getAdminTrainingById(id)
     },
     enabled: enabled && id !== null && id !== undefined,
   })
@@ -43,7 +43,7 @@ export const useMasterCodeChildrenQuery = (
   enabled: boolean = true
 ) => {
   return useQuery({
-    queryKey: trainingQueryKeys.masterCodeChildrenByCode(
+    queryKey: adminTrainingQueryKeys.masterCodeChildrenByCode(
       parentCode!,
       JSON.stringify(params || {})
     ),
@@ -62,7 +62,7 @@ export const useMasterCodeChildrenQuery = (
  */
 export const useProgramsQuery = (params?: ListProgramsParams) => {
   return useQuery({
-    queryKey: trainingQueryKeys.programsList(JSON.stringify(params || {})),
+    queryKey: adminTrainingQueryKeys.programsList(JSON.stringify(params || {})),
     queryFn: async () => {
       return await listPrograms(params)
     },
@@ -74,7 +74,7 @@ export const useProgramsQuery = (params?: ListProgramsParams) => {
  */
 export const useInstitutionsQuery = (params?: ListInstitutionsParams) => {
   return useQuery({
-    queryKey: trainingQueryKeys.institutionsList(JSON.stringify(params || {})),
+    queryKey: adminTrainingQueryKeys.institutionsList(JSON.stringify(params || {})),
     queryFn: async () => {
       return await listInstitutions(params)
     },
