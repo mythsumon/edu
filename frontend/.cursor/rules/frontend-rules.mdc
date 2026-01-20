@@ -248,7 +248,10 @@ Prefer shared UI helpers:
 - `shared/**` MUST NOT import from `modules/**`.
 - `modules/**` may import from `shared/**`.
 - `app/**` may import from both `modules/**` and `shared/**`.
-- Do not deep-import between modules; expose module APIs via `modules/<feature>/index.ts`.
+- **FORBIDDEN:** Cross-module imports between feature modules (e.g., `modules/program` importing from `modules/institution`).
+- Each module MUST be self-contained with its own types, services, queries, and components.
+- If multiple modules need the same functionality (e.g., master code queries), each module MUST have its own copy in its model/controller folders.
+- Do not deep-import between modules; expose module APIs via `modules/<feature>/index.ts` for app-level routing only.
 
 ---
 

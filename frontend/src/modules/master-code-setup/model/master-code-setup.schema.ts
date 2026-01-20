@@ -2,9 +2,8 @@ import { z } from 'zod'
 
 export const createMasterCodeSchema = (t: (key: string) => string) => z.object({
   code: z
-    .number()
-    .int(t('masterCode.validation.codeMustBeInteger'))
-    .positive(t('masterCode.validation.codeMustBePositive')),
+    .string()
+    .min(1, t('masterCode.validation.codeRequired')),
   codeName: z
     .string()
     .min(1, t('masterCode.validation.codeNameRequired')),
@@ -20,9 +19,8 @@ export type CreateMasterCodeFormData = z.infer<ReturnType<typeof createMasterCod
 
 export const updateMasterCodeSchema = (t: (key: string) => string) => z.object({
   code: z
-    .number()
-    .int(t('masterCode.validation.codeMustBeInteger'))
-    .positive(t('masterCode.validation.codeMustBePositive')),
+    .string()
+    .min(1, t('masterCode.validation.codeRequired')),
   codeName: z
     .string()
     .min(1, t('masterCode.validation.codeNameRequired')),

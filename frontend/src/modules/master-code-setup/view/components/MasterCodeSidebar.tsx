@@ -81,7 +81,7 @@ const MasterCodeItem = ({ code, isSelected, onSelect, onEdit, onDelete }: Master
     <div
       className={cn(
         "w-full flex items-center gap-3 px-3 py-2 text-sm transition-colors relative group",
-        "hover:bg-accent hover:text-accent-foreground",
+        "hover:text-accent-foreground",
         isSelected
           ? "bg-muted/50 text-secondary-foreground"
           : "bg-background text-secondary-foreground/60"
@@ -111,7 +111,7 @@ const MasterCodeItem = ({ code, isSelected, onSelect, onEdit, onDelete }: Master
       <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
         <PopoverTrigger asChild>
           <button
-            className="flex-shrink-0 p-1 rounded hover:bg-muted transition-colors opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
+            className="flex-shrink-0 p-1 rounded hover:bg-muted transition-colors opacity-100 lg:group-hover:opacity-100"
             onClick={(e) => e.stopPropagation()}
             aria-label={t('sidebar.menu')}
           >

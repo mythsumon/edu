@@ -2,7 +2,6 @@ package com.itwizard.swaedu.modules.instructor.entity;
 
 import com.itwizard.swaedu.modules.auth.entity.User;
 import com.itwizard.swaedu.modules.mastercode.entity.MasterCodeEntity;
-import com.itwizard.swaedu.modules.region.entity.RegionEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -21,11 +20,11 @@ public class Instructor {
     @MapsId
     private User user;
 
-    @Column(name = "first_name", nullable = false)
-    private String firstName;
+    @Column(name = "instructor_id", unique = true)
+    private String instructorId;
 
-    @Column(name = "last_name", nullable = false)
-    private String lastName;
+    @Column(name = "name", nullable = false)
+    private String name;
 
     @Column
     private String email;
@@ -41,13 +40,17 @@ public class Instructor {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "region_id", foreignKey = @ForeignKey(name = "fk_instructors_region"))
-    private RegionEntity region;
+    private MasterCodeEntity region;
 
     @Column(name = "region_id", insertable = false, updatable = false)
     private Long regionId;
 
-    @Column
-    private String city;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "city_id", foreignKey = @ForeignKey(name = "fk_instructors_city"))
+    private MasterCodeEntity city;
+
+    @Column(name = "city_id", insertable = false, updatable = false)
+    private Long cityId;
 
     @Column
     private String street;
@@ -68,6 +71,9 @@ public class Instructor {
 
     @Column(name = "classification_id", insertable = false, updatable = false)
     private Long classificationId;
+
+    @Column
+    private String affiliation;
 
     @Column
     private String signature;

@@ -8,7 +8,7 @@ export const AppShell = () => {
       <Sidebar />
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         <Header />
-        <main className="flex-1 overflow-y-auto h-full p-0 bg-muted/20">
+        <main className="flex-1 overflow-y-auto h-full py-0 bg-muted/80">
           <Outlet />
         </main>
       </div>

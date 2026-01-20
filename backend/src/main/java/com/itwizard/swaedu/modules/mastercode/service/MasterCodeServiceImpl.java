@@ -77,6 +77,13 @@ public class MasterCodeServiceImpl implements MasterCodeService {
     }
 
     @Override
+    public MasterCodeResponseDto getMasterCodeByCode(String code) {
+        MasterCodeEntity entity = repository.findByCodeAndIsDeleteFalse(code)
+                .orElseThrow(() -> new ResourceNotFoundException("Master code not found with code: " + code));
+        return MasterCodeMapper.toResponseDto(entity);
+    }
+
+    @Override
     @Transactional
     public MasterCodeResponseDto updateMasterCode(Long id, MasterCodeUpdateDto request) {
         MasterCodeEntity entity = repository.findByIdAndIsDeleteFalse(id)
@@ -100,7 +107,7 @@ public class MasterCodeServiceImpl implements MasterCodeService {
                 .orElseThrow(() -> new ResourceNotFoundException("Master code not found with id: " + id));
 
         // Get values to validate (use existing if not provided in patch)
-        Integer codeToValidate = request.getCode() != null ? request.getCode() : entity.getCode();
+        String codeToValidate = request.getCode() != null ? request.getCode() : entity.getCode();
         String codeNameToValidate = request.getCodeName() != null ? request.getCodeName() : entity.getCodeName();
 
         // Validate uniqueness if code or codeName is being changed
@@ -130,7 +137,13 @@ public class MasterCodeServiceImpl implements MasterCodeService {
                             "Delete or move children first.");
         }
 
-        // Soft delete
+        // Soft delete: rename code to {originalCode}-deleted{id} to free up the code for reuse
+        String originalCode = entity.getCode();
+        String originalCodeName = entity.getCodeName();
+        String deletedCode = originalCode + "-deleted" + id;
+        String deletedCodeName = originalCodeName + "-deleted" + id;
+        entity.setCode(deletedCode);
+        entity.setCodeName(deletedCodeName);
         entity.setIsDelete(true);
         entity.setUpdatedAt(LocalDateTime.now());
         repository.save(entity);
@@ -144,13 +157,51 @@ public class MasterCodeServiceImpl implements MasterCodeService {
     }
 
     @Override
-    public PageResponse<MasterCodeResponseDto> listChildren(Integer parentCode, String q, Integer page, Integer size, String sort) {
+    public PageResponse<MasterCodeResponseDto> listChildren(String parentCode, String q, Integer page, Integer size, String sort) {
         // Find parent by code and validate it exists
         MasterCodeEntity parent = repository.findByCodeAndIsDeleteFalse(parentCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Parent master code not found with code: " + parentCode));
 
         Pageable pageable = buildPageable(page, size, sort);
         Page<MasterCodeEntity> pageResult = repository.findChildren(parent.getId(), q, pageable);
+        return buildPageResponse(pageResult);
+    }
+
+    @Override
+    public PageResponse<MasterCodeResponseDto> listGrandChildren(String grandparentCode, String q, Integer page, Integer size, String sort) {
+        // Find grandparent by code and validate it exists
+        MasterCodeEntity grandparent = repository.findByCodeAndIsDeleteFalse(grandparentCode)
+                .orElseThrow(() -> new ResourceNotFoundException("Grandparent master code not found with code: " + grandparentCode));
+
+        // Get all direct children of the grandparent
+        List<MasterCodeEntity> children = repository.findByParentIdAndIsDeleteFalse(grandparent.getId());
+
+        // Extract parent IDs
+        List<Long> parentIds = children.stream()
+                .map(MasterCodeEntity::getId)
+                .toList();
+
+        // If no children exist, return empty page
+        if (parentIds.isEmpty()) {
+            return PageResponse.<MasterCodeResponseDto>builder()
+                    .items(List.of())
+                    .total(0)
+                    .page(0)
+                    .size(0)
+                    .totalPages(0)
+                    .build();
+        }
+
+        // If both page and size are null, return all results without pagination
+        if (page == null && size == null) {
+            Pageable pageable = buildUnpagedPageable(sort);
+            Page<MasterCodeEntity> pageResult = repository.findGrandChildren(parentIds, q, pageable);
+            return buildPageResponse(pageResult);
+        }
+
+        // Find grandchildren (children of children) with pagination
+        Pageable pageable = buildPageable(page, size, sort);
+        Page<MasterCodeEntity> pageResult = repository.findGrandChildren(parentIds, q, pageable);
         return buildPageResponse(pageResult);
     }
 
@@ -171,13 +222,13 @@ public class MasterCodeServiceImpl implements MasterCodeService {
     }
 
     @Override
-    public boolean checkCodeExists(Integer code) {
+    public boolean checkCodeExists(String code) {
         return repository.existsByCodeAndIsDeleteFalse(code);
     }
 
     // Private helper methods
 
-    private void validateUniqueness(Integer code, String codeName, Long parentId, Long excludeId) {
+    private void validateUniqueness(String code, String codeName, Long parentId, Long excludeId) {
         if (excludeId == null) {
             // Create operation
             // Code is globally unique - check if code already exists
@@ -250,14 +301,51 @@ public class MasterCodeServiceImpl implements MasterCodeService {
             String[] sortParts = sort.split(",");
             if (sortParts.length == 2) {
                 String property = sortParts[0].trim();
+                // Map entity property names to database column names for native queries
+                String columnName = mapPropertyToColumnName(property);
                 Sort.Direction direction = "desc".equalsIgnoreCase(sortParts[1].trim()) 
                         ? Sort.Direction.DESC 
                         : Sort.Direction.ASC;
-                return PageRequest.of(pageNumber, pageSize, Sort.by(direction, property));
+                return PageRequest.of(pageNumber, pageSize, Sort.by(direction, columnName));
             }
         }
 
-        return PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.ASC, "code"));
+        // Default sort uses database column name for native queries
+        return PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.ASC, "code_name"));
+    }
+
+    private Pageable buildUnpagedPageable(String sort) {
+        if (sort != null && !sort.isEmpty()) {
+            String[] sortParts = sort.split(",");
+            if (sortParts.length == 2) {
+                String property = sortParts[0].trim();
+                // Map entity property names to database column names for native queries
+                String columnName = mapPropertyToColumnName(property);
+                Sort.Direction direction = "desc".equalsIgnoreCase(sortParts[1].trim()) 
+                        ? Sort.Direction.DESC 
+                        : Sort.Direction.ASC;
+                // Use a very large page size to effectively get all results
+                return PageRequest.of(0, Integer.MAX_VALUE, Sort.by(direction, columnName));
+            }
+        }
+
+        // Default sort uses database column name for native queries, with large page size
+        return PageRequest.of(0, Integer.MAX_VALUE, Sort.by(Sort.Direction.ASC, "code_name"));
+    }
+
+    /**
+     * Maps entity property names (camelCase) to database column names (snake_case)
+     * for use with native queries
+     */
+    private String mapPropertyToColumnName(String property) {
+        return switch (property) {
+            case "codeName" -> "code_name";
+            case "parentId" -> "parent_id";
+            case "isDelete" -> "is_delete";
+            case "createdAt" -> "created_at";
+            case "updatedAt" -> "updated_at";
+            default -> property; // Assume property name matches column name (e.g., "code", "id")
+        };
     }
 
     private PageResponse<MasterCodeResponseDto> buildPageResponse(Page<MasterCodeEntity> pageResult) {

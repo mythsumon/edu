@@ -1,6 +1,6 @@
-import { useLocation, Link, useNavigate } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { useMemo, ReactNode } from "react";
-import { ArrowLeft } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -8,31 +8,31 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from "@/shared/ui/breadcrumb";
-import { Button } from "@/shared/ui/button";
 import { cn } from "@/shared/lib/cn";
 import { ROUTES } from "@/shared/constants/routes";
 
-// Route segment to display name mapping
-const routeSegmentMap: Record<string, string> = {
-  "master-code-setup": "Master Code Setup",
-  create: "Create",
-  edit: "Edit",
-  view: "View",
-  dashboard: "Dashboard",
-  "education-operations": "Education Operations",
-  "instructor-assignment": "Instructor Assignment",
-  "reference-information-management": "Reference Information Management",
-  "system-management": "System Management",
-  "account-management": "Account Management",
-  settings: "Settings",
-  institution: "Institution",
-  program: "Program",
-  instructor: "Instructor",
-  application: "Application",
-  allocation: "Allocation",
-  confirmation: "Confirmation",
-  admins: "Admins",
-  instructors: "Instructors",
+// Route segment to translation key mapping
+const routeSegmentTranslationMap: Record<string, string> = {
+  "master-code-setup": "breadcrumb.masterCodeSetup",
+  create: "breadcrumb.create",
+  edit: "breadcrumb.edit",
+  view: "breadcrumb.view",
+  dashboard: "breadcrumb.dashboard",
+  "education-operations": "breadcrumb.educationOperations",
+  "instructor-assignment": "breadcrumb.instructorAssignment",
+  "reference-information-management": "breadcrumb.referenceInformationManagement",
+  "system-management": "breadcrumb.systemManagement",
+  "account-management": "breadcrumb.accountManagement",
+  settings: "breadcrumb.settings",
+  institution: "breadcrumb.institution",
+  program: "breadcrumb.program",
+  instructor: "breadcrumb.instructor",
+  application: "breadcrumb.application",
+  allocation: "breadcrumb.allocation",
+  confirmation: "breadcrumb.confirmation",
+  admins: "breadcrumb.admins",
+  instructors: "breadcrumb.instructors",
+  training: "breadcrumb.training",
 };
 
 interface CustomBreadcrumbRoot {
@@ -46,6 +46,8 @@ interface PageLayoutProps {
   badge?: ReactNode;
   breadcrumbRoot?: string; // Root segment for breadcrumb (e.g., "master-code-setup") or "/" for "Home > [last segment]"
   customBreadcrumbRoot?: CustomBreadcrumbRoot; // Custom root path and label (e.g., { path: "/admin/dashboard", label: "Dashboard" })
+  customBreadcrumbLast?: string; // Custom label for the last breadcrumb item (overrides auto-generated from URL)
+  disableBreadcrumb?: boolean; // If true, breadcrumb will not be displayed
   children?: ReactNode;
 }
 
@@ -55,10 +57,12 @@ export const PageLayout = ({
   badge,
   breadcrumbRoot,
   customBreadcrumbRoot,
+  customBreadcrumbLast,
+  disableBreadcrumb,
   children,
 }: PageLayoutProps) => {
+  const { t } = useTranslation();
   const location = useLocation();
-  const navigate = useNavigate();
 
   // Build breadcrumb items from current path
   const breadcrumbItems = useMemo(() => {
@@ -76,12 +80,15 @@ export const PageLayout = ({
       }
 
       const lastSegment = pathSegments[pathSegments.length - 1];
-      const displayName =
-        routeSegmentMap[lastSegment] ||
-        lastSegment
-          .split("-")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ");
+      const lastTranslationKey = routeSegmentTranslationMap[lastSegment];
+      const displayName = customBreadcrumbLast
+        ? customBreadcrumbLast
+        : lastTranslationKey
+          ? t(lastTranslationKey)
+          : lastSegment
+              .split("-")
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(" ");
 
       return [
         {
@@ -115,12 +122,13 @@ export const PageLayout = ({
       }
 
       const lastSegment = pathSegments[pathSegments.length - 1];
-      const displayName =
-        routeSegmentMap[lastSegment] ||
-        lastSegment
-          .split("-")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ");
+      const slashTranslationKey = routeSegmentTranslationMap[lastSegment];
+      const displayName = slashTranslationKey
+        ? t(slashTranslationKey)
+        : lastSegment
+            .split("-")
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ");
 
       // Determine dashboard path based on route
       const dashboardPath = location.pathname.startsWith("/admin")
@@ -171,12 +179,14 @@ export const PageLayout = ({
 
     return relevantSegments.map((segment, index) => {
       const isLast = index === relevantSegments.length - 1;
-      const displayName =
-        routeSegmentMap[segment] ||
-        segment
-          .split("-")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ");
+      // Get translation key or fall back to formatted segment name
+      const translationKey = routeSegmentTranslationMap[segment];
+      const displayName = translationKey
+        ? t(translationKey)
+        : segment
+            .split("-")
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ");
 
       // Determine base path (admin or instructor)
       const basePath = location.pathname.startsWith("/admin")
@@ -196,32 +206,13 @@ export const PageLayout = ({
         key: `${segment}-${index}`,
       };
     });
-  }, [location.pathname, breadcrumbRoot, customBreadcrumbRoot]);
+  }, [location.pathname, breadcrumbRoot, customBreadcrumbRoot, customBreadcrumbLast, t]);
 
-  // Determine if this is a nested page (has more than one breadcrumb item)
-  const isNestedPage = breadcrumbItems.length > 1;
-  // Get parent route (second to last item if nested, or null)
-  const parentRoute =
-    isNestedPage && breadcrumbItems.length > 1
-      ? breadcrumbItems[breadcrumbItems.length - 2].path
-      : null;
 
   return (
-    <div className="space-y-1 px-5 py-6">
-      {/* Back Button - Only show on nested pages and when not hidden */}
-      {isNestedPage && parentRoute && (
-        <Button
-          variant="link"
-          size="sm"
-          onClick={() => navigate(parentRoute)}
-          className="text-muted-foreground hover:text-foreground p-0 h-auto"
-        >
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Back
-        </Button>
-      )}
+    <div className="space-y-1 pb-6">
       {/* Header Section: Title, Badge, and Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      <div className="flex sticky top-0 bg-background z-30 px-5 py-4 border-b border-border flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         {/* Left Side: Title, Badge */}
         <div className="space-y-1 flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -229,7 +220,7 @@ export const PageLayout = ({
             {badge && <div className="flex-shrink-0">{badge}</div>}
           </div>
           {/* Breadcrumb with optional back button */}
-          {breadcrumbItems.length > 0 && (
+          {!disableBreadcrumb && breadcrumbItems.length > 0 && (
             <div className="flex flex-col items-start gap-2">
               <Breadcrumb>
                 <BreadcrumbList>
@@ -273,7 +264,7 @@ export const PageLayout = ({
       </div>
 
       {/* Page Content */}
-      {children && <div>{children}</div>}
+      {children && <div className="px-5">{children}</div>}
     </div>
   );
 };

@@ -60,11 +60,11 @@ export const MasterCodeFolderCard = ({
       >
         {/* More Options Icon - Top Right */}
         {/* Always visible on mobile/tablet, hover-only on laptop and larger */}
-        <div className="absolute top-3 right-3 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity z-10">
+        <div className="absolute top-3 right-3 opacity-100 lg:group-hover:opacity-100 transition-opacity z-10">
           <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
             <PopoverTrigger asChild>
               <button
-                className="flex-shrink-0 p-1 rounded bg-muted lg:hover:bg-muted transition-colors"
+                className="flex-shrink-0 p-1 rounded lg:hover:bg-muted transition-colors"
                 onClick={(e) => e.stopPropagation()}
                 aria-label={t('sidebar.menu')}
               >

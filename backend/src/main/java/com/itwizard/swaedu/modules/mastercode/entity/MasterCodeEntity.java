@@ -14,8 +14,8 @@ public class MasterCodeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "code", nullable = false)
-    private Integer code;
+    @Column(name = "code", nullable = false, length = 255)
+    private String code;
 
     @Column(name = "code_name", nullable = false, length = 255)
     private String codeName;

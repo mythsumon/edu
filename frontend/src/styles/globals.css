@@ -4,6 +4,21 @@
 
 @layer base {
   :root {
+    /* Fluid Font Size System (using clamp for responsive scaling)
+     * xs:   12px - Captions, legal text, minor labels
+     * sm:   14px - Secondary text, sidebars, dense UI
+     * base: 16px - Default body text, main content
+     * lg:   18px - Large body text, sub-headers
+     * xl:   20px - Section headers, intro text
+     * 2xl:  24px - Article titles, prominent headlines
+     */
+    --font-size-xs: clamp(0.7rem, 0.65rem + 0.15vw, 0.75rem);
+    --font-size-sm: clamp(0.8rem, 0.75rem + 0.15vw, 0.875rem);
+    --font-size-base: clamp(0.9rem, 0.85rem + 0.2vw, 1rem);
+    --font-size-lg: clamp(1rem, 0.95rem + 0.2vw, 1.125rem);
+    --font-size-xl: clamp(1.1rem, 1rem + 0.25vw, 1.25rem);
+    --font-size-2xl: clamp(1.25rem, 1.15rem + 0.35vw, 1.5rem);
+
     --background: 210 20% 99%;
     --foreground: 222 84% 5%;
     --card: 210 20% 99%;
@@ -29,6 +44,8 @@
     --chart-3: 173 60% 40%;
     --chart-4: 197 40% 25%;
     --chart-5: 220 65% 50%;
+    --badge-background: 213 100% 96%;
+    --badge-foreground: 213 97% 31%;
   }
 
   .dark {
@@ -56,6 +73,8 @@
     --chart-3: 173 65% 50%;
     --chart-4: 197 50% 40%;
     --chart-5: 220 70% 60%;
+    --badge-background: 213 50% 25%;
+    --badge-foreground: 213 97% 65%;
   }
 }
 
@@ -72,3 +91,67 @@
   }
 }
 
+/* Custom Scrollbar Styles */
+* {
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.08) transparent;
+}
+
+*:hover {
+  scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+}
+
+/* Webkit browsers (Chrome, Edge, Safari) */
+*::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+  transition: width 0.2s ease, height 0.2s ease;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.08);
+  border-radius: 2px;
+  transition: background-color 0.2s ease;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.25);
+}
+
+*:hover::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+/* Dark mode scrollbar */
+.dark * {
+  scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+}
+
+.dark *:hover {
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+.dark *::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark *:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Badge/Tag background color for light and dark modes */
+@layer utilities {
+  .bg-badge {
+    background-color: hsl(var(--badge-background));
+  }
+  
+  .text-badge {
+    color: hsl(var(--badge-foreground));
+  }
+}

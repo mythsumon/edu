@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class MasterCodeResponseDto {
     private Long id;
-    private Integer code;
+    private String code;
     private String codeName;
     private Long parentId;
     private LocalDateTime createdAt;

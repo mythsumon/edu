@@ -30,8 +30,7 @@ public class AdminMapper {
         return AdminResponseDto.builder()
                 .userId(admin.getUserId())
                 .username(user != null ? user.getUsername() : null)
-                .firstName(admin.getFirstName())
-                .lastName(admin.getLastName())
+                .name(admin.getName())
                 .email(admin.getEmail())
                 .phone(admin.getPhone())
                 .profilePhoto(admin.getProfilePhoto())
@@ -46,8 +45,7 @@ public class AdminMapper {
         if (admin == null || dto == null) {
             return;
         }
-        admin.setFirstName(dto.getFirstName());
-        admin.setLastName(dto.getLastName());
+        admin.setName(dto.getName());
         admin.setEmail(dto.getEmail());
         admin.setPhone(dto.getPhone());
     }
@@ -59,11 +57,8 @@ public class AdminMapper {
         if (admin == null || dto == null) {
             return;
         }
-        if (dto.getFirstName() != null) {
-            admin.setFirstName(dto.getFirstName());
-        }
-        if (dto.getLastName() != null) {
-            admin.setLastName(dto.getLastName());
+        if (dto.getName() != null) {
+            admin.setName(dto.getName());
         }
         if (dto.getEmail() != null) {
             admin.setEmail(dto.getEmail());

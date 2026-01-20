@@ -11,9 +11,9 @@ import {
   BookOpen,
   Calendar,
   Users,
-  ClipboardList,
-  Award,
-  Code2,
+  FileCode,
+  Building2,
+  GraduationCap,
 } from "lucide-react";
 import logoImage from "@/assets/images/logo/logo.png";
 
@@ -89,15 +89,50 @@ export const Sidebar = () => {
             href: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_INSTRUCTORS_FULL,
             icon: Users,
           },
+          {
+            nameKey: "sidebar.teacherAccounts",
+            href: ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_FULL,
+            icon: Users,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.institution",
+        items: [
+          {
+            nameKey: "sidebar.institutionManagement",
+            href: ROUTES.ADMIN_INSTITUTION_FULL,
+            icon: Building2,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.program",
+        items: [
+          {
+            nameKey: "sidebar.programManagement",
+            href: ROUTES.ADMIN_PROGRAM_MANAGEMENT_FULL,
+            icon: BookOpen,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.training",
+        items: [
+          {
+            nameKey: "sidebar.trainingManagement",
+            href: ROUTES.ADMIN_TRAINING_FULL,
+            icon: GraduationCap,
+          },
         ],
       },
       {
         titleKey: "sidebar.system",
         items: [
           {
-            nameKey: "sidebar.masterCodeSetup",
-            href: ROUTES.ADMIN_MASTER_CODE_SETUP_FULL,
-            icon: Code2,
+            nameKey: "sidebar.commonCode",
+            href: ROUTES.ADMIN_COMMON_CODE_FULL,
+            icon: FileCode,
           },
         ],
       },
@@ -113,38 +148,53 @@ export const Sidebar = () => {
         items: [
           {
             nameKey: "sidebar.dashboard",
-            href: ROUTES.INSTRUCTOR_DASHBOARD,
+            href: ROUTES.INSTRUCTOR_DASHBOARD_FULL,
             icon: LayoutDashboard,
-          },
-          {
-            nameKey: "sidebar.myClasses",
-            href: ROUTES.EDUCATION_OPERATIONS,
-            icon: BookOpen,
-          },
-          {
-            nameKey: "sidebar.mySchedule",
-            href: ROUTES.INSTRUCTOR_ASSIGNMENT,
-            icon: Calendar,
-          },
-          {
-            nameKey: "sidebar.myStudents",
-            href: ROUTES.REFERENCE_INFORMATION_MANAGEMENT,
-            icon: Users,
           },
         ],
       },
       {
-        titleKey: "sidebar.academic",
+        titleKey: "sidebar.lecture",
         items: [
           {
-            nameKey: "sidebar.attendance",
-            href: ROUTES.SYSTEM_MANAGEMENT,
-            icon: ClipboardList,
+            nameKey: "sidebar.myLectureList",
+            href: ROUTES.INSTRUCTOR_SCHEDULE_LIST_FULL,
+            icon: Calendar,
           },
           {
-            nameKey: "sidebar.grades",
-            href: ROUTES.SETTINGS_AND_USER_MANAGEMENT,
-            icon: Award,
+            nameKey: "sidebar.checkConfirmedClasses",
+            href: ROUTES.INSTRUCTOR_SCHEDULE_CONFIRMED_FULL,
+            icon: Calendar,
+          },
+          {
+            nameKey: "sidebar.ongoingTraining",
+            href: ROUTES.INSTRUCTOR_SCHEDULE_ONGOING_FULL,
+            icon: Calendar,
+          },
+          {
+            nameKey: "sidebar.completedTraining",
+            href: ROUTES.INSTRUCTOR_SCHEDULE_COMPLETED_FULL,
+            icon: Calendar,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.applyForLecture",
+        items: [
+          {
+            nameKey: "sidebar.trainingScheduledToOpen",
+            href: ROUTES.INSTRUCTOR_APPLY_UPCOMING_FULL,
+            icon: BookOpen,
+          },
+          {
+            nameKey: "sidebar.applyForLecture",
+            href: ROUTES.INSTRUCTOR_APPLY_OPEN_FULL,
+            icon: BookOpen,
+          },
+          {
+            nameKey: "sidebar.trainingsIAppliedFor",
+            href: ROUTES.INSTRUCTOR_APPLY_MINE_FULL,
+            icon: BookOpen,
           },
         ],
       },
@@ -291,7 +341,7 @@ export const Sidebar = () => {
                             "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors",
                             sidebarCollapsed ? "justify-center" : "",
                             isActive
-                              ? "bg-primary text-primary-foreground"
+                              ? "bg-badge text-primary font-semibold"
                               : "text-foreground hover:bg-muted"
                           )}
                         >

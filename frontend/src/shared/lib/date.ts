@@ -18,7 +18,15 @@ export function formatDate(date: Date | string, options?: Intl.DateTimeFormatOpt
  */
 export function formatDateDot(date: Date | string): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date
-  return formatDateFns(dateObj, 'yyyy.MM.dd')
+  return formatDateFns(dateObj, 'MM.dd.yyyy')
+}
+
+/**
+ * Format date to MM/DD/YYYY format
+ */
+export function formatDateSlash(date: Date | string): string {
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  return formatDateFns(dateObj, 'MM/dd/yyyy')
 }
 
 /**

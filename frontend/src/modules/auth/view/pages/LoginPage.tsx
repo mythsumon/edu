@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
-import { User, Lock, Eye, EyeOff, Check } from "lucide-react";
+import { Eye, EyeOff, Check } from "lucide-react";
+import { Label } from "@/shared/ui/label";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import {
@@ -23,11 +24,11 @@ import { useAuthStore } from "@/shared/stores/auth.store";
 import { useUiStore } from "@/shared/stores/ui.store";
 import { ROUTES } from "@/shared/constants/routes";
 import { STORAGE_KEYS } from "@/shared/constants/storageKeys";
-import { loginSchema, type LoginFormData } from "../../model/auth.schema";
+import { createLoginSchema, type LoginFormData } from "../../model/auth.schema";
 import { useLoginMutation } from "../../controller/mutations";
-import bgLoginImage from "@/assets/images/background/bg-login.png";
 import logoImage from "@/assets/images/logo/logo.png";
 import i18n from "@/app/config/i18n";
+import { cn } from "@/shared/lib/cn";
 
 const languages = [
   { code: "en", name: "English", flag: "🇺🇸" },
@@ -44,6 +45,10 @@ export const LoginPage = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const loginMutation = useLoginMutation();
+
+  // Create schema with current language translations
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const loginSchema = useMemo(() => createLoginSchema(), [language]);
 
   const handleLanguageChange = (langCode: "en" | "ko") => {
     setLanguage(langCode);
@@ -112,28 +117,14 @@ export const LoginPage = () => {
   return (
     <div
       className={`min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden ${
-        theme === "dark" ? "bg-background" : ""
+        theme === "dark" ? "bg-background" : "bg-white"
       }`}
     >
-      {/* Background Image - Only in light mode */}
-      {theme === "light" && (
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url(${bgLoginImage})`,
-          }}
-        />
-      )}
-
       {/* Language Switcher - Top Right */}
       <div className="absolute top-4 right-4 z-20">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-x-2 "
-            >
+            <Button variant="outline" size="sm" className="gap-x-2 ">
               <span className="hidden sm:inline">{currentLanguage.flag}</span>
               <span className="hidden sm:inline">{currentLanguage.name}</span>
             </Button>
@@ -167,11 +158,7 @@ export const LoginPage = () => {
       <div className="w-full max-w-md relative z-10">
         {/* Logo above the card */}
         <div className="flex items-center justify-center mb-0">
-          <img
-            src={logoImage}
-            alt={t("auth.title")}
-            className="w-48 h-auto"
-          />
+          <img src={logoImage} alt={t("auth.title")} className="w-48 h-auto" />
         </div>
 
         {/* Login Card - Glassmorphism Effect */}
@@ -183,7 +170,7 @@ export const LoginPage = () => {
           }}
         >
           {/* Header */}
-          <h2 className="text-2xl font-semibold text-foreground mb-2 text-center">
+          <h2 className="text-xl font-semibold text-foreground mb-2 text-center">
             {t("auth.loginTitle")}
           </h2>
           <p className="text-sm text-muted-foreground mb-8 text-center">
@@ -192,19 +179,22 @@ export const LoginPage = () => {
 
           {/* Login Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            {/* Username Input */}
+            {/* User ID Input */}
             <div className="space-y-2">
+              <Label htmlFor="username">{t("auth.userId")}</Label>
               <Input
                 id="username"
                 type="text"
                 placeholder={t("auth.usernamePlaceholder")}
-                icon={<User className="h-4 w-4" />}
                 {...register("username")}
-                className={errors.username ? "ring-2 ring-destructive" : ""}
+                className={cn(
+                  "h-12 rounded-lg bg-background",
+                  errors.username ? "ring-2 ring-destructive" : ""
+                )}
                 disabled={loginMutation.isPending}
               />
               {errors.username && (
-                <p className="text-sm text-destructive px-1">
+                <p className="text-xs text-destructive px-1">
                   {errors.username.message}
                 </p>
               )}
@@ -212,16 +202,17 @@ export const LoginPage = () => {
 
             {/* Password Input */}
             <div className="space-y-2">
+              <Label htmlFor="password">{t("auth.password")}</Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder={t("auth.passwordPlaceholder")}
-                  icon={<Lock className="h-4 w-4" />}
                   {...register("password")}
-                  className={
+                  className={cn(
+                    "h-12 rounded-lg bg-background",
                     errors.password ? "ring-2 ring-destructive pr-12" : "pr-12"
-                  }
+                  )}
                   disabled={loginMutation.isPending}
                 />
                 <button
@@ -230,7 +221,7 @@ export const LoginPage = () => {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   disabled={loginMutation.isPending}
                 >
-                  {showPassword ? (
+                  {!showPassword ? (
                     <EyeOff className="h-4 w-4" />
                   ) : (
                     <Eye className="h-4 w-4" />
@@ -238,7 +229,7 @@ export const LoginPage = () => {
                 </button>
               </div>
               {errors.password && (
-                <p className="text-sm text-destructive px-1">
+                <p className="text-xs text-destructive px-1">
                   {errors.password.message}
                 </p>
               )}
@@ -248,7 +239,7 @@ export const LoginPage = () => {
             <Button
               type="submit"
               className="w-full mt-8"
-              size="default"
+              size="lg"
               disabled={loginMutation.isPending}
             >
               {loginMutation.isPending

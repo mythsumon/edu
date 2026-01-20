@@ -16,13 +16,9 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class InstructorUpdateDto {
 
-    @NotBlank(message = "First name is required")
-    @Size(min = 1, max = 255, message = "First name must be between 1 and 255 characters")
-    private String firstName;
-
-    @NotBlank(message = "Last name is required")
-    @Size(min = 1, max = 255, message = "Last name must be between 1 and 255 characters")
-    private String lastName;
+    @NotBlank(message = "Name is required")
+    @Size(min = 1, max = 255, message = "Name must be between 1 and 255 characters")
+    private String name;
 
     @Email(message = "Email must be valid")
     private String email;
@@ -35,7 +31,7 @@ public class InstructorUpdateDto {
 
     private Long regionId;
 
-    private String city;
+    private Long cityId;
 
     private String street;
 
@@ -44,4 +40,6 @@ public class InstructorUpdateDto {
     private Long statusId;
 
     private Long classificationId;
+
+    private String affiliation;
 }

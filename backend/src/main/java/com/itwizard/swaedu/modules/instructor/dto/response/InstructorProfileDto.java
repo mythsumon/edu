@@ -12,18 +12,18 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InstructorProfileDto {
-    private String firstName;
-    private String lastName;
+    private String name;
     private String email;
     private String phone;
     private String gender;
     private LocalDate dob;
     private Long regionId;
-    private String city;
+    private Long cityId;
     private String street;
     private String detailAddress;
     private Long statusId;
     private Long classificationId;
+    private String affiliation;
     private String signature;
     private String profilePhoto;
 }

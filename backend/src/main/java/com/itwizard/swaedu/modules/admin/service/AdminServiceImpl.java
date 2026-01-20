@@ -15,6 +15,9 @@ import com.itwizard.swaedu.modules.auth.repository.RoleRepository;
 import com.itwizard.swaedu.modules.auth.repository.UserRepository;
 import com.itwizard.swaedu.util.PageResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +26,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -57,8 +64,7 @@ public class AdminServiceImpl implements AdminService {
         // Create admin profile
         Admin admin = new Admin();
         admin.setUser(savedUser);
-        admin.setFirstName(request.getFirstName());
-        admin.setLastName(request.getLastName());
+        admin.setName(request.getName());
         admin.setEmail(request.getEmail());
         admin.setPhone(request.getPhone());
 
@@ -79,12 +85,30 @@ public class AdminServiceImpl implements AdminService {
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with userId: " + userId));
         return AdminMapper.toResponseDto(admin);
     }
+    
+    @Override
+    public AdminResponseDto getAdminByUsername(String username) {
+        Admin admin = adminRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found with username: " + username));
+        return AdminMapper.toResponseDto(admin);
+    }
 
     @Override
     @Transactional
     public AdminResponseDto updateAdmin(Long userId, AdminUpdateDto request) {
         Admin admin = adminRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with userId: " + userId));
+        
+        AdminMapper.updateEntityFromDto(admin, request);
+        Admin updatedAdmin = adminRepository.save(admin);
+        return AdminMapper.toResponseDto(updatedAdmin);
+    }
+    
+    @Override
+    @Transactional
+    public AdminResponseDto updateAdminByUsername(String username, AdminUpdateDto request) {
+        Admin admin = adminRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found with username: " + username));
         
         AdminMapper.updateEntityFromDto(admin, request);
         Admin updatedAdmin = adminRepository.save(admin);
@@ -110,6 +134,50 @@ public class AdminServiceImpl implements AdminService {
         
         // Delete admin (cascade will delete user due to orphanRemoval = true)
         adminRepository.delete(admin);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void exportAdminsToExcel(OutputStream outputStream, String q) throws IOException {
+        // Use SXSSFWorkbook for streaming Excel export (memory-efficient)
+        // Window size of 100: keeps only last 100 rows in memory, flushes older rows to temp files
+        try (SXSSFWorkbook workbook = new SXSSFWorkbook(100)) {
+            // Compress temp files to reduce disk space usage
+            workbook.setCompressTempFiles(true);
+
+            Sheet sheet = workbook.createSheet("Admins");
+
+            // Create header row
+            Row headerRow = sheet.createRow(0);
+            int colNum = 0;
+            headerRow.createCell(colNum++).setCellValue("Name");
+            headerRow.createCell(colNum++).setCellValue("Username");
+            headerRow.createCell(colNum++).setCellValue("Email");
+            headerRow.createCell(colNum++).setCellValue("Phone");
+
+            // Stream data from database and write rows
+            AtomicInteger rowNum = new AtomicInteger(1);
+            try (Stream<Admin> adminStream = adminRepository.streamForExport(q)) {
+                
+                adminStream.forEach(admin -> {
+                    Row row = sheet.createRow(rowNum.getAndIncrement());
+                    int cellNum = 0;
+                    
+                    // Name
+                    row.createCell(cellNum++).setCellValue(admin.getName() != null ? admin.getName() : "");
+                    // Username
+                    row.createCell(cellNum++).setCellValue(admin.getUser() != null && admin.getUser().getUsername() != null ? admin.getUser().getUsername() : "");
+                    // Email
+                    row.createCell(cellNum++).setCellValue(admin.getEmail() != null ? admin.getEmail() : "");
+                    // Phone
+                    row.createCell(cellNum++).setCellValue(admin.getPhone() != null ? admin.getPhone() : "");
+                });
+            }
+
+            // Write workbook to output stream
+            workbook.write(outputStream);
+            workbook.dispose(); // Clean up temp files
+        }
     }
 
     // Private helper methods

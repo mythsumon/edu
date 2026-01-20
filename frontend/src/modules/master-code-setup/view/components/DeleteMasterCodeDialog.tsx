@@ -38,13 +38,13 @@ export const DeleteMasterCodeDialog = ({
       await deleteMutation.mutateAsync(code.id);
       toast({
         title: t('masterCode.deleteSuccess'),
-        variant: 'default',
+        variant: 'success',
       });
       onOpenChange(false);
     } catch (error) {
       toast({
         title: t('masterCode.deleteError'),
-        variant: 'destructive',
+        variant: 'error',
       });
     }
   };

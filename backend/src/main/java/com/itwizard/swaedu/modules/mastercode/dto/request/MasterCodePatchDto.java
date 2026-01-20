@@ -12,7 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MasterCodePatchDto {
 
-    private Integer code; // Optional for partial update
+    @Size(max = 255, message = "Code must not exceed 255 characters")
+    private String code; // Optional for partial update
 
     @Size(max = 255, message = "Code name must not exceed 255 characters")
     private String codeName; // Optional for partial update
