@@ -3,9 +3,9 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/shared/ui/card'
-import { FormInputField } from '@/modules/account-management/view/components/FormInputField'
-import { FormField } from '@/modules/account-management/view/components/FormField'
-import { FormDatePickerField } from '@/modules/account-management/view/components/FormDatePickerField'
+import { FormInputField } from './FormInputField'
+import { FormField } from './FormField'
+import { FormDatePickerField } from './FormDatePickerField'
 import { CustomDropdownField, type DropdownOption } from '@/shared/components/CustomDropdown'
 import { Input } from '@/shared/ui/input'
 import { useToast } from '@/shared/ui/use-toast'
@@ -67,6 +67,9 @@ export const InstructorProfileEditView = ({
   const internalFormRef = useRef<HTMLFormElement>(null)
   const formRef = externalFormRef || internalFormRef
 
+  // Suppress unused variable warning - cities may be used in future
+  void cities
+
   const {
     register,
     handleSubmit,
@@ -95,12 +98,12 @@ export const InstructorProfileEditView = ({
 
   const interfaceLanguageValue = watch('interfaceLanguage')
   const genderValue = watch('gender')
-  const selectedCityId = watch('regionId') // regionId field stores cityId
-  const districtIdValue = watch('cityId') // cityId field stores districtId
+  const selectedRegionId = watch('regionId')
+  const cityIdValue = watch('cityId')
 
   // Pre-fill form with instructor data
   useEffect(() => {
-    if (regions.length > 0) {
+    if (districts.length > 0 || instructor.regionId) {
       const defaultCityId = instructor.cityId 
         ? String(instructor.cityId) 
         : (cityMasterCode?.items?.[0]?.id ? String(cityMasterCode.items[0].id) : '')
@@ -117,7 +120,7 @@ export const InstructorProfileEditView = ({
         interfaceLanguage: language || 'ko',
       })
     }
-  }, [reset, instructor, regions.length, cityMasterCode, language])
+  }, [reset, instructor, districts.length, cityMasterCode, language])
 
   // Set cityId when cityMasterCode loads if not already set
   useEffect(() => {
@@ -132,53 +135,54 @@ export const InstructorProfileEditView = ({
   }, [isSubmitting, onSubmittingChange])
 
   // Handle form submission
-  const onSubmit = async (data: UpdateInstructorProfileFormData) => {
-    try {
-      // Update interface language if changed
-      if (data.interfaceLanguage !== language) {
-        setLanguage(data.interfaceLanguage as 'en' | 'ko')
-        i18n.changeLanguage(data.interfaceLanguage)
-      }
-
-      // Prepare request data
-      const requestData = {
-        name: data.name,
-        phone: data.phone,
-        gender: data.gender,
-        dob: data.dob,
-        regionId: data.regionId ? Number(data.regionId) : undefined,
-        cityId: data.cityId ? Number(data.cityId) : undefined,
-        street: data.street,
-        detailAddress: data.detailAddress,
-      }
-
-      // Call mutation
-      await patchInstructorMutation.mutateAsync(requestData)
-
-      // Show success message
-      toast({
-        title: t('common.success'),
-        description: t('profile.updateSuccess'),
-        variant: 'success',
-      })
-
-      // Call success callback to close edit mode
-      onSuccess()
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : typeof error === 'object' && error !== null && 'message' in error
-            ? String(error.message)
-            : t('profile.updateError')
-
-      toast({
-        title: t('common.error'),
-        description: errorMessage,
-        variant: 'error',
-      })
-      console.error('Failed to update profile:', error)
+  const onSubmit = (data: UpdateInstructorProfileFormData) => {
+    // Update interface language if changed
+    if (data.interfaceLanguage !== language) {
+      setLanguage(data.interfaceLanguage as 'en' | 'ko')
+      i18n.changeLanguage(data.interfaceLanguage)
     }
+
+    // Prepare request data
+    const requestData = {
+      name: data.name,
+      phone: data.phone,
+      gender: data.gender,
+      dob: data.dob,
+      regionId: data.regionId ? Number(data.regionId) : undefined,
+      cityId: data.cityId ? Number(data.cityId) : undefined,
+      street: data.street,
+      detailAddress: data.detailAddress,
+    }
+
+    // Call mutation with callbacks
+    patchInstructorMutation.mutate(requestData, {
+      onSuccess: () => {
+        // Show success message
+        toast({
+          title: t('common.success'),
+          description: t('profile.updateSuccess'),
+          variant: 'success',
+        })
+
+        // Call success callback to close edit mode
+        onSuccess()
+      },
+      onError: (error: unknown) => {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : typeof error === 'object' && error !== null && 'message' in error
+              ? String((error as { message: string }).message)
+              : t('profile.updateError')
+
+        toast({
+          title: t('common.error'),
+          description: errorMessage,
+          variant: 'error',
+        })
+        console.error('Failed to update profile:', error)
+      },
+    })
   }
 
   // Transform options to DropdownOption format
@@ -188,8 +192,8 @@ export const InstructorProfileEditView = ({
   )
 
   const regionOptions: DropdownOption[] = useMemo(
-    () => regions.map((region: { id: number; codeName: string }) => ({ value: String(region.id), label: region.codeName || '' })),
-    [regions]
+    () => districts.map((region: { id: number; codeName: string }) => ({ value: String(region.id), label: region.codeName || '' })),
+    [districts]
   )
 
   return (
@@ -287,7 +291,7 @@ export const InstructorProfileEditView = ({
                   onChange={(value) => setValue('regionId', value, { shouldValidate: true })}
                   placeholder={t('accountManagement.regionPlaceholder')}
                   options={regionOptions}
-                  disabled={isSubmitting || isLoadingRegions}
+                  disabled={isSubmitting || isLoadingCities}
                   hasError={!!errors.regionId}
                 />
               </FormField>
