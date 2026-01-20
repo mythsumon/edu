@@ -37,9 +37,9 @@ interface InstructorProfileEditViewProps {
   }
   cityMasterCode?: PageResponse<MasterCodeResponseDto>
   cityMasterCodeMap: Record<string, Omit<MasterCodeResponseDto, 'id'>>
-  regions: Array<{ id: number; codeName: string }>
   cities: Array<{ id: number; codeName: string }>
-  isLoadingRegions: boolean
+  districts: Array<{ id: number; codeName: string }>
+  isLoadingCities: boolean
   language: string
   onSuccess: () => void
   getInitials: (name: string) => string
@@ -51,8 +51,9 @@ export const InstructorProfileEditView = ({
   instructor,
   cityMasterCode,
   cityMasterCodeMap,
-  regions,
-  isLoadingRegions,
+  cities,
+  districts,
+  isLoadingCities,
   language,
   onSuccess,
   getInitials,
@@ -94,8 +95,8 @@ export const InstructorProfileEditView = ({
 
   const interfaceLanguageValue = watch('interfaceLanguage')
   const genderValue = watch('gender')
-  const selectedRegionId = watch('regionId')
-  const cityIdValue = watch('cityId')
+  const selectedCityId = watch('regionId') // regionId field stores cityId
+  const districtIdValue = watch('cityId') // cityId field stores districtId
 
   // Pre-fill form with instructor data
   useEffect(() => {

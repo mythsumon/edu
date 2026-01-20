@@ -844,7 +844,8 @@
     "validation": {
       "oldPasswordRequired": "Old password is required",
       "newPasswordRequired": "New password is required",
-      "newPasswordMinLength": "New password must be at least 6 characters",
+      "newPasswordMinLength": "New password must be at least 8 characters",
+      "newPasswordMaxLength": "New password must be at most 100 characters",
       "confirmPasswordRequired": "Please confirm your new password",
       "passwordsDoNotMatch": "Passwords do not match"
     }

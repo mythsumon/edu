@@ -231,21 +231,6 @@ export const Sidebar = () => {
           },
         ],
       },
-      {
-        titleKey: "sidebar.myAccount",
-        items: [
-          {
-            nameKey: "sidebar.accountSettings",
-            href: ROUTES.INSTRUCTOR_ACCOUNT_SETTINGS_FULL,
-            icon: KeyRound,
-          },
-          {
-            nameKey: "sidebar.profileSettings",
-            href: ROUTES.INSTRUCTOR_PROFILE_SETTINGS_FULL,
-            icon: UserCircle,
-          },
-        ],
-      },
     ],
     []
   );
