@@ -115,3 +115,24 @@ export const patchInstructor = async (
   )
   return response.data.data
 }
+
+/**
+ * Upload signature image for current instructor
+ * Endpoint: POST /api/v1/instructor/me/signature
+ * Content-Type: multipart/form-data
+ */
+export const uploadSignature = async (file: File): Promise<InstructorResponseDto> => {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await axiosInstance.post<ApiResponse<InstructorResponseDto>>(
+    INSTRUCTOR_PROFILE_ENDPOINTS.instructor.uploadSignature(),
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  )
+  return response.data.data
+}

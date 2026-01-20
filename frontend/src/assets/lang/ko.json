@@ -835,8 +835,8 @@
     "signatureUploadPending": "서명 업로드는 곧 구현될 예정입니다",
     "validation": {
       "interfaceLanguageRequired": "인터페이스 언어는 필수입니다",
-      "invalidImageType": "유효한 이미지 파일을 선택하세요",
-      "imageTooLarge": "이미지 크기는 5MB 미만이어야 합니다",
+      "invalidImageType": "유효하지 않은 파일 형식입니다. 허용된 형식: image/jpeg, image/jpg, image/png, image/gif, image/webp",
+      "imageTooLarge": "파일 크기가 최대 허용 크기 10MB를 초과합니다",
       "fileReadError": "파일 읽기에 실패했습니다"
     }
   },

@@ -43,14 +43,19 @@ export const InstructorAccountSettingsPage = () => {
       },
       {
         onSuccess: () => {
+          // Show success toast
           toast({
             title: t('common.success'),
             description: t('accountSettings.updateSuccess'),
             variant: 'success',
           })
           reset()
-          // Logout after successful password change
-          logoutMutation.mutate()
+          
+          // Logout after a short delay to ensure toast is visible
+          setTimeout(() => {
+            console.log('[InstructorAccountSettingsPage] Password changed successfully, logging out...')
+            logoutMutation.mutate()
+          }, 1500) // 1.5 second delay to show toast
         },
         onError: (error: unknown) => {
           const errorMessage =

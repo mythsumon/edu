@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { updateInstructor, patchInstructor, patchInstructorMe } from '../model/instructor-profile.service'
+import { updateInstructor, patchInstructor, patchInstructorMe, uploadSignature } from '../model/instructor-profile.service'
 import type {
   InstructorUpdateRequestDto,
   InstructorPatchRequestDto,
@@ -55,6 +55,24 @@ export const usePatchInstructorMe = () => {
     },
     onSuccess: () => {
       // Invalidate instructor me query after patch
+      queryClient.invalidateQueries({ queryKey: instructorProfileQueryKeys.instructorMe() })
+    },
+  })
+}
+
+/**
+ * Upload signature image mutation hook
+ * Endpoint: POST /api/v1/instructor/me/signature
+ */
+export const useUploadSignature = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (file: File) => {
+      return await uploadSignature(file)
+    },
+    onSuccess: () => {
+      // Invalidate instructor me query after upload
       queryClient.invalidateQueries({ queryKey: instructorProfileQueryKeys.instructorMe() })
     },
   })

@@ -48,6 +48,12 @@ export const INSTRUCTOR_PROFILE_ENDPOINTS = {
     patchMe: () => '/instructor/me',
     
     /**
+     * Upload signature image for current instructor
+     * POST /api/v1/instructor/me/signature
+     */
+    uploadSignature: () => '/instructor/me/signature',
+    
+    /**
      * Update instructor (PUT - full update)
      * PUT /api/v1/instructor/{userId}
      */

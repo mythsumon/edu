@@ -5,7 +5,6 @@ import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { Edit, Save, X } from 'lucide-react'
 import { PageLayout } from '@/app/layout/PageLayout'
 import { Button } from '@/shared/ui/button'
-import { useUiStore } from '@/shared/stores/ui.store'
 import { 
   masterCodeChildrenByCodeQueryOptions,
   masterCodeGrandChildrenByCodeQueryOptions,
@@ -18,7 +17,6 @@ import { InstructorProfileEditView } from '../components/InstructorProfileEditVi
 
 export const InstructorProfilePage = () => {
   const { t } = useTranslation()
-  const { language } = useUiStore()
   const [isEditMode, setIsEditMode] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
@@ -235,19 +233,18 @@ export const InstructorProfilePage = () => {
     >
       <ErrorBoundary>
         {isEditMode ? (
-          <InstructorProfileEditView
-            instructor={instructor}
-            cityMasterCode={instructorCity}
-            cityMasterCodeMap={cityMasterCodeMap}
-            districts={regions}
-            cities={cities}
-            isLoadingCities={isLoadingRegions}
-            language={language}
-            onSuccess={handleSuccess}
-            getInitials={getInitials}
-            formRef={formRef}
-            onSubmittingChange={setIsSubmitting}
-          />
+        <InstructorProfileEditView
+          instructor={instructor}
+          cityMasterCode={instructorCity}
+          cityMasterCodeMap={cityMasterCodeMap}
+          districts={regions}
+          cities={cities}
+          isLoadingCities={isLoadingRegions}
+          onSuccess={handleSuccess}
+          getInitials={getInitials}
+          formRef={formRef}
+          onSubmittingChange={setIsSubmitting}
+        />
         ) : (
           <InstructorProfileDetailView
             instructor={instructor}
@@ -255,7 +252,6 @@ export const InstructorProfilePage = () => {
             cityName={cityName}
             statusName={statusName}
             classificationName={classificationName}
-            language={language}
             getInitials={getInitials}
           />
         )}

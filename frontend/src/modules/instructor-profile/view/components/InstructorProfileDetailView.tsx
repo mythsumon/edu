@@ -10,11 +10,6 @@ import { StatusBadge } from '@/shared/components/StatusBadge'
 import { ClassificationBadge } from '@/shared/components/ClassificationBadge'
 import { SignatureUploadDialog } from './SignatureUploadDialog'
 
-const INTERFACE_LANGUAGES = [
-  { value: 'en', label: 'English' },
-  { value: 'ko', label: '한국어' },
-]
-
 interface InstructorProfileDetailViewProps {
   instructor: {
     id: number
@@ -35,7 +30,6 @@ interface InstructorProfileDetailViewProps {
   cityName: string
   statusName: string
   classificationName: string
-  language: string
   getInitials: (name: string) => string
 }
 
@@ -45,7 +39,6 @@ export const InstructorProfileDetailView = ({
   cityName,
   statusName,
   classificationName,
-  language,
   getInitials,
 }: InstructorProfileDetailViewProps) => {
   const { t } = useTranslation()
@@ -193,16 +186,6 @@ export const InstructorProfileDetailView = ({
               <div className="mt-1">
                 <ClassificationBadge classification={classificationName} />
               </div>
-            </div>
-
-            {/* Interface Language */}
-            <div>
-              <Label className="text-sm font-medium text-muted-foreground">
-                {t('profile.interfaceLanguage')}
-              </Label>
-              <p className="mt-1 text-sm text-foreground">
-                {INTERFACE_LANGUAGES.find((lang) => lang.value === language)?.label || language}
-              </p>
             </div>
           </div>
         </div>

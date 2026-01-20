@@ -14,13 +14,6 @@ import { GENDER_OPTIONS } from '@/shared/constants/users'
 import type { MasterCodeResponseDto } from '../../model/instructor-profile.types'
 import type { PageResponse } from '@/shared/http/types/common'
 import { usePatchInstructorMe } from '../../controller/mutations'
-import { useUiStore } from '@/shared/stores/ui.store'
-import i18n from '@/app/config/i18n'
-
-const INTERFACE_LANGUAGES: DropdownOption[] = [
-  { value: 'en', label: 'English' },
-  { value: 'ko', label: '한국어' },
-]
 
 interface InstructorProfileEditViewProps {
   instructor: {
@@ -40,7 +33,6 @@ interface InstructorProfileEditViewProps {
   cities: Array<{ id: number; codeName: string }>
   districts: Array<{ id: number; codeName: string }>
   isLoadingCities: boolean
-  language: string
   onSuccess: () => void
   getInitials: (name: string) => string
   formRef?: React.RefObject<HTMLFormElement>
@@ -54,7 +46,6 @@ export const InstructorProfileEditView = ({
   cities,
   districts,
   isLoadingCities,
-  language,
   onSuccess,
   getInitials,
   formRef: externalFormRef,
@@ -62,7 +53,6 @@ export const InstructorProfileEditView = ({
 }: InstructorProfileEditViewProps) => {
   const { t } = useTranslation()
   const { toast } = useToast()
-  const { setLanguage } = useUiStore()
   const patchInstructorMutation = usePatchInstructorMe()
   const internalFormRef = useRef<HTMLFormElement>(null)
   const formRef = externalFormRef || internalFormRef
@@ -90,13 +80,11 @@ export const InstructorProfileEditView = ({
       cityId: '',
       street: '',
       detailAddress: '',
-      interfaceLanguage: language || 'ko',
     },
   })
 
   const isSubmitting = patchInstructorMutation.isPending
 
-  const interfaceLanguageValue = watch('interfaceLanguage')
   const genderValue = watch('gender')
   const selectedRegionId = watch('regionId')
 
@@ -116,10 +104,9 @@ export const InstructorProfileEditView = ({
         cityId: defaultCityId,
         street: instructor.street || '',
         detailAddress: instructor.detailAddress || '',
-        interfaceLanguage: language || 'ko',
       })
     }
-  }, [reset, instructor, districts.length, cityMasterCode, language])
+  }, [reset, instructor, districts.length, cityMasterCode])
 
   // Set cityId when cityMasterCode loads if not already set
   useEffect(() => {
@@ -135,12 +122,6 @@ export const InstructorProfileEditView = ({
 
   // Handle form submission
   const onSubmit = (data: UpdateInstructorProfileFormData) => {
-    // Update interface language if changed
-    if (data.interfaceLanguage !== language) {
-      setLanguage(data.interfaceLanguage as 'en' | 'ko')
-      i18n.changeLanguage(data.interfaceLanguage)
-    }
-
     // Prepare request data
     const requestData = {
       name: data.name,
@@ -344,23 +325,6 @@ export const InstructorProfileEditView = ({
                 isSubmitting={isSubmitting}
               />
 
-              {/* Interface Language */}
-              <FormField
-                id="interfaceLanguage"
-                label={t('profile.interfaceLanguage')}
-                required
-                error={errors.interfaceLanguage}
-              >
-                <CustomDropdownField
-                  id="interfaceLanguage"
-                  value={interfaceLanguageValue || ''}
-                  onChange={(value) => setValue('interfaceLanguage', value, { shouldValidate: true })}
-                  placeholder={t('profile.selectLanguage')}
-                  options={INTERFACE_LANGUAGES}
-                  disabled={isSubmitting}
-                  hasError={!!errors.interfaceLanguage}
-                />
-              </FormField>
             </div>
           </form>
         </div>

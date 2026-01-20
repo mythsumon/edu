@@ -31,9 +31,6 @@ export const updateInstructorProfileSchema = (t: (key: string) => string) => z.o
     .string()
     .min(1, t('accountManagement.validation.buildingNameLakeNumberRequired'))
     .max(255, t('accountManagement.validation.buildingNameLakeNumberMaxLength')),
-  interfaceLanguage: z
-    .string()
-    .min(1, t('profile.validation.interfaceLanguageRequired')),
 })
 
 export type UpdateInstructorProfileFormData = z.infer<ReturnType<typeof updateInstructorProfileSchema>>

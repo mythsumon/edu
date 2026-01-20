@@ -832,8 +832,8 @@
     "signatureUploadPending": "Signature upload will be implemented soon",
     "validation": {
       "interfaceLanguageRequired": "Interface language is required",
-      "invalidImageType": "Please select a valid image file",
-      "imageTooLarge": "Image size must be less than 5MB",
+      "invalidImageType": "Invalid file type. Allowed types: image/jpeg, image/jpg, image/png, image/gif, image/webp",
+      "imageTooLarge": "File size exceeds maximum allowed size of 10 MB",
       "fileReadError": "Failed to read file"
     }
   },

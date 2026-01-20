@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Upload, X, Trash2 } from 'lucide-react'
+import { Upload, Trash2 } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import {
   Dialog,
@@ -12,7 +12,7 @@ import {
 import { cn } from '@/shared/lib/cn'
 import { useTranslation } from 'react-i18next'
 import { useToast } from '@/shared/ui/use-toast'
-import { usePatchInstructorMe } from '../../controller/mutations'
+import { useUploadSignature, usePatchInstructorMe } from '../../controller/mutations'
 
 interface SignatureUploadDialogProps {
   open: boolean
@@ -23,7 +23,7 @@ interface SignatureUploadDialogProps {
 /**
  * Signature Upload Dialog Component
  * Opens a dialog for uploading/removing signature images
- * Uses usePatchInstructorMe mutation internally
+ * Uses useUploadSignature mutation for upload and usePatchInstructorMe for remove
  */
 export const SignatureUploadDialog = ({
   open,
@@ -32,12 +32,13 @@ export const SignatureUploadDialog = ({
 }: SignatureUploadDialogProps) => {
   const { t } = useTranslation()
   const { toast } = useToast()
+  const uploadSignatureMutation = useUploadSignature()
   const patchInstructorMutation = usePatchInstructorMe()
   const [preview, setPreview] = useState<string | null>(currentSignature || null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const isUploading = patchInstructorMutation.isPending
+  const isUploading = uploadSignatureMutation.isPending || patchInstructorMutation.isPending
 
   // Reset preview when dialog opens/closes or currentSignature changes
   useEffect(() => {
@@ -72,13 +73,25 @@ export const SignatureUploadDialog = ({
       return
     }
 
-    // Validate file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024 // 5MB
+    // Validate file size (max 10MB per API spec)
+    const maxSize = 10 * 1024 * 1024 // 10MB
     if (file.size > maxSize) {
       console.error('[SignatureUploadDialog] File too large:', file.size, 'max:', maxSize)
       toast({
         title: t('common.error'),
         description: t('profile.validation.imageTooLarge'),
+        variant: 'error',
+      })
+      return
+    }
+
+    // Validate allowed image types per API spec
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+    if (!allowedTypes.includes(file.type.toLowerCase())) {
+      console.error('[SignatureUploadDialog] Invalid file type:', file.type)
+      toast({
+        title: t('common.error'),
+        description: t('profile.validation.invalidImageType'),
         variant: 'error',
       })
       return
@@ -103,23 +116,7 @@ export const SignatureUploadDialog = ({
     reader.readAsDataURL(file)
   }
 
-  /**
-   * Convert file to base64 string
-   */
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        const result = reader.result as string
-        console.log('[SignatureUploadDialog] File converted to base64, length:', result.length)
-        resolve(result)
-      }
-      reader.onerror = reject
-      reader.readAsDataURL(file)
-    })
-  }
-
-  const handleUpload = async () => {
+  const handleUpload = () => {
     if (!selectedFile) {
       console.warn('[SignatureUploadDialog] No file selected for upload')
       return
@@ -131,54 +128,40 @@ export const SignatureUploadDialog = ({
       fileType: selectedFile.type,
     })
 
-    try {
-      // Convert file to base64
-      const base64String = await fileToBase64(selectedFile)
-      console.log('[SignatureUploadDialog] File converted to base64, calling mutation')
-
-      // Call mutation to update signature
-      patchInstructorMutation.mutate(
-        { signature: base64String },
-        {
-          onSuccess: () => {
-            console.log('[SignatureUploadDialog] Upload successful')
-            toast({
-              title: t('common.success'),
-              description: t('profile.signatureUploadSuccess'),
-              variant: 'success',
-            })
-            onOpenChange(false)
-            setSelectedFile(null)
-            // Reset input
-            if (fileInputRef.current) {
-              fileInputRef.current.value = ''
-            }
-          },
-          onError: (error: unknown) => {
-            console.error('[SignatureUploadDialog] Upload failed:', error)
-            const errorMessage =
-              error instanceof Error
-                ? error.message
-                : typeof error === 'object' && error !== null && 'message' in error
-                  ? String((error as { message: string }).message)
-                  : t('profile.signatureUploadError')
-
-            toast({
-              title: t('common.error'),
-              description: errorMessage,
-              variant: 'error',
-            })
-          },
+    // Call upload signature mutation
+    uploadSignatureMutation.mutate(selectedFile, {
+      onSuccess: (data) => {
+        console.log('[SignatureUploadDialog] Upload successful:', {
+          signatureUrl: data.signature,
+        })
+        toast({
+          title: t('common.success'),
+          description: t('profile.signatureUploadSuccess'),
+          variant: 'success',
+        })
+        onOpenChange(false)
+        setSelectedFile(null)
+        // Reset input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ''
         }
-      )
-    } catch (error) {
-      console.error('[SignatureUploadDialog] File conversion failed:', error)
-      toast({
-        title: t('common.error'),
-        description: t('profile.validation.fileReadError'),
-        variant: 'error',
-      })
-    }
+      },
+      onError: (error: unknown) => {
+        console.error('[SignatureUploadDialog] Upload failed:', error)
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : typeof error === 'object' && error !== null && 'message' in error
+              ? String((error as { message: string }).message)
+              : t('profile.signatureUploadError')
+
+        toast({
+          title: t('common.error'),
+          description: errorMessage,
+          variant: 'error',
+        })
+      },
+    })
   }
 
   const handleRemove = () => {

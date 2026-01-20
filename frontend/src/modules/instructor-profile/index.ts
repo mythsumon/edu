@@ -6,7 +6,7 @@ export {
   useMasterCodeGrandChildrenByCodeQuery,
   useInstructorMeQuery,
 } from './controller/queries'
-export { useUpdateInstructor, usePatchInstructor, usePatchInstructorMe } from './controller/mutations'
+export { useUpdateInstructor, usePatchInstructor, usePatchInstructorMe, useUploadSignature } from './controller/mutations'
 export { instructorProfileLoader } from './controller/instructor-profile.loader'
 export { 
   masterCodeByIdQueryOptions, 

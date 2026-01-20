@@ -38,10 +38,10 @@ export const instructorProfileLoader = async () => {
       })
     ),
     queryClient.ensureQueryData(
-      masterCodeGrandChildrenByCodeQueryOptions('500', {
+      masterCodeGrandChildrenByCodeQueryOptions('500-1', {
         page: 0,
         size: 100,
-      })
+      }),
     ),
   ])
 

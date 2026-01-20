@@ -23,7 +23,7 @@ export const FormInputField = ({
   error,
   required = false,
   isSubmitting = false,
-  className,
+  className = '',
   ...inputProps
 }: FormInputFieldProps) => {
   return (
@@ -33,7 +33,7 @@ export const FormInputField = ({
         placeholder={placeholder}
         icon={icon}
         {...register}
-        className={error ? 'ring-2 ring-destructive' : ''}
+        className={`${error ? 'ring-2 ring-destructive' : ''} ${className}`}
         disabled={isSubmitting}
         {...inputProps}
       />
