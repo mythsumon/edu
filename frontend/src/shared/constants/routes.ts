@@ -71,5 +71,7 @@ export const ROUTES = {
   LOGIN: '/login',
   NOT_FOUND: '/404',
   UNAUTHORIZED: '/403',
+
+  HOME: '/',
 } as const
 

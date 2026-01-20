@@ -42,6 +42,10 @@ export const protectedRoutes: RouteObject[] = [
             element: <AdminRouteGuard />,
             children: [
               {
+                index: true,
+                element: <Navigate to={ROUTES.ADMIN_DASHBOARD_FULL} replace />,
+              },
+              {
                 path: ROUTES.ADMIN_DASHBOARD,
                 element: <DashboardPage />,
               },
@@ -201,6 +205,10 @@ export const protectedRoutes: RouteObject[] = [
             path: ROUTES.INSTRUCTOR,
             element: <InstructorRouteGuard />,
             children: [
+              {
+                index: true,
+                element: <Navigate to={ROUTES.INSTRUCTOR_DASHBOARD_FULL} replace />,
+              },
               {
                 path: ROUTES.INSTRUCTOR_DASHBOARD,
                 element: <DashboardPage />,

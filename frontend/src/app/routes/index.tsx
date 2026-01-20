@@ -3,9 +3,14 @@ import { publicRoutes } from './public.routes'
 import { protectedRoutes } from './protected.routes'
 import { notFoundRoutes } from './notFound.routes'
 import { unauthorizedRoutes } from './unauthorized.routes'
+import { RootRedirect } from './RootRedirect'
 import { ROUTES } from '@/shared/constants/routes'
 
 const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <RootRedirect />,
+  },
   ...publicRoutes,
   ...protectedRoutes,
   ...unauthorizedRoutes,
