@@ -11,6 +11,26 @@ export const updateInstructorProfileSchema = (t: (key: string) => string) => z.o
   phone: z
     .string()
     .min(1, t('accountManagement.validation.phoneNumberRequired')),
+  gender: z
+    .string()
+    .min(1, t('accountManagement.validation.genderRequired')),
+  dob: z
+    .string()
+    .min(1, t('accountManagement.validation.dateOfBirthRequired')),
+  regionId: z
+    .string()
+    .min(1, t('accountManagement.validation.regionRequired')),
+  cityId: z
+    .string()
+    .min(1, t('accountManagement.validation.cityRequired')),
+  street: z
+    .string()
+    .min(1, t('accountManagement.validation.streetRequired'))
+    .max(255, t('accountManagement.validation.streetMaxLength')),
+  detailAddress: z
+    .string()
+    .min(1, t('accountManagement.validation.buildingNameLakeNumberRequired'))
+    .max(255, t('accountManagement.validation.buildingNameLakeNumberMaxLength')),
   interfaceLanguage: z
     .string()
     .min(1, t('profile.validation.interfaceLanguageRequired')),

@@ -1,0 +1,229 @@
+import { useTranslation } from 'react-i18next'
+import { Card } from '@/shared/ui/card'
+import { Label } from '@/shared/ui/label'
+import { formatDateDot } from '@/shared/lib/date'
+import { GENDER_OPTIONS } from '@/shared/constants/users'
+
+const INTERFACE_LANGUAGES = [
+  { value: 'en', label: 'English' },
+  { value: 'ko', label: '한국어' },
+]
+
+interface InstructorProfileDetailViewProps {
+  instructor: {
+    id: number
+    name: string
+    email: string
+    phone: string
+    gender: string
+    dob: string
+    street: string
+    detailAddress: string
+    cityId?: number
+    regionId?: number
+    statusId?: number
+    classificationId?: number
+    signature?: string
+  }
+  regionName: string
+  cityName: string
+  statusName: string
+  classificationName: string
+  language: string
+  getInitials: (name: string) => string
+}
+
+export const InstructorProfileDetailView = ({
+  instructor,
+  regionName,
+  cityName,
+  statusName,
+  classificationName,
+  language,
+  getInitials,
+}: InstructorProfileDetailViewProps) => {
+  const { t } = useTranslation()
+
+  // Get gender label
+  const getGenderLabel = (gender?: string) => {
+    if (!gender) return '-'
+    return GENDER_OPTIONS.find((opt) => opt.value === gender)?.label || gender
+  }
+
+  // Format date of birth
+  const formatDateOfBirth = (dateString?: string) => {
+    if (!dateString) return '-'
+    try {
+      return formatDateDot(dateString)
+    } catch {
+      return dateString
+    }
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6 py-6">
+      {/* Profile Header Card with Avatar */}
+      <Card className="rounded-2xl border border-border/20 bg-card shadow-sm p-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+          {/* Avatar Section */}
+          <div className="flex-shrink-0">
+            <div className="w-32 h-32 rounded-full bg-secondary flex items-center justify-center overflow-hidden border-2 border-border">
+              <span className="text-primary font-semibold text-2xl">
+                {getInitials(instructor.name)}
+              </span>
+            </div>
+          </div>
+
+          {/* Name and Email Section */}
+          <div className="flex-1 min-w-0">
+            <div className="space-y-2">
+              <h2 className="text-2xl font-semibold text-foreground">
+                {instructor.name}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {instructor.email || '-'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Profile Information Card */}
+      <Card className="rounded-2xl border border-border/20 bg-card shadow-sm p-6">
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-lg font-semibold text-foreground border-b-2 border-primary pb-2 inline-block">
+              {t('profile.profileInformation')}
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Phone Number */}
+            <div>
+              <Label className="text-sm font-medium text-muted-foreground">
+                {t('accountManagement.phoneNumber')}
+              </Label>
+              <p className="mt-1 text-sm text-foreground">
+                {instructor.phone || '-'}
+              </p>
+            </div>
+
+            {/* Gender */}
+            <div>
+              <Label className="text-sm font-medium text-muted-foreground">
+                {t('accountManagement.gender')}
+              </Label>
+              <p className="mt-1 text-sm text-foreground">
+                {getGenderLabel(instructor.gender)}
+              </p>
+            </div>
+
+            {/* Date of Birth */}
+            <div>
+              <Label className="text-sm font-medium text-muted-foreground">
+                {t('accountManagement.dateOfBirth')}
+              </Label>
+              <p className="mt-1 text-sm text-foreground">
+                {formatDateOfBirth(instructor.dob)}
+              </p>
+            </div>
+
+            {/* Region */}
+            <div>
+              <Label className="text-sm font-medium text-muted-foreground">
+                {t('accountManagement.region')}
+              </Label>
+              <p className="mt-1 text-sm text-foreground">
+                {regionName}
+              </p>
+            </div>
+
+            {/* City */}
+            <div>
+              <Label className="text-sm font-medium text-muted-foreground">
+                {t('accountManagement.city')}
+              </Label>
+              <p className="mt-1 text-sm text-foreground">
+                {cityName}
+              </p>
+            </div>
+
+            {/* Street */}
+            <div>
+              <Label className="text-sm font-medium text-muted-foreground">
+                {t('accountManagement.street')}
+              </Label>
+              <p className="mt-1 text-sm text-foreground">
+                {instructor.street || '-'}
+              </p>
+            </div>
+
+            {/* Detail Address */}
+            <div>
+              <Label className="text-sm font-medium text-muted-foreground">
+                {t('accountManagement.buildingNameLakeNumber')}
+              </Label>
+              <p className="mt-1 text-sm text-foreground">
+                {instructor.detailAddress || '-'}
+              </p>
+            </div>
+
+            {/* Status */}
+            <div>
+              <Label className="text-sm font-medium text-muted-foreground">
+                {t('profile.status')}
+              </Label>
+              <p className="mt-1 text-sm text-foreground">
+                {statusName}
+              </p>
+            </div>
+
+            {/* Classification */}
+            <div>
+              <Label className="text-sm font-medium text-muted-foreground">
+                {t('profile.classification')}
+              </Label>
+              <p className="mt-1 text-sm text-foreground">
+                {classificationName}
+              </p>
+            </div>
+
+            {/* Interface Language */}
+            <div>
+              <Label className="text-sm font-medium text-muted-foreground">
+                {t('profile.interfaceLanguage')}
+              </Label>
+              <p className="mt-1 text-sm text-foreground">
+                {INTERFACE_LANGUAGES.find((lang) => lang.value === language)?.label || language}
+              </p>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Signature Image Card */}
+      <Card className="rounded-2xl border border-border/20 bg-card shadow-sm p-6">
+        <div className="space-y-6">
+          <div>
+            <Label className="text-sm font-medium text-muted-foreground">
+              {t('profile.signatureImage')}
+            </Label>
+            {instructor.signature ? (
+              <div className="mt-2">
+                <img
+                  src={instructor.signature}
+                  alt="Signature"
+                  className="max-w-xs h-auto max-h-48 object-contain rounded-lg border border-border"
+                />
+              </div>
+            ) : (
+              <p className="mt-1 text-sm text-muted-foreground">
+                {t('profile.noSignature')}
+              </p>
+            )}
+          </div>
+        </div>
+      </Card>
+    </div>
+  )
+}

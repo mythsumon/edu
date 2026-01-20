@@ -758,6 +758,8 @@
   "profile": {
     "title": "프로필",
     "profileInformation": "프로필 정보",
+    "status": "상태",
+    "classification": "분류",
     "interfaceLanguage": "인터페이스 언어",
     "selectLanguage": "언어 선택",
     "signatureImage": "서명 이미지",

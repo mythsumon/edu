@@ -758,6 +758,8 @@
   "profile": {
     "title": "Profile",
     "profileInformation": "Profile Information",
+    "status": "Status",
+    "classification": "Classification",
     "interfaceLanguage": "Interface Language",
     "selectLanguage": "Select Language",
     "signatureImage": "Signature Image",
