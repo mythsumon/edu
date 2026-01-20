@@ -208,8 +208,8 @@ export default function EducationStatusPage() {
             closeAt: edu.closeAt,
             mainInstructorNames: instructorNames.mainInstructorNames,
             assistantInstructorNames: instructorNames.assistantInstructorNames,
-            mainInstructorsCount: instructorNames.mainInstructorNames.length,
-            assistantInstructorsCount: instructorNames.assistantInstructorNames.length,
+            mainInstructorsCount: instructorNames.mainInstructorNames?.length || 0,
+            assistantInstructorsCount: instructorNames.assistantInstructorNames?.length || 0,
           }
         }
         // 새로운 교육인 경우 - 강사 이름 매핑 포함
