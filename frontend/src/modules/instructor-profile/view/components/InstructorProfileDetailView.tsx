@@ -3,6 +3,8 @@ import { Card } from '@/shared/ui/card'
 import { Label } from '@/shared/ui/label'
 import { formatDateDot } from '@/shared/lib/date'
 import { GENDER_OPTIONS } from '@/shared/constants/users'
+import { StatusBadge } from '@/shared/components/StatusBadge'
+import { ClassificationBadge } from '@/shared/components/ClassificationBadge'
 
 const INTERFACE_LANGUAGES = [
   { value: 'en', label: 'English' },
@@ -173,9 +175,9 @@ export const InstructorProfileDetailView = ({
               <Label className="text-sm font-medium text-muted-foreground">
                 {t('profile.status')}
               </Label>
-              <p className="mt-1 text-sm text-foreground">
-                {statusName}
-              </p>
+              <div className="mt-1">
+                <StatusBadge status={statusName} />
+              </div>
             </div>
 
             {/* Classification */}
@@ -183,9 +185,9 @@ export const InstructorProfileDetailView = ({
               <Label className="text-sm font-medium text-muted-foreground">
                 {t('profile.classification')}
               </Label>
-              <p className="mt-1 text-sm text-foreground">
-                {classificationName}
-              </p>
+              <div className="mt-1">
+                <ClassificationBadge classification={classificationName} />
+              </div>
             </div>
 
             {/* Interface Language */}

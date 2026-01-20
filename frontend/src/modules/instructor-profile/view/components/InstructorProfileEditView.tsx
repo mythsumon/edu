@@ -99,7 +99,6 @@ export const InstructorProfileEditView = ({
   const interfaceLanguageValue = watch('interfaceLanguage')
   const genderValue = watch('gender')
   const selectedRegionId = watch('regionId')
-  const cityIdValue = watch('cityId')
 
   // Pre-fill form with instructor data
   useEffect(() => {
@@ -195,6 +194,14 @@ export const InstructorProfileEditView = ({
     () => districts.map((region: { id: number; codeName: string }) => ({ value: String(region.id), label: region.codeName || '' })),
     [districts]
   )
+
+  // Get city name for display
+  const cityName = useMemo(() => {
+    if (instructor.cityId && cityMasterCodeMap[instructor.cityId]) {
+      return cityMasterCodeMap[instructor.cityId].codeName
+    }
+    return ''
+  }, [instructor.cityId, cityMasterCodeMap])
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 py-6">
@@ -296,21 +303,23 @@ export const InstructorProfileEditView = ({
                 />
               </FormField>
 
-              {/* City */}
-              <FormField id="city" label={t('accountManagement.city')} required>
+              {/* City - Disabled field showing city name */}
+              <FormField id="city" label={t('accountManagement.city')} error={errors.cityId}>
                 <Input
                   id="city"
                   placeholder={t('accountManagement.cityPlaceholder')}
-                  value={instructor.cityId && cityMasterCodeMap[instructor.cityId] ? cityMasterCodeMap[instructor.cityId].codeName : ''}
-                  disabled={isSubmitting}
+                  value={cityName}
+                  disabled
+                  readOnly
+                  className={errors.cityId ? 'ring-2 ring-destructive' : ''}
                 />
               </FormField>
               
-              {/* Hidden cityId field */}
+              {/* Hidden cityId field to ensure it's submitted */}
               <input
                 type="hidden"
                 {...register('cityId')}
-                value={cityIdValue || (cityMasterCode?.items?.[0]?.id ? String(cityMasterCode.items[0].id) : '') || ''}
+                value={instructor.cityId ? String(instructor.cityId) : ''}
               />
 
               {/* Street */}

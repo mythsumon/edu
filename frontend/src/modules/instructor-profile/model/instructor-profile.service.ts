@@ -58,7 +58,6 @@ export const getMasterCodeGrandChildrenByCode = async (
     INSTRUCTOR_PROFILE_ENDPOINTS.masterCode.grandchildrenByCode(code),
     { params }
   )
-  console.log(response.data.data, "===================")
   return response.data.data
 }
 

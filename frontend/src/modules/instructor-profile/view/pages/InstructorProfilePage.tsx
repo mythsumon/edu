@@ -12,6 +12,7 @@ import {
   instructorMeQueryOptions,
 } from '../../controller/instructor-profile.query-options'
 import { transformArrayToObjectByKey } from '@/shared/lib/convertor'
+import { ErrorBoundary } from '@/shared/components/ErrorBoundary'
 import { InstructorProfileDetailView } from '../components/InstructorProfileDetailView'
 import { InstructorProfileEditView } from '../components/InstructorProfileEditView'
 
@@ -61,10 +62,7 @@ export const InstructorProfilePage = () => {
       page: 0,
       size: 100,
     }),
-    // initialData: loaderData.instructorRegion,
   })
-
-  console.log(instructorRegion, "===================")
 
   // Create maps for quick lookup
   const statusMasterCodeMap = useMemo(() => {
@@ -151,7 +149,6 @@ export const InstructorProfilePage = () => {
     return '-'
   }, [instructor.regionId, regionMasterCodeMap])
 
-  console.log(regionMasterCodeMap, instructor.regionId)
   
   // Get city name from map using instructor's cityId
   const cityName = useMemo(() => {
@@ -236,31 +233,33 @@ export const InstructorProfilePage = () => {
         </>
       }
     >
-      {isEditMode ? (
-        <InstructorProfileEditView
-          instructor={instructor}
-          cityMasterCode={instructorCity}
-          cityMasterCodeMap={cityMasterCodeMap}
-          districts={regions}
-          cities={cities}
-          isLoadingCities={isLoadingRegions}
-          language={language}
-          onSuccess={handleSuccess}
-          getInitials={getInitials}
-          formRef={formRef}
-          onSubmittingChange={setIsSubmitting}
-        />
-      ) : (
-        <InstructorProfileDetailView
-          instructor={instructor}
-          regionName={regionName}
-          cityName={cityName}
-          statusName={statusName}
-          classificationName={classificationName}
-          language={language}
-          getInitials={getInitials}
-        />
-      )}
+      <ErrorBoundary>
+        {isEditMode ? (
+          <InstructorProfileEditView
+            instructor={instructor}
+            cityMasterCode={instructorCity}
+            cityMasterCodeMap={cityMasterCodeMap}
+            districts={regions}
+            cities={cities}
+            isLoadingCities={isLoadingRegions}
+            language={language}
+            onSuccess={handleSuccess}
+            getInitials={getInitials}
+            formRef={formRef}
+            onSubmittingChange={setIsSubmitting}
+          />
+        ) : (
+          <InstructorProfileDetailView
+            instructor={instructor}
+            regionName={regionName}
+            cityName={cityName}
+            statusName={statusName}
+            classificationName={classificationName}
+            language={language}
+            getInitials={getInitials}
+          />
+        )}
+      </ErrorBoundary>
     </PageLayout>
   )
 }
