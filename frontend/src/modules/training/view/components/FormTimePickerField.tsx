@@ -6,9 +6,9 @@ import {
   Path,
 } from "react-hook-form";
 import { FormField } from "./FormField";
-import { CustomDateInput } from "@/shared/components/CustomDateInput";
+import { CustomTimeInput } from "@/shared/components/CustomTimeInput";
 
-interface FormDatePickerFieldProps<TFieldValues extends FieldValues> {
+interface FormTimePickerFieldProps<TFieldValues extends FieldValues> {
   id: string;
   name: Path<TFieldValues>;
   label: string;
@@ -17,11 +17,9 @@ interface FormDatePickerFieldProps<TFieldValues extends FieldValues> {
   error?: FieldError;
   required?: boolean;
   disabled?: boolean;
-  minDate?: Date;
-  maxDate?: Date;
 }
 
-export const FormDatePickerField = <TFieldValues extends FieldValues>({
+export const FormTimePickerField = <TFieldValues extends FieldValues>({
   id,
   name,
   label,
@@ -30,16 +28,14 @@ export const FormDatePickerField = <TFieldValues extends FieldValues>({
   error,
   required = false,
   disabled = false,
-  minDate,
-  maxDate,
-}: FormDatePickerFieldProps<TFieldValues>) => {
+}: FormTimePickerFieldProps<TFieldValues>) => {
   return (
     <FormField id={id} label={label} required={required} error={error}>
       <Controller
         name={name}
         control={control}
         render={({ field }) => (
-          <CustomDateInput
+          <CustomTimeInput
             id={id}
             value={field.value ?? ""}
             onChange={field.onChange}
@@ -47,8 +43,6 @@ export const FormDatePickerField = <TFieldValues extends FieldValues>({
             placeholder={placeholder}
             disabled={disabled}
             hasError={!!error}
-            minDate={minDate}
-            maxDate={maxDate}
           />
         )}
       />

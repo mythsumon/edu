@@ -14,6 +14,7 @@ interface CustomDateInputProps {
   disabled?: boolean;
   hasError?: boolean;
   minDate?: Date;
+  maxDate?: Date;
 }
 
 /**
@@ -49,6 +50,7 @@ export const CustomDateInput = ({
   disabled = false,
   hasError = false,
   minDate,
+  maxDate,
 }: CustomDateInputProps) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const date = parseDate(value);
@@ -98,7 +100,14 @@ export const CustomDateInput = ({
           captionLayout="dropdown"
           onSelect={handleSelect}
           onSelectToday={handleSelectToday}
-          disabled={minDate ? { before: minDate } : undefined}
+          disabled={
+            minDate || maxDate
+              ? {
+                  ...(minDate && { before: minDate }),
+                  ...(maxDate && { after: maxDate }),
+                }
+              : undefined
+          }
         />
       </PopoverContent>
     </Popover>
