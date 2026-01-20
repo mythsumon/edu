@@ -384,7 +384,7 @@ public class InstructorServiceImpl implements InstructorService {
             headerRow.createCell(colNum++).setCellValue("Affiliation");
             headerRow.createCell(colNum++).setCellValue("Region Name");
             headerRow.createCell(colNum++).setCellValue("Classification Name");
-            headerRow.createCell(colNum++).setCellValue("Status Name");
+            headerRow.createCell(colNum++).setCellValue("Account Status");
             headerRow.createCell(colNum++).setCellValue("City");
             headerRow.createCell(colNum++).setCellValue("Street");
             headerRow.createCell(colNum++).setCellValue("Building Name / Lake Number");
@@ -421,7 +421,7 @@ public class InstructorServiceImpl implements InstructorService {
                     row.createCell(cellNum++).setCellValue(instructor.getRegion() != null && instructor.getRegion().getCodeName() != null ? instructor.getRegion().getCodeName() : "");
                     // Classification Name
                     row.createCell(cellNum++).setCellValue(instructor.getClassification() != null && instructor.getClassification().getCodeName() != null ? instructor.getClassification().getCodeName() : "");
-                    // Status Name
+                    // Account Status
                     row.createCell(cellNum++).setCellValue(instructor.getStatus() != null && instructor.getStatus().getCodeName() != null ? instructor.getStatus().getCodeName() : "");
                     // City
                     row.createCell(cellNum++).setCellValue(instructor.getCity() != null && instructor.getCity().getCodeName() != null ? instructor.getCity().getCodeName() : "");

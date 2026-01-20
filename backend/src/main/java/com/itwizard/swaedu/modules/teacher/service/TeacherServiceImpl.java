@@ -163,6 +163,7 @@ public class TeacherServiceImpl implements TeacherService {
             headerRow.createCell(colNum++).setCellValue("Username");
             headerRow.createCell(colNum++).setCellValue("Email");
             headerRow.createCell(colNum++).setCellValue("Phone");
+            headerRow.createCell(colNum++).setCellValue("Account Status");
 
             // Stream data from database and write rows
             AtomicInteger rowNum = new AtomicInteger(1);
@@ -182,6 +183,8 @@ public class TeacherServiceImpl implements TeacherService {
                     row.createCell(cellNum++).setCellValue(teacher.getEmail() != null ? teacher.getEmail() : "");
                     // Phone
                     row.createCell(cellNum++).setCellValue(teacher.getPhone() != null ? teacher.getPhone() : "");
+                    // Account Status
+                    row.createCell(cellNum++).setCellValue(teacher.getStatus() != null && teacher.getStatus().getCodeName() != null ? teacher.getStatus().getCodeName() : "");
                 });
             }
 
