@@ -15,6 +15,7 @@ interface CustomDateInputProps {
   hasError?: boolean;
   minDate?: Date;
   maxDate?: Date;
+  showTodayButton?: boolean;
 }
 
 /**
@@ -51,6 +52,7 @@ export const CustomDateInput = ({
   hasError = false,
   minDate,
   maxDate,
+  showTodayButton = true,
 }: CustomDateInputProps) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const date = parseDate(value);
@@ -100,6 +102,7 @@ export const CustomDateInput = ({
           captionLayout="dropdown"
           onSelect={handleSelect}
           onSelectToday={handleSelectToday}
+          showTodayButton={showTodayButton}
           disabled={
             minDate || maxDate
               ? {

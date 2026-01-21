@@ -60,7 +60,7 @@ export const PeriodCard = ({
             )}
           </button>
         </CollapsibleTrigger>
-        <CollapsibleContent className="border-t border-border/50 mt-0 pt-2 pb-2 px-0">
+        <CollapsibleContent className="border-t border-border/50 mt-0 pt-2 pb-2 px-1">
           <div className="space-y-4">
             {/* Date - Full width */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -75,6 +75,7 @@ export const PeriodCard = ({
                 disabled={isSubmitting}
                 minDate={minDate}
                 maxDate={maxDate}
+                showTodayButton={false}
               />
             </div>
 

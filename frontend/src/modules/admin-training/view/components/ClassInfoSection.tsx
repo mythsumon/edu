@@ -1,11 +1,11 @@
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { Control, FieldErrors, UseFormRegister, UseFormWatch } from "react-hook-form";
 import { FieldArrayWithId } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { ChevronUp, ChevronDown, Download, Upload, X, FileText } from "lucide-react";
+import * as XLSX from "xlsx";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
-import { Input } from "@/shared/ui/input";
 import {
   Collapsible,
   CollapsibleTrigger,
@@ -24,6 +24,7 @@ import { PeriodCard } from "./PeriodCard";
 import { CreateAdminTrainingFormData } from "../../model/admin-training.schema";
 import { downloadClassTemplate } from "../../model/admin-training.service";
 import { cn } from "@/shared/lib/cn";
+import { convertToISODate } from "@/shared/lib/date";
 
 /**
  * Parsed CSV row data
@@ -64,11 +65,11 @@ const isValidPositiveInteger = (value: string): boolean => {
 };
 
 /**
- * Validate date in various formats and convert to MMDDYYYY
- * Accepts: M/D/YYYY, MM/DD/YYYY, MMDDYYYY
+ * Parse date string to Date object
+ * Returns null if invalid
  */
-const isValidDate = (value: string): boolean => {
-  if (value.trim() === "") return true; // Empty is valid
+const parseDateString = (value: string): Date | null => {
+  if (!value || value.trim() === "") return null;
   const trimmed = value.trim();
   
   // Try parsing M/D/YYYY or MM/DD/YYYY format
@@ -79,7 +80,7 @@ const isValidDate = (value: string): boolean => {
     const d = parseInt(day, 10);
     const y = parseInt(year, 10);
     if (m >= 1 && m <= 12 && d >= 1 && d <= 31 && y >= 1900 && y <= 2100) {
-      return true;
+      return new Date(y, m - 1, d);
     }
   }
   
@@ -91,11 +92,57 @@ const isValidDate = (value: string): boolean => {
     const d = parseInt(day, 10);
     const y = parseInt(year, 10);
     if (m >= 1 && m <= 12 && d >= 1 && d <= 31 && y >= 1900 && y <= 2100) {
-      return true;
+      return new Date(y, m - 1, d);
     }
   }
   
-  return false;
+  // Try parsing ISO format YYYY-MM-DD
+  const isoMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoMatch) {
+    const [, year, month, day] = isoMatch;
+    const y = parseInt(year, 10);
+    const m = parseInt(month, 10);
+    const d = parseInt(day, 10);
+    if (m >= 1 && m <= 12 && d >= 1 && d <= 31 && y >= 1900 && y <= 2100) {
+      return new Date(y, m - 1, d);
+    }
+  }
+  
+  return null;
+};
+
+/**
+ * Validate date format and optionally check if within range
+ * Accepts: M/D/YYYY, MM/DD/YYYY, MMDDYYYY, YYYY-MM-DD
+ */
+const isValidDateInRange = (
+  value: string,
+  startDate?: Date,
+  endDate?: Date
+): boolean => {
+  if (value.trim() === "") return true; // Empty is valid
+  
+  const date = parseDateString(value);
+  if (date === null) return false; // Invalid format
+  
+  // If no range specified, just validate format
+  if (!startDate && !endDate) return true;
+  
+  // Check if date is within range
+  // Set time to midnight for accurate date comparison
+  const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  
+  if (startDate) {
+    const startOnly = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    if (dateOnly < startOnly) return false;
+  }
+  
+  if (endDate) {
+    const endOnly = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+    if (dateOnly > endOnly) return false;
+  }
+  
+  return true;
 };
 
 /**
@@ -114,11 +161,16 @@ const isValidTime24 = (value: string): boolean => {
 
 /**
  * Validate a single row and return validation errors
+ * Optionally validates date is within startDate and endDate range
  */
-const validateRow = (row: ParsedClassRow): RowValidationErrors => {
+const validateRow = (
+  row: ParsedClassRow,
+  startDate?: Date,
+  endDate?: Date
+): RowValidationErrors => {
   return {
     periodClasses: !isValidPositiveInteger(row.periodClasses),
-    date: !isValidDate(row.date),
+    date: !isValidDateInRange(row.date, startDate, endDate),
     startTime: !isValidTime24(row.startTime),
     endTime: !isValidTime24(row.endTime),
     mainInstructor: !isValidPositiveInteger(row.mainInstructor),
@@ -127,15 +179,15 @@ const validateRow = (row: ParsedClassRow): RowValidationErrors => {
 };
 
 /**
- * Expected header columns for validation
+ * Expected header columns for validation (Korean)
  */
 const EXPECTED_HEADERS = [
-  "Period Classes",
-  "Date",
-  "Start Time",
-  "End Time",
-  "Main Instructor",
-  "Assistant Instructor",
+  "차시 수업",
+  "일자",
+  "시작시간",
+  "종료시간",
+  "필요 주강사 수",
+  "필요 보조강사 수",
 ];
 
 /**
@@ -192,6 +244,90 @@ const parseCSV = (content: string): ParsedClassRow[] | null => {
   return rows;
 };
 
+/**
+ * Validate Excel header row
+ */
+const isValidExcelHeader = (headers: (string | undefined)[]): boolean => {
+  const expectedLower = EXPECTED_HEADERS.map((h) => h.toLowerCase());
+  
+  if (headers.length < expectedLower.length) return false;
+  
+  for (let i = 0; i < expectedLower.length; i++) {
+    const header = headers[i]?.toString().trim().toLowerCase() || "";
+    if (header !== expectedLower[i]) return false;
+  }
+  
+  return true;
+};
+
+/**
+ * Parse Excel (xlsx/xls) content into rows
+ * Returns null if the template is invalid
+ */
+const parseExcel = (data: ArrayBuffer): ParsedClassRow[] | null => {
+  try {
+    const workbook = XLSX.read(data, { type: "array" });
+    
+    // Get the first sheet
+    const firstSheetName = workbook.SheetNames[0];
+    if (!firstSheetName) return null;
+    
+    const worksheet = workbook.Sheets[firstSheetName];
+    if (!worksheet) return null;
+    
+    // Convert to array of arrays
+    const jsonData: (string | number | undefined)[][] = XLSX.utils.sheet_to_json(worksheet, {
+      header: 1,
+      raw: false, // Get formatted strings
+      defval: "",
+    });
+    
+    // Check if file has at least a header row
+    if (jsonData.length === 0) return null;
+    
+    // Validate header row
+    const headerRow = jsonData[0]?.map((cell) => cell?.toString() || "") || [];
+    if (!isValidExcelHeader(headerRow)) {
+      return null; // Invalid template
+    }
+    
+    const rows: ParsedClassRow[] = [];
+    
+    // Skip header row (first row)
+    for (let i = 1; i < jsonData.length; i++) {
+      const rowData = jsonData[i];
+      if (!rowData || rowData.every((cell) => !cell || cell.toString().trim() === "")) {
+        continue; // Skip empty rows
+      }
+      
+      rows.push({
+        periodClasses: rowData[0]?.toString().trim() || "",
+        date: rowData[1]?.toString().trim() || "",
+        startTime: rowData[2]?.toString().trim() || "",
+        endTime: rowData[3]?.toString().trim() || "",
+        mainInstructor: rowData[4]?.toString().trim() || "",
+        assistantInstructor: rowData[5]?.toString().trim() || "",
+      });
+    }
+    
+    return rows;
+  } catch (error) {
+    console.error("Error parsing Excel file:", error);
+    return null;
+  }
+};
+
+/**
+ * Period data structure for form
+ */
+interface PeriodFormData {
+  date: string;
+  startTime: string;
+  endTime: string;
+  mainLecturers: number;
+  assistantLecturers: number;
+}
+
 interface ClassInfoSectionProps {
   control: Control<CreateAdminTrainingFormData>;
   register: UseFormRegister<CreateAdminTrainingFormData>;
@@ -199,6 +335,8 @@ interface ClassInfoSectionProps {
   errors: FieldErrors<CreateAdminTrainingFormData>;
   isSubmitting: boolean;
   fields: FieldArrayWithId<CreateAdminTrainingFormData, "periods", "id">[];
+  onPeriodsImported?: (periods: PeriodFormData[], numberOfPeriods: number) => void;
+  onValidationChange?: (hasErrors: boolean) => void;
 }
 
 export const ClassInfoSection = ({
@@ -208,6 +346,8 @@ export const ClassInfoSection = ({
   errors,
   isSubmitting,
   fields,
+  onPeriodsImported,
+  onValidationChange,
 }: ClassInfoSectionProps) => {
   const { t } = useTranslation();
 
@@ -315,39 +455,79 @@ export const ClassInfoSection = ({
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
   // Process uploaded file
+  // Convert imported rows to form periods
+  const convertRowsToFormPeriods = useCallback((rows: ParsedClassRow[]): PeriodFormData[] => {
+    return rows.map((row) => ({
+      date: convertToISODate(row.date || ""),
+      startTime: row.startTime || "",
+      endTime: row.endTime || "",
+      mainLecturers: row.mainInstructor ? parseInt(row.mainInstructor, 10) || 0 : 0,
+      assistantLecturers: row.assistantInstructor ? parseInt(row.assistantInstructor, 10) || 0 : 0,
+    }));
+  }, []);
+
   const processFile = useCallback((file: File) => {
     // Clear previous error and file name
     setTemplateError(null);
     setUploadedFileName(null);
 
-    if (!file.name.endsWith(".csv") && !file.name.endsWith(".xlsx") && !file.name.endsWith(".xls")) {
+    const fileName = file.name.toLowerCase();
+    const isCSV = fileName.endsWith(".csv");
+    const isExcel = fileName.endsWith(".xlsx") || fileName.endsWith(".xls");
+
+    if (!isCSV && !isExcel) {
       setTemplateError(t("training.invalidFileType"));
       return;
     }
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const content = e.target?.result as string;
-      if (content) {
-        const rows = parseCSV(content);
-        if (rows === null) {
-          // Invalid template - headers don't match
-          setTemplateError(t("training.invalidTemplateFormat"));
-          setUploadedRows([]);
-          setValidationErrors([]);
-          return;
-        }
-        const errors = rows.map(validateRow);
-        setUploadedRows(rows);
-        setValidationErrors(errors);
-        setUploadedFileName(file.name); // Store file name on success
+      const result = e.target?.result;
+      if (!result) return;
+
+      let rows: ParsedClassRow[] | null = null;
+
+      if (isCSV) {
+        // Parse CSV as text
+        const content = result as string;
+        rows = parseCSV(content);
+      } else if (isExcel) {
+        // Parse Excel as ArrayBuffer
+        const data = result as ArrayBuffer;
+        rows = parseExcel(data);
+      }
+
+      if (rows === null) {
+        // Invalid template - headers don't match or parsing failed
+        setTemplateError(t("training.invalidTemplateFormat"));
+        setUploadedRows([]);
+        setValidationErrors([]);
+        return;
+      }
+
+      const errors = rows.map((row) => validateRow(row, startDateAsDate, endDateAsDate));
+      setUploadedRows(rows);
+      setValidationErrors(errors);
+      setUploadedFileName(file.name); // Store file name on success
+
+      // Convert and pass data to parent form only if no validation errors
+      const hasErrors = errors.some((err) => Object.values(err).some((v) => v));
+      if (onPeriodsImported && rows.length > 0 && !hasErrors) {
+        const formPeriods = convertRowsToFormPeriods(rows);
+        onPeriodsImported(formPeriods, rows.length);
       }
     };
     reader.onerror = () => {
       setTemplateError(t("training.fileReadError"));
     };
-    reader.readAsText(file);
-  }, [t]);
+
+    // Read file based on type
+    if (isCSV) {
+      reader.readAsText(file);
+    } else {
+      reader.readAsArrayBuffer(file);
+    }
+  }, [t, onPeriodsImported, convertRowsToFormPeriods, startDateAsDate, endDateAsDate]);
 
   // Handle file input change
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -412,6 +592,18 @@ export const ClassInfoSection = ({
     );
   }, [validationErrors]);
 
+  // Check if any row has a date error (for showing specific date range message)
+  const hasDateError = useMemo(() => {
+    return validationErrors.some((row) => row.date);
+  }, [validationErrors]);
+
+  // Notify parent when validation state changes (only when there are uploaded rows)
+  useEffect(() => {
+    if (onValidationChange && uploadedRows.length > 0) {
+      onValidationChange(hasAnyError);
+    }
+  }, [hasAnyError, uploadedRows.length, onValidationChange]);
+
   // Column headers for the table
   const columnHeaders: { key: ColumnKey; label: string }[] = [
     { key: "periodClasses", label: t("training.periodClasses") },
@@ -447,7 +639,7 @@ export const ClassInfoSection = ({
             {t("training.classInformationDescription")}
           </p>
         </div>
-        <div className="mx-4 mt-4 p-4 bg-muted/80 rounded-lg flex items-center justify-between">
+        <div className="mx-4 mt-4 p-4 rounded-lg flex items-center bg-muted/60 justify-between">
           <div>
             <p className="text-sm font-medium">{t("training.downloadExcelTemplate")}</p>
             <p className="text-xs text-muted-foreground">
@@ -486,11 +678,6 @@ export const ClassInfoSection = ({
                 <p className="text-sm font-medium">{uploadedFileName}</p>
                 <p className="text-xs text-muted-foreground">
                   {uploadedRows.length} {t("training.rowsImported")}
-                  {hasAnyError && (
-                    <span className="text-destructive ml-2">
-                      ({t("training.validationErrorsFound")})
-                    </span>
-                  )}
                 </p>
               </div>
             </div>
@@ -508,7 +695,7 @@ export const ClassInfoSection = ({
           /* Upload drop zone */
           <div
             className={cn(
-              "mx-4 mt-2 p-8 border-2 border-dashed rounded-lg flex flex-col items-center justify-center text-center cursor-pointer transition-colors",
+              "mx-4 mt-2 p-8 border border-dashed rounded-lg flex flex-col items-center justify-center text-center cursor-pointer transition-colors",
               isDragOver
                 ? "border-primary bg-primary/5"
                 : "border-muted-foreground/25 hover:border-muted-foreground/50"
@@ -518,7 +705,7 @@ export const ClassInfoSection = ({
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
           >
-            <Upload className="h-10 w-10 text-muted-foreground/50 mb-4" />
+            <Upload className="h-6 w-6 text-muted-foreground/80 mb-4" />
             <p className="text-sm">
               <span className="text-primary font-medium">{t("training.clickToSelectFiles")}</span>
               <span className="text-muted-foreground"> {t("training.orDragAndDrop")}</span>
@@ -545,7 +732,7 @@ export const ClassInfoSection = ({
           </div>
         )}
         <CollapsibleContent className="px-4">
-          <div className="pb-4 pt-2 space-y-4">
+          <div className="pt-2 space-y-4">
             {/* Show table view when file is uploaded, otherwise show period cards */}
             {uploadedFileName && uploadedRows.length > 0 ? (
               /* Uploaded data table view */
@@ -585,6 +772,15 @@ export const ClassInfoSection = ({
                     </TableBody>
                   </Table>
                 </div>
+                {/* Validation error message below table */}
+                {hasAnyError && (
+                  <div className="text-xs text-destructive mt-2 space-y-1">
+                    <p>{t("training.errorFoundInColumn")}</p>
+                    {hasDateError && (startDateAsDate || endDateAsDate) && (
+                      <p>{t("training.dateOutOfRangeError")}</p>
+                    )}
+                  </div>
+                )}
               </div>
             ) : (
               /* Manual entry: Number of periods input and period cards */
@@ -596,19 +792,19 @@ export const ClassInfoSection = ({
                     required
                     error={errors.numberOfPeriods}
                   >
-                    <Input
+                    <input
                       id="numberOfPeriods"
                       type="number"
+                      min={1}
+                      max={100}
                       placeholder={t("training.numberOfPeriodsPlaceholder")}
                       {...register("numberOfPeriods", {
                         valueAsNumber: true,
                       })}
-                      className={
-                        errors.numberOfPeriods
-                          ? "ring-2 ring-destructive"
-                          : ""
-                      }
-                      disabled={isSubmitting}
+                      className={cn(
+                        "flex h-10 w-full rounded-xl border bg-secondary/40 px-3 py-2 text-sm ring-offset-0 placeholder:text-muted-foreground/60 placeholder:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 md:text-xs transition-all duration-200 ease-in-out",
+                        errors.numberOfPeriods && "ring-2 ring-destructive"
+                      )}
                     />
                   </FormField>
                 </div>

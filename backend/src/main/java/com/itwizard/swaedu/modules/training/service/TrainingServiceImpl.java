@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.List;
 
 @Service
@@ -45,8 +46,21 @@ public class TrainingServiceImpl implements TrainingService {
         TrainingEntity entity = TrainingMapper.toEntity(request);
         TrainingEntity saved = repository.save(entity);
 
+        // Generate training_id after save to have the id
+        String trainingId = generateTrainingId(saved.getId());
+        saved.setTrainingId(trainingId);
+        saved = repository.save(saved);
+
         // Reload with relationships
         return getTrainingById(saved.getId());
+    }
+
+    /**
+     * Generate training_id in format: EDU-YYYY-{serial}
+     * Example: EDU-2026-1, EDU-2026-2, EDU-2026-100
+     */
+    private String generateTrainingId(Long id) {
+        return "EDU-" + Year.now().getValue() + "-" + id;
     }
 
     @Override
