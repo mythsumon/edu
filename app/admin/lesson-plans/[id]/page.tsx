@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Button, message, Card, Space, Badge, Modal, Input } from 'antd'
-import { ArrowLeft, CheckCircle2, XCircle, Edit } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, XCircle, Edit, Download, AlertTriangle } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { DetailSectionCard } from '@/components/admin/operations'
 import {
@@ -13,6 +13,7 @@ import {
 import type { LessonPlanDoc, LessonPlanStatus } from '@/app/instructor/schedule/[educationId]/lesson-plan/types'
 import { useAuth } from '@/contexts/AuthContext'
 import dayjs from 'dayjs'
+import { generateLessonPlanFilename } from '@/lib/filenameGenerator'
 import { Select, DatePicker } from 'antd'
 import { getAllRegionCityCodes } from '@/lib/commonCodeStore'
 
@@ -312,17 +313,41 @@ export default function AdminLessonPlanDetailPage() {
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     강의계획서 상세
                   </h1>
-                  <div className="flex items-center gap-2 mt-1">
+                  <div className="mt-1">
                     {getStatusBadge(doc.status)}
-                    {doc.status === 'REJECTED' && doc.rejectReason && (
-                      <span className="text-sm text-red-600 dark:text-red-400">
-                        반려사유: {doc.rejectReason}
-                      </span>
-                    )}
                   </div>
                 </div>
               </div>
               <Space>
+                <Button
+                  icon={<Download className="w-4 h-4" />}
+                  onClick={() => {
+                    const firstSession = doc.sessions?.[0]
+                    const sessionDate = firstSession?.date
+                    const startDate = doc.startDate
+                    const endDate = doc.endDate
+                    const institutionName = doc.institutionName || ''
+                    const gradeClass = doc.className || ''
+                    const instructorName = doc.authorInstructorName || ''
+                    
+                    const filename = generateLessonPlanFilename({
+                      sessionDate: sessionDate,
+                      startDate: startDate,
+                      endDate: endDate,
+                      schoolName: institutionName,
+                      gradeClass: gradeClass,
+                      instructorName: instructorName,
+                      documentType: '강의계획서',
+                    })
+                    
+                    // TODO: 실제 파일 다운로드 구현
+                    console.log('Download lesson plan:', filename)
+                    message.info(`강의계획서 다운로드: ${filename}`)
+                  }}
+                  className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
+                >
+                  다운로드
+                </Button>
                 {!isEditMode ? (
                   <>
                     <Button
@@ -368,6 +393,40 @@ export default function AdminLessonPlanDetailPage() {
           </div>
         </div>
 
+        {/* Submitted banner */}
+        {doc.status === 'SUBMITTED' && (
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  제출 완료 (승인 대기 중)
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reject reason banner */}
+        {doc.status === 'REJECTED' && doc.rejectReason && (
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5" />
+                <div className="flex-1">
+                  <div className="font-semibold text-red-900 dark:text-red-100 mb-1">반려 사유</div>
+                  <div className="text-sm text-red-700 dark:text-red-300">{doc.rejectReason}</div>
+                  {doc.rejectedAt && (
+                    <div className="text-xs text-red-600 dark:text-red-400 mt-1">
+                      반려일시: {dayjs(doc.rejectedAt).format('YYYY-MM-DD HH:mm')}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="max-w-7xl mx-auto px-6 py-8">
           {/* Education Summary */}
           <DetailSectionCard title="교육 정보" className="mb-6">
@@ -396,8 +455,7 @@ export default function AdminLessonPlanDetailPage() {
           </DetailSectionCard>
 
           {/* Basic Information - Same as instructor page but admin can edit */}
-          <Card className="rounded-xl mb-6">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">기본 정보</h2>
+          <DetailSectionCard title="기본 정보" className="mb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* All fields editable by admin */}
               <div>
@@ -667,22 +725,26 @@ export default function AdminLessonPlanDetailPage() {
                 )}
               </div>
             </div>
-          </Card>
+          </DetailSectionCard>
 
           {/* Education Goals */}
-          <Card className="rounded-xl mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">교육목표</h2>
-              {isEditMode && (
-                <Button
-                  type="dashed"
-                  icon={<Edit className="w-4 h-4" />}
-                  onClick={handleAddGoal}
-                >
-                  목표 추가
-                </Button>
-              )}
-            </div>
+          <DetailSectionCard
+            title={
+              <div className="flex items-center justify-between w-full">
+                <span>교육목표</span>
+                {isEditMode && (
+                  <Button
+                    type="dashed"
+                    icon={<Edit className="w-4 h-4" />}
+                    onClick={handleAddGoal}
+                  >
+                    목표 추가
+                  </Button>
+                )}
+              </div>
+            }
+            className="mb-6"
+          >
             <div className="space-y-3">
               {doc.goals.map((goal, index) => (
                 <div key={index} className="flex items-start gap-2">
@@ -711,22 +773,26 @@ export default function AdminLessonPlanDetailPage() {
                 </div>
               ))}
             </div>
-          </Card>
+          </DetailSectionCard>
 
           {/* Session Plans */}
-          <Card className="rounded-xl mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">차시별 계획</h2>
-              {isEditMode && (
-                <Button
-                  type="primary"
-                  icon={<Edit className="w-4 h-4" />}
-                  onClick={handleAddSession}
-                >
-                  차시 추가
-                </Button>
-              )}
-            </div>
+          <DetailSectionCard
+            title={
+              <div className="flex items-center justify-between w-full">
+                <span>차시별 계획</span>
+                {isEditMode && (
+                  <Button
+                    type="primary"
+                    icon={<Edit className="w-4 h-4" />}
+                    onClick={handleAddSession}
+                  >
+                    차시 추가
+                  </Button>
+                )}
+              </div>
+            }
+            className="mb-6"
+          >
             <div className="space-y-4">
               {doc.sessions.length === 0 ? (
                 <div className="text-center py-8 text-gray-500 dark:text-gray-400">
@@ -836,7 +902,67 @@ export default function AdminLessonPlanDetailPage() {
                 ))
               )}
             </div>
-          </Card>
+          </DetailSectionCard>
+
+          {/* Signature Section */}
+          <DetailSectionCard title="서명" className="mb-6">
+            <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-6">
+              <div className="text-center mb-4">
+                <p className="text-base font-medium text-gray-700 dark:text-gray-300 mb-4">
+                  다음과 같이 강의계획서를 제출합니다.
+                </p>
+                <div className="mb-6">
+                  <p className="text-base text-gray-700 dark:text-gray-300">
+                    {doc.signature?.signedAt 
+                      ? dayjs(doc.signature.signedAt).format('YYYY. MM. DD.')
+                      : doc.submittedAt
+                      ? dayjs(doc.submittedAt).format('YYYY. MM. DD.')
+                      : dayjs(doc.createdAt).format('YYYY. MM. DD.')}
+                  </p>
+                </div>
+                <div className="flex justify-end items-center gap-4">
+                  <div className="text-right">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">작성자</p>
+                    {doc.signature ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-base font-medium text-gray-900 dark:text-gray-100">
+                          {doc.signature.signedByUserName}
+                        </span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">(인)</span>
+                        {doc.signature.signatureImageUrl && (
+                          <img
+                            src={doc.signature.signatureImageUrl}
+                            alt="서명"
+                            className="h-12 object-contain"
+                          />
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-base font-medium text-gray-900 dark:text-gray-100">
+                          {doc.authorInstructorName}
+                        </span>
+                        <span className="text-sm text-gray-400 dark:text-gray-500">(미서명)</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              {doc.submittedAt && (
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <p>제출일시: {dayjs(doc.submittedAt).format('YYYY-MM-DD HH:mm')}</p>
+                    {doc.approvedAt && (
+                      <p className="mt-1">승인일시: {dayjs(doc.approvedAt).format('YYYY-MM-DD HH:mm')}</p>
+                    )}
+                    {doc.rejectedAt && (
+                      <p className="mt-1">반려일시: {dayjs(doc.rejectedAt).format('YYYY-MM-DD HH:mm')}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </DetailSectionCard>
         </div>
 
         {/* Reject Modal */}

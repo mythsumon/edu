@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Modal, Form, DatePicker, TimePicker, Space, message } from 'antd'
+import { Modal, Form, DatePicker, TimePicker, Space, message, Radio } from 'antd'
 import dayjs, { Dayjs } from 'dayjs'
 import type { Education } from '@/lib/dataStore'
 
@@ -10,7 +10,7 @@ const { RangePicker } = DatePicker
 interface ScheduleTimeModalProps {
   open: boolean
   education: Education | null
-  onOk: (openAt: string | null, closeAt: string | null) => void
+  onOk: (openAt: string | null, closeAt: string | null, applicationRestriction?: 'MAIN_ONLY' | 'ASSISTANT_ONLY' | 'ALL') => void
   onCancel: () => void
 }
 
@@ -23,6 +23,7 @@ export function ScheduleTimeModal({
   const [form] = Form.useForm()
   const [openAtEnabled, setOpenAtEnabled] = useState(false)
   const [closeAtEnabled, setCloseAtEnabled] = useState(false)
+  const [applicationRestriction, setApplicationRestriction] = useState<'MAIN_ONLY' | 'ASSISTANT_ONLY' | 'ALL'>('ALL')
 
   useEffect(() => {
     if (open && education) {
@@ -33,10 +34,12 @@ export function ScheduleTimeModal({
       form.setFieldsValue({
         openAt: openAt,
         closeAt: closeAt,
+        applicationRestriction: education.applicationRestriction || 'ALL',
       })
 
       setOpenAtEnabled(!!openAt)
       setCloseAtEnabled(!!closeAt)
+      setApplicationRestriction(education.applicationRestriction || 'ALL')
     } else {
       form.resetFields()
       setOpenAtEnabled(false)
@@ -76,10 +79,12 @@ export function ScheduleTimeModal({
         closeAt = closeAtDate.toISOString()
       }
 
-      onOk(openAt, closeAt)
+      const restriction = form.getFieldValue('applicationRestriction') || 'ALL'
+      onOk(openAt, closeAt, restriction)
       form.resetFields()
       setOpenAtEnabled(false)
       setCloseAtEnabled(false)
+      setApplicationRestriction('ALL')
     })
   }
 
@@ -87,6 +92,7 @@ export function ScheduleTimeModal({
     form.resetFields()
     setOpenAtEnabled(false)
     setCloseAtEnabled(false)
+    setApplicationRestriction('ALL')
     onCancel()
   }
 
@@ -212,6 +218,31 @@ export function ScheduleTimeModal({
               </Form.Item>
             )}
           </Space>
+        </Form.Item>
+
+        <Form.Item
+          label="강사 신청 제한"
+          name="applicationRestriction"
+          initialValue="ALL"
+        >
+          <Radio.Group
+            value={applicationRestriction}
+            onChange={(e) => {
+              setApplicationRestriction(e.target.value)
+              form.setFieldsValue({ applicationRestriction: e.target.value })
+            }}
+          >
+            <Space direction="vertical">
+              <Radio value="ALL">모두 신청 가능</Radio>
+              <Radio value="MAIN_ONLY">주강사만 신청 가능</Radio>
+              <Radio value="ASSISTANT_ONLY">보조강사만 신청 가능</Radio>
+            </Space>
+          </Radio.Group>
+          <div className="mt-2 text-xs text-gray-500">
+            <p>• 모두 신청 가능: 주강사와 보조강사 모두 신청할 수 있습니다.</p>
+            <p>• 주강사만 신청 가능: 주강사 역할로만 신청할 수 있습니다.</p>
+            <p>• 보조강사만 신청 가능: 보조강사 역할로만 신청할 수 있습니다.</p>
+          </div>
         </Form.Item>
       </Form>
     </Modal>

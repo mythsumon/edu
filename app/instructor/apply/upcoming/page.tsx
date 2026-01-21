@@ -16,8 +16,18 @@ export default function UpcomingEducationPage() {
   const upcomingEducations = useMemo(() => {
     const now = dayjs()
     return allEducations.filter(education => {
-      // Status must be OPEN or 신청 중 (모집중)
-      if (education.educationStatus !== 'OPEN' && education.educationStatus !== '신청 중') {
+      // Status must be 강사공개/신청 중 OR educationStatus must be OPEN/신청 중
+      const isStatusOpen = education.status === '강사공개' || 
+                          education.status === '신청 중' ||
+                          education.educationStatus === 'OPEN' ||
+                          education.educationStatus === '신청 중'
+      
+      if (!isStatusOpen) {
+        return false
+      }
+      
+      // Exclude if explicitly closed
+      if (education.status === '신청 마감' || education.educationStatus === '신청 마감') {
         return false
       }
       

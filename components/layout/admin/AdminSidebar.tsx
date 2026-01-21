@@ -13,6 +13,8 @@ import {
   User,
   LogOut,
   Save,
+  Receipt,
+  ShieldCheck,
 } from 'lucide-react'
 import { useLanguage } from '@/components/localization/LanguageContext'
 import { useState } from 'react'
@@ -74,6 +76,8 @@ const adminMenuConfig: MenuGroup[] = [
       { labelKey: 'sidebar.settings', href: '/admin/system' },
       { labelKey: 'sidebar.userManagement', href: '/admin/users' },
       { labelKey: 'sidebar.commonCode', href: '/admin/common-code' },
+      { labelKey: 'sidebar.travelSettlement', href: '/admin/settlements/travel', icon: Receipt },
+      { labelKey: 'sidebar.instructorApplicationPolicy', href: '/admin/policies/instructor-application', icon: ShieldCheck },
     ],
   },
 ]

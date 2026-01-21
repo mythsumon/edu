@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Button, Space, Modal, Input, Table, message, Card } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { ArrowLeft, CheckCircle2, XCircle, CheckCircle } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, XCircle, CheckCircle, Download } from 'lucide-react'
 import { Badge } from 'antd'
 import { DetailPageHeaderSticky, DetailSectionCard } from '@/components/admin/operations'
 import { getAttendanceDocByEducationId, getAttendanceDocById, getAttendanceDocs, upsertAttendanceDoc, type AttendanceDocument } from '@/app/instructor/schedule/[educationId]/attendance/storage'
@@ -15,6 +15,7 @@ import { getActivityLogByEducationId } from '@/app/instructor/activity-logs/stor
 import { teacherEducationInfoStore } from '@/lib/teacherStore'
 import type { TeacherEducationInfo } from '@/lib/teacherStore'
 import dayjs from 'dayjs'
+import { generateAttendanceFilename } from '@/lib/filenameGenerator'
 
 const { TextArea } = Input
 
@@ -216,6 +217,29 @@ export default function AdminAttendanceDetailPage() {
                 </div>
               </div>
               <Space>
+                <Button
+                  icon={<Download className="w-4 h-4" />}
+                  onClick={() => {
+                    const firstSession = doc.sessions?.[0]
+                    const sessionDate = firstSession?.date
+                    const gradeClass = doc.gradeClass || ''
+                    const institution = doc.institution || ''
+                    
+                    const filename = generateAttendanceFilename({
+                      sessionDate: sessionDate,
+                      schoolName: institution,
+                      gradeClass: gradeClass,
+                      documentType: '출석부',
+                    })
+                    
+                    // TODO: 실제 파일 다운로드 구현
+                    console.log('Download attendance:', filename)
+                    message.info(`출석부 다운로드: ${filename}`)
+                  }}
+                  className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
+                >
+                  다운로드
+                </Button>
                 {doc.status === 'SUBMITTED' && (
                   <>
                     <Button

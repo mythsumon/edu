@@ -3,6 +3,7 @@
 import { upsertAttendanceDoc, getAttendanceDocById, getAttendanceDocByEducationId } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import { upsertActivityLog, getActivityLogById } from '@/app/instructor/activity-logs/storage'
 import { upsertDoc, getDocById } from '@/app/instructor/equipment-confirmations/storage'
+import { upsertLessonPlan, getLessonPlanById } from '@/app/instructor/schedule/[educationId]/lesson-plan/storage'
 import { getEducationSubmissionGroups } from './submission-utils'
 import type { ApprovalAction } from './submission-types'
 
@@ -98,6 +99,32 @@ export function approveOrRejectSubmission(
       return { success: true }
     }
 
+    if (action.documentType === 'lessonPlan') {
+      const doc = getLessonPlanById(action.educationId)
+      if (!doc) {
+        return { success: false, error: '강의계획서를 찾을 수 없습니다.' }
+      }
+
+      if (action.action === 'approve') {
+        doc.status = 'APPROVED'
+        doc.approvedAt = now
+        doc.approvedBy = adminName
+        doc.rejectedAt = undefined
+        doc.rejectedBy = undefined
+        doc.rejectReason = undefined
+      } else {
+        doc.status = 'REJECTED'
+        doc.rejectedAt = now
+        doc.rejectedBy = adminName
+        doc.rejectReason = action.reason || '반려 사유가 없습니다.'
+        doc.approvedAt = undefined
+        doc.approvedBy = undefined
+      }
+
+      upsertLessonPlan(doc)
+      return { success: true }
+    }
+
     return { success: false, error: '알 수 없는 문서 유형입니다.' }
   } catch (error) {
     console.error('Error approving/rejecting submission:', error)
@@ -152,6 +179,16 @@ export function approveOrRejectAllDocuments(
     )
     if (!result.success) {
       errors.push(`교구 확인서: ${result.error || '처리 실패'}`)
+    }
+  }
+
+  if (group.lessonPlan) {
+    const result = approveOrRejectSubmission(
+      { educationId: group.lessonPlan.id, documentType: 'lessonPlan', action, reason },
+      adminName
+    )
+    if (!result.success) {
+      errors.push(`강의계획서: ${result.error || '처리 실패'}`)
     }
   }
 

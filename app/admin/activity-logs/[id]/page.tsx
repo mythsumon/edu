@@ -4,13 +4,14 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Button, Modal, Input, message, Image, Badge, Space } from 'antd'
-import { ArrowLeft, CheckCircle2, XCircle } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, XCircle, Download } from 'lucide-react'
 import { DetailPageHeaderSticky, DetailSectionCard } from '@/components/admin/operations'
 import { getActivityLogById, upsertActivityLog } from '@/app/instructor/activity-logs/storage'
 import type { ActivityLog } from '@/app/instructor/activity-logs/types'
 import { useAuth } from '@/contexts/AuthContext'
 import { SessionRowsTable } from '@/app/instructor/activity-logs/components/SessionRowsTable'
 import dayjs from 'dayjs'
+import { generateActivityLogFilename, generatePhotoFilename, generateLessonPlanFilename } from '@/lib/filenameGenerator'
 
 const { TextArea } = Input
 
@@ -146,6 +147,67 @@ export default function AdminActivityLogDetailPage() {
                 </div>
               </div>
               <Space>
+                <Button
+                  icon={<Download className="w-4 h-4" />}
+                  onClick={() => {
+                    const firstSession = log.sessions?.[0]
+                    const sessionDate = firstSession?.date
+                    const startDate = log.startDate
+                    const endDate = log.endDate
+                    const institutionName = log.institutionName || ''
+                    const gradeClass = log.grade && log.class ? `${log.grade}학년 ${log.class}반` : ''
+                    const instructorName = log.submittedBy || log.createdBy || ''
+                    
+                    const filename = generateActivityLogFilename({
+                      sessionDate: sessionDate,
+                      startDate: startDate,
+                      endDate: endDate,
+                      schoolName: institutionName,
+                      gradeClass: gradeClass,
+                      instructorName: instructorName,
+                      documentType: '교육활동일지',
+                    })
+                    
+                    // TODO: 실제 파일 다운로드 구현
+                    console.log('Download activity log:', filename)
+                    message.info(`활동일지 다운로드: ${filename}`)
+                  }}
+                  className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
+                >
+                  활동일지 다운로드
+                </Button>
+                {log.photos && log.photos.length > 0 && (
+                  <Button
+                    icon={<Download className="w-4 h-4" />}
+                    onClick={() => {
+                      const firstSession = log.sessions?.[0]
+                      const sessionDate = firstSession?.date
+                      const startDate = log.startDate
+                      const endDate = log.endDate
+                      const institutionName = log.institutionName || ''
+                      const gradeClass = log.grade && log.class ? `${log.grade}학년 ${log.class}반` : ''
+                      
+                      // 각 사진에 대해 파일명 생성
+                      log.photos.forEach((photo, index) => {
+                        const filename = generatePhotoFilename({
+                          sessionDate: sessionDate,
+                          startDate: startDate,
+                          endDate: endDate,
+                          schoolName: institutionName,
+                          gradeClass: gradeClass,
+                          photoIndex: index + 1,
+                          totalPhotos: log.photos.length,
+                          documentType: '활동사진',
+                        })
+                        console.log(`Download photo ${index + 1}:`, filename)
+                      })
+                      message.info(`활동사진 ${log.photos.length}개 다운로드 준비됨`)
+                    }}
+                    className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
+                  >
+                    활동사진 다운로드
+                  </Button>
+                )}
                 {log.status === 'SUBMITTED' && (
                   <>
                     <Button

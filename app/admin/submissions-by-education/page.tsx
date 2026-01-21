@@ -74,6 +74,10 @@ export default function SubmissionsByEducationPage() {
       router.push(`/admin/activity-logs/${group.activity.id}`)
     } else if (type === 'equipment' && group.equipment) {
       router.push(`/admin/equipment-confirmations/${group.equipment.id}`)
+    } else if (type === 'evidence' && group.evidence) {
+      router.push(`/admin/evidence/${group.evidence.id}`)
+    } else if (type === 'lessonPlan' && group.lessonPlan) {
+      router.push(`/admin/lesson-plans/${group.lessonPlan.id}`)
     }
   }
 
@@ -187,6 +191,10 @@ export default function SubmissionsByEducationPage() {
           docId = group.activity.id
         } else if (type === 'equipment' && group.equipment) {
           docId = group.equipment.id
+        } else if (type === 'evidence' && group.evidence) {
+          docId = group.evidence.id
+        } else if (type === 'lessonPlan' && group.lessonPlan) {
+          docId = group.lessonPlan.id
         }
 
         if (!docId) return
@@ -375,6 +383,52 @@ export default function SubmissionsByEducationPage() {
       },
     },
     {
+      title: '강의계획서',
+      key: 'lessonPlan',
+      width: 150,
+      render: (_, record) => {
+        if (!record.lessonPlan) {
+          return <span className="text-gray-400">미제출</span>
+        }
+        return (
+          <div className="flex items-center gap-2">
+            {getStatusBadge(record.lessonPlan.status)}
+            <Space>
+              <Button
+                size="small"
+                icon={<Eye className="w-3 h-3" />}
+                onClick={() => handleViewDetail(record, 'lessonPlan')}
+              >
+                보기
+              </Button>
+              {record.lessonPlan.status === 'SUBMITTED' && (
+                <>
+                  <Button
+                    size="small"
+                    type="primary"
+                    icon={<CheckCircle className="w-3 h-3" />}
+                    onClick={() => handleApproveSingle(record, 'lessonPlan')}
+                    loading={loading}
+                  >
+                    승인
+                  </Button>
+                  <Button
+                    size="small"
+                    danger
+                    icon={<X className="w-3 h-3" />}
+                    onClick={() => handleRejectSingle(record, 'lessonPlan')}
+                    loading={loading}
+                  >
+                    거부
+                  </Button>
+                </>
+              )}
+            </Space>
+          </div>
+        )
+      },
+    },
+    {
       title: '제출일시',
       dataIndex: 'submittedAt',
       key: 'submittedAt',
@@ -390,12 +444,14 @@ export default function SubmissionsByEducationPage() {
         const allSubmitted = 
           record.attendance?.status === 'SUBMITTED' &&
           record.activity?.status === 'SUBMITTED' &&
-          record.equipment?.status === 'SUBMITTED'
+          record.equipment?.status === 'SUBMITTED' &&
+          record.lessonPlan?.status === 'SUBMITTED'
         
         const hasSubmitted = 
           record.attendance?.status === 'SUBMITTED' ||
           record.activity?.status === 'SUBMITTED' ||
-          record.equipment?.status === 'SUBMITTED'
+          record.equipment?.status === 'SUBMITTED' ||
+          record.lessonPlan?.status === 'SUBMITTED'
 
         if (!hasSubmitted) {
           return <span className="text-gray-400">-</span>
@@ -450,7 +506,7 @@ export default function SubmissionsByEducationPage() {
               교육별 제출 현황
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              교육 ID별로 3개 문서(출석부, 활동 일지, 교구 확인서)의 제출 상태를 확인하고 승인/거부할 수 있습니다.
+              교육 ID별로 문서(출석부, 활동 일지, 교구 확인서, 강의계획서)의 제출 상태를 확인하고 승인/거부할 수 있습니다.
             </p>
           </div>
 
@@ -513,6 +569,9 @@ export default function SubmissionsByEducationPage() {
             )}
             {selectedGroup?.equipment && (
               <li>교구 확인서: {selectedGroup.equipment.status === 'SUBMITTED' ? '제출됨' : '미제출'}</li>
+            )}
+            {selectedGroup?.lessonPlan && (
+              <li>강의계획서: {selectedGroup.lessonPlan.status === 'SUBMITTED' ? '제출됨' : '미제출'}</li>
             )}
           </ul>
         </Modal>

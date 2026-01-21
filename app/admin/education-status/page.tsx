@@ -196,46 +196,27 @@ export default function EducationStatusPage() {
       // dataStore에서 최신 데이터 가져오기
       const educations = dataStore.getEducations()
       const assignments = dataStore.getInstructorAssignments()
-      const updatedData = educations.map(edu => {
-        const existing = data.find(d => d.educationId === edu.educationId)
-        if (existing) {
-          // Update existing item with instructor names
-          const instructorNames = educationToStatusItem(edu, assignments)
-          return {
-            ...existing,
-            status: edu.status,
-            openAt: edu.openAt,
-            closeAt: edu.closeAt,
-            mainInstructorNames: instructorNames.mainInstructorNames,
-            assistantInstructorNames: instructorNames.assistantInstructorNames,
-            mainInstructorsCount: instructorNames.mainInstructorNames?.length || 0,
-            assistantInstructorsCount: instructorNames.assistantInstructorNames?.length || 0,
-          }
-        }
-        // 새로운 교육인 경우 - 강사 이름 매핑 포함
-        return educationToStatusItem(edu, assignments)
-      })
+      const updatedData = educations.map(edu => educationToStatusItem(edu, assignments))
       
       setData(updatedData)
     }
 
+    // Initial load
+    handleStatusUpdate()
+
     window.addEventListener('educationStatusUpdated', handleStatusUpdate)
     window.addEventListener('educationUpdated', handleStatusUpdate)
-    window.addEventListener('storage', handleStatusUpdate)
+    window.addEventListener('storage', (e: StorageEvent) => {
+      if (e.key === 'educations_data') {
+        handleStatusUpdate()
+      }
+    })
 
     return () => {
       window.removeEventListener('educationStatusUpdated', handleStatusUpdate)
       window.removeEventListener('educationUpdated', handleStatusUpdate)
       window.removeEventListener('storage', handleStatusUpdate)
     }
-  }, [data])
-  
-  // 초기 데이터 로드 시 강사 이름 매핑
-  useEffect(() => {
-    const educations = dataStore.getEducations()
-    const assignments = dataStore.getInstructorAssignments()
-    const mappedData = educations.map(edu => educationToStatusItem(edu, assignments))
-    setData(mappedData)
   }, [])
   
   // Bulk status change helpers for scheduled transitions
@@ -564,13 +545,14 @@ export default function EducationStatusPage() {
     })
   }
 
-  const handleScheduleTimeConfirm = (openAt: string | null, closeAt: string | null) => {
+  const handleScheduleTimeConfirm = (openAt: string | null, closeAt: string | null, applicationRestriction?: 'MAIN_ONLY' | 'ASSISTANT_ONLY' | 'ALL') => {
     if (!selectedEducationForSchedule) return
 
     const updates: Partial<Education> = {
       status: '오픈예정',
       openAt: openAt || undefined,
       closeAt: closeAt || undefined,
+      applicationRestriction: applicationRestriction || 'ALL',
     }
 
     // dataStore 업데이트
@@ -590,6 +572,7 @@ export default function EducationStatusPage() {
           status: '오픈예정',
           openAt: openAt || undefined,
           closeAt: closeAt || undefined,
+          applicationRestriction: applicationRestriction || 'ALL',
         }
       }
       return item

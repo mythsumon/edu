@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useMemo, useEffect, useRef } from 'react'
-import { Table, Button, Card, Select, Space, DatePicker, Badge, Modal, Collapse, Input, message, Tooltip } from 'antd'
+import { Table, Button, Card, Select, Space, DatePicker, Badge, Modal, Collapse, Input, message, Tooltip, Tabs, AutoComplete } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { ChevronRight, ArrowLeft, RotateCcw, RefreshCw, Copy, Trash2, UserPlus, CheckCircle2, Eye, Search, Filter } from 'lucide-react'
+import { ChevronRight, ArrowLeft, RotateCcw, RefreshCw, Copy, Trash2, UserPlus, CheckCircle2, Eye, Search, Filter, X } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useRouter } from 'next/navigation'
 import dayjs, { Dayjs } from 'dayjs'
@@ -14,7 +14,12 @@ import {
   DetailSectionCard,
   DefinitionListGrid,
 } from '@/components/admin/operations'
-import { dataStore } from '@/lib/dataStore'
+import { dataStore, type Instructor as InstructorType } from '@/lib/dataStore'
+import { 
+  validateInstructorAssignment,
+  getDefaultMonthlyCapacity,
+  getGlobalDailyLimit,
+} from '@/entities/instructor/instructor-validation'
 
 dayjs.locale('ko')
 const { RangePicker } = DatePicker
@@ -221,6 +226,18 @@ const availableInstructors = [
   { id: '8', name: '윤보조', type: 'assistant' },
 ]
 
+// Get instructor data with capacity settings (mock - TODO: get from API)
+function getInstructorData(instructorId: string): InstructorType {
+  const instructor = availableInstructors.find(inst => inst.id === instructorId)
+  return {
+    id: instructorId,
+    name: instructor?.name || `강사-${instructorId}`,
+    monthlyLeadMaxSessions: 20, // Default values - should come from instructor profile
+    monthlyAssistantMaxSessions: 30,
+    dailyEducationLimit: null, // Use global default
+  }
+}
+
 export default function InstructorAssignmentPage() {
   const router = useRouter()
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list')
@@ -255,6 +272,10 @@ export default function InstructorAssignmentPage() {
   const [deleteTarget, setDeleteTarget] = useState<{ session: number; instructorId: string; type: 'main' | 'assistant' } | null>(null)
   const [selectedMainInstructor, setSelectedMainInstructor] = useState<{ [key: string]: string }>({})
   const [selectedAssistantInstructor, setSelectedAssistantInstructor] = useState<{ [key: string]: string }>({})
+  const [assignmentModalOpen, setAssignmentModalOpen] = useState(false)
+  const [assignmentTargetEducation, setAssignmentTargetEducation] = useState<EducationAssignmentItem | null>(null)
+  const [assignmentModalMainInstructor, setAssignmentModalMainInstructor] = useState<{ [key: string]: string }>({})
+  const [assignmentModalAssistantInstructor, setAssignmentModalAssistantInstructor] = useState<{ [key: string]: string }>({})
 
   const handleRowClick = (record: EducationAssignmentItem) => {
     setSelectedEducation(record)
@@ -383,10 +404,12 @@ export default function InstructorAssignmentPage() {
   }
 
   // Delete handler for instructors (both confirmed and pending)
-  const handleDeleteInstructorFromCard = async (session: number, instructorId: string, type: 'main' | 'assistant') => {
-    if (!selectedEducation) return
+  const handleDeleteInstructorFromCard = async (session: number, instructorId: string, type: 'main' | 'assistant', education?: typeof selectedEducation) => {
+    // Use provided education or fallback to selectedEducation
+    const targetEducation = education || selectedEducation
+    if (!targetEducation) return
 
-    const lesson = selectedEducation.lessons?.find((l) => l.session === session)
+    const lesson = targetEducation.lessons?.find((l) => l.session === session)
     if (!lesson) return
 
     const instructor = type === 'main'
@@ -406,7 +429,7 @@ export default function InstructorAssignmentPage() {
       onOk: async () => {
         try {
           // TODO: Replace with actual API call when available
-          // await assignmentService.deleteInstructor(selectedEducation.educationId, session, instructorId, type)
+          // await assignmentService.deleteInstructor(targetEducation.educationId, session, instructorId, type)
 
           // Update local state
           if (type === 'main') {
@@ -415,10 +438,17 @@ export default function InstructorAssignmentPage() {
             lesson.assistantInstructors = lesson.assistantInstructors.filter((inst) => inst.id !== instructorId)
           }
 
-          setSelectedEducation({ ...selectedEducation })
+          // Update the correct education state
+          if (education) {
+            // Update assignmentTargetEducation if provided
+            setAssignmentTargetEducation({ ...targetEducation })
+          } else {
+            // Update selectedEducation if used from detail view
+            setSelectedEducation({ ...targetEducation })
+          }
 
           // Sync to application page via dataStore
-          dataStore.deleteInstructorFromAssignment(selectedEducation.educationId, session, instructorId, type)
+          dataStore.deleteInstructorFromAssignment(targetEducation.educationId, session, instructorId, type)
 
           message.success(isPending ? '강사 신청이 삭제되었습니다.' : '강사가 삭제되었습니다.')
         } catch (error) {
@@ -434,6 +464,167 @@ export default function InstructorAssignmentPage() {
       navigator.clipboard.writeText(selectedEducation.educationId)
       // Could add toast notification here
     }
+  }
+
+  const handleOpenAssignmentModal = (record: EducationAssignmentItem, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation()
+    }
+    setAssignmentTargetEducation(record)
+    setAssignmentModalOpen(true)
+    // Initialize with existing assignments if any
+    const mainInstructors: { [key: string]: string } = {}
+    const assistantInstructors: { [key: string]: string } = {}
+    if (record.lessons) {
+      record.lessons.forEach((lesson) => {
+        if (lesson.mainInstructors.length > 0) {
+          mainInstructors[`${lesson.session}`] = lesson.mainInstructors[0].id
+        }
+        if (lesson.assistantInstructors.length > 0) {
+          assistantInstructors[`${lesson.session}`] = lesson.assistantInstructors[0].id
+        }
+      })
+    }
+    setAssignmentModalMainInstructor(mainInstructors)
+    setAssignmentModalAssistantInstructor(assistantInstructors)
+  }
+
+  const handleCloseAssignmentModal = () => {
+    setAssignmentModalOpen(false)
+    setAssignmentTargetEducation(null)
+    setAssignmentModalMainInstructor({})
+    setAssignmentModalAssistantInstructor({})
+  }
+
+  const handleConfirmAssignment = () => {
+    if (!assignmentTargetEducation) return
+
+    // Get education data
+    const education = dataStore.getEducationById(assignmentTargetEducation.educationId)
+    if (!education) {
+      message.error('교육 정보를 찾을 수 없습니다.')
+      return
+    }
+
+    // Validate all instructor assignments
+    const validationErrors: string[] = []
+    const monthlyCapacity = getDefaultMonthlyCapacity()
+    const globalDailyLimit = getGlobalDailyLimit()
+
+    // Validate main instructors
+    Object.entries(assignmentModalMainInstructor).forEach(([session, instructorId]) => {
+      if (!instructorId) return
+      
+      const instructor = getInstructorData(instructorId)
+      const validation = validateInstructorAssignment(
+        instructor,
+        education,
+        'main',
+        {
+          monthlyCapacity,
+          dailyLimit: { globalDefault: globalDailyLimit },
+        },
+        education.educationId // Exclude current education from counts
+      )
+
+      if (!validation.valid) {
+        validationErrors.push(`주강사 ${instructor.name}: ${validation.reason}`)
+      }
+    })
+
+    // Validate assistant instructors
+    Object.entries(assignmentModalAssistantInstructor).forEach(([session, instructorId]) => {
+      if (!instructorId) return
+      
+      const instructor = getInstructorData(instructorId)
+      const validation = validateInstructorAssignment(
+        instructor,
+        education,
+        'assistant',
+        {
+          monthlyCapacity,
+          dailyLimit: { globalDefault: globalDailyLimit },
+        },
+        education.educationId // Exclude current education from counts
+      )
+
+      if (!validation.valid) {
+        validationErrors.push(`보조강사 ${instructor.name}: ${validation.reason}`)
+      }
+    })
+
+    // If validation failed, show errors and stop
+    if (validationErrors.length > 0) {
+      Modal.error({
+        title: '배정 검증 실패',
+        content: (
+          <div>
+            <p>다음 강사들의 배정이 규칙에 위배됩니다:</p>
+            <ul style={{ marginTop: 8, paddingLeft: 20 }}>
+              {validationErrors.map((error, index) => (
+                <li key={index} style={{ marginBottom: 4 }}>{error}</li>
+              ))}
+            </ul>
+          </div>
+        ),
+        width: 600,
+      })
+      return
+    }
+
+    // TODO: Implement actual assignment API call
+    console.log('Assigning instructors:', {
+      educationId: assignmentTargetEducation.educationId,
+      mainInstructors: assignmentModalMainInstructor,
+      assistantInstructors: assignmentModalAssistantInstructor,
+    })
+
+    // Update local data
+    const updatedData = dummyData.map((item) => {
+      if (item.educationId === assignmentTargetEducation.educationId) {
+        const updatedItem = { ...item }
+        if (updatedItem.lessons) {
+          updatedItem.lessons = updatedItem.lessons.map((lesson) => {
+            const updatedLesson = { ...lesson }
+            
+            // Update main instructors
+            const mainInstructorId = assignmentModalMainInstructor[`${lesson.session}`]
+            if (mainInstructorId) {
+              const instructor = availableInstructors.find((inst) => inst.id === mainInstructorId && inst.type === 'main')
+              if (instructor && !updatedLesson.mainInstructors.some((inst) => inst.id === instructor.id)) {
+                updatedLesson.mainInstructors = [
+                  ...updatedLesson.mainInstructors,
+                  { id: instructor.id, name: instructor.name, status: 'confirmed' as const },
+                ]
+              }
+            }
+
+            // Update assistant instructors
+            const assistantInstructorId = assignmentModalAssistantInstructor[`${lesson.session}`]
+            if (assistantInstructorId) {
+              const instructor = availableInstructors.find((inst) => inst.id === assistantInstructorId && inst.type === 'assistant')
+              if (instructor && !updatedLesson.assistantInstructors.some((inst) => inst.id === instructor.id)) {
+                updatedLesson.assistantInstructors = [
+                  ...updatedLesson.assistantInstructors,
+                  { id: instructor.id, name: instructor.name, status: 'confirmed' as const },
+                ]
+              }
+            }
+
+            return updatedLesson
+          })
+          
+          // Update counts
+          updatedItem.mainInstructorCount = updatedItem.lessons.reduce((sum, lesson) => sum + lesson.mainInstructors.length, 0)
+          updatedItem.assistantInstructorCount = updatedItem.lessons.reduce((sum, lesson) => sum + lesson.assistantInstructors.length, 0)
+        }
+        return updatedItem
+      }
+      return item
+    })
+
+    message.success('강사 배정이 완료되었습니다.')
+    handleCloseAssignmentModal()
   }
 
 
@@ -576,6 +767,25 @@ export default function InstructorAssignmentPage() {
         width: 200,
         align: 'right' as const,
         render: (text: string) => <span className="text-base font-medium text-gray-900">{text}</span>,
+      },
+      {
+        title: '배정',
+        key: 'assignment',
+        width: 90,
+        fixed: 'right' as const,
+        render: (_, record) => (
+          <Button
+            size="small"
+            icon={<UserPlus className="w-3 h-3" />}
+            onClick={(e) => {
+              e.stopPropagation()
+              handleOpenAssignmentModal(record, e)
+            }}
+            className="h-8 px-3 rounded-xl border border-green-200 bg-green-50 hover:bg-green-600 hover:text-white text-green-700 transition-colors"
+          >
+            배정
+          </Button>
+        ),
       },
       {
         title: '상세',
@@ -1138,6 +1348,309 @@ export default function InstructorAssignmentPage() {
           okButtonProps={{ danger: true }}
         >
           <p>정말 이 강사를 삭제하시겠습니까?</p>
+        </Modal>
+
+        {/* Assignment Modal */}
+        <Modal
+          open={assignmentModalOpen}
+          onCancel={handleCloseAssignmentModal}
+          footer={null}
+          width={1000}
+          closable={false}
+          className="[&_.ant-modal-content]:!p-0 [&_.ant-modal-body]:!p-0"
+        >
+          <div className="bg-white rounded-xl">
+            {/* Header */}
+            <div className="px-6 py-5 border-b border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900">강사 배정</h3>
+                  {assignmentTargetEducation && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      교육에 강사를 배정합니다
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={handleCloseAssignmentModal}
+                  className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+              
+              {/* Education Info Card */}
+              {assignmentTargetEducation && (
+                <Card className="bg-blue-50 border-blue-200 rounded-lg">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                      <p className="text-xs text-gray-600 mb-1">교육ID</p>
+                      <p className="text-sm font-semibold text-gray-900">{assignmentTargetEducation.educationId}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 mb-1">교육명</p>
+                      <p className="text-sm font-semibold text-gray-900 line-clamp-1">{assignmentTargetEducation.educationName}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 mb-1">교육기관</p>
+                      <p className="text-sm font-semibold text-gray-900">{assignmentTargetEducation.institution}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 mb-1">교육기간</p>
+                      <p className="text-sm font-semibold text-gray-900">{assignmentTargetEducation.period}</p>
+                    </div>
+                  </div>
+                </Card>
+              )}
+            </div>
+
+            {/* Content */}
+            {assignmentTargetEducation && (
+              <div className="px-6 py-6">
+                {assignmentTargetEducation.lessons && assignmentTargetEducation.lessons.length > 0 ? (
+                  <Tabs
+                    defaultActiveKey="1"
+                    items={assignmentTargetEducation.lessons.map((lesson) => ({
+                      key: `${lesson.session}`,
+                      label: (
+                        <span className="px-3 py-1">
+                          {lesson.session}차 수업
+                          <span className="ml-2 text-xs text-gray-500">
+                            {lesson.date} {lesson.startTime}~{lesson.endTime}
+                          </span>
+                        </span>
+                      ),
+                      children: (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                          {/* Main Instructor */}
+                          <Card className="rounded-xl border border-gray-200 shadow-sm">
+                            <div className="flex items-center justify-between mb-4">
+                              <h4 className="text-base font-semibold text-gray-900">주강사</h4>
+                              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                                lesson.mainInstructors.length >= lesson.mainInstructorRequired
+                                  ? 'bg-green-50 text-green-700 border border-green-200'
+                                  : 'bg-amber-50 text-amber-700 border border-amber-200'
+                              }`}>
+                                {lesson.mainInstructors.length}/{lesson.mainInstructorRequired}
+                              </span>
+                            </div>
+                            <AutoComplete
+                              value={assignmentModalMainInstructor[`${lesson.session}`] ? availableInstructors.find(inst => inst.id === assignmentModalMainInstructor[`${lesson.session}`] && inst.type === 'main')?.name : undefined}
+                              onChange={(value) => {
+                                const selectedInstructor = availableInstructors.find(inst => inst.name === value && inst.type === 'main')
+                                if (selectedInstructor) {
+                                  setAssignmentModalMainInstructor({
+                                    ...assignmentModalMainInstructor,
+                                    [`${lesson.session}`]: selectedInstructor.id,
+                                  })
+                                } else {
+                                  setAssignmentModalMainInstructor({
+                                    ...assignmentModalMainInstructor,
+                                    [`${lesson.session}`]: '',
+                                  })
+                                }
+                              }}
+                              onSelect={(value) => {
+                                const selectedInstructor = availableInstructors.find(inst => inst.name === value && inst.type === 'main')
+                                if (selectedInstructor) {
+                                  setAssignmentModalMainInstructor({
+                                    ...assignmentModalMainInstructor,
+                                    [`${lesson.session}`]: selectedInstructor.id,
+                                  })
+                                }
+                              }}
+                              options={availableInstructors
+                                .filter((inst) => inst.type === 'main')
+                                .map((inst) => ({
+                                  value: inst.name,
+                                  label: inst.name,
+                                }))}
+                              className="w-full mb-3 [&_.ant-input]:!h-11 [&_.ant-input]:!rounded-lg [&_.ant-input]:!pl-10"
+                              filterOption={(input, option) =>
+                                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                              }
+                              allowClear
+                            >
+                              <Input
+                                prefix={<Search className="w-4 h-4 text-gray-400" />}
+                                placeholder="주강사 선택"
+                              />
+                            </AutoComplete>
+                            {lesson.mainInstructors.length > 0 && (
+                              <div className="space-y-2">
+                                {lesson.mainInstructors.map((instructor) => (
+                                  <div
+                                    key={instructor.id}
+                                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-sm font-semibold text-blue-700">
+                                        {instructor.name.charAt(0)}
+                                      </div>
+                                      <span className="text-sm font-medium text-gray-900">{instructor.name}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Badge
+                                        status={instructor.status === 'confirmed' ? 'success' : 'default'}
+                                        text={<span className="text-xs">{instructor.status === 'confirmed' ? '확정됨' : '대기'}</span>}
+                                      />
+                                      <Button
+                                        type="text"
+                                        danger
+                                        size="small"
+                                        icon={<X className="w-4 h-4" />}
+                                        onClick={() => {
+                                          if (assignmentTargetEducation) {
+                                            handleDeleteInstructorFromCard(lesson.session || 1, instructor.id, 'main', assignmentTargetEducation)
+                                          }
+                                        }}
+                                        className="h-8 w-8 p-0 flex items-center justify-center hover:bg-red-50"
+                                        title="강사 삭제"
+                                      />
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </Card>
+
+                          {/* Assistant Instructor */}
+                          <Card className="rounded-xl border border-gray-200 shadow-sm">
+                            <div className="flex items-center justify-between mb-4">
+                              <h4 className="text-base font-semibold text-gray-900">보조강사</h4>
+                              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                                lesson.assistantInstructors.length >= lesson.assistantInstructorRequired
+                                  ? 'bg-green-50 text-green-700 border border-green-200'
+                                  : 'bg-amber-50 text-amber-700 border border-amber-200'
+                              }`}>
+                                {lesson.assistantInstructors.length}/{lesson.assistantInstructorRequired}
+                              </span>
+                            </div>
+                            <AutoComplete
+                              value={assignmentModalAssistantInstructor[`${lesson.session}`] ? availableInstructors.find(inst => inst.id === assignmentModalAssistantInstructor[`${lesson.session}`] && inst.type === 'assistant')?.name : undefined}
+                              onChange={(value) => {
+                                const selectedInstructor = availableInstructors.find(inst => inst.name === value && inst.type === 'assistant')
+                                if (selectedInstructor) {
+                                  setAssignmentModalAssistantInstructor({
+                                    ...assignmentModalAssistantInstructor,
+                                    [`${lesson.session}`]: selectedInstructor.id,
+                                  })
+                                } else {
+                                  setAssignmentModalAssistantInstructor({
+                                    ...assignmentModalAssistantInstructor,
+                                    [`${lesson.session}`]: '',
+                                  })
+                                }
+                              }}
+                              onSelect={(value) => {
+                                const selectedInstructor = availableInstructors.find(inst => inst.name === value && inst.type === 'assistant')
+                                if (selectedInstructor) {
+                                  setAssignmentModalAssistantInstructor({
+                                    ...assignmentModalAssistantInstructor,
+                                    [`${lesson.session}`]: selectedInstructor.id,
+                                  })
+                                }
+                              }}
+                              options={availableInstructors
+                                .filter((inst) => inst.type === 'assistant')
+                                .map((inst) => ({
+                                  value: inst.name,
+                                  label: inst.name,
+                                }))}
+                              className="w-full mb-3 [&_.ant-input]:!h-11 [&_.ant-input]:!rounded-lg [&_.ant-input]:!pl-10"
+                              filterOption={(input, option) =>
+                                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                              }
+                              allowClear
+                            >
+                              <Input
+                                prefix={<Search className="w-4 h-4 text-gray-400" />}
+                                placeholder="보조강사 선택"
+                              />
+                            </AutoComplete>
+                            {lesson.assistantInstructors.length > 0 && (
+                              <div className="space-y-2">
+                                {lesson.assistantInstructors.map((instructor) => (
+                                  <div
+                                    key={instructor.id}
+                                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-sm font-semibold text-purple-700">
+                                        {instructor.name.charAt(0)}
+                                      </div>
+                                      <span className="text-sm font-medium text-gray-900">{instructor.name}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Badge
+                                        status={instructor.status === 'confirmed' ? 'success' : 'default'}
+                                        text={<span className="text-xs">{instructor.status === 'confirmed' ? '확정됨' : '대기'}</span>}
+                                      />
+                                      <Button
+                                        type="text"
+                                        danger
+                                        size="small"
+                                        icon={<X className="w-4 h-4" />}
+                                        onClick={() => {
+                                          if (assignmentTargetEducation) {
+                                            handleDeleteInstructorFromCard(lesson.session || 1, instructor.id, 'assistant', assignmentTargetEducation)
+                                          }
+                                        }}
+                                        className="h-8 w-8 p-0 flex items-center justify-center hover:bg-red-50"
+                                        title="강사 삭제"
+                                      />
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </Card>
+                        </div>
+                      ),
+                    }))}
+                    className="[&_.ant-tabs-tab]:px-4 [&_.ant-tabs-tab]:py-2 [&_.ant-tabs-tab]:rounded-lg [&_.ant-tabs-tab-active]:bg-blue-50 [&_.ant-tabs-tab-active]:border-blue-200"
+                  />
+                ) : (
+                  <div className="py-8">
+                    <div className="text-center mb-6">
+                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                        <UserPlus className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <h4 className="text-lg font-semibold text-gray-900 mb-2">수업 정보가 없습니다</h4>
+                      <p className="text-sm text-gray-600">
+                        이 교육에는 아직 수업 정보가 등록되지 않았습니다.
+                      </p>
+                    </div>
+                    <div className="max-w-2xl mx-auto">
+                      <Card className="bg-blue-50 border-blue-200 rounded-lg p-4">
+                        <p className="text-sm text-gray-700">
+                          수업 정보를 먼저 등록한 후 강사를 배정할 수 있습니다. 교육 상세 페이지에서 수업 정보를 추가해주세요.
+                        </p>
+                      </Card>
+                    </div>
+                  </div>
+                )}
+
+                {/* Footer */}
+                <div className="flex items-center justify-end gap-3 pt-6 mt-6 border-t border-gray-200">
+                  <Button
+                    onClick={handleCloseAssignmentModal}
+                    className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all text-gray-700"
+                  >
+                    취소
+                  </Button>
+                  <Button
+                    type="primary"
+                    onClick={handleConfirmAssignment}
+                    disabled={!assignmentTargetEducation?.lessons || assignmentTargetEducation.lessons.length === 0}
+                    className="h-11 px-6 rounded-xl bg-slate-900 hover:bg-slate-800 border-0 font-medium transition-all text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    배정하기
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         </Modal>
       </div>
     </ProtectedRoute>

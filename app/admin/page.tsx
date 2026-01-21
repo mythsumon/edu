@@ -215,7 +215,9 @@ export default function AdminDashboardPage() {
       filtered = filtered.filter(s => {
         const hasSubmitted = s.attendance?.status === 'SUBMITTED' || 
                             s.activity?.status === 'SUBMITTED' || 
-                            s.equipment?.status === 'SUBMITTED'
+                            s.equipment?.status === 'SUBMITTED' ||
+                            s.evidence?.status === 'SUBMITTED' ||
+                            s.lessonPlan?.status === 'SUBMITTED'
         return hasSubmitted
       })
     } else if (submissionTab === 'rejected') {
@@ -259,6 +261,10 @@ export default function AdminDashboardPage() {
 
   const handleViewEvidence = (id: string) => {
     router.push(`/admin/evidence/${id}`)
+  }
+
+  const handleViewLessonPlan = (id: string) => {
+    router.push(`/admin/lesson-plans/${id}`)
   }
 
   const handleApprove = async (type: 'attendance' | 'activity' | 'equipment' | 'evidence' | 'lessonPlan', id: string) => {
@@ -569,6 +575,18 @@ export default function AdminDashboardPage() {
             educationId={record.educationId}
             documentId={record.evidence?.id}
           />
+          <DocumentStatusIndicator
+            status={record.lessonPlan?.status}
+            count={record.lessonPlan?.count}
+            label="강의계획서"
+            onClick={() => {
+              if (record.lessonPlan?.id) {
+                router.push(`/admin/lesson-plans/${record.lessonPlan.id}`)
+              }
+            }}
+            educationId={record.educationId}
+            documentId={record.lessonPlan?.id}
+          />
         </div>
       ),
     },
@@ -609,7 +627,8 @@ export default function AdminDashboardPage() {
     const hasSubmitted = s.attendance?.status === 'SUBMITTED' || 
                         s.activity?.status === 'SUBMITTED' || 
                         s.equipment?.status === 'SUBMITTED' ||
-                        s.evidence?.status === 'SUBMITTED'
+                        s.evidence?.status === 'SUBMITTED' ||
+                        s.lessonPlan?.status === 'SUBMITTED'
     return hasSubmitted
   }).length
   const approvedCount = summaries.filter(s => s.overallStatus === 'ALL_APPROVED').length
@@ -833,9 +852,9 @@ export default function AdminDashboardPage() {
                     </div>
                     <div className="px-6 pb-6 pt-6">
                       <div className="grid grid-cols-1 gap-6">
-                        <StatusBreakdownChart data={statusData} loading={loading} />
+                          <StatusBreakdownChart data={statusData} loading={loading} />
+                        </div>
                       </div>
-                    </div>
                   </div>
 
                   {/* Operational Panels - Collapsible */}
@@ -1307,6 +1326,7 @@ export default function AdminDashboardPage() {
               onViewActivity={handleViewActivity}
               onViewEquipment={handleViewEquipment}
               onViewEvidence={handleViewEvidence}
+              onViewLessonPlan={handleViewLessonPlan}
               onApprove={handleApprove}
               onReject={handleReject}
             />

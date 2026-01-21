@@ -39,7 +39,7 @@ export default function EquipmentConfirmationDetailPage() {
       setLoading(false)
       return
     }
-
+    
     try {
       let loadedDoc = getEquipmentConfirmationById(id)
       
@@ -55,11 +55,11 @@ export default function EquipmentConfirmationDetailPage() {
         loadedDoc.educationId = id.startsWith('EDU-') ? id : ''
         upsertEquipmentConfirmation(loadedDoc)
       }
-
+      
       setDoc(loadedDoc)
     } catch (error) {
       console.error('Error loading equipment confirmation:', error)
-      message.error('문서를 불러오는 중 오류가 발생했습니다.')
+        message.error('문서를 불러오는 중 오류가 발생했습니다.')
     } finally {
       setLoading(false)
     }
@@ -99,7 +99,7 @@ export default function EquipmentConfirmationDetailPage() {
   }, [id])
 
   // Role-based editability
-  const isEditable = isAdmin
+  const isEditable = isAdmin 
     ? true // Admin can always edit
     : (doc?.status === 'DRAFT' || doc?.status === 'REJECTED')
   const isReadonly = !isAdmin && (doc?.status === 'SUBMITTED' || doc?.status === 'APPROVED' || doc?.status === 'BORROWED')
@@ -398,7 +398,7 @@ export default function EquipmentConfirmationDetailPage() {
             </div>
           </div>
         </div>
-
+        
         {/* Reject reason banner */}
         {!isAdmin && doc.status === 'REJECTED' && doc.rejectReason && (
           <div className="max-w-7xl mx-auto px-6 py-4">
@@ -420,58 +420,58 @@ export default function EquipmentConfirmationDetailPage() {
             <div className="space-y-4">
               {/* Row 1 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-gray-200 pb-4">
-                <div>
+              <div>
                   <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">배정번호</label>
-                  {isEditable ? (
-                    <Input
+                {isEditable ? (
+                  <Input
                       value={doc.assignmentNo || ''}
                       onChange={(e) => handleFieldChange('assignmentNo', e.target.value)}
                       className="w-full rounded-lg"
                       placeholder="배정번호 (선택사항)"
-                    />
-                  ) : (
-                    <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                  />
+                ) : (
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
                       {doc.assignmentNo || '-'}
-                    </div>
-                  )}
-                </div>
-                <div>
+                  </div>
+                )}
+              </div>
+              <div>
                   <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">교육과정명</label>
-                  {isEditable ? (
-                    <Input
+                {isEditable ? (
+                  <Input
                       value={doc.curriculumName}
                       onChange={(e) => handleFieldChange('curriculumName', e.target.value)}
                       className="w-full rounded-lg"
                       placeholder="교육과정명"
-                    />
-                  ) : (
-                    <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                  />
+                ) : (
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
                       {doc.curriculumName}
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
+              </div>
               </div>
 
               {/* Row 2 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-gray-200 pb-4">
-                <div>
+              <div>
                   <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">강의기관</label>
-                  {isEditable ? (
-                    <Input
+                {isEditable ? (
+                  <Input
                       value={doc.institutionName}
                       onChange={(e) => handleFieldChange('institutionName', e.target.value)}
                       className="w-full rounded-lg"
                       placeholder="강의기관"
-                    />
-                  ) : (
-                    <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                  />
+                ) : (
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
                       {doc.institutionName}
-                    </div>
-                  )}
-                </div>
-                <div>
+                  </div>
+                )}
+              </div>
+              <div>
                   <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">강의일자</label>
-                  {isEditable ? (
+                {isEditable ? (
                     <div className="flex items-center gap-2">
                       <DatePicker
                         value={doc.lectureDateRange.start ? dayjs(doc.lectureDateRange.start) : null}
@@ -487,97 +487,97 @@ export default function EquipmentConfirmationDetailPage() {
                         placeholder="종료일"
                       />
                     </div>
-                  ) : (
-                    <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                ) : (
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
                       {doc.lectureDateRange.start && doc.lectureDateRange.end
                         ? `${dayjs(doc.lectureDateRange.start).format('YYYY.MM.DD')} ~ ${dayjs(doc.lectureDateRange.end).format('YYYY.MM.DD')}`
                         : '-'}
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
+              </div>
               </div>
 
               {/* Row 3 */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-gray-200 pb-4">
-                <div>
+              <div>
                   <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">담당차시</label>
-                  {isEditable ? (
-                    <InputNumber
+                {isEditable ? (
+                  <InputNumber
                       value={doc.담당차시_총차시.담당차시}
                       onChange={(value) => handle담당차시_총차시Change('담당차시', value || 0)}
                       className="w-full rounded-lg"
-                      min={0}
-                    />
-                  ) : (
-                    <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                    min={0}
+                  />
+                ) : (
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
                       {doc.담당차시_총차시.담당차시}
-                    </div>
-                  )}
-                </div>
-                <div>
+                  </div>
+                )}
+              </div>
+              <div>
                   <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">총차시</label>
-                  {isEditable ? (
+                {isEditable ? (
                     <InputNumber
                       value={doc.담당차시_총차시.총차시}
                       onChange={(value) => handle담당차시_총차시Change('총차시', value || 0)}
                       className="w-full rounded-lg"
                       min={0}
-                    />
-                  ) : (
-                    <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                  />
+                ) : (
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
                       {doc.담당차시_총차시.총차시}
-                    </div>
-                  )}
-                </div>
-                <div>
+                  </div>
+                )}
+              </div>
+              <div>
                   <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">담당참여강사</label>
-                  {isEditable ? (
-                    <Input
+                {isEditable ? (
+                  <Input
                       value={doc.담당참여강사}
                       onChange={(e) => handleFieldChange('담당참여강사', e.target.value)}
                       className="w-full rounded-lg"
                       placeholder="담당참여강사"
-                    />
-                  ) : (
-                    <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                  />
+                ) : (
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
                       {doc.담당참여강사}
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
+              </div>
               </div>
 
               {/* Row 4 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+              <div>
                   <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">예상 참여 인원</label>
-                  {isEditable ? (
+                {isEditable ? (
                     <InputNumber
                       value={doc.expectedParticipants}
                       onChange={(value) => handleFieldChange('expectedParticipants', value || 0)}
                       className="w-full rounded-lg"
                       min={0}
                       addonAfter="명"
-                    />
-                  ) : (
-                    <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                  />
+                ) : (
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
                       {doc.expectedParticipants}명
-                    </div>
-                  )}
-                </div>
-                <div>
+                  </div>
+                )}
+              </div>
+              <div>
                   <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">교구대여자</label>
-                  {isEditable ? (
-                    <Input
+                {isEditable ? (
+                  <Input
                       value={doc.borrowPlan.borrowerName}
                       onChange={(e) => handleBorrowPlanChange('borrowerName', e.target.value)}
                       className="w-full rounded-lg mb-2"
                       placeholder="교구대여자 이름"
-                    />
-                  ) : (
+                  />
+                ) : (
                     <div className="text-base font-medium text-gray-900 dark:text-gray-100 mb-2">
                       {doc.borrowPlan.borrowerName || '-'}
-                    </div>
-                  )}
+                  </div>
+                )}
                   <SignatureSlotV2
                     label="교구대여자 서명"
                     signature={doc.borrowPlan.borrowerSignature}
@@ -587,62 +587,62 @@ export default function EquipmentConfirmationDetailPage() {
                     disabled={!isEditable}
                     userProfile={userProfile ? { userId: userProfile.userId || '', name: userProfile.name || '', signatureImageUrl: userProfile.signatureImageUrl } : undefined}
                   />
-                </div>
+              </div>
               </div>
 
               {/* Row 5: 대여 일정 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-200 pt-4">
-                <div>
+              <div>
                   <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">대여 날짜</label>
-                  {isEditable ? (
+                {isEditable ? (
                     <DatePicker
                       value={doc.borrowPlan.borrowDate ? dayjs(doc.borrowPlan.borrowDate) : null}
                       onChange={(date) => handleBorrowPlanChange('borrowDate', date ? date.format('YYYY-MM-DD') : '')}
                       className="w-full rounded-lg"
                       placeholder="대여 날짜"
-                    />
-                  ) : (
-                    <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                  />
+                ) : (
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
                       {doc.borrowPlan.borrowDate ? dayjs(doc.borrowPlan.borrowDate).format('YYYY-MM-DD') : '-'}
-                    </div>
-                  )}
-                </div>
-                <div>
+                  </div>
+                )}
+              </div>
+              <div>
                   <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">대여 시간</label>
-                  {isEditable ? (
+                {isEditable ? (
                     <TimePicker
                       value={doc.borrowPlan.borrowTime ? dayjs(doc.borrowPlan.borrowTime, 'HH:mm') : null}
                       onChange={(time) => handleBorrowPlanChange('borrowTime', time ? time.format('HH:mm') : '')}
                       className="w-full rounded-lg"
                       format="HH:mm"
                       placeholder="대여 시간"
-                    />
-                  ) : (
-                    <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                  />
+                ) : (
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
                       {doc.borrowPlan.borrowTime || '-'}
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
+              </div>
               </div>
 
               {/* Row 6: 반납 예정 */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-gray-200 pt-4">
-                <div>
+              <div>
                   <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">반납예정자</label>
                   {isEditable ? (
-                    <Input
+                  <Input
                       value={doc.returnPlan.plannedReturnerName}
                       onChange={(e) => handleReturnPlanChange('plannedReturnerName', e.target.value)}
                       className="w-full rounded-lg"
                       placeholder="반납예정자"
-                    />
-                  ) : (
-                    <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                  />
+                ) : (
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
                       {doc.returnPlan.plannedReturnerName}
-                    </div>
-                  )}
-                </div>
-                <div>
+                  </div>
+                )}
+              </div>
+              <div>
                   <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">반납 예정 날짜</label>
                   {isEditable ? (
                     <DatePicker
@@ -650,14 +650,14 @@ export default function EquipmentConfirmationDetailPage() {
                       onChange={(date) => handleReturnPlanChange('plannedReturnDate', date ? date.format('YYYY-MM-DD') : '')}
                       className="w-full rounded-lg"
                       placeholder="반납 예정 날짜"
-                    />
-                  ) : (
-                    <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                  />
+                ) : (
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
                       {doc.returnPlan.plannedReturnDate ? dayjs(doc.returnPlan.plannedReturnDate).format('YYYY-MM-DD') : '-'}
-                    </div>
-                  )}
-                </div>
-                <div>
+                  </div>
+                )}
+              </div>
+              <div>
                   <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">반납 예정 시간</label>
                   {isEditable ? (
                     <TimePicker
@@ -666,12 +666,12 @@ export default function EquipmentConfirmationDetailPage() {
                       className="w-full rounded-lg"
                       format="HH:mm"
                       placeholder="반납 예정 시간"
-                    />
-                  ) : (
-                    <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                  />
+                ) : (
+                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
                       {doc.returnPlan.plannedReturnTime || '-'}
-                    </div>
-                  )}
+                  </div>
+                )}
                 </div>
               </div>
             </div>
@@ -699,7 +699,7 @@ export default function EquipmentConfirmationDetailPage() {
             ) : (
               <div className="text-base text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
                 {doc.notes || '-'}
-              </div>
+            </div>
             )}
           </DetailSectionCard>
 
@@ -707,7 +707,7 @@ export default function EquipmentConfirmationDetailPage() {
           <DetailSectionCard title="교구 반납 확인" className="mb-6">
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+              <div>
                   <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">교구 반납자</label>
                   {(isEditable || canEditReturn) ? (
                     <Input
@@ -720,7 +720,7 @@ export default function EquipmentConfirmationDetailPage() {
                   ) : (
                     <div className="text-base font-medium text-gray-900 dark:text-gray-100 mb-2">
                       {doc.returnConfirm.returnerName || '-'}
-                    </div>
+                </div>
                   )}
                   <SignatureSlotV2
                     label="교구 반납자 서명"
@@ -731,8 +731,8 @@ export default function EquipmentConfirmationDetailPage() {
                     disabled={!canEditReturn && !isEditable}
                     userProfile={userProfile ? { userId: userProfile.userId || '', name: userProfile.name || '', signatureImageUrl: userProfile.signatureImageUrl } : undefined}
                   />
-                </div>
-                <div>
+              </div>
+              <div>
                   {/* Empty space for layout balance */}
                 </div>
               </div>
@@ -749,12 +749,12 @@ export default function EquipmentConfirmationDetailPage() {
                       disabled={!canEditReturn && !isEditable}
                     />
                   ) : (
-                    <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                <div className="text-base font-medium text-gray-900 dark:text-gray-100">
                       {doc.returnConfirm.returnDate ? dayjs(doc.returnConfirm.returnDate).format('YYYY-MM-DD') : '-'}
-                    </div>
-                  )}
                 </div>
-                <div>
+                  )}
+              </div>
+              <div>
                   <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">교구반납 시간</label>
                   {(isEditable || canEditReturn) ? (
                     <TimePicker
@@ -766,12 +766,12 @@ export default function EquipmentConfirmationDetailPage() {
                       disabled={!canEditReturn && !isEditable}
                     />
                   ) : (
-                    <div className="text-base font-medium text-gray-900 dark:text-gray-100">
+                <div className="text-base font-medium text-gray-900 dark:text-gray-100">
                       {doc.returnConfirm.returnTime || '-'}
-                    </div>
-                  )}
                 </div>
+                  )}
               </div>
+            </div>
 
               <div>
                 <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">반납 교구 상태 확인</label>
@@ -787,7 +787,7 @@ export default function EquipmentConfirmationDetailPage() {
                 ) : (
                   <div className="text-base text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
                     {doc.returnConfirm.conditionNote || '-'}
-                  </div>
+                </div>
                 )}
               </div>
 
@@ -806,9 +806,9 @@ export default function EquipmentConfirmationDetailPage() {
                   ) : (
                     <div className="text-base font-medium text-gray-900 dark:text-gray-100">
                       {doc.returnConfirm.allowanceEligible}
-                    </div>
+                      </div>
                   )}
-                </div>
+                      </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">사업담당자</label>
                   {isEditable ? (
@@ -821,8 +821,8 @@ export default function EquipmentConfirmationDetailPage() {
                   ) : (
                     <div className="text-base font-medium text-gray-900 dark:text-gray-100 mb-2">
                       {doc.returnConfirm.adminManagerName || '-'}
-                    </div>
-                  )}
+                        </div>
+                      )}
                   <SignatureSlotV2
                     label="사업담당자 서명"
                     signature={doc.returnConfirm.adminManagerSignature}
@@ -832,25 +832,25 @@ export default function EquipmentConfirmationDetailPage() {
                     disabled={!isEditable}
                     userProfile={userProfile ? { userId: userProfile.userId || '', name: userProfile.name || '', signatureImageUrl: userProfile.signatureImageUrl } : undefined}
                   />
-                </div>
+                    </div>
+                  </div>
               </div>
-            </div>
-          </DetailSectionCard>
-        </div>
+            </DetailSectionCard>
+      </div>
 
         {/* Reject Modal */}
-        <Modal
+      <Modal
           title="반려 사유"
-          open={rejectModalVisible}
-          onOk={handleReject}
-          onCancel={() => {
-            setRejectModalVisible(false)
-            setRejectReason('')
-          }}
-          okText="반려"
-          cancelText="취소"
+        open={rejectModalVisible}
+        onOk={handleReject}
+        onCancel={() => {
+          setRejectModalVisible(false)
+          setRejectReason('')
+        }}
+        okText="반려"
+        cancelText="취소"
           okButtonProps={{ danger: true }}
-        >
+      >
           <TextArea
             rows={4}
             value={rejectReason}
@@ -859,7 +859,7 @@ export default function EquipmentConfirmationDetailPage() {
             maxLength={500}
             showCount
           />
-        </Modal>
+      </Modal>
       </div>
     </ProtectedRoute>
   )

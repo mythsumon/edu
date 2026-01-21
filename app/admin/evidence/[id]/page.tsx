@@ -15,6 +15,8 @@ import type { EvidenceDoc, EvidenceStatus } from '@/app/instructor/evidence/type
 import { useAuth } from '@/contexts/AuthContext'
 import { downloadAllImages } from '@/app/instructor/evidence/utils/imageUtils'
 import dayjs from 'dayjs'
+import { generatePhotoFilename } from '@/lib/filenameGenerator'
+import { dataStore } from '@/lib/dataStore'
 
 const { TextArea } = Input
 
@@ -212,10 +214,28 @@ export default function AdminEvidenceDetailPage() {
     try {
       message.loading({ content: '증빙자료를 낮은 해상도로 변환 중...', key: 'download' })
       
+      // 교육 정보에서 날짜 및 학급 정보 가져오기
+      const education = doc.educationId ? dataStore.getEducationById(doc.educationId) : null
+      const firstLesson = education?.lessons?.[0]
+      const sessionDate = firstLesson?.date
+      const startDate = education?.periodStart
+      const endDate = education?.periodEnd
+      const gradeClass = education?.gradeClass || ''
+      
       const imageUrls = doc.items.map(item => item.fileUrl)
       const filenames = doc.items.map((item, index) => {
         const extension = item.fileName.split('.').pop() || 'jpg'
-        return `증빙자료_${doc.educationName || '교육'}_${index + 1}.${extension}`
+        const filename = generatePhotoFilename({
+          sessionDate: sessionDate,
+          startDate: startDate,
+          endDate: endDate,
+          schoolName: doc.institutionName || '',
+          gradeClass: gradeClass,
+          photoIndex: index + 1,
+          totalPhotos: doc.items.length,
+          documentType: '활동사진',
+        })
+        return `${filename}.${extension}`
       })
 
       await downloadAllImages(imageUrls, filenames)

@@ -30,6 +30,7 @@ export interface Education {
   openAt?: string // ISO datetime string: when "오픈예정" -> "강사공개"
   closeAt?: string // ISO datetime string: when "강사공개" -> "신청마감"
   regionAssignmentMode?: 'PARTIAL' | 'FULL' // Default: 'PARTIAL'
+  applicationRestriction?: 'MAIN_ONLY' | 'ASSISTANT_ONLY' | 'ALL' // Default: 'ALL'
   mainInstructorId?: string // Single main instructor ID
   assistantInstructorIds?: string[] // Array of assistant instructor IDs
   lessons?: Lesson[]
@@ -53,6 +54,14 @@ export interface Instructor {
   id: string
   name: string
   status?: 'confirmed' | 'pending'
+  homeAddressText?: string // Instructor residence address
+  homeLat?: number // Latitude of home address
+  homeLng?: number // Longitude of home address
+  // Monthly teaching capacity (role-based)
+  monthlyLeadMaxSessions?: number // Default monthly limit for lead instructor role
+  monthlyAssistantMaxSessions?: number // Default monthly limit for assistant instructor role
+  // Daily education limit override (optional, uses global default if not set)
+  dailyEducationLimit?: number | null // null means use global default
 }
 
 export interface InstructorApplication {
@@ -63,6 +72,7 @@ export interface InstructorApplication {
   region: string
   gradeClass: string
   role: string
+  instructorId?: string // Instructor ID (preferred for matching)
   instructorName: string
   applicationDate: string
   status: '수락됨' | '거절됨' | '대기'
@@ -121,7 +131,46 @@ export interface InstructorAssignment {
 
 // ==================== Initial Data ====================
 
-let educations: Education[] = [
+// Storage key for localStorage
+const EDUCATIONS_STORAGE_KEY = 'educations_data'
+const INSTRUCTOR_APPLICATIONS_STORAGE_KEY = 'instructor_applications_data'
+const INSTRUCTOR_ASSIGNMENTS_STORAGE_KEY = 'instructor_assignments_data'
+
+// Load from localStorage on initialization
+function loadEducationsFromStorage(): Education[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const stored = localStorage.getItem(EDUCATIONS_STORAGE_KEY)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      // Only use stored data if it has items
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed
+      }
+    }
+  } catch (e) {
+    console.error('Failed to load educations from localStorage:', e)
+  }
+  return []
+}
+
+// Save to localStorage
+function saveEducationsToStorage(educations: Education[]): void {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(EDUCATIONS_STORAGE_KEY, JSON.stringify(educations))
+    // Dispatch storage event for cross-tab synchronization
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: EDUCATIONS_STORAGE_KEY,
+      newValue: JSON.stringify(educations),
+    }))
+  } catch (e) {
+    console.error('Failed to save educations to localStorage:', e)
+  }
+}
+
+// Default educations data
+const defaultEducations: Education[] = [
   {
     key: '1',
     status: '신청 마감',
@@ -531,7 +580,134 @@ let educations: Education[] = [
       },
     ],
   },
+  // 오픈 예정 교육 데이터 (미래 날짜)
+  {
+    key: '18',
+    status: '신청 중',
+    educationId: 'EDU-2025-301',
+    name: '2025년 하반기 AI 기초 교육',
+    institution: '서울교육청',
+    region: '1권역',
+    gradeClass: '3학년 2반',
+    period: '2025-09-01 ~ 2025-12-20',
+    periodStart: '2025-09-01',
+    periodEnd: '2025-12-20',
+    educationStatus: 'OPEN',
+    applicationDeadline: '2025-08-25',
+    totalSessions: 16,
+    regionAssignmentMode: 'FULL',
+    lessons: [
+      {
+        title: '1차시',
+        date: '2025.09.01',
+        startTime: '09:00',
+        endTime: '12:00',
+        mainInstructors: 1,
+        mainInstructorRequired: 1,
+        assistantInstructors: 1,
+        assistantInstructorRequired: 1,
+      },
+    ],
+  },
+  {
+    key: '19',
+    status: '강사공개',
+    educationId: 'EDU-2025-302',
+    name: '로봇공학 심화 프로그램',
+    institution: '부산교육청',
+    region: '2권역',
+    gradeClass: '5학년 3반',
+    period: '2025-10-15 ~ 2025-12-15',
+    periodStart: '2025-10-15',
+    periodEnd: '2025-12-15',
+    educationStatus: 'OPEN',
+    applicationDeadline: '2025-10-01',
+    totalSessions: 20,
+    regionAssignmentMode: 'PARTIAL',
+    lessons: [
+      {
+        title: '1차시',
+        date: '2025.10.15',
+        startTime: '14:00',
+        endTime: '16:00',
+        mainInstructors: 1,
+        mainInstructorRequired: 1,
+        assistantInstructors: 2,
+        assistantInstructorRequired: 2,
+      },
+    ],
+  },
+  {
+    key: '20',
+    status: '신청 중',
+    educationId: 'EDU-2025-303',
+    name: '메타버스 창작 워크숍',
+    institution: '인천교육청',
+    region: '3권역',
+    gradeClass: '4학년 1반',
+    period: '2025-11-01 ~ 2025-11-30',
+    periodStart: '2025-11-01',
+    periodEnd: '2025-11-30',
+    educationStatus: 'OPEN',
+    applicationDeadline: '2025-10-20',
+    totalSessions: 8,
+    regionAssignmentMode: 'FULL',
+    lessons: [
+      {
+        title: '1차시',
+        date: '2025.11.01',
+        startTime: '10:00',
+        endTime: '12:00',
+        mainInstructors: 1,
+        mainInstructorRequired: 1,
+        assistantInstructors: 1,
+        assistantInstructorRequired: 1,
+      },
+    ],
+  },
+  {
+    key: '21',
+    status: '강사공개',
+    educationId: 'EDU-2025-304',
+    name: '게임 개발 기초 과정',
+    institution: '대전교육청',
+    region: '4권역',
+    gradeClass: '6학년 2반',
+    period: '2025-12-01 ~ 2026-02-28',
+    periodStart: '2025-12-01',
+    periodEnd: '2026-02-28',
+    educationStatus: 'OPEN',
+    applicationDeadline: '2025-11-20',
+    totalSessions: 24,
+    regionAssignmentMode: 'PARTIAL',
+    lessons: [
+      {
+        title: '1차시',
+        date: '2025.12.01',
+        startTime: '09:00',
+        endTime: '11:00',
+        mainInstructors: 1,
+        mainInstructorRequired: 1,
+        assistantInstructors: 1,
+        assistantInstructorRequired: 1,
+      },
+    ],
+  },
 ]
+
+// Initialize educations - use stored data if available, otherwise use defaults
+let educations: Education[] = (() => {
+  const stored = loadEducationsFromStorage()
+  return stored.length > 0 ? stored : defaultEducations
+})()
+
+// If no stored data, save defaults to localStorage on first load
+if (typeof window !== 'undefined') {
+  const stored = loadEducationsFromStorage()
+  if (stored.length === 0) {
+    saveEducationsToStorage(defaultEducations)
+  }
+}
 
 let instructorApplications: InstructorApplication[] = [
   {
@@ -972,11 +1148,40 @@ export const dataStore = {
     const index = educations.findIndex((e) => e.educationId === educationId)
     if (index !== -1) {
       // Ensure regionAssignmentMode defaults to 'PARTIAL' if not provided
+      // Ensure applicationRestriction defaults to 'ALL' if not provided
       const finalUpdates = {
         ...updates,
         regionAssignmentMode: updates.regionAssignmentMode || educations[index].regionAssignmentMode || 'PARTIAL',
+        applicationRestriction: updates.applicationRestriction !== undefined 
+          ? updates.applicationRestriction 
+          : educations[index].applicationRestriction || 'ALL',
       }
       educations[index] = { ...educations[index], ...finalUpdates }
+      
+      // Map status to educationStatus if status is updated
+      if (updates.status) {
+        // Map status values to educationStatus
+        const statusMapping: Record<string, 'OPEN' | 'INIT' | 'CANCEL' | '신청 중' | '신청 마감' | '대기'> = {
+          '강사공개': 'OPEN',
+          '신청 중': '신청 중',
+          '신청 마감': '신청 마감',
+          '오픈예정': 'OPEN',
+          '확정': 'OPEN',
+          '교육 진행 중': 'OPEN',
+          '종료': '신청 마감',
+          '중지': 'CANCEL',
+          '대기': '대기',
+        }
+        
+        const mappedEducationStatus = statusMapping[updates.status]
+        if (mappedEducationStatus) {
+          educations[index].educationStatus = mappedEducationStatus
+        }
+      }
+      
+      // Save to localStorage
+      saveEducationsToStorage(educations)
+      
       // Dispatch event for status updates
       if (updates.status) {
         window.dispatchEvent(
@@ -996,9 +1201,11 @@ export const dataStore = {
 
   addEducation: (education: Education): void => {
     // Ensure regionAssignmentMode defaults to 'PARTIAL' if not provided
+    // Ensure applicationRestriction defaults to 'ALL' if not provided
     const educationWithDefaults = {
       ...education,
       regionAssignmentMode: education.regionAssignmentMode || 'PARTIAL',
+      applicationRestriction: education.applicationRestriction || 'ALL',
     }
     educations.push(educationWithDefaults)
   },

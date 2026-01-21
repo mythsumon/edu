@@ -8,6 +8,7 @@ import { LanguageProvider } from '@/components/localization/LanguageContext'
 import { ErrorBoundary } from './error-boundary'
 import { GlobalErrorHandler } from './error-handler'
 import { educationScheduler } from '@/lib/educationScheduler'
+import { initializeSettlementStore } from '@/entities/settlement/settlement-store'
 
 interface AppProvidersProps {
   children: ReactNode
@@ -127,6 +128,9 @@ function SchedulerInitializer({ children }: { children: ReactNode }) {
   useEffect(() => {
     // 스케줄러 시작
     educationScheduler.start()
+
+    // 정산 스토어 초기화
+    initializeSettlementStore()
 
     // 상태 업데이트 이벤트 리스너
     const handleStatusUpdate = (event: CustomEvent) => {

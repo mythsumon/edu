@@ -192,19 +192,21 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
                     ) : (
                       <div className="space-y-4">
                         <div className="text-center py-4 text-gray-400">
-                          출석부가 제출되지 않았습니다.
+                          {isAdmin ? '없음' : '출석부가 제출되지 않았습니다.'}
                         </div>
-                        <Space>
-                          {onViewAttendance && (
-                            <Button
-                              type="primary"
-                              icon={<Eye className="w-4 h-4" />}
-                              onClick={() => onViewAttendance(summary.educationId)}
-                            >
-                              작성하기
-                            </Button>
-                          )}
-                        </Space>
+                        {!isAdmin && (
+                          <Space>
+                            {onViewAttendance && (
+                              <Button
+                                type="primary"
+                                icon={<Eye className="w-4 h-4" />}
+                                onClick={() => onViewAttendance(summary.educationId)}
+                              >
+                                작성하기
+                              </Button>
+                            )}
+                          </Space>
+                        )}
                       </div>
                     )}
                   </div>
@@ -308,22 +310,24 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
                     ) : (
                       <div className="space-y-4">
                         <div className="text-center py-4 text-gray-400">
-                          활동 일지가 제출되지 않았습니다.
+                          {isAdmin ? '없음' : '활동 일지가 제출되지 않았습니다.'}
                         </div>
-                        <Space>
-                          {onViewActivity && (
-                            <Button
-                              type="primary"
-                              icon={<Eye className="w-4 h-4" />}
-                              onClick={() => {
-                                // 활동 일지가 없으면 educationId를 전달하여 새로 생성하거나 찾기
-                                onViewActivity(summary.educationId)
-                              }}
-                            >
-                              작성하기
-                            </Button>
-                          )}
-                        </Space>
+                        {!isAdmin && (
+                          <Space>
+                            {onViewActivity && (
+                              <Button
+                                type="primary"
+                                icon={<Eye className="w-4 h-4" />}
+                                onClick={() => {
+                                  // 활동 일지가 없으면 educationId를 전달하여 새로 생성하거나 찾기
+                                  onViewActivity(summary.educationId)
+                                }}
+                              >
+                                작성하기
+                              </Button>
+                            )}
+                          </Space>
+                        )}
                       </div>
                     )}
                   </div>
@@ -407,22 +411,24 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
                     ) : (
                       <div className="space-y-4">
                         <div className="text-center py-4 text-gray-400">
-                          교구 확인서가 제출되지 않았습니다.
+                          {isAdmin ? '없음' : '교구 확인서가 제출되지 않았습니다.'}
                         </div>
-                        <Space>
-                          {onViewEquipment && (
-                            <Button
-                              type="primary"
-                              icon={<Eye className="w-4 h-4" />}
-                              onClick={() => {
-                                // 교구 확인서가 없으면 educationId를 전달하여 새로 생성하거나 찾기
-                                onViewEquipment(summary.educationId)
-                              }}
-                            >
-                              작성하기
-                            </Button>
-                          )}
-                        </Space>
+                        {!isAdmin && (
+                          <Space>
+                            {onViewEquipment && (
+                              <Button
+                                type="primary"
+                                icon={<Eye className="w-4 h-4" />}
+                                onClick={() => {
+                                  // 교구 확인서가 없으면 educationId를 전달하여 새로 생성하거나 찾기
+                                  onViewEquipment(summary.educationId)
+                                }}
+                              >
+                                작성하기
+                              </Button>
+                            )}
+                          </Space>
+                        )}
                       </div>
                     )}
                   </div>
@@ -506,22 +512,24 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
                     ) : (
                       <div className="space-y-4">
                         <div className="text-center py-4 text-gray-400">
-                          증빙자료가 제출되지 않았습니다.
+                          {isAdmin ? '없음' : '증빙자료가 제출되지 않았습니다.'}
                         </div>
-                        <Space>
-                          {onViewEvidence && (
-                            <Button
-                              type="primary"
-                              icon={<Eye className="w-4 h-4" />}
-                              onClick={() => {
-                                // 증빙자료가 없으면 educationId를 전달하여 새로 생성하거나 찾기
-                                onViewEvidence(summary.educationId)
-                              }}
-                            >
-                              작성하기
-                            </Button>
-                          )}
-                        </Space>
+                        {!isAdmin && (
+                          <Space>
+                            {onViewEvidence && (
+                              <Button
+                                type="primary"
+                                icon={<Eye className="w-4 h-4" />}
+                                onClick={() => {
+                                  // 증빙자료가 없으면 educationId를 전달하여 새로 생성하거나 찾기
+                                  onViewEvidence(summary.educationId)
+                                }}
+                              >
+                                작성하기
+                              </Button>
+                            )}
+                          </Space>
+                        )}
                       </div>
                     )}
                   </div>
@@ -605,21 +613,23 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
                     ) : (
                       <div className="space-y-4">
                         <div className="text-center py-4 text-gray-400">
-                          강의계획서가 제출되지 않았습니다.
+                          {isAdmin ? '없음' : '강의계획서가 제출되지 않았습니다.'}
                         </div>
-                        <Space>
-                          {onViewLessonPlan && (
-                            <Button
-                              type="primary"
-                              icon={<Eye className="w-4 h-4" />}
-                              onClick={() => {
-                                router.push(`/instructor/schedule/${summary.educationId}/lesson-plan`)
-                              }}
-                            >
-                              작성하기
-                            </Button>
-                          )}
-                        </Space>
+                        {!isAdmin && (
+                          <Space>
+                            {onViewLessonPlan && (
+                              <Button
+                                type="primary"
+                                icon={<Eye className="w-4 h-4" />}
+                                onClick={() => {
+                                  router.push(`/instructor/schedule/${summary.educationId}/lesson-plan`)
+                                }}
+                              >
+                                작성하기
+                              </Button>
+                            )}
+                          </Space>
+                        )}
                       </div>
                     )}
                   </div>

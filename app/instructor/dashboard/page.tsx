@@ -25,7 +25,12 @@ import {
   Zap
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { InstructorCourse, instructorCourses, instructorCalendarEvents, InstructorCalendarEvent } from '@/mock/instructorDashboardData'
+import { InstructorCourse, InstructorCalendarEvent } from '@/mock/instructorDashboardData'
+import { 
+  getInstructorCoursesFromData, 
+  getInstructorCalendarEventsFromData,
+  getInstructorByName 
+} from '@/entities/instructor/instructor-utils'
 import { getAttendanceDocByEducationId } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import { getActivityLogByEducationId } from '@/app/instructor/activity-logs/storage'
 import { getDocByEducationId as getEquipmentDocByEducationId } from '@/app/instructor/equipment-confirmations/storage'
@@ -197,10 +202,20 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
     }
   }
   
+  const handleCardClick = (e: React.MouseEvent) => {
+    // 카드 내부의 버튼 클릭은 무시 (이벤트 전파 방지)
+    const target = e.target as HTMLElement
+    if (target.closest('button') || target.closest('.document-status-indicator')) {
+      return
+    }
+    // 교육 상세 페이지로 이동
+    router.push(`/instructor/schedule/list?educationId=${course.id}`)
+  }
+
   return (
     <Card 
       className="rounded-xl border-0 shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer group overflow-hidden"
-      onClick={() => router.push(`/instructor/assignment/${course.id}`)}
+      onClick={handleCardClick}
     >
       <div className="relative">
         <div className={`absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r ${statusColors[course.status]}`}></div>
@@ -523,8 +538,20 @@ export default function InstructorDashboard() {
   const listContainerRef = useRef<HTMLDivElement>(null)
   const [maxHeight, setMaxHeight] = useState<string>('none')
   
-  // Get current instructor name
+  // Get current instructor name and ID
   const currentInstructorName = userProfile?.name || '홍길동'
+  const currentInstructorId = userProfile?.userId || 'instructor-1'
+  
+  // Get instructor data
+  const currentInstructor = useMemo(() => {
+    return getInstructorByName(currentInstructorName) || {
+      id: currentInstructorId,
+      name: currentInstructorName,
+      monthlyLeadMaxSessions: 20,
+      monthlyAssistantMaxSessions: 30,
+      dailyEducationLimit: null,
+    }
+  }, [currentInstructorName, currentInstructorId])
   
   // 첫 로그인 시 비밀번호 변경 모달 표시
   useEffect(() => {
@@ -540,6 +567,16 @@ export default function InstructorDashboard() {
     setIsPasswordChangeModalOpen(false)
   }
   
+  // Get actual instructor courses from dataStore
+  const instructorCourses = useMemo(() => {
+    return getInstructorCoursesFromData(currentInstructor.id, currentInstructorName)
+  }, [currentInstructor.id, currentInstructorName])
+  
+  // Get actual calendar events from dataStore
+  const instructorCalendarEvents = useMemo(() => {
+    return getInstructorCalendarEventsFromData(currentInstructor.id, currentInstructorName)
+  }, [currentInstructor.id, currentInstructorName])
+  
   // Get actual document summaries
   const documentSummaries = useMemo(() => {
     return getEducationDocSummariesByInstructor(currentInstructorName)
@@ -554,14 +591,14 @@ export default function InstructorDashboard() {
         summary, // Attach document summary to course
       }
     })
-  }, [documentSummaries])
+  }, [instructorCourses, documentSummaries])
   
   // Get open educations (applicable educations) - same logic as /instructor/apply/open
   const openEducations = useMemo(() => {
     const now = dayjs()
     return dataStore.getEducations().filter(education => {
-      // Status must be OPEN or 신청 중 (모집중)
-      if (education.educationStatus !== 'OPEN' && education.educationStatus !== '신청 중') {
+      // Status must be 강사공개 (only this status allows instructor applications)
+      if (education.status !== '강사공개') {
         return false
       }
       
@@ -571,6 +608,11 @@ export default function InstructorDashboard() {
         if (now.isAfter(deadline, 'day')) {
           return false // 마감일이 지난 것은 제외
         }
+      }
+      
+      // Check if educationStatus is 마감
+      if (education.educationStatus === '신청 마감') {
+        return false
       }
       
       return true
@@ -799,7 +841,7 @@ export default function InstructorDashboard() {
                   </div>
                   <div>
                     <p className="text-lg font-semibold text-slate-900">
-                      홍길동 강사님 안녕하세요!
+                      {currentInstructorName} 강사님 안녕하세요!
                     </p>
                     <p className="text-sm text-slate-600">
                       오늘도 좋은 수업 부탁드립니다.

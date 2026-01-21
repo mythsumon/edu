@@ -7,9 +7,16 @@ import { Calendar, CheckCircle2 } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import dayjs from 'dayjs'
 import { dataStore } from '@/lib/dataStore'
-import type { Education, InstructorApplication, InstructorAssignment } from '@/lib/dataStore'
+import type { Education, InstructorApplication, InstructorAssignment, Instructor } from '@/lib/dataStore'
 import { useAuth } from '@/contexts/AuthContext'
 import type { ColumnsType } from 'antd/es/table'
+import { 
+  validateInstructorAssignment,
+  getDefaultMonthlyCapacity,
+  getGlobalDailyLimit,
+  type ValidationResult
+} from '@/entities/instructor/instructor-validation'
+import { getInstructorByName } from '@/entities/instructor/instructor-utils'
 
 export default function ApplyForEducationPage() {
   const router = useRouter()
@@ -19,6 +26,18 @@ export default function ApplyForEducationPage() {
   const [activeTab, setActiveTab] = useState<'open' | 'closed'>('open')
   const [allEducations, setAllEducations] = useState<Education[]>(dataStore.getEducations())
   const currentInstructorName = userProfile?.name || '홍길동'
+  const currentInstructorId = userProfile?.userId || 'instructor-1'
+  
+  // Get current instructor data
+  const currentInstructor: Instructor = useMemo(() => {
+    return getInstructorByName(currentInstructorName) || {
+      id: currentInstructorId,
+      name: currentInstructorName,
+      monthlyLeadMaxSessions: (userProfile as any)?.monthlyLeadMaxSessions || 20,
+      monthlyAssistantMaxSessions: (userProfile as any)?.monthlyAssistantMaxSessions || 30,
+      dailyEducationLimit: (userProfile as any)?.dailyEducationLimit || null,
+    }
+  }, [currentInstructorName, currentInstructorId, userProfile])
 
   // Refresh data periodically and on window focus to get latest status changes from admin
   useEffect(() => {
@@ -54,24 +73,109 @@ export default function ApplyForEducationPage() {
     }
   }, [])
   
+  // 지역(시/군)과 배정권역 매핑
+  const cityToRegionMap: Record<string, string> = {
+    '수원시': '1권역',
+    '성남시': '2권역',
+    '고양시': '3권역',
+    '용인시': '4권역',
+    '부천시': '5권역',
+    '안산시': '5권역',
+    '안양시': '1권역',
+    '평택시': '6권역',
+    '시흥시': '5권역',
+    '김포시': '3권역',
+    '의정부시': '1권역',
+    '광명시': '5권역',
+    '하남시': '2권역',
+    '오산시': '6권역',
+    '이천시': '4권역',
+    '구리시': '2권역',
+    '안성시': '6권역',
+    '포천시': '1권역',
+    '의왕시': '1권역',
+    '양주시': '1권역',
+    '여주시': '4권역',
+    '양평군': '4권역',
+    '동두천시': '1권역',
+    '과천시': '1권역',
+    '가평군': '4권역',
+    '연천군': '1권역',
+  }
+
   // Get instructor's assignment zone (region) from profile
-  // For now, we'll use a default or get from userProfile if available
-  const instructorRegion = (userProfile as any)?.region || '서울시' // Default region, should be stored in userProfile
+  // 홍길동 강사의 경우 기본 지역을 설정 (실제로는 userProfile이나 instructor 데이터에서 가져와야 함)
+  const instructorRegion = useMemo(() => {
+    // Try to get from userProfile first
+    if ((userProfile as any)?.region) {
+      return (userProfile as any).region
+    }
+    
+    // Try to get from instructor data
+    if (currentInstructor && (currentInstructor as any).region) {
+      return (currentInstructor as any).region
+    }
+    
+    // Default for 홍길동: 수원시 (주소가 경기도 수원시이므로)
+    if (currentInstructorName === '홍길동') {
+      return '수원시'
+    }
+    
+    // Default fallback
+    return '서울시'
+  }, [userProfile, currentInstructor, currentInstructorName])
+
+  // Get instructor's region zone (권역) from city
+  const instructorRegionZone = useMemo(() => {
+    return cityToRegionMap[instructorRegion] || instructorRegion
+  }, [instructorRegion])
   
   // OPEN 상태의 교육 (신청 가능) - Only 강사공개 allows applications
   const openEducations = useMemo(() => {
     const now = dayjs()
     return allEducations.filter(education => {
-      // Status must be 강사공개 (only this status allows instructor applications)
-      if (education.status !== '강사공개') {
+      // Status must be 강사공개 OR educationStatus must be OPEN/신청 중 (allows instructor applications)
+      const isStatusOpen = education.status === '강사공개' || 
+                          education.status === '신청 중' ||
+                          education.educationStatus === 'OPEN' ||
+                          education.educationStatus === '신청 중'
+      
+      if (!isStatusOpen) {
+        return false
+      }
+      
+      // Exclude if status is explicitly closed
+      if (education.status === '신청 마감' || education.educationStatus === '신청 마감') {
         return false
       }
       
       // Check if deadline passed
       if (education.applicationDeadline) {
         const deadline = dayjs(education.applicationDeadline)
-        if (now.isAfter(deadline)) {
+        if (now.isAfter(deadline, 'day')) {
           return false // 마감일이 지난 것은 마감 탭으로
+        }
+      }
+      
+      // Region filtering: 지역이 일치하지 않으면 표시하지 않음
+      // 단, 교육의 regionAssignmentMode가 'FULL'이면 모든 지역에서 신청 가능
+      if (education.regionAssignmentMode === 'FULL') {
+        // FULL 모드: 모든 지역에서 신청 가능
+      } else {
+        // PARTIAL 모드 (기본값): 지역이 일치해야 함
+        if (education.region) {
+          // 교육의 region이 권역 형식(예: '1권역')인 경우
+          if (education.region.includes('권역')) {
+            // 강사의 지역을 권역으로 변환하여 비교
+            if (education.region !== instructorRegionZone) {
+              return false // 지역이 일치하지 않으면 표시하지 않음
+            }
+          } else {
+            // 교육의 region이 시/군 형식(예: '수원시')인 경우 직접 비교
+            if (education.region !== instructorRegion) {
+              return false // 지역이 일치하지 않으면 표시하지 않음
+            }
+          }
         }
       }
       
@@ -82,7 +186,7 @@ export default function ApplyForEducationPage() {
       
       return true
     })
-  }, [allEducations, educationIdParam])
+  }, [allEducations, educationIdParam, instructorRegion])
   
   // 마감된 교육
   const closedEducations = useMemo(() => {
@@ -392,11 +496,24 @@ export default function ApplyForEducationPage() {
   ): { canApply: boolean; reason?: string } => {
     const now = dayjs()
     
-    // 1. Check status - Only 강사공개 status allows applications
-    if (education.status !== '강사공개') {
+    // 1. Check status - Only 강사공개/OPEN/신청 중 status allows applications
+    const isStatusOpen = education.status === '강사공개' || 
+                        education.status === '신청 중' ||
+                        education.educationStatus === 'OPEN' ||
+                        education.educationStatus === '신청 중'
+    
+    if (!isStatusOpen) {
       return { 
         canApply: false, 
-        reason: `상태 불일치: 교육 상태가 "강사공개"가 아닙니다. (현재 상태: ${education.status || education.educationStatus || '미설정'})` 
+        reason: `상태 불일치: 교육 상태가 "강사공개" 또는 "신청 중"이 아닙니다. (현재 상태: ${education.status || education.educationStatus || '미설정'})` 
+      }
+    }
+    
+    // Exclude if explicitly closed
+    if (education.status === '신청 마감' || education.educationStatus === '신청 마감') {
+      return { 
+        canApply: false, 
+        reason: `교육 마감: 교육이 마감되었습니다.` 
       }
     }
     
@@ -428,27 +545,30 @@ export default function ApplyForEducationPage() {
       }
     }
 
-    // 5. Check for time conflicts with already assigned sessions
-    const timeConflict = checkTimeConflict(education)
-    if (timeConflict.hasConflict) {
-      const conflictInfo = timeConflict.conflictingEducation
-      const sessionInfo = timeConflict.conflictingSession
-      return {
-        canApply: false,
-        reason: `시간 충돌: 이미 배정된 "${conflictInfo?.educationName}" 교육과 시간이 겹칩니다. (${sessionInfo?.date} ${sessionInfo?.time})`
+    // 5-7. Use comprehensive validation (monthly limit, schedule conflict, daily limit)
+    if (role) {
+      const roleType: 'main' | 'assistant' = role === '주강사' ? 'main' : 'assistant'
+      const validationResult = validateInstructorAssignment(
+        currentInstructor,
+        education,
+        roleType,
+        {
+          monthlyCapacity: getDefaultMonthlyCapacity(),
+          dailyLimit: {
+            globalDefault: getGlobalDailyLimit(),
+          },
+        }
+      )
+
+      if (!validationResult.valid) {
+        return {
+          canApply: false,
+          reason: validationResult.reason
+        }
       }
     }
 
-    // 6. Check monthly maximum sessions limit
-    const monthlyLimitCheck = checkMonthlySessionLimit(education)
-    if (!monthlyLimitCheck.eligible) {
-      return {
-        canApply: false,
-        reason: monthlyLimitCheck.reason
-      }
-    }
-
-    // 7. Check if someone else applied earlier (only if role is specified)
+    // 8. Check if someone else applied earlier (only if role is specified)
     if (role) {
       const earlierApplicationCheck = checkEarlierApplication(education, role)
       if (!earlierApplicationCheck.eligible) {
@@ -486,6 +606,7 @@ export default function ApplyForEducationPage() {
             region: education.region,
             gradeClass: education.gradeClass,
             role: role,
+            instructorId: currentInstructor.id,
             instructorName: currentInstructorName,
             applicationDate: dayjs().format('YYYY.MM.DD'),
             status: '대기',

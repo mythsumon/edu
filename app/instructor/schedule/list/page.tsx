@@ -5,7 +5,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Table, Button, Card, Select, DatePicker, Input, Badge, Tabs, Space } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { Search, Eye } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import dayjs from 'dayjs'
 import { getAttendanceDocs } from '@/app/instructor/schedule/[educationId]/attendance/storage'
@@ -27,6 +27,7 @@ const { RangePicker } = DatePicker
 
 export default function MyScheduleListPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { userProfile } = useAuth()
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'rejected' | 'approved'>('all')
   const [searchText, setSearchText] = useState('')
@@ -39,6 +40,21 @@ export default function MyScheduleListPage() {
 
   // Get current instructor info
   const currentInstructorName = userProfile?.name || '홍길동' // Mock instructor name
+
+  // Check URL params for educationId and open drawer if present
+  useEffect(() => {
+    const educationIdParam = searchParams?.get('educationId')
+    if (educationIdParam && summaries.length > 0) {
+      const summary = summaries.find(s => s.educationId === educationIdParam)
+      if (summary) {
+        setSelectedEducationId(educationIdParam)
+        setDrawerOpen(true)
+        // Clean up URL parameter
+        const newUrl = window.location.pathname
+        router.replace(newUrl)
+      }
+    }
+  }, [searchParams, summaries, router])
 
   useEffect(() => {
     // Initialize dummy data in development mode

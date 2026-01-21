@@ -85,6 +85,7 @@ export function educationToStatusItem(
     period: education.period,
     openAt: education.openAt,
     closeAt: education.closeAt,
+    applicationRestriction: education.applicationRestriction || 'ALL',
   }
 }
 

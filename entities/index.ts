@@ -4,3 +4,4 @@ export * from './endpoints';
 export * from './submission';
 export * from './education';
 export * from './fee';
+export * from './settlement';

@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Table, Button, Card, Select, Space, Descriptions, Checkbox, Modal, message, Input } from 'antd'
+import { Table, Button, Card, Select, Space, Descriptions, Checkbox, Modal, message, Input, Tabs } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { ChevronRight, Download, RotateCcw, Check, X, ArrowLeft, Eye, Search, RefreshCw, Filter } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -46,6 +46,10 @@ interface LessonInfo {
   assistantInstructorApplied: number
   assistantInstructorRequired: number
   assistantInstructorName?: string
+  status?: '수락됨' | '거절됨' | '대기'
+  educationId?: string
+  role?: string
+  lessonKey?: string // Unique key for this lesson
 }
 
 interface InstructorApplicationItem {
@@ -488,10 +492,11 @@ export default function InstructorApplicationPage() {
   const [pageSize, setPageSize] = useState(10)
   const [searchText, setSearchText] = useState<string>('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [roleFilter, setRoleFilter] = useState<string>('all')
+  const [activeRoleTab, setActiveRoleTab] = useState<'주강사' | '보조강사'>('주강사')
   const [filterDropdownOpen, setFilterDropdownOpen] = useState<boolean>(false)
   const filterDropdownRef = useRef<HTMLDivElement>(null)
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
+  const [expandedRowKeys, setExpandedRowKeys] = useState<React.Key[]>([])
   
   // Remove duplicates from data based on key
   const removeDuplicateData = (dataArray: InstructorApplicationItem[]): InstructorApplicationItem[] => {
@@ -504,6 +509,31 @@ export default function InstructorApplicationPage() {
       return true
     })
   }
+  
+  // Group applications by educationId and role
+  const groupApplicationsByEducation = (applications: InstructorApplicationItem[]): InstructorApplicationItem[] => {
+    const grouped = new Map<string, InstructorApplicationItem>()
+    
+    applications.forEach(app => {
+      const groupKey = `${app.educationId}-${app.role}`
+      
+      if (!grouped.has(groupKey)) {
+        // Create a summary row for this education-role combination
+        grouped.set(groupKey, {
+          ...app,
+          key: `group-${groupKey}`,
+          instructorName: app.instructorName === '신청 대기' ? '신청 대기' : `${app.instructorName} 외 ${applications.filter(a => a.educationId === app.educationId && a.role === app.role && a.key !== app.key).length}명`,
+          // Collect all lessons from applications with same educationId and role
+          lessons: applications
+            .filter(a => a.educationId === app.educationId && a.role === app.role)
+            .flatMap(a => a.lessons || [])
+            .sort((a, b) => (a.session || 0) - (b.session || 0)),
+        })
+      }
+    })
+    
+    return Array.from(grouped.values())
+  }
 
   // Remove duplicates from array
   const removeDuplicates = <T,>(array: T[]): T[] => {
@@ -513,26 +543,236 @@ export default function InstructorApplicationPage() {
   // Get applications from dataStore and merge with existing dummyData
   const getApplicationsData = (): InstructorApplicationItem[] => {
     const educations = dataStore.getEducations()
-    // Create applications from educations that are OPEN or '신청 중'
-    const applicationsFromEducations: InstructorApplicationItem[] = educations
-      .filter(edu => edu.educationStatus === 'OPEN' || edu.educationStatus === '신청 중')
-      .map((edu, index) => ({
-        key: `edu-${edu.educationId}-${index}`,
-        educationId: edu.educationId,
-        educationName: edu.name,
-        institution: edu.institution,
-        region: edu.region,
-        gradeClass: edu.gradeClass,
-        role: '주강사', // Default role
-        instructorName: '신청 대기', // Placeholder until actual application
-        applicationDate: dayjs().format('YYYY.MM.DD'),
-        status: '대기' as const,
-        educationStatus: edu.educationStatus === 'OPEN' ? '신청 중' : edu.educationStatus,
-        applicationDeadline: edu.applicationDeadline,
-      }))
+    const instructorApplications = dataStore.getInstructorApplications()
+    const instructorAssignments = dataStore.getInstructorAssignments()
     
-    // Merge with existing dummyData
-    return removeDuplicateData([...dummyData, ...applicationsFromEducations])
+    // First, add actual instructor applications (one row per application)
+    const actualApplications: InstructorApplicationItem[] = instructorApplications.map((app) => {
+      const education = educations.find(e => e.educationId === app.educationId)
+      const assignment = instructorAssignments.find(a => a.educationId === app.educationId)
+      
+      // Get lessons from application, education, or assignment
+      const appLessons = app.lessons || education?.lessons || assignment?.lessons || []
+      
+      // Convert lessons to LessonInfo format
+      const lessonsInfo: LessonInfo[] = appLessons.map((lesson, index) => {
+        const session = lesson.session || index + 1
+        const assignmentLesson = assignment?.lessons?.find(
+          l => l.session === session || l.date === lesson.date
+        )
+        
+        return {
+          session: session,
+          date: lesson.date,
+          startTime: lesson.startTime,
+          endTime: lesson.endTime,
+          mainInstructorApplied: typeof lesson.mainInstructorApplied === 'number' 
+            ? lesson.mainInstructorApplied 
+            : (assignmentLesson?.mainInstructors && Array.isArray(assignmentLesson.mainInstructors) 
+                ? assignmentLesson.mainInstructors.length 
+                : 0),
+          mainInstructorRequired: lesson.mainInstructorRequired || assignmentLesson?.mainInstructorRequired || 1,
+          mainInstructorName: lesson.mainInstructorName || 
+            (assignmentLesson?.mainInstructors && Array.isArray(assignmentLesson.mainInstructors) 
+              ? assignmentLesson.mainInstructors[0]?.name 
+              : undefined) || 
+            '신청 대기',
+          assistantInstructorApplied: typeof lesson.assistantInstructorApplied === 'number'
+            ? lesson.assistantInstructorApplied
+            : (assignmentLesson?.assistantInstructors && Array.isArray(assignmentLesson.assistantInstructors)
+                ? assignmentLesson.assistantInstructors.length
+                : 0),
+          assistantInstructorRequired: lesson.assistantInstructorRequired || assignmentLesson?.assistantInstructorRequired || 0,
+          assistantInstructorName: lesson.assistantInstructorName ||
+            (assignmentLesson?.assistantInstructors && Array.isArray(assignmentLesson.assistantInstructors)
+              ? assignmentLesson.assistantInstructors[0]?.name
+              : undefined),
+        }
+      })
+      
+      return {
+        key: app.key,
+        educationId: app.educationId,
+        educationName: app.educationName || education?.name || '',
+        institution: app.institution || education?.institution || '',
+        region: app.region || education?.region || '',
+        gradeClass: app.gradeClass || education?.gradeClass || '',
+        role: app.role,
+        instructorName: app.instructorName,
+        applicationDate: app.applicationDate,
+        status: app.status,
+        educationStatus: app.educationStatus || education?.educationStatus || education?.status,
+        applicationDeadline: app.applicationDeadline || education?.applicationDeadline,
+        applier: app.applier,
+        lessons: lessonsInfo.length > 0 ? lessonsInfo : undefined,
+      }
+    })
+    
+    // Then, create rows from educations that are OPEN or '신청 중' or '강사공개'
+    // Each lesson in an education should be a separate row (if no actual application exists)
+    const applicationsFromEducations: InstructorApplicationItem[] = []
+    
+    educations
+      .filter(edu => edu.educationStatus === 'OPEN' || edu.educationStatus === '신청 중' || edu.status === '강사공개')
+      .forEach((edu) => {
+        // Skip if there are already applications for this education
+        const existingApps = actualApplications.filter(app => app.educationId === edu.educationId)
+        if (existingApps.length > 0) {
+          return // Skip this education as it already has applications
+        }
+        
+        // Find assignments for this education
+        const assignment = instructorAssignments.find(
+          assign => assign.educationId === edu.educationId
+        )
+        
+        // If education has lessons, create a row for each lesson
+        if (edu.lessons && edu.lessons.length > 0) {
+          edu.lessons.forEach((lesson, lessonIndex) => {
+            // Get lesson info from assignment if available
+            const assignmentLesson = assignment?.lessons?.find(
+              l => l.session === lesson.session || l.date === lesson.date
+            )
+            
+            // Determine main instructor info
+            const mainInstructorRequired = lesson.mainInstructorRequired || assignmentLesson?.mainInstructorRequired || 1
+            const mainInstructorName = assignmentLesson?.mainInstructorName || 
+              (assignmentLesson?.mainInstructors && Array.isArray(assignmentLesson.mainInstructors) 
+                ? assignmentLesson.mainInstructors[0]?.name 
+                : undefined) || 
+              '신청 대기'
+            
+            // Determine assistant instructor info
+            const assistantInstructorRequired = lesson.assistantInstructorRequired || assignmentLesson?.assistantInstructorRequired || 0
+            const assistantInstructorName = assignmentLesson?.assistantInstructorName ||
+              (assignmentLesson?.assistantInstructors && Array.isArray(assignmentLesson.assistantInstructors)
+                ? assignmentLesson.assistantInstructors[0]?.name
+                : undefined)
+            
+            // Create row for main instructor for this lesson
+            applicationsFromEducations.push({
+              key: `edu-${edu.educationId}-lesson-${lesson.session || lessonIndex + 1}-main`,
+              educationId: edu.educationId,
+              educationName: edu.name,
+              institution: edu.institution,
+              region: edu.region,
+              gradeClass: edu.gradeClass,
+              role: '주강사',
+              instructorName: mainInstructorName,
+              applicationDate: dayjs().format('YYYY.MM.DD'),
+              status: '대기' as const,
+              educationStatus: edu.educationStatus === 'OPEN' ? '신청 중' : edu.educationStatus || edu.status,
+              applicationDeadline: edu.applicationDeadline,
+              lessons: [{
+                session: lesson.session || lessonIndex + 1,
+                date: lesson.date,
+                startTime: lesson.startTime,
+                endTime: lesson.endTime,
+                mainInstructorApplied: 0,
+                mainInstructorRequired: mainInstructorRequired,
+                mainInstructorName: mainInstructorName,
+                assistantInstructorApplied: 0,
+                assistantInstructorRequired: assistantInstructorRequired,
+                assistantInstructorName: assistantInstructorName,
+              }],
+            })
+            
+            // If assistant instructor is needed, create a separate row for assistant role
+            if (assistantInstructorRequired > 0) {
+              applicationsFromEducations.push({
+                key: `edu-${edu.educationId}-lesson-${lesson.session || lessonIndex + 1}-assistant`,
+                educationId: edu.educationId,
+                educationName: edu.name,
+                institution: edu.institution,
+                region: edu.region,
+                gradeClass: edu.gradeClass,
+                role: '보조강사',
+                instructorName: assistantInstructorName || '신청 대기',
+                applicationDate: dayjs().format('YYYY.MM.DD'),
+                status: '대기' as const,
+                educationStatus: edu.educationStatus === 'OPEN' ? '신청 중' : edu.educationStatus || edu.status,
+                applicationDeadline: edu.applicationDeadline,
+                lessons: [{
+                  session: lesson.session || lessonIndex + 1,
+                  date: lesson.date,
+                  startTime: lesson.startTime,
+                  endTime: lesson.endTime,
+                  mainInstructorApplied: 0,
+                  mainInstructorRequired: mainInstructorRequired,
+                  mainInstructorName: mainInstructorName,
+                  assistantInstructorApplied: 0,
+                  assistantInstructorRequired: assistantInstructorRequired,
+                  assistantInstructorName: assistantInstructorName,
+                }],
+              })
+            }
+          })
+        } else {
+          // If no lessons, create a single row for the education
+          applicationsFromEducations.push({
+            key: `edu-${edu.educationId}`,
+            educationId: edu.educationId,
+            educationName: edu.name,
+            institution: edu.institution,
+            region: edu.region,
+            gradeClass: edu.gradeClass,
+            role: '주강사',
+            instructorName: '신청 대기',
+            applicationDate: dayjs().format('YYYY.MM.DD'),
+            status: '대기' as const,
+            educationStatus: edu.educationStatus === 'OPEN' ? '신청 중' : edu.educationStatus || edu.status,
+            applicationDeadline: edu.applicationDeadline,
+          })
+        }
+      })
+    
+    // Merge: actual applications first, then education-based rows, then dummyData
+    const allApplications = removeDuplicateData([...actualApplications, ...applicationsFromEducations, ...dummyData])
+    
+    // Group by educationId and role for better UX
+    // But keep individual applications if they have different instructors
+    const grouped = new Map<string, InstructorApplicationItem[]>()
+    
+    allApplications.forEach(app => {
+      const groupKey = `${app.educationId}-${app.role}`
+      if (!grouped.has(groupKey)) {
+        grouped.set(groupKey, [])
+      }
+      grouped.get(groupKey)!.push(app)
+    })
+    
+    // Create grouped rows: one row per education-role, with expandable lessons
+    const groupedRows: InstructorApplicationItem[] = []
+    
+    grouped.forEach((apps, groupKey) => {
+      const firstApp = apps[0]
+      const allLessons = apps.flatMap(app => app.lessons || [])
+      const uniqueLessons = Array.from(
+        new Map(allLessons.map(lesson => [`${lesson.session}-${lesson.date}`, lesson])).values()
+      ).sort((a, b) => (a.session || 0) - (b.session || 0))
+      
+      // Count unique instructors
+      const uniqueInstructors = new Set(apps.map(app => app.instructorName).filter(name => name && name !== '신청 대기'))
+      const instructorCount = uniqueInstructors.size
+      const instructorNames = Array.from(uniqueInstructors)
+      
+      groupedRows.push({
+        ...firstApp,
+        key: `group-${groupKey}`,
+        instructorName: instructorCount > 0 
+          ? (instructorCount === 1 
+              ? instructorNames[0] 
+              : `${instructorNames[0]} 외 ${instructorCount - 1}명`)
+          : '신청 대기',
+        lessons: uniqueLessons.length > 0 ? uniqueLessons : undefined,
+        // Add summary info
+        _isGrouped: true,
+        _totalLessons: uniqueLessons.length,
+        _totalApplications: apps.length,
+      } as InstructorApplicationItem & { _isGrouped?: boolean; _totalLessons?: number; _totalApplications?: number })
+    })
+    
+    return groupedRows
   }
 
   const [data, setData] = useState<InstructorApplicationItem[]>(() => getApplicationsData())
@@ -617,6 +857,65 @@ export default function InstructorApplicationPage() {
     message.success('신청이 거절되었습니다.')
     // Clear selection if this row was selected
     setSelectedRowKeys(prev => prev.filter(k => k !== key))
+  }
+
+  // Handle lesson-level accept/reject
+  const handleLessonAccept = (educationId: string, lesson: LessonInfo, role: string) => {
+    Modal.confirm({
+      title: '수업 수락 확인',
+      content: `${educationId}의 ${lesson.session}차시 수업을 수락하시겠습니까?`,
+      okText: '수락',
+      cancelText: '취소',
+      okButtonProps: {
+        className: 'bg-green-600 hover:bg-green-500 border-0 text-white'
+      },
+      onOk: () => {
+        // Update lesson status in data
+        setData(prevData =>
+          prevData.map(item => {
+            if (item.educationId === educationId && item.role === role) {
+              const updatedLessons = item.lessons?.map(l => 
+                l.session === lesson.session && l.date === lesson.date
+                  ? { ...l, status: '수락됨' as const }
+                  : l
+              )
+              return { ...item, lessons: updatedLessons }
+            }
+            return item
+          })
+        )
+        message.success(`${lesson.session}차시 수업이 수락되었습니다.`)
+      },
+    })
+  }
+
+  const handleLessonReject = (educationId: string, lesson: LessonInfo, role: string) => {
+    Modal.confirm({
+      title: '수업 거절 확인',
+      content: `${educationId}의 ${lesson.session}차시 수업을 거절하시겠습니까?`,
+      okText: '거절',
+      cancelText: '취소',
+      okButtonProps: {
+        className: 'bg-red-600 hover:bg-red-500 border-0 text-white'
+      },
+      onOk: () => {
+        // Update lesson status in data
+        setData(prevData =>
+          prevData.map(item => {
+            if (item.educationId === educationId && item.role === role) {
+              const updatedLessons = item.lessons?.map(l => 
+                l.session === lesson.session && l.date === lesson.date
+                  ? { ...l, status: '거절됨' as const }
+                  : l
+              )
+              return { ...item, lessons: updatedLessons }
+            }
+            return item
+          })
+        )
+        message.success(`${lesson.session}차시 수업이 거절되었습니다.`)
+      },
+    })
   }
 
   // Get processable rows for bulk action
@@ -729,67 +1028,165 @@ export default function InstructorApplicationPage() {
     setCurrentPage(1)
   }
 
-  const lessonColumns: ColumnsType<LessonInfo> = [
-    {
-      title: '수업 차시',
-      dataIndex: 'session',
-      key: 'session',
-      width: 100,
-      align: 'center' as const,
-    },
-    {
-      title: '일자',
-      dataIndex: 'date',
-      key: 'date',
-      width: 130,
-    },
-    {
-      title: '시작시간',
-      dataIndex: 'startTime',
-      key: 'startTime',
-      width: 100,
-      align: 'center' as const,
-    },
-    {
-      title: '종료시간',
-      dataIndex: 'endTime',
-      key: 'endTime',
-      width: 100,
-      align: 'center' as const,
-    },
-    {
-      title: '주강사 (신청/필요)',
-      key: 'mainInstructorRatio',
-      width: 150,
-      align: 'center' as const,
-      render: (_, record) => `${record.mainInstructorApplied}/${record.mainInstructorRequired}`,
-    },
-    {
-      title: '주강사',
-      dataIndex: 'mainInstructorName',
-      key: 'mainInstructorName',
-      width: 130,
-    },
-    {
-      title: '보조강사 (신청/필요)',
-      key: 'assistantInstructorRatio',
-      width: 150,
-      align: 'center' as const,
-      render: (_, record) => `${record.assistantInstructorApplied}/${record.assistantInstructorRequired}`,
-    },
-    {
-      title: '보조강사',
-      dataIndex: 'assistantInstructorName',
-      key: 'assistantInstructorName',
-      width: 130,
-      render: (name) => name || '-',
-    },
-  ]
+  const getLessonColumns = (educationId: string, role: string): ColumnsType<LessonInfo> => {
+    const baseColumns: ColumnsType<LessonInfo> = [
+      {
+        title: '수업 차시',
+        dataIndex: 'session',
+        key: 'session',
+        width: 100,
+        align: 'center' as const,
+      },
+      {
+        title: '일자',
+        dataIndex: 'date',
+        key: 'date',
+        width: 130,
+      },
+      {
+        title: '시작시간',
+        dataIndex: 'startTime',
+        key: 'startTime',
+        width: 100,
+        align: 'center' as const,
+      },
+      {
+        title: '종료시간',
+        dataIndex: 'endTime',
+        key: 'endTime',
+        width: 100,
+        align: 'center' as const,
+      },
+    ]
+
+    // 역할에 따라 주강사 또는 보조강사 컬럼만 추가
+    const roleColumns: ColumnsType<LessonInfo> = []
+    
+    if (role === '주강사') {
+      roleColumns.push(
+        {
+          title: '주강사 (신청/필요)',
+          key: 'mainInstructorRatio',
+          width: 150,
+          align: 'center' as const,
+          render: (_, record) => `${record.mainInstructorApplied}/${record.mainInstructorRequired}`,
+        },
+        {
+          title: '주강사',
+          dataIndex: 'mainInstructorName',
+          key: 'mainInstructorName',
+          width: 130,
+        }
+      )
+    } else if (role === '보조강사') {
+      roleColumns.push(
+        {
+          title: '보조강사 (신청/필요)',
+          key: 'assistantInstructorRatio',
+          width: 150,
+          align: 'center' as const,
+          render: (_, record) => `${record.assistantInstructorApplied}/${record.assistantInstructorRequired}`,
+        },
+        {
+          title: '보조강사',
+          dataIndex: 'assistantInstructorName',
+          key: 'assistantInstructorName',
+          width: 130,
+          render: (name) => name || '-',
+        }
+      )
+    }
+
+    const actionColumns: ColumnsType<LessonInfo> = [
+      {
+        title: '상태',
+        key: 'status',
+        width: 100,
+        align: 'center' as const,
+        render: (_, record) => {
+          const status = record.status || '대기'
+          const config = statusStyle[status] || { bg: 'bg-gray-100', text: 'text-gray-600' }
+          return (
+            <span
+              className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
+            >
+              {status}
+            </span>
+          )
+        },
+      },
+      {
+        title: '수락/거절',
+        key: 'action',
+        width: 150,
+        align: 'center' as const,
+        fixed: 'right' as const,
+        render: (_, record) => {
+          const lessonStatus = record.status || '대기'
+          
+          if (lessonStatus === '수락됨') {
+            return (
+              <Button
+                disabled
+                icon={<Check className="w-4 h-4" />}
+                className="h-8 px-3 rounded-lg bg-green-50 border border-green-200 text-green-700 font-medium"
+                size="small"
+              >
+                수락됨
+              </Button>
+            )
+          } else if (lessonStatus === '거절됨') {
+            return (
+              <Button
+                disabled
+                icon={<X className="w-4 h-4" />}
+                className="h-8 px-3 rounded-lg bg-red-50 border border-red-200 text-red-700 font-medium"
+                size="small"
+              >
+                거절됨
+              </Button>
+            )
+          } else {
+            return (
+              <div className="flex gap-2">
+                <Button
+                  type="primary"
+                  icon={<Check className="w-4 h-4" />}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleLessonAccept(educationId, record, role)
+                  }}
+                  className="h-8 px-3 rounded-lg bg-green-600 hover:bg-green-500 hover:brightness-110 hover:ring-2 hover:ring-green-400/40 active:bg-green-600 border-0 text-white font-medium transition-all shadow-sm hover:shadow-md"
+                  size="small"
+                >
+                  수락
+                </Button>
+                <Button
+                  danger
+                  type="default"
+                  icon={<X className="w-4 h-4" />}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleLessonReject(educationId, record, role)
+                  }}
+                  className="h-8 px-3 rounded-lg font-medium transition-all shadow-sm hover:shadow-md"
+                  size="small"
+                >
+                  거절
+                </Button>
+              </div>
+            )
+          }
+        },
+      },
+    ]
+
+    return [...baseColumns, ...roleColumns, ...actionColumns]
+  }
 
   const handleResetFilters = () => {
     setSearchText('')
     setStatusFilter('all')
-    setRoleFilter('all')
   }
 
   const filteredData = useMemo(() => {
@@ -799,15 +1196,15 @@ export default function InstructorApplicationPage() {
         item.instructorName.toLowerCase().includes(searchText.toLowerCase()) ||
         item.educationName.toLowerCase().includes(searchText.toLowerCase())
       const matchesStatus = statusFilter === 'all' || item.status === statusFilter
-      const matchesRole = roleFilter === 'all' || item.role === roleFilter
+      const matchesRole = item.role === activeRoleTab
       return matchesSearch && matchesStatus && matchesRole
     })
-  }, [data, searchText, statusFilter, roleFilter])
+  }, [data, searchText, statusFilter, activeRoleTab])
 
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchText, statusFilter, roleFilter])
+  }, [searchText, statusFilter, activeRoleTab])
 
   // Paginated data
   const paginatedData = useMemo(() => {
@@ -960,7 +1357,21 @@ export default function InstructorApplicationPage() {
         dataIndex: 'educationId',
         key: 'educationId',
         width: 150,
-        render: (text: string) => <span className="text-base font-medium text-gray-900">{text}</span>,
+        render: (text: string, record: InstructorApplicationItem & { _totalLessons?: number }) => (
+          <div className="flex items-center gap-2">
+            <span className="text-base font-medium text-gray-900">{text}</span>
+            {record._totalLessons !== undefined && record._totalLessons > 0 && (
+              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                {record._totalLessons}차시
+              </span>
+            )}
+            {record.lessons && record.lessons.length > 0 && record._totalLessons === undefined && (
+              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                {record.lessons.length}차시
+              </span>
+            )}
+          </div>
+        ),
       },
       {
         title: '교육명',
@@ -1049,7 +1460,7 @@ export default function InstructorApplicationPage() {
         ),
       },
     ],
-    [filteredData, selectedRowKeys, handleAccept, handleReject, handleRowClick]
+    [filteredData, selectedRowKeys, handleAcceptClick, handleReject, handleRowClick, canApproveApplication]
   )
 
   return (
@@ -1244,21 +1655,6 @@ export default function InstructorApplicationPage() {
                 {filterDropdownOpen && (
                   <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50 p-4">
                     <div className="space-y-4">
-                      {/* Role Filter */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">역할</label>
-                        <div className="h-11 rounded-xl bg-white border border-[#E6E6EF] transition-all duration-200 hover:border-[#D3D3E0]">
-                          <Select
-                            placeholder="ALL ROLES"
-                            value={roleFilter === 'all' ? undefined : roleFilter}
-                            onChange={setRoleFilter}
-                            options={roleOptions.filter(opt => opt.value !== 'all')}
-                            className="w-full [&_.ant-select-selector]:!h-11 [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!px-4 [&_.ant-select-selection-item]:!text-[#151827] [&_.ant-select-selection-item]:!font-medium [&_.ant-select-selection-placeholder]:!text-[#9AA0AE]"
-                            suffixIcon={<ChevronRight className="w-4 h-4 text-[#9AA0AE] rotate-90" />}
-                          />
-                        </div>
-                      </div>
-                      
                       {/* Status Filter */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">상태</label>
@@ -1303,7 +1699,28 @@ export default function InstructorApplicationPage() {
                 )}
               </div>
             </div>
-            <Table
+            <Tabs
+              activeKey={activeRoleTab}
+              onChange={(key) => {
+                setActiveRoleTab(key as '주강사' | '보조강사')
+                setCurrentPage(1)
+                setSelectedRowKeys([])
+                setExpandedRowKeys([])
+              }}
+              items={[
+                {
+                  key: '주강사',
+                  label: `주강사 (${data.filter(item => item.role === '주강사').length})`,
+                },
+                {
+                  key: '보조강사',
+                  label: `보조강사 (${data.filter(item => item.role === '보조강사').length})`,
+                },
+              ]}
+              className="mb-4 [&_.ant-tabs-tab]:px-4 [&_.ant-tabs-tab]:py-2 [&_.ant-tabs-tab]:rounded-lg [&_.ant-tabs-tab-active]:bg-blue-50 [&_.ant-tabs-tab-active]:border-blue-200"
+            />
+            <div className="mt-4">
+              <Table
               columns={columns}
               dataSource={paginatedData}
               pagination={{
@@ -1323,8 +1740,74 @@ export default function InstructorApplicationPage() {
               }}
               rowKey="key"
               scroll={{ x: 'max-content' }}
-              className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:sticky [&_.ant-table-thead>tr>th]:top-0 [&_.ant-table-thead>tr>th]:z-10 [&_.ant-table-tbody>tr]:border-b [&_.ant-table-tbody>tr]:border-gray-100 [&_.ant-pagination]:!mt-4 [&_.ant-pagination]:!mb-0 [&_.ant-pagination-item]:!rounded-lg [&_.ant-pagination-item]:!border-[#E6E6EF] [&_.ant-pagination-item]:!h-9 [&_.ant-pagination-item]:!min-w-[36px] [&_.ant-pagination-item-active]:!border-[#3b82f6] [&_.ant-pagination-item-active]:!bg-[#3b82f6] [&_.ant-pagination-item-active>a]:!text-white [&_.ant-pagination-prev]:!rounded-lg [&_.ant-pagination-prev]:!border-[#E6E6EF] [&_.ant-pagination-next]:!rounded-lg [&_.ant-pagination-next]:!border-[#E6E6EF] [&_.ant-pagination-options]:!ml-4 [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-[#E6E6EF] [&_.ant-pagination-total-text]:!text-[#151827] [&_.ant-pagination-total-text]:!mr-4"
-            />
+              expandable={{
+                expandedRowKeys: expandedRowKeys,
+                onExpandedRowsChange: (keys) => setExpandedRowKeys(Array.from(keys)),
+                expandedRowRender: (record: InstructorApplicationItem) => {
+                  if (!record.lessons || record.lessons.length === 0) {
+                    return (
+                      <div className="p-4 bg-gray-50 text-sm text-gray-500">
+                        수업 정보가 없습니다.
+                      </div>
+                    )
+                  }
+                  
+                  // Add educationId and role to each lesson for action handlers
+                  const lessonsWithContext = record.lessons.map(lesson => ({
+                    ...lesson,
+                    educationId: record.educationId,
+                    role: record.role,
+                    lessonKey: `${record.educationId}-${record.role}-${lesson.session}-${lesson.date}`,
+                    status: lesson.status || '대기',
+                  }))
+                  
+                  return (
+                    <div className="p-4 bg-gray-50">
+                      <div className="mb-3">
+                        <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                          수업 정보 ({record.lessons.length}개) - {record.role}
+                        </h4>
+                      </div>
+                      <Table
+                        columns={getLessonColumns(record.educationId, record.role)}
+                        dataSource={lessonsWithContext}
+                        rowKey={(lesson) => lesson.lessonKey || `lesson-${lesson.session}-${lesson.date}`}
+                        pagination={false}
+                        size="small"
+                        scroll={{ x: 'max-content' }}
+                        className="[&_.ant-table-thead>tr>th]:bg-white [&_.ant-table-tbody>tr]:bg-white"
+                      />
+                    </div>
+                  )
+                },
+                rowExpandable: (record: InstructorApplicationItem) => {
+                  return record.lessons !== undefined && record.lessons.length > 0
+                },
+                expandIcon: ({ expanded, onExpand, record }) => {
+                  const hasLessons = record.lessons !== undefined && record.lessons.length > 0
+                  if (!hasLessons) return null
+                  
+                  return (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onExpand(record, e as any)
+                      }}
+                      className="flex items-center justify-center w-6 h-6 rounded hover:bg-gray-200 transition-colors"
+                    >
+                      <ChevronRight
+                        className={`w-4 h-4 text-gray-500 transition-transform ${
+                          expanded ? 'transform rotate-90' : ''
+                        }`}
+                      />
+                    </button>
+                  )
+                },
+              }}
+                  className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:sticky [&_.ant-table-thead>tr>th]:top-0 [&_.ant-table-thead>tr>th]:z-10 [&_.ant-table-tbody>tr]:border-b [&_.ant-table-tbody>tr]:border-gray-100 [&_.ant-pagination]:!mt-4 [&_.ant-pagination]:!mb-0 [&_.ant-pagination-item]:!rounded-lg [&_.ant-pagination-item]:!border-[#E6E6EF] [&_.ant-pagination-item]:!h-9 [&_.ant-pagination-item]:!min-w-[36px] [&_.ant-pagination-item-active]:!border-[#3b82f6] [&_.ant-pagination-item-active]:!bg-[#3b82f6] [&_.ant-pagination-item-active>a]:!text-white [&_.ant-pagination-prev]:!rounded-lg [&_.ant-pagination-prev]:!border-[#E6E6EF] [&_.ant-pagination-next]:!rounded-lg [&_.ant-pagination-next]:!border-[#E6E6EF] [&_.ant-pagination-options]:!ml-4 [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-[#E6E6EF] [&_.ant-pagination-total-text]:!text-[#151827] [&_.ant-pagination-total-text]:!mr-4"
+              />
+            </div>
           </Card>
 
           {/* Bulk Action Confirmation Modal */}
@@ -1471,7 +1954,7 @@ export default function InstructorApplicationPage() {
             {selectedApplication.lessons && selectedApplication.lessons.length > 0 && (
               <LessonsListCard
                 lessons={selectedApplication.lessons}
-                columns={lessonColumns}
+                columns={getLessonColumns(selectedApplication.educationId, selectedApplication.role)}
               />
             )}
           </div>

@@ -30,6 +30,7 @@ export interface EducationStatusItem {
   period?: string
   openAt?: string // ISO datetime string
   closeAt?: string // ISO datetime string
+  applicationRestriction?: 'MAIN_ONLY' | 'ASSISTANT_ONLY' | 'ALL' // 신청 제한
 }
 
 interface EducationStatusTableProps {
@@ -300,6 +301,19 @@ export function EducationStatusTable({
             )}
             {!openAt && !closeAt && (
               <span className="text-gray-400 text-xs">스케줄 없음</span>
+            )}
+            {record.applicationRestriction && (
+              <div className="flex items-center gap-2 text-xs mt-1">
+                <span className="text-gray-500">신청제한:</span>
+                <Badge 
+                  status={record.applicationRestriction === 'ALL' ? 'default' : 'processing'}
+                  text={
+                    record.applicationRestriction === 'MAIN_ONLY' ? '주강사만' :
+                    record.applicationRestriction === 'ASSISTANT_ONLY' ? '보조강사만' :
+                    '모두 가능'
+                  }
+                />
+              </div>
             )}
           </div>
         )

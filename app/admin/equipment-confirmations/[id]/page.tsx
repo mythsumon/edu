@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Button, Space, Modal, Input, message, Badge } from 'antd'
-import { ArrowLeft, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react'
+import { Button, Space, Modal, Input, InputNumber, DatePicker, TimePicker, message, Badge } from 'antd'
+import { ArrowLeft, CheckCircle2, XCircle, AlertTriangle, Download } from 'lucide-react'
 import { DetailPageHeaderSticky, DetailSectionCard } from '@/components/admin/operations'
 import { useAuth } from '@/contexts/AuthContext'
 import {
@@ -12,6 +12,12 @@ import {
   getDocByEducationId,
   upsertDoc,
 } from '@/app/instructor/equipment-confirmations/storage'
+import {
+  getEquipmentConfirmationById,
+  getEquipmentConfirmationByEducationId,
+  upsertEquipmentConfirmation,
+} from '@/app/instructor/equipment-confirmations/storage-v2'
+import type { EquipmentConfirmation } from '@/app/instructor/equipment-confirmations/types-v2'
 import {
   validateForApprove,
   deriveInventory,
@@ -27,8 +33,10 @@ import type {
   AuditLogEntry,
 } from '@/app/instructor/equipment-confirmations/types'
 import { EquipmentItemsTable } from '@/app/instructor/equipment-confirmations/components/EquipmentItemsTable'
+import { EquipmentItemsTableV2 } from '@/app/instructor/equipment-confirmations/components/EquipmentItemsTableV2'
 import { AttachmentUploader } from '@/app/instructor/equipment-confirmations/components/AttachmentUploader'
 import { SignatureSlot } from '@/app/instructor/equipment-confirmations/components/SignatureSlot'
+import { SignatureSlotV2 } from '@/app/instructor/equipment-confirmations/components/SignatureSlotV2'
 import dayjs from 'dayjs'
 
 const { TextArea } = Input
@@ -40,7 +48,7 @@ export default function AdminEquipmentConfirmationDetailPage() {
   const id = params?.id as string
 
   const [loading, setLoading] = useState(true)
-  const [doc, setDoc] = useState<EquipmentConfirmationDoc | null>(null)
+  const [doc, setDoc] = useState<EquipmentConfirmation | null>(null)
   const [rejectModalVisible, setRejectModalVisible] = useState(false)
   const [rejectReason, setRejectReason] = useState('')
   const [inventoryCheck, setInventoryCheck] = useState<InventoryItem[]>([])
@@ -54,10 +62,66 @@ export default function AdminEquipmentConfirmationDetailPage() {
     
     const loadDoc = async () => {
       try {
-        // Try by ID first, then by educationId
-        let loadedDoc = getDocById(id)
+        // Try v2 type first (EquipmentConfirmation)
+        let loadedDoc = getEquipmentConfirmationById(id)
         if (!loadedDoc) {
-          loadedDoc = getDocByEducationId(id)
+          loadedDoc = getEquipmentConfirmationByEducationId(id)
+        }
+        
+        // Fallback to old type if v2 not found
+        if (!loadedDoc) {
+          const oldDoc = getDocById(id) || getDocByEducationId(id)
+          if (oldDoc) {
+            // Convert old type to new type (basic mapping)
+            loadedDoc = {
+              id: oldDoc.id,
+              educationId: oldDoc.educationId || '',
+              status: oldDoc.status,
+              assignmentNo: '',
+              curriculumName: oldDoc.materialName,
+              institutionName: oldDoc.organizationName,
+              lectureDateRange: {
+                start: oldDoc.lectureDateText.split(' ~ ')[0] || '',
+                end: oldDoc.lectureDateText.split(' ~ ')[1] || oldDoc.lectureDateText,
+              },
+              담당차시_총차시: {
+                담당차시: parseInt(oldDoc.sessionsText) || 0,
+                총차시: parseInt(oldDoc.sessionsText) || 0,
+              },
+              담당참여강사: oldDoc.instructorsText,
+              expectedParticipants: oldDoc.studentCount,
+              borrowPlan: {
+                borrowerName: oldDoc.borrowerName,
+                borrowerSignature: oldDoc.signatures.borrower,
+                borrowDate: oldDoc.schedule.plannedBorrowDate || '',
+                borrowTime: oldDoc.schedule.plannedBorrowTime || '',
+              },
+              returnPlan: {
+                plannedReturnerName: oldDoc.plannedReturnerName,
+                plannedReturnDate: oldDoc.schedule.plannedReturnDate || '',
+                plannedReturnTime: oldDoc.schedule.plannedReturnTime || '',
+              },
+              items: oldDoc.items.map(item => ({
+                id: item.id,
+                leftItemName: item.name,
+                leftQty: item.quantity,
+              })),
+              notes: '',
+              returnConfirm: {
+                returnerName: oldDoc.actualReturnerName,
+                returnerSignature: oldDoc.signatures.returner,
+                returnDate: oldDoc.returnDate ? dayjs(oldDoc.returnDate).format('YYYY-MM-DD') : '',
+                returnTime: oldDoc.returnDate ? dayjs(oldDoc.returnDate).format('HH:mm') : '',
+                conditionNote: '',
+                allowanceEligible: oldDoc.allowanceTarget === 'Y' ? 'Y' : 'N',
+                adminManagerName: oldDoc.equipmentManagerName,
+                adminManagerSignature: oldDoc.signatures.manager,
+              },
+              updatedAt: oldDoc.updatedAt,
+              createdAt: oldDoc.createdAt,
+              rejectReason: oldDoc.rejectReason,
+            }
+          }
         }
         
         if (!loadedDoc) {
@@ -70,10 +134,15 @@ export default function AdminEquipmentConfirmationDetailPage() {
         
         setDoc(loadedDoc)
         
-        // Load inventory check and audit logs
+        // Load inventory check and audit logs (using old type items for now)
         const baseInventory = getInventory()
         const allDocs = getAllDocs()
-        const derived = deriveInventory(loadedDoc.items, allDocs, baseInventory)
+        const itemsForInventory = loadedDoc.items.map(item => ({
+          id: item.id,
+          name: item.leftItemName || item.rightItemName || '',
+          quantity: item.leftQty || item.rightQty || 0,
+        }))
+        const derived = deriveInventory(itemsForInventory, allDocs, baseInventory)
         setInventoryCheck(derived)
         
         const logs = getAuditLogs(loadedDoc.id)
@@ -89,11 +158,140 @@ export default function AdminEquipmentConfirmationDetailPage() {
     loadDoc()
   }, [id, router])
 
+  // Handler functions for form fields
+  const handleFieldChange = (field: keyof EquipmentConfirmation, value: any) => {
+    if (!doc) return
+    setDoc({ ...doc, [field]: value })
+  }
+
+  const handleBorrowPlanChange = (field: keyof EquipmentConfirmation['borrowPlan'], value: any) => {
+    if (!doc) return
+    setDoc({
+      ...doc,
+      borrowPlan: { ...doc.borrowPlan, [field]: value },
+    })
+  }
+
+  const handleReturnPlanChange = (field: keyof EquipmentConfirmation['returnPlan'], value: any) => {
+    if (!doc) return
+    setDoc({
+      ...doc,
+      returnPlan: { ...doc.returnPlan, [field]: value },
+    })
+  }
+
+  const handleReturnConfirmChange = (field: keyof EquipmentConfirmation['returnConfirm'], value: any) => {
+    if (!doc) return
+    setDoc({
+      ...doc,
+      returnConfirm: { ...doc.returnConfirm, [field]: value },
+    })
+  }
+
+  const handleItemsChange = (items: EquipmentConfirmation['items']) => {
+    if (!doc) return
+    setDoc({ ...doc, items })
+  }
+
+  const handle담당차시_총차시Change = (field: '담당차시' | '총차시', value: number) => {
+    if (!doc) return
+    setDoc({
+      ...doc,
+      담당차시_총차시: { ...doc.담당차시_총차시, [field]: value },
+    })
+  }
+
+  const handleLectureDateRangeChange = (field: 'start' | 'end', value: string) => {
+    if (!doc) return
+    setDoc({
+      ...doc,
+      lectureDateRange: { ...doc.lectureDateRange, [field]: value },
+    })
+  }
+
+  const handleBorrowerSignatureApply = (signature: NonNullable<EquipmentConfirmation['borrowPlan']['borrowerSignature']>) => {
+    if (!doc) return
+    setDoc({
+      ...doc,
+      borrowPlan: { ...doc.borrowPlan, borrowerSignature: signature },
+    })
+    if (doc) {
+      upsertEquipmentConfirmation(doc)
+    }
+  }
+
+  const handleBorrowerSignatureDelete = () => {
+    if (!doc) return
+    const { borrowerSignature, ...rest } = doc.borrowPlan
+    setDoc({
+      ...doc,
+      borrowPlan: rest,
+    })
+    if (doc) {
+      upsertEquipmentConfirmation(doc)
+    }
+  }
+
+  const handleReturnerSignatureApply = (signature: NonNullable<EquipmentConfirmation['returnConfirm']['returnerSignature']>) => {
+    if (!doc) return
+    setDoc({
+      ...doc,
+      returnConfirm: { ...doc.returnConfirm, returnerSignature: signature },
+    })
+    if (doc) {
+      upsertEquipmentConfirmation(doc)
+    }
+  }
+
+  const handleReturnerSignatureDelete = () => {
+    if (!doc) return
+    const { returnerSignature, ...rest } = doc.returnConfirm
+    setDoc({
+      ...doc,
+      returnConfirm: rest,
+    })
+    if (doc) {
+      upsertEquipmentConfirmation(doc)
+    }
+  }
+
+  const handleAdminManagerSignatureApply = (signature: NonNullable<EquipmentConfirmation['returnConfirm']['adminManagerSignature']>) => {
+    if (!doc) return
+    setDoc({
+      ...doc,
+      returnConfirm: { ...doc.returnConfirm, adminManagerSignature: signature },
+    })
+    if (doc) {
+      upsertEquipmentConfirmation(doc)
+    }
+  }
+
+  const handleAdminManagerSignatureDelete = () => {
+    if (!doc) return
+    const { adminManagerSignature, ...rest } = doc.returnConfirm
+    setDoc({
+      ...doc,
+      returnConfirm: rest,
+    })
+    if (doc) {
+      upsertEquipmentConfirmation(doc)
+    }
+  }
+
   const handleApprove = () => {
     if (!doc) return
 
+    // Save before approve
+    upsertEquipmentConfirmation(doc)
+
     const baseInventory = getInventory()
-    const validation = validateForApprove(doc, baseInventory)
+    // Convert items for validation
+    const itemsForValidation = doc.items.map(item => ({
+      id: item.id,
+      name: item.leftItemName || item.rightItemName || '',
+      quantity: item.leftQty || item.rightQty || 0,
+    }))
+    const validation = validateForApprove({ ...doc, items: itemsForValidation } as any, baseInventory)
     if (!validation.valid) {
       message.error(validation.errors.join('\n'))
       return
@@ -142,14 +340,13 @@ export default function AdminEquipmentConfirmationDetailPage() {
 
     if (!doc) return
 
-    const updated: EquipmentConfirmationDoc = {
+    const updated: EquipmentConfirmation = {
       ...doc,
-      status: 'REJECTED' as EquipmentConfirmationStatus,
+      status: 'REJECTED',
       rejectReason,
-      rejectedAt: new Date().toISOString(),
-      rejectedBy: userProfile?.name || '관리자',
+      updatedAt: new Date().toISOString(),
     }
-    upsertDoc(updated)
+    upsertEquipmentConfirmation(updated)
     setDoc(updated)
     appendAuditLog('rejected', doc.id, userProfile?.userId || '', userProfile?.name || '', rejectReason)
     setAuditLogs(getAuditLogs(doc.id))
@@ -159,9 +356,9 @@ export default function AdminEquipmentConfirmationDetailPage() {
     // Trigger storage event for other tabs/windows
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new StorageEvent('storage', {
-        key: 'equipment_confirmation_docs',
-        newValue: localStorage.getItem('equipment_confirmation_docs'),
-        oldValue: localStorage.getItem('equipment_confirmation_docs'),
+        key: 'equipment_confirmation_v2_docs',
+        newValue: localStorage.getItem('equipment_confirmation_v2_docs'),
+        oldValue: localStorage.getItem('equipment_confirmation_v2_docs'),
       }))
     }
     
@@ -171,15 +368,12 @@ export default function AdminEquipmentConfirmationDetailPage() {
   const handleBorrowComplete = () => {
     if (!doc) return
 
-    const updated: EquipmentConfirmationDoc = {
+    const updated: EquipmentConfirmation = {
       ...doc,
-      status: 'BORROWED' as EquipmentConfirmationStatus,
-      schedule: {
-        ...doc.schedule,
-        actualBorrowAt: new Date().toISOString(),
-      },
+      status: 'BORROWED',
+      updatedAt: new Date().toISOString(),
     }
-    upsertDoc(updated)
+    upsertEquipmentConfirmation(updated)
     setDoc(updated)
     appendAuditLog('borrowed', doc.id, userProfile?.userId || '', userProfile?.name || '')
     setAuditLogs(getAuditLogs(doc.id))
@@ -187,7 +381,12 @@ export default function AdminEquipmentConfirmationDetailPage() {
     // Update inventory check
     const baseInventory = getInventory()
     const allDocs = getAllDocs()
-    const derived = deriveInventory(updated.items, allDocs, baseInventory)
+    const itemsForInventory = updated.items.map(item => ({
+      id: item.id,
+      name: item.leftItemName || item.rightItemName || '',
+      quantity: item.leftQty || item.rightQty || 0,
+    }))
+    const derived = deriveInventory(itemsForInventory, allDocs, baseInventory)
     setInventoryCheck(derived)
     
     message.success('대여 완료 처리되었습니다.')
@@ -196,28 +395,29 @@ export default function AdminEquipmentConfirmationDetailPage() {
   const handleReturnComplete = () => {
     if (!doc) return
 
-    if (doc.returnConditionOk !== 'Y') {
-      message.warning('반납 상태를 확인해주세요.')
-      return
+    if (doc.returnConfirm.allowanceEligible !== 'Y' && doc.returnConfirm.conditionNote) {
+      // Check condition note for return status
+      const conditionOk = doc.returnConfirm.conditionNote?.toLowerCase().includes('양호') || doc.returnConfirm.conditionNote?.toLowerCase().includes('정상')
+      if (!conditionOk) {
+        message.warning('반납 상태를 확인해주세요.')
+        return
+      }
     }
-    if (!doc.actualReturnerName) {
+    if (!doc.returnConfirm.returnerName) {
       message.warning('실제 반납자 이름을 입력해주세요.')
       return
     }
-    if (!doc.signatures.returner) {
+    if (!doc.returnConfirm.returnerSignature) {
       message.warning('반납자 서명이 필요합니다.')
       return
     }
 
-    const updated: EquipmentConfirmationDoc = {
+    const updated: EquipmentConfirmation = {
       ...doc,
-      status: 'RETURNED' as EquipmentConfirmationStatus,
-      schedule: {
-        ...doc.schedule,
-        actualReturnAt: new Date().toISOString(),
-      },
+      status: 'RETURNED',
+      updatedAt: new Date().toISOString(),
     }
-    upsertDoc(updated)
+    upsertEquipmentConfirmation(updated)
     setDoc(updated)
     appendAuditLog('returned', doc.id, userProfile?.userId || '', userProfile?.name || '')
     setAuditLogs(getAuditLogs(doc.id))
@@ -225,7 +425,12 @@ export default function AdminEquipmentConfirmationDetailPage() {
     // Update inventory check
     const baseInventory = getInventory()
     const allDocs = getAllDocs()
-    const derived = deriveInventory(updated.items, allDocs, baseInventory)
+    const itemsForInventory = updated.items.map(item => ({
+      id: item.id,
+      name: item.leftItemName || item.rightItemName || '',
+      quantity: item.leftQty || item.rightQty || 0,
+    }))
+    const derived = deriveInventory(itemsForInventory, allDocs, baseInventory)
     setInventoryCheck(derived)
     
     message.success('반납 완료 처리되었습니다.')
@@ -266,6 +471,18 @@ export default function AdminEquipmentConfirmationDetailPage() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="mb-6 flex items-center gap-4">
             {getStatusBadge()}
+            <Button
+              icon={<Download className="w-4 h-4" />}
+              onClick={() => {
+                // TODO: 실제 파일 다운로드 구현
+                const filename = `교구확인서_${doc.organizationName}_${doc.lectureDateText || ''}.pdf`
+                console.log('Download equipment confirmation:', filename)
+                message.info(`교구확인서 다운로드: ${filename}`)
+              }}
+              className="h-10 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
+            >
+              다운로드
+            </Button>
             {doc.status === 'SUBMITTED' && (
               <div className="flex gap-4">
                 <Button
@@ -333,41 +550,286 @@ export default function AdminEquipmentConfirmationDetailPage() {
 
           {/* 기본 정보 */}
           <DetailSectionCard title="기본 정보" className="mb-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">기관명</div>
-                <div className="text-base font-medium text-gray-900 dark:text-gray-100">
-                  {doc.organizationName}
+            <div className="space-y-4">
+              {/* Row 1 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-gray-200 pb-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">배정번호</label>
+                  <Input
+                    value={doc.assignmentNo || ''}
+                    onChange={(e) => {
+                      handleFieldChange('assignmentNo', e.target.value)
+                      if (doc) {
+                        upsertEquipmentConfirmation({ ...doc, assignmentNo: e.target.value })
+                      }
+                    }}
+                    className="w-full rounded-lg"
+                    placeholder="배정번호 (선택사항)"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">교육과정명</label>
+                  <Input
+                    value={doc.curriculumName}
+                    onChange={(e) => {
+                      handleFieldChange('curriculumName', e.target.value)
+                      if (doc) {
+                        upsertEquipmentConfirmation({ ...doc, curriculumName: e.target.value })
+                      }
+                    }}
+                    className="w-full rounded-lg"
+                    placeholder="교육과정명"
+                  />
                 </div>
               </div>
-              <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">강의일자</div>
-                <div className="text-base font-medium text-gray-900 dark:text-gray-100">
-                  {doc.lectureDateText}
+
+              {/* Row 2 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-gray-200 pb-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">강의기관</label>
+                  <Input
+                    value={doc.institutionName}
+                    onChange={(e) => {
+                      handleFieldChange('institutionName', e.target.value)
+                      if (doc) {
+                        upsertEquipmentConfirmation({ ...doc, institutionName: e.target.value })
+                      }
+                    }}
+                    className="w-full rounded-lg"
+                    placeholder="강의기관"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">강의일자</label>
+                  <div className="flex items-center gap-2">
+                    <DatePicker
+                      value={doc.lectureDateRange.start ? dayjs(doc.lectureDateRange.start) : null}
+                      onChange={(date) => {
+                        handleLectureDateRangeChange('start', date ? date.format('YYYY-MM-DD') : '')
+                        if (doc) {
+                          upsertEquipmentConfirmation({
+                            ...doc,
+                            lectureDateRange: {
+                              ...doc.lectureDateRange,
+                              start: date ? date.format('YYYY-MM-DD') : '',
+                            },
+                          })
+                        }
+                      }}
+                      className="flex-1 rounded-lg"
+                      placeholder="시작일"
+                    />
+                    <span className="text-gray-500">~</span>
+                    <DatePicker
+                      value={doc.lectureDateRange.end ? dayjs(doc.lectureDateRange.end) : null}
+                      onChange={(date) => {
+                        handleLectureDateRangeChange('end', date ? date.format('YYYY-MM-DD') : '')
+                        if (doc) {
+                          upsertEquipmentConfirmation({
+                            ...doc,
+                            lectureDateRange: {
+                              ...doc.lectureDateRange,
+                              end: date ? date.format('YYYY-MM-DD') : '',
+                            },
+                          })
+                        }
+                      }}
+                      className="flex-1 rounded-lg"
+                      placeholder="종료일"
+                    />
+                  </div>
                 </div>
               </div>
-              <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">교재명</div>
-                <div className="text-base font-medium text-gray-900 dark:text-gray-100">
-                  {doc.materialName}
+
+              {/* Row 3 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-gray-200 pb-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">담당차시</label>
+                  <InputNumber
+                    value={doc.담당차시_총차시.담당차시}
+                    onChange={(value) => {
+                      handle담당차시_총차시Change('담당차시', value || 0)
+                      if (doc) {
+                        upsertEquipmentConfirmation({
+                          ...doc,
+                          담당차시_총차시: { ...doc.담당차시_총차시, 담당차시: value || 0 },
+                        })
+                      }
+                    }}
+                    className="w-full rounded-lg"
+                    min={0}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">총차시</label>
+                  <InputNumber
+                    value={doc.담당차시_총차시.총차시}
+                    onChange={(value) => {
+                      handle담당차시_총차시Change('총차시', value || 0)
+                      if (doc) {
+                        upsertEquipmentConfirmation({
+                          ...doc,
+                          담당차시_총차시: { ...doc.담당차시_총차시, 총차시: value || 0 },
+                        })
+                      }
+                    }}
+                    className="w-full rounded-lg"
+                    min={0}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">담당참여강사</label>
+                  <Input
+                    value={doc.담당참여강사}
+                    onChange={(e) => {
+                      handleFieldChange('담당참여강사', e.target.value)
+                      if (doc) {
+                        upsertEquipmentConfirmation({ ...doc, 담당참여강사: e.target.value })
+                      }
+                    }}
+                    className="w-full rounded-lg"
+                    placeholder="담당참여강사"
+                  />
                 </div>
               </div>
-              <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">차시</div>
-                <div className="text-base font-medium text-gray-900 dark:text-gray-100">
-                  {doc.sessionsText}
+
+              {/* Row 4 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">예상 참여 인원</label>
+                  <InputNumber
+                    value={doc.expectedParticipants}
+                    onChange={(value) => {
+                      handleFieldChange('expectedParticipants', value || 0)
+                      if (doc) {
+                        upsertEquipmentConfirmation({ ...doc, expectedParticipants: value || 0 })
+                      }
+                    }}
+                    className="w-full rounded-lg"
+                    min={0}
+                    addonAfter="명"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">교구대여자</label>
+                  <Input
+                    value={doc.borrowPlan.borrowerName}
+                    onChange={(e) => {
+                      handleBorrowPlanChange('borrowerName', e.target.value)
+                      if (doc) {
+                        upsertEquipmentConfirmation({
+                          ...doc,
+                          borrowPlan: { ...doc.borrowPlan, borrowerName: e.target.value },
+                        })
+                      }
+                    }}
+                    className="w-full rounded-lg mb-2"
+                    placeholder="교구대여자 이름"
+                  />
+                  <SignatureSlotV2
+                    label="교구대여자 서명"
+                    signature={doc.borrowPlan.borrowerSignature}
+                    signerName={doc.borrowPlan.borrowerName}
+                    onApply={handleBorrowerSignatureApply}
+                    onDelete={handleBorrowerSignatureDelete}
+                    disabled={false}
+                    userProfile={userProfile ? { userId: userProfile.userId || '', name: userProfile.name || '', signatureImageUrl: userProfile.signatureImageUrl } : undefined}
+                  />
                 </div>
               </div>
-              <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">수강생 수</div>
-                <div className="text-base font-medium text-gray-900 dark:text-gray-100">
-                  {doc.studentCount}명
+
+              {/* Row 5: 대여 일정 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-200 pt-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">대여 날짜</label>
+                  <DatePicker
+                    value={doc.borrowPlan.borrowDate ? dayjs(doc.borrowPlan.borrowDate) : null}
+                    onChange={(date) => {
+                      handleBorrowPlanChange('borrowDate', date ? date.format('YYYY-MM-DD') : '')
+                      if (doc) {
+                        upsertEquipmentConfirmation({
+                          ...doc,
+                          borrowPlan: { ...doc.borrowPlan, borrowDate: date ? date.format('YYYY-MM-DD') : '' },
+                        })
+                      }
+                    }}
+                    className="w-full rounded-lg"
+                    placeholder="대여 날짜"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">대여 시간</label>
+                  <TimePicker
+                    value={doc.borrowPlan.borrowTime ? dayjs(doc.borrowPlan.borrowTime, 'HH:mm') : null}
+                    onChange={(time) => {
+                      handleBorrowPlanChange('borrowTime', time ? time.format('HH:mm') : '')
+                      if (doc) {
+                        upsertEquipmentConfirmation({
+                          ...doc,
+                          borrowPlan: { ...doc.borrowPlan, borrowTime: time ? time.format('HH:mm') : '' },
+                        })
+                      }
+                    }}
+                    className="w-full rounded-lg"
+                    format="HH:mm"
+                    placeholder="대여 시간"
+                  />
                 </div>
               </div>
-              <div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">강사</div>
-                <div className="text-base font-medium text-gray-900 dark:text-gray-100">
-                  {doc.instructorsText}
+
+              {/* Row 6: 반납 예정 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-gray-200 pt-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">반납예정자</label>
+                  <Input
+                    value={doc.returnPlan.plannedReturnerName}
+                    onChange={(e) => {
+                      handleReturnPlanChange('plannedReturnerName', e.target.value)
+                      if (doc) {
+                        upsertEquipmentConfirmation({
+                          ...doc,
+                          returnPlan: { ...doc.returnPlan, plannedReturnerName: e.target.value },
+                        })
+                      }
+                    }}
+                    className="w-full rounded-lg"
+                    placeholder="반납예정자"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">반납 예정 날짜</label>
+                  <DatePicker
+                    value={doc.returnPlan.plannedReturnDate ? dayjs(doc.returnPlan.plannedReturnDate) : null}
+                    onChange={(date) => {
+                      handleReturnPlanChange('plannedReturnDate', date ? date.format('YYYY-MM-DD') : '')
+                      if (doc) {
+                        upsertEquipmentConfirmation({
+                          ...doc,
+                          returnPlan: { ...doc.returnPlan, plannedReturnDate: date ? date.format('YYYY-MM-DD') : '' },
+                        })
+                      }
+                    }}
+                    className="w-full rounded-lg"
+                    placeholder="반납 예정 날짜"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">반납 예정 시간</label>
+                  <TimePicker
+                    value={doc.returnPlan.plannedReturnTime ? dayjs(doc.returnPlan.plannedReturnTime, 'HH:mm') : null}
+                    onChange={(time) => {
+                      handleReturnPlanChange('plannedReturnTime', time ? time.format('HH:mm') : '')
+                      if (doc) {
+                        upsertEquipmentConfirmation({
+                          ...doc,
+                          returnPlan: { ...doc.returnPlan, plannedReturnTime: time ? time.format('HH:mm') : '' },
+                        })
+                      }
+                    }}
+                    className="w-full rounded-lg"
+                    format="HH:mm"
+                    placeholder="반납 예정 시간"
+                  />
                 </div>
               </div>
             </div>
@@ -433,12 +895,33 @@ export default function AdminEquipmentConfirmationDetailPage() {
             </div>
           </DetailSectionCard>
 
-          {/* 교구 목록 */}
-          <DetailSectionCard title="교구 목록" className="mb-6">
-            <EquipmentItemsTable
+          {/* 대여 교구 목록 및 수량 */}
+          <DetailSectionCard title="대여 교구 목록 및 수량" className="mb-6">
+            <EquipmentItemsTableV2
               items={doc.items}
-              onChange={() => {}} // Read-only for admin
-              disabled={true}
+              onChange={(items) => {
+                handleItemsChange(items)
+                if (doc) {
+                  upsertEquipmentConfirmation({ ...doc, items })
+                }
+              }}
+              disabled={false}
+            />
+          </DetailSectionCard>
+
+          {/* 공유사항/특이사항 */}
+          <DetailSectionCard title="공유사항/특이사항" className="mb-6">
+            <TextArea
+              value={doc.notes || ''}
+              onChange={(e) => {
+                handleFieldChange('notes', e.target.value)
+                if (doc) {
+                  upsertEquipmentConfirmation({ ...doc, notes: e.target.value })
+                }
+              }}
+              rows={4}
+              className="rounded-lg"
+              placeholder="공유사항이나 특이사항을 입력하세요"
             />
           </DetailSectionCard>
 

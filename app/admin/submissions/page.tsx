@@ -478,6 +478,18 @@ export default function SubmissionsPage() {
             educationId={record.educationId}
             documentId={record.evidence?.id}
           />
+          <DocumentStatusIndicator
+            status={record.lessonPlan?.status}
+            count={record.lessonPlan?.count}
+            label="강의계획서"
+            onClick={() => {
+              if (record.lessonPlan?.id) {
+                router.push(`/admin/lesson-plans/${record.lessonPlan.id}`)
+              }
+            }}
+            educationId={record.educationId}
+            documentId={record.lessonPlan?.id}
+          />
         </div>
       ),
     },
