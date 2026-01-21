@@ -172,6 +172,7 @@ This document describes the database schema structure for the backend applicatio
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | id | BIGSERIAL | PRIMARY KEY | Training unique identifier (auto-increment) |
+| training_id | VARCHAR(255) | UNIQUE | Auto-generated training ID in format "EDU-YYYY-{serial}" |
 | name | VARCHAR(255) | NOT NULL | Training name |
 | program_id | BIGINT | NOT NULL, FOREIGN KEY | Reference to programs.id |
 | institution_id | BIGINT | NOT NULL, FOREIGN KEY | Reference to institutions.id |
@@ -195,12 +196,42 @@ This document describes the database schema structure for the backend applicatio
 - `fk_training_institution` → `institutions(id)` ON DELETE RESTRICT
 
 **Indexes**:
+- `idx_training_training_id` on `training_id` - For faster training_id lookups
 - `idx_training_name` on `name` - For faster name-based lookups
 - `idx_training_program_id` on `program_id` - For filtering by program
 - `idx_training_institution_id` on `institution_id` - For filtering by institution
 - `idx_training_start_date` on `start_date` - For schedule filtering/sorting
 - `idx_training_end_date` on `end_date` - For schedule filtering/sorting
 - `idx_training_is_delete` on `is_delete` - For filtering active/deleted records
+
+---
+
+### periods
+**Description**: Stores period/class session information linked to trainings, including date, time range, and number of instructors required.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | BIGSERIAL | PRIMARY KEY | Period unique identifier (auto-increment) |
+| date | DATE | NOT NULL | Period date |
+| start_time | TIME | NOT NULL | Period start time |
+| end_time | TIME | NOT NULL | Period end time |
+| number_main_instructors | INT | | Number of main instructors required |
+| number_assistant_instructors | INT | | Number of assistant instructors required |
+| training_id | BIGINT | NOT NULL, FOREIGN KEY | Reference to trainings.id |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT NOW() | Timestamp when record was created |
+| updated_at | TIMESTAMP | | Timestamp when record was last updated |
+
+**Check Constraints**:
+- `chk_period_time_range` → `end_time > start_time`
+- `chk_period_main_instructors` → `number_main_instructors >= 0`
+- `chk_period_assistant_instructors` → `number_assistant_instructors >= 0`
+
+**Foreign Keys**:
+- `fk_period_training` → `trainings(id)` ON DELETE CASCADE
+
+**Indexes**:
+- `idx_period_date` on `date` - For date-based filtering/sorting
+- `idx_period_training_id` on `training_id` - For filtering by training
 
 ---
 
@@ -246,6 +277,10 @@ This document describes the database schema structure for the backend applicatio
 - `trainings.institution_id` → `institutions.id` (Many-to-One)
   - Restrict delete: Prevents deletion of an institution if it has associated trainings
   - One institution can have multiple trainings
+
+- `periods.training_id` → `trainings.id` (Many-to-One)
+  - Cascade delete: When a training is deleted, all its periods are automatically deleted
+  - One training can have multiple periods
 
 ---
 

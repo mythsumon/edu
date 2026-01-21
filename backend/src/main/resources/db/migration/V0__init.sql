@@ -219,6 +219,7 @@ CREATE INDEX IF NOT EXISTS idx_programs_is_delete ON programs(is_delete);
 -- Trainings table
 CREATE TABLE IF NOT EXISTS trainings (
     id BIGSERIAL PRIMARY KEY,
+    training_id VARCHAR(255) UNIQUE,
     name VARCHAR(255) NOT NULL,
     program_id BIGINT NOT NULL,
     institution_id BIGINT NOT NULL,
@@ -239,9 +240,31 @@ CREATE TABLE IF NOT EXISTS trainings (
 );
 
 -- Create indexes for trainings table
+CREATE INDEX IF NOT EXISTS idx_training_training_id ON trainings(training_id);
 CREATE INDEX IF NOT EXISTS idx_training_name ON trainings(name);
 CREATE INDEX IF NOT EXISTS idx_training_program_id ON trainings(program_id);
 CREATE INDEX IF NOT EXISTS idx_training_institution_id ON trainings(institution_id);
 CREATE INDEX IF NOT EXISTS idx_training_start_date ON trainings(start_date);
 CREATE INDEX IF NOT EXISTS idx_training_end_date ON trainings(end_date);
 CREATE INDEX IF NOT EXISTS idx_training_is_delete ON trainings(is_delete);
+
+-- Periods table
+CREATE TABLE IF NOT EXISTS periods (
+    id BIGSERIAL PRIMARY KEY,
+    date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    number_main_instructors INT,
+    number_assistant_instructors INT,
+    training_id BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP,
+    CONSTRAINT fk_period_training FOREIGN KEY (training_id) REFERENCES trainings(id) ON DELETE CASCADE,
+    CONSTRAINT chk_period_time_range CHECK (end_time > start_time),
+    CONSTRAINT chk_period_main_instructors CHECK (number_main_instructors >= 0),
+    CONSTRAINT chk_period_assistant_instructors CHECK (number_assistant_instructors >= 0)
+);
+
+-- Create indexes for periods table
+CREATE INDEX IF NOT EXISTS idx_period_date ON periods(date);
+CREATE INDEX IF NOT EXISTS idx_period_training_id ON periods(training_id);

@@ -28,6 +28,7 @@ public interface TrainingRepository extends JpaRepository<TrainingEntity, Long> 
     Optional<TrainingEntity> findByIdAndIsDeleteFalse(@Param("id") Long id);
 
     // Search with filters - using JPQL with JOIN FETCH to eagerly load relationships (paginated)
+    // Search query searches: training_id, name, grade, classInfo
     @Query("""
         SELECT DISTINCT t FROM TrainingEntity t
         LEFT JOIN FETCH t.program p
@@ -37,9 +38,10 @@ public interface TrainingRepository extends JpaRepository<TrainingEntity, Long> 
         LEFT JOIN FETCH t.institution i
         WHERE t.isDelete = FALSE
           AND (:q IS NULL OR :q = '' OR 
+               LOWER(COALESCE(t.trainingId, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR
                LOWER(t.name) LIKE LOWER(CONCAT('%', :q, '%')) OR
-               LOWER(COALESCE(t.description, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR
-               LOWER(COALESCE(t.note, '')) LIKE LOWER(CONCAT('%', :q, '%')))
+               LOWER(COALESCE(t.grade, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR
+               LOWER(COALESCE(t.classInfo, '')) LIKE LOWER(CONCAT('%', :q, '%')))
           AND (:programId IS NULL OR t.programId = :programId)
           AND (:institutionId IS NULL OR t.institutionId = :institutionId)
           AND (:programIds IS NULL OR t.programId IN :programIds)
@@ -62,6 +64,7 @@ public interface TrainingRepository extends JpaRepository<TrainingEntity, Long> 
             Pageable pageable);
 
     // Search with filters - returns all records (no pagination)
+    // Search query searches: training_id, name, grade, classInfo
     @Query("""
         SELECT DISTINCT t FROM TrainingEntity t
         LEFT JOIN FETCH t.program p
@@ -71,9 +74,10 @@ public interface TrainingRepository extends JpaRepository<TrainingEntity, Long> 
         LEFT JOIN FETCH t.institution i
         WHERE t.isDelete = FALSE
           AND (:q IS NULL OR :q = '' OR 
+               LOWER(COALESCE(t.trainingId, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR
                LOWER(t.name) LIKE LOWER(CONCAT('%', :q, '%')) OR
-               LOWER(COALESCE(t.description, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR
-               LOWER(COALESCE(t.note, '')) LIKE LOWER(CONCAT('%', :q, '%')))
+               LOWER(COALESCE(t.grade, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR
+               LOWER(COALESCE(t.classInfo, '')) LIKE LOWER(CONCAT('%', :q, '%')))
           AND (:programId IS NULL OR t.programId = :programId)
           AND (:institutionId IS NULL OR t.institutionId = :institutionId)
           AND (:programIds IS NULL OR t.programId IN :programIds)
