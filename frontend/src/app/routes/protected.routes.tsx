@@ -7,6 +7,7 @@ import { TeacherRouteGuard } from '../layout/TeacherRouteGuard'
 import { StaffRouteGuard } from '../layout/StaffRouteGuard'
 import { ROUTES } from '@/shared/constants/routes'
 import { DashboardPage, TeacherDashboardPage, StaffDashboardPage } from '@/modules/dashboard'
+import { InstructorScheduleListPage, ConfirmedScheduleListPage, OngoingTrainingListPage, CompletedTrainingListPage, TrainingApplicationListPage, ApplyForLectureListPage, UpcomingTrainingListPage } from '@/modules/instructor-training'
 import { MasterCodeSetupPage, MasterCodeCreatePage } from '@/modules/master-code-setup'
 import { CommonCodePage } from '@/modules/common-code'
 import { InstitutionManagementPage, InstitutionCreatePage, InstitutionEditPage } from '@/modules/institution'
@@ -30,6 +31,8 @@ import {
   ProfileSettingsTeacherPage,
 } from '@/modules/account-management'
 import { AdminTrainingPage, AdminTrainingCreatePage } from '@/modules/admin-training'
+import { InstructorProfilePage, instructorProfileLoader } from '@/modules/instructor-profile'
+import { InstructorAccountSettingsPage } from '@/modules/instructor-account-setting'
 
 export const protectedRoutes: RouteObject[] = [
   {
@@ -214,6 +217,74 @@ export const protectedRoutes: RouteObject[] = [
               {
                 path: ROUTES.INSTRUCTOR_DASHBOARD,
                 element: <DashboardPage />,
+              },
+              {
+                path: ROUTES.INSTRUCTOR_EDUCATION_OPERATIONS,
+                // element: <EducationOperationsPage />,
+              },
+              {
+                path: ROUTES.INSTRUCTOR_SCHEDULE,
+                // element: <EducationOperationsPage />,
+              },
+              {
+                path: ROUTES.INSTRUCTOR_SCHEDULE_BASE,
+                children: [
+                  {
+                    path: 'list',
+                    element: <InstructorScheduleListPage />,
+                  },
+                  {
+                    path: 'confirmed',
+                    element: <ConfirmedScheduleListPage />,
+                  },
+                  {
+                    path: 'in-progress',
+                    element: <OngoingTrainingListPage />,
+                  },
+                  {
+                    path: 'completed',
+                    element: <CompletedTrainingListPage />,
+                  },
+                ],
+              },
+              {
+                path: ROUTES.INSTRUCTOR_APPLY_BASE,
+                children: [
+                  {
+                    path: 'upcoming',
+                    element: <UpcomingTrainingListPage />,
+                  },
+                  {
+                    path: 'open',
+                    element: <ApplyForLectureListPage />,
+                  },
+                  {
+                    path: 'mine',
+                    element: <TrainingApplicationListPage />,
+                  },
+                ],
+              },
+              {
+                path: ROUTES.INSTRUCTOR_STUDENTS,
+                // element: <EducationOperationsPage />,
+              },
+              {
+                path: ROUTES.INSTRUCTOR_ATTENDANCE,
+                children: [
+                  {
+                    path: ROUTES.INSTRUCTOR_GRADES,
+                    // element: <SettingsAndUserManagementPage />,
+                  },
+                ],
+              },
+              {
+                path: ROUTES.INSTRUCTOR_PROFILE,
+                element: <InstructorProfilePage />,
+                loader: instructorProfileLoader,
+              },
+              {
+                path: ROUTES.INSTRUCTOR_ACCOUNT_SETTINGS,
+                element: <InstructorAccountSettingsPage />,
               },
               {
                 path: ROUTES.ACCOUNT_SETTINGS,

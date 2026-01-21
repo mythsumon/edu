@@ -131,7 +131,19 @@
     "trainingManagement": "교육 관리",
     "myAccount": "내 계정",
     "accountSettings": "계정 설정",
-    "profileSettings": "프로필 설정"
+    "profileSettings": "프로필 설정",
+    "lecture": "강의",
+    "lectureSchedule": "강의 일정",
+    "myLectureList": "내 강의 목록",
+    "checkConfirmedClasses": "확정된 강의 확인",
+    "ongoingTraining": "진행 중인 교육",
+    "completedTraining": "완료된 교육",
+    "applyForLecture": "강의 신청",
+    "trainingScheduledToOpen": "개설 예정 교육",
+    "trainingsIAppliedFor": "신청한 교육",
+    "settings": "설정",
+    "profile": "프로필 설정",
+    "accountSettings": "계정 설정"
   },
   "errors": {
     "generic": "오류가 발생했습니다",
@@ -565,6 +577,129 @@
       "codeUnavailable": "코드가 이미 존재합니다!"
     }
   },
+  "lecture": {
+    "schedule": {
+      "title": "일정 목록",
+      "description": "강의 일정을 확인하고 관리하세요",
+      "searchPlaceholder": "교육 ID, 교육명 또는 기관명으로 검색",
+      "noData": "일정을 찾을 수 없습니다",
+      "educationId": "교육 ID",
+      "trainingName": "교육명",
+      "institutionName": "기관명",
+      "documentStatus": "문서 상태",
+      "overallStatus": "전체 상태",
+      "lastModifiedDate": "최종 수정일",
+      "management": "관리",
+      "stats": {
+        "entire": "전체",
+        "pendingApproval": "승인 대기",
+        "approvalComplete": "승인 완료",
+        "cancelled": "취소됨"
+      },
+      "tabs": {
+        "all": "내 강의 목록",
+        "confirmed": "확정된 강의 확인",
+        "ongoing": "진행 중인 교육",
+        "completed": "완료된 교육"
+      }
+    },
+    "confirmed": {
+      "title": "확정된 강의 확인",
+      "description": "확정된 강의 일정을 확인하세요.",
+      "entire": "전체",
+      "searchPlaceholder": "교육 ID, 교육명 또는 기관명으로 검색",
+      "noData": "확정된 강의를 찾을 수 없습니다",
+      "educationId": "교육 ID",
+      "trainingName": "교육명",
+      "educationalInstitutions": "교육 기관",
+      "region": "지역",
+      "gradeAndClass": "학년 및 반",
+      "schedule": "일정",
+      "work": "작업",
+      "viewDetails": "상세 보기"
+    },
+    "ongoing": {
+      "title": "진행 중인 교육",
+      "description": "현재 교육을 확인하고 출석을 관리하세요.",
+      "entire": "전체",
+      "inProgress": "진행 중",
+      "attendanceConfirmation": "출석/확인"
+    },
+    "completed": {
+      "title": "완료된 교육",
+      "description": "완료된 교육 이력을 확인하세요.",
+      "entire": "전체",
+      "complete": "완료",
+      "trainingSummary": "교육 요약",
+      "reviewsSettlement": "리뷰/정산"
+    },
+    "application": {
+      "title": "신청한 교육",
+      "description": "신청한 교육의 상태를 확인하세요.",
+      "searchPlaceholder": "교육 ID, 교육명 또는 기관명으로 검색",
+      "noData": "신청 내역을 찾을 수 없습니다",
+      "educationId": "교육 ID",
+      "trainingName": "교육명",
+      "educationalInstitutions": "교육 기관",
+      "applicationRole": "신청 역할",
+      "applicationDate": "신청일",
+      "situation": "상황",
+      "work": "작업",
+      "viewDetails": "상세 보기",
+      "confirmed": "확정",
+      "atmosphere": "분위기",
+      "rejected": "거부됨",
+      "stats": {
+        "entire": "전체",
+        "confirmed": "확정",
+        "atmosphere": "분위기",
+        "rejectDelete": "거부/삭제"
+      }
+    },
+    "apply": {
+      "title": "강의 신청",
+      "description": "모집 중인 교육 세션에 강의를 신청하세요.",
+      "noData": "교육 세션을 찾을 수 없습니다",
+      "noTrainingAvailable": "신청 가능한 교육 과정이 없습니다.",
+      "noTrainingAvailableDescription": "",
+      "institutionName": "교육 기관명",
+      "gradeAndClass": "학년-반",
+      "trainingName": "교육명",
+      "region": "지역",
+      "period": "기간",
+      "select": "선택",
+      "educationId": "교육 ID",
+      "mainLecturer": "주강사",
+      "assistantTeacher": "보조 교사",
+      "applyForMainLecturer": "주강사 신청",
+      "confirmed": "확정",
+      "unconfirmed": "미확정",
+      "stats": {
+        "entire": "전체",
+        "applicationAvailable": "신청 가능",
+        "deadline": "마감"
+      },
+      "tabs": {
+        "availableForApplication": "신청 가능",
+        "deadline": "마감"
+      }
+    },
+    "upcoming": {
+      "title": "개설 예정 교육",
+      "description": "예정된 교육 프로그램을 확인하고 신청하세요.",
+      "noData": "예정된 교육 세션을 찾을 수 없습니다",
+      "noUpcomingSessions": "예정된 교육 세션이 없습니다.",
+      "educationId": "교육 ID",
+      "trainingName": "교육명",
+      "gradeAndClass": "학년-반",
+      "institutionName": "교육 기관명",
+      "region": "지역",
+      "period": "기간",
+      "stats": {
+        "entire": "전체"
+      }
+    }
+  },
   "training": {
     "title": "교육 관리",
     "description": "교육 프로그램 및 과정을 관리합니다",
@@ -681,6 +816,61 @@
       "mainLecturersMustBeNumber": "주 강사 수는 유효한 숫자여야 합니다",
       "assistantLecturersRequired": "보조 강사 수를 입력하세요",
       "assistantLecturersMustBeNumber": "보조 강사 수는 유효한 숫자여야 합니다"
+    }
+  },
+  "profile": {
+    "title": "프로필",
+    "profileInformation": "프로필 정보",
+    "status": "상태",
+    "classification": "분류",
+    "interfaceLanguage": "인터페이스 언어",
+    "selectLanguage": "언어 선택",
+    "signatureImage": "서명 이미지",
+    "uploadSignature": "서명 업로드",
+    "signatureImageHint": "출석부용 서명 이미지를 업로드하세요. (PNG 권장)",
+    "noSignature": "업로드된 서명이 없습니다",
+    "uploadAvatar": "아바타 업로드",
+    "uploading": "업로드 중...",
+    "selectFile": "파일 선택",
+    "changeSignature": "서명 변경",
+    "changeImage": "이미지 변경",
+    "clickToUpload": "클릭하여 업로드하거나 드래그 앤 드롭",
+    "new": "새로운",
+    "signatureUploadSuccess": "서명이 성공적으로 업로드되었습니다",
+    "signatureUploadError": "서명 업로드에 실패했습니다",
+    "signatureRemoveSuccess": "서명이 성공적으로 삭제되었습니다",
+    "signatureRemoveError": "서명 삭제에 실패했습니다",
+    "updateSuccess": "프로필이 성공적으로 업데이트되었습니다",
+    "updateError": "프로필 업데이트에 실패했습니다",
+    "avatarUploadPending": "아바타 업로드는 곧 구현될 예정입니다",
+    "signatureUploadPending": "서명 업로드는 곧 구현될 예정입니다",
+    "validation": {
+      "interfaceLanguageRequired": "인터페이스 언어는 필수입니다",
+      "invalidImageType": "유효하지 않은 파일 형식입니다. 허용된 형식: image/jpeg, image/jpg, image/png, image/gif, image/webp",
+      "imageTooLarge": "파일 크기가 최대 허용 크기 10MB를 초과합니다",
+      "fileReadError": "파일 읽기에 실패했습니다"
+    }
+  },
+  "accountSettings": {
+    "title": "계정 설정",
+    "changePassword": "비밀번호 변경",
+    "oldPassword": "기존 비밀번호",
+    "oldPasswordPlaceholder": "현재 비밀번호를 입력하세요",
+    "newPassword": "새 비밀번호",
+    "newPasswordPlaceholder": "새 비밀번호를 입력하세요",
+    "confirmPassword": "비밀번호 확인",
+    "confirmPasswordPlaceholder": "새 비밀번호를 확인하세요",
+    "updatePassword": "비밀번호 업데이트",
+    "updating": "업데이트 중...",
+    "updateSuccess": "비밀번호가 성공적으로 업데이트되었습니다",
+    "updateError": "비밀번호 업데이트에 실패했습니다",
+    "validation": {
+      "oldPasswordRequired": "기존 비밀번호는 필수입니다",
+      "newPasswordRequired": "새 비밀번호는 필수입니다",
+      "newPasswordMinLength": "새 비밀번호는 최소 8자 이상이어야 합니다",
+      "newPasswordMaxLength": "새 비밀번호는 최대 100자 이하여야 합니다",
+      "confirmPasswordRequired": "비밀번호 확인은 필수입니다",
+      "passwordsDoNotMatch": "비밀번호가 일치하지 않습니다"
     }
   }
 }
