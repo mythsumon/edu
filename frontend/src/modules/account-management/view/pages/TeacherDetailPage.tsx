@@ -9,6 +9,8 @@ import { ErrorState } from "@/shared/components/ErrorState";
 import { cn } from "@/shared/lib/cn";
 import { ROUTES } from "@/shared/constants/routes";
 import { useTeacherDetailQuery } from "../../controller/queries";
+import { useMasterCodeChildrenByCodeQuery } from "@/modules/master-code-setup/controller/queries";
+import { MASTER_CODE_PARENT_CODES } from "@/shared/constants/master-code";
 
 /**
  * Teacher Detail Page
@@ -25,6 +27,15 @@ export const TeacherDetailPage = () => {
     isLoading,
     error,
   } = useTeacherDetailQuery(teacherId);
+
+  // Fetch status name if statusId exists
+  const { data: statusMasterCodesData } = useMasterCodeChildrenByCodeQuery(
+    MASTER_CODE_PARENT_CODES.STATUS
+  );
+  const statusMasterCodes = statusMasterCodesData?.items || [];
+  const statusName = teacher?.statusId
+    ? statusMasterCodes.find((s) => s.id === teacher.statusId)?.codeName
+    : undefined;
 
   const handleBack = () => {
     navigate(ROUTES.ADMIN_ACCOUNT_MANAGEMENT_TEACHERS_FULL);
@@ -77,9 +88,10 @@ export const TeacherDetailPage = () => {
                   teacher.enabled ? "bg-blue-500" : "bg-gray-500"
                 )}
               >
-                {teacher.enabled
-                  ? t("accountManagement.active")
-                  : t("accountManagement.inactive")}
+                {statusName ||
+                  (teacher.enabled
+                    ? t("accountManagement.active")
+                    : t("accountManagement.inactive"))}
               </div>
             </div>
 
@@ -159,6 +171,26 @@ export const TeacherDetailPage = () => {
                   <p className="mt-1 text-sm text-foreground">
                     {teacher.phone || "-"}
                   </p>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    {t("accountManagement.status")}
+                  </label>
+                  <div className="mt-1">
+                    {statusName ? (
+                      <div
+                        className={cn(
+                          "inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium text-white",
+                          teacher.enabled ? "bg-blue-500" : "bg-gray-500"
+                        )}
+                      >
+                        {statusName}
+                      </div>
+                    ) : (
+                      <span className="text-sm text-foreground">-</span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

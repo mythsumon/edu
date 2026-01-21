@@ -1,6 +1,7 @@
 package com.itwizard.swaedu.modules.teacher.entity;
 
 import com.itwizard.swaedu.modules.auth.entity.User;
+import com.itwizard.swaedu.modules.mastercode.entity.MasterCodeEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -28,6 +29,13 @@ public class Teacher {
 
     @Column
     private String phone;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "status_id", foreignKey = @ForeignKey(name = "fk_teachers_status"))
+    private MasterCodeEntity status;
+
+    @Column(name = "status_id", insertable = false, updatable = false)
+    private Long statusId;
 
     @Column(name = "profile_photo")
     private String profilePhoto;

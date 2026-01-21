@@ -23,8 +23,14 @@ import {
   AddTeacherPage,
   TeacherDetailPage,
   EditTeacherPage,
+  AccountSettingsPage,
+  ProfileSettingsAdminPage,
+  ProfileSettingsInstructorPage,
+  ProfileSettingsTeacherPage,
 } from '@/modules/account-management'
 import { AdminTrainingPage, AdminTrainingCreatePage } from '@/modules/admin-training'
+import { InstructorProfilePage, instructorProfileLoader } from '@/modules/instructor-profile'
+import { InstructorAccountSettingsPage } from '@/modules/instructor-account-setting'
 
 export const protectedRoutes: RouteObject[] = [
   {
@@ -41,6 +47,19 @@ export const protectedRoutes: RouteObject[] = [
               {
                 path: ROUTES.ADMIN_DASHBOARD,
                 element: <DashboardPage />,
+              },
+              {
+                path: ROUTES.ACCOUNT_SETTINGS,
+                element: <AccountSettingsPage />,
+              },
+              {
+                path: ROUTES.PROFILE_SETTINGS,
+                element: <ProfileSettingsAdminPage />,
+              },
+              // Teacher profile settings (teachers use admin routes)
+              {
+                path: 'teacher-profile-settings',
+                element: <ProfileSettingsTeacherPage />,
               },
               {
                 path: ROUTES.ADMIN_PROGRAM,
@@ -247,6 +266,23 @@ export const protectedRoutes: RouteObject[] = [
                     // element: <SettingsAndUserManagementPage />,
                   },
                 ],
+              },
+              {
+                path: ROUTES.INSTRUCTOR_PROFILE,
+                element: <InstructorProfilePage />,
+                loader: instructorProfileLoader,
+              },
+              {
+                path: ROUTES.INSTRUCTOR_ACCOUNT_SETTINGS,
+                element: <InstructorAccountSettingsPage />,
+              },
+              {
+                path: ROUTES.ACCOUNT_SETTINGS,
+                element: <AccountSettingsPage />,
+              },
+              {
+                path: ROUTES.PROFILE_SETTINGS,
+                element: <ProfileSettingsInstructorPage />,
               },
             ],
           },

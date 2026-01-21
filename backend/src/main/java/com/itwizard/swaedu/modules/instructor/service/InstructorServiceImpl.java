@@ -68,7 +68,7 @@ public class InstructorServiceImpl implements InstructorService {
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(instructorRole);
-        user.setEnabled(true);
+        // enabled will be set based on status below
 
         User savedUser = userRepository.save(user);
 
@@ -104,8 +104,9 @@ public class InstructorServiceImpl implements InstructorService {
         }
 
         // Set status if provided
+        MasterCodeEntity status = null;
         if (request.getStatusId() != null) {
-            MasterCodeEntity status = masterCodeRepository.findByIdAndIsDeleteFalse(request.getStatusId())
+            status = masterCodeRepository.findByIdAndIsDeleteFalse(request.getStatusId())
                     .orElseThrow(() -> new ResourceNotFoundException("Status master code not found with id: " + request.getStatusId()));
             instructor.setStatus(status);
         }
@@ -115,6 +116,17 @@ public class InstructorServiceImpl implements InstructorService {
             MasterCodeEntity classification = masterCodeRepository.findByIdAndIsDeleteFalse(request.getClassificationId())
                     .orElseThrow(() -> new ResourceNotFoundException("Classification master code not found with id: " + request.getClassificationId()));
             instructor.setClassification(classification);
+        }
+
+        // Update user enabled based on status
+        if (status != null) {
+            boolean isActive = "Active".equals(status.getCodeName());
+            savedUser.setEnabled(isActive);
+            userRepository.save(savedUser);
+        } else {
+            // If status is not provided, set enabled to false
+            savedUser.setEnabled(false);
+            userRepository.save(savedUser);
         }
 
         Instructor savedInstructor = instructorRepository.save(instructor);
@@ -207,8 +219,9 @@ public class InstructorServiceImpl implements InstructorService {
         }
 
         // Update status if provided
+        MasterCodeEntity status = null;
         if (request.getStatusId() != null) {
-            MasterCodeEntity status = masterCodeRepository.findByIdAndIsDeleteFalse(request.getStatusId())
+            status = masterCodeRepository.findByIdAndIsDeleteFalse(request.getStatusId())
                     .orElseThrow(() -> new ResourceNotFoundException("Status master code not found with id: " + request.getStatusId()));
             instructor.setStatus(status);
         } else {
@@ -224,6 +237,102 @@ public class InstructorServiceImpl implements InstructorService {
             instructor.setClassification(null);
         }
 
+        // Update user enabled based on status
+        User user = instructor.getUser();
+        if (status != null) {
+            // Status was updated, use the new status
+            boolean isActive = "Active".equals(status.getCodeName());
+            user.setEnabled(isActive);
+            userRepository.save(user);
+        } else {
+            // Status was cleared (set to null), set enabled to false
+            user.setEnabled(false);
+            userRepository.save(user);
+        }
+
+        Instructor updatedInstructor = instructorRepository.save(instructor);
+        return InstructorMapper.toResponseDto(updatedInstructor);
+    }
+
+    @Override
+    public InstructorResponseDto getInstructorByUsername(String username) {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found with username: " + username);
+        }
+        Instructor instructor = instructorRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Instructor not found for user: " + username));
+        return InstructorMapper.toResponseDto(instructor);
+    }
+
+    @Override
+    @Transactional
+    public InstructorResponseDto updateInstructorByUsername(String username, InstructorPatchDto request) {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found with username: " + username);
+        }
+        Instructor instructor = instructorRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Instructor not found for user: " + username));
+
+        // Check email uniqueness if email is being changed
+        if (request.getEmail() != null && !request.getEmail().isBlank()
+                && !request.getEmail().equals(instructor.getEmail())
+                && instructorRepository.existsByEmail(request.getEmail())) {
+            throw new ValidationException("Email already exists for another instructor");
+        }
+
+        // Update basic fields (only non-null fields)
+        InstructorMapper.patchEntityFromDto(instructor, request);
+
+        // Update region if provided
+        if (request.getRegionId() != null) {
+            MasterCodeEntity region = masterCodeRepository.findByIdAndIsDeleteFalse(request.getRegionId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Region master code not found with id: " + request.getRegionId()));
+            instructor.setRegion(region);
+        }
+
+        // Update city if provided
+        if (request.getCityId() != null) {
+            MasterCodeEntity city = masterCodeRepository.findByIdAndIsDeleteFalse(request.getCityId())
+                    .orElseThrow(() -> new ResourceNotFoundException("City master code not found with id: " + request.getCityId()));
+            instructor.setCity(city);
+        }
+
+        // Note: Instructors should not be able to update their own status via /me endpoint
+        // Status updates should be restricted to admin-only endpoints
+
+        // Update classification if provided
+        if (request.getClassificationId() != null) {
+            MasterCodeEntity classification = masterCodeRepository.findByIdAndIsDeleteFalse(request.getClassificationId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Classification master code not found with id: " + request.getClassificationId()));
+            instructor.setClassification(classification);
+        }
+
+        // Note: We don't update user enabled status here since instructors cannot change their own status
+
+        Instructor updatedInstructor = instructorRepository.save(instructor);
+        return InstructorMapper.toResponseDto(updatedInstructor);
+    }
+
+    @Override
+    @Transactional
+    public InstructorResponseDto updateSignatureByUsername(String username, String fileUrl) {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found with username: " + username);
+        }
+        Instructor instructor = instructorRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Instructor not found for user: " + username));
+
+        // Delete old signature if exists
+        if (instructor.getSignature() != null && !instructor.getSignature().isEmpty()) {
+            // Note: StorageService can be injected if needed for deletion
+            // For now, we just replace the URL
+        }
+
+        // Update signature URL
+        instructor.setSignature(fileUrl);
         Instructor updatedInstructor = instructorRepository.save(instructor);
         return InstructorMapper.toResponseDto(updatedInstructor);
     }
@@ -259,8 +368,9 @@ public class InstructorServiceImpl implements InstructorService {
         }
 
         // Update status if provided
+        MasterCodeEntity status = null;
         if (request.getStatusId() != null) {
-            MasterCodeEntity status = masterCodeRepository.findByIdAndIsDeleteFalse(request.getStatusId())
+            status = masterCodeRepository.findByIdAndIsDeleteFalse(request.getStatusId())
                     .orElseThrow(() -> new ResourceNotFoundException("Status master code not found with id: " + request.getStatusId()));
             instructor.setStatus(status);
         }
@@ -270,6 +380,14 @@ public class InstructorServiceImpl implements InstructorService {
             MasterCodeEntity classification = masterCodeRepository.findByIdAndIsDeleteFalse(request.getClassificationId())
                     .orElseThrow(() -> new ResourceNotFoundException("Classification master code not found with id: " + request.getClassificationId()));
             instructor.setClassification(classification);
+        }
+
+        // Update user enabled based on status if status was updated
+        if (status != null) {
+            User user = instructor.getUser();
+            boolean isActive = "Active".equals(status.getCodeName());
+            user.setEnabled(isActive);
+            userRepository.save(user);
         }
 
         Instructor updatedInstructor = instructorRepository.save(instructor);
@@ -349,7 +467,7 @@ public class InstructorServiceImpl implements InstructorService {
             headerRow.createCell(colNum++).setCellValue("Affiliation");
             headerRow.createCell(colNum++).setCellValue("Region Name");
             headerRow.createCell(colNum++).setCellValue("Classification Name");
-            headerRow.createCell(colNum++).setCellValue("Status Name");
+            headerRow.createCell(colNum++).setCellValue("Account Status");
             headerRow.createCell(colNum++).setCellValue("City");
             headerRow.createCell(colNum++).setCellValue("Street");
             headerRow.createCell(colNum++).setCellValue("Building Name / Lake Number");
@@ -386,7 +504,7 @@ public class InstructorServiceImpl implements InstructorService {
                     row.createCell(cellNum++).setCellValue(instructor.getRegion() != null && instructor.getRegion().getCodeName() != null ? instructor.getRegion().getCodeName() : "");
                     // Classification Name
                     row.createCell(cellNum++).setCellValue(instructor.getClassification() != null && instructor.getClassification().getCodeName() != null ? instructor.getClassification().getCodeName() : "");
-                    // Status Name
+                    // Account Status
                     row.createCell(cellNum++).setCellValue(instructor.getStatus() != null && instructor.getStatus().getCodeName() != null ? instructor.getStatus().getCodeName() : "");
                     // City
                     row.createCell(cellNum++).setCellValue(instructor.getCity() != null && instructor.getCity().getCodeName() != null ? instructor.getCity().getCodeName() : "");

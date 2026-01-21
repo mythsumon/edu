@@ -12,6 +12,8 @@ import com.itwizard.swaedu.modules.auth.entity.Role;
 import com.itwizard.swaedu.modules.auth.entity.User;
 import com.itwizard.swaedu.modules.auth.repository.RoleRepository;
 import com.itwizard.swaedu.modules.auth.repository.UserRepository;
+import com.itwizard.swaedu.modules.mastercode.repository.MasterCodeRepository;
+import com.itwizard.swaedu.modules.mastercode.entity.MasterCodeEntity;
 import com.itwizard.swaedu.util.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Row;
@@ -39,6 +41,7 @@ public class TeacherServiceImpl implements TeacherService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MasterCodeRepository masterCodeRepository;
 
     @Override
     @Transactional
@@ -69,6 +72,25 @@ public class TeacherServiceImpl implements TeacherService {
         teacher.setEmail(request.getEmail());
         teacher.setPhone(request.getPhone());
 
+        // Set status if provided
+        MasterCodeEntity status = null;
+        if (request.getStatusId() != null) {
+            status = masterCodeRepository.findByIdAndIsDeleteFalse(request.getStatusId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Status master code not found with id: " + request.getStatusId()));
+            teacher.setStatus(status);
+        }
+
+        // Update user enabled based on status
+        if (status != null) {
+            boolean isActive = "Active".equals(status.getCodeName());
+            savedUser.setEnabled(isActive);
+            userRepository.save(savedUser);
+        } else {
+            // If status is not provided, set enabled to false
+            savedUser.setEnabled(false);
+            userRepository.save(savedUser);
+        }
+
         Teacher savedTeacher = teacherRepository.save(teacher);
         return TeacherMapper.toResponseDto(savedTeacher);
     }
@@ -94,6 +116,30 @@ public class TeacherServiceImpl implements TeacherService {
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with userId: " + userId));
 
         TeacherMapper.updateEntityFromDto(teacher, request);
+
+        // Update status if provided
+        MasterCodeEntity status = null;
+        if (request.getStatusId() != null) {
+            status = masterCodeRepository.findByIdAndIsDeleteFalse(request.getStatusId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Status master code not found with id: " + request.getStatusId()));
+            teacher.setStatus(status);
+        } else {
+            teacher.setStatus(null);
+        }
+
+        // Update user enabled based on status
+        User user = teacher.getUser();
+        if (status != null) {
+            // Status was updated, use the new status
+            boolean isActive = "Active".equals(status.getCodeName());
+            user.setEnabled(isActive);
+            userRepository.save(user);
+        } else {
+            // Status was cleared (set to null), set enabled to false
+            user.setEnabled(false);
+            userRepository.save(user);
+        }
+
         Teacher updatedTeacher = teacherRepository.save(teacher);
         return TeacherMapper.toResponseDto(updatedTeacher);
     }
@@ -117,6 +163,7 @@ public class TeacherServiceImpl implements TeacherService {
             headerRow.createCell(colNum++).setCellValue("Username");
             headerRow.createCell(colNum++).setCellValue("Email");
             headerRow.createCell(colNum++).setCellValue("Phone");
+            headerRow.createCell(colNum++).setCellValue("Account Status");
 
             // Stream data from database and write rows
             AtomicInteger rowNum = new AtomicInteger(1);
@@ -136,6 +183,8 @@ public class TeacherServiceImpl implements TeacherService {
                     row.createCell(cellNum++).setCellValue(teacher.getEmail() != null ? teacher.getEmail() : "");
                     // Phone
                     row.createCell(cellNum++).setCellValue(teacher.getPhone() != null ? teacher.getPhone() : "");
+                    // Account Status
+                    row.createCell(cellNum++).setCellValue(teacher.getStatus() != null && teacher.getStatus().getCodeName() != null ? teacher.getStatus().getCodeName() : "");
                 });
             }
 

@@ -16,6 +16,7 @@ public class TeacherResponseDto {
     private String name;
     private String email;
     private String phone;
+    private Long statusId;
     private String profilePhoto;
     private Boolean enabled;
 }

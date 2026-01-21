@@ -44,6 +44,11 @@ export const ROUTES = {
   INSTRUCTOR_STUDENTS: 'reference-information-management',
   INSTRUCTOR_ATTENDANCE: 'system-management',
   INSTRUCTOR_GRADES: 'settings',
+  INSTRUCTOR_PROFILE: 'profile',
+  INSTRUCTOR_ACCOUNT_SETTINGS: 'account-settings',
+  // Account settings routes (for all account types)
+  ACCOUNT_SETTINGS: 'account-settings',
+  PROFILE_SETTINGS: 'profile-settings',
   // Full paths for navigation (computed from segments)
   ADMIN_DASHBOARD_FULL: '/admin/dashboard',
   ADMIN_PROGRAM_MANAGEMENT_FULL: '/admin/program',
@@ -86,6 +91,8 @@ export const ROUTES = {
   INSTRUCTOR_STUDENTS_FULL: '/instructor/reference-information-management',
   INSTRUCTOR_ATTENDANCE_FULL: '/instructor/system-management',
   INSTRUCTOR_GRADES_FULL: '/instructor/system-management/settings',
+  INSTRUCTOR_PROFILE_FULL: '/instructor/profile',
+  INSTRUCTOR_ACCOUNT_SETTINGS_FULL: '/instructor/account-settings',
   // Legacy routes (for backward compatibility)
   // Education Operations
   EDUCATION_OPERATIONS: '/education-operations',
@@ -102,6 +109,12 @@ export const ROUTES = {
   // System Management
   SYSTEM_MANAGEMENT: '/system-management',
   SETTINGS_AND_USER_MANAGEMENT: '/system-management/settings',
+  // Account settings full paths
+  ADMIN_ACCOUNT_SETTINGS_FULL: '/admin/account-settings',
+  ADMIN_PROFILE_SETTINGS_FULL: '/admin/profile-settings',
+  ADMIN_TEACHER_PROFILE_SETTINGS_FULL: '/admin/teacher-profile-settings',
+  INSTRUCTOR_ACCOUNT_SETTINGS_FULL: '/instructor/account-settings',
+  INSTRUCTOR_PROFILE_SETTINGS_FULL: '/instructor/profile-settings',
   // Auth
   LOGIN: '/login',
   NOT_FOUND: '/404',

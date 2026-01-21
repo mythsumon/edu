@@ -7,6 +7,7 @@ export interface TeacherResponseDto {
   name: string
   email: string | null
   phone: string | null
+  statusId: number | null
   profilePhoto: string | null
   enabled: boolean
 }

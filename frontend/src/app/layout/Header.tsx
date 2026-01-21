@@ -4,7 +4,6 @@ import {
   Bell,
   User,
   ChevronDown,
-  Settings,
   LogOut,
   Moon,
   Sun,
@@ -12,12 +11,16 @@ import {
   PanelLeftOpen,
   Menu,
   Check,
+  KeyRound,
+  UserCircle,
 } from "lucide-react";
 import { STORAGE_KEYS } from "@/shared/constants/storageKeys";
 import { useLogoutMutation } from "@/modules/auth/controller/mutations";
 import { useUiStore } from "@/shared/stores/ui.store";
 import type { UserResponseDto } from "@/modules/auth/model/auth.types";
 import { Popover, PopoverTrigger, PopoverContent } from "@/shared/ui/popover";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/shared/constants/routes";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +38,7 @@ const languages = [
 
 export const Header = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [user, setUser] = useState<UserResponseDto | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const logoutMutation = useLogoutMutation();
@@ -325,12 +329,41 @@ export const Header = () => {
               </div>
             </div>
 
+            {/* Account Settings */}
+            <button
+              className="w-full flex items-center cursor-pointer px-3 py-2 rounded-md hover:bg-muted transition-colors text-left"
+              onClick={() => {
+                const userRole = user?.roleName?.toUpperCase();
+                if (userRole === "ADMIN") {
+                  navigate(ROUTES.ADMIN_ACCOUNT_SETTINGS_FULL);
+                } else if (userRole === "INSTRUCTOR") {
+                  navigate(ROUTES.INSTRUCTOR_ACCOUNT_SETTINGS_FULL);
+                } else if (userRole === "TEACHER") {
+                  navigate(ROUTES.ADMIN_ACCOUNT_SETTINGS_FULL); // Teachers use admin routes
+                }
+                setPopoverOpen(false);
+              }}
+            >
+              <KeyRound className="h-4 w-4 mr-2" />
+              <span className="text-sm">{t("header.accountSettings")}</span>
+            </button>
+
             {/* Profile Settings */}
             <button
               className="w-full flex items-center cursor-pointer px-3 py-2 rounded-md hover:bg-muted transition-colors text-left"
-              onClick={() => setPopoverOpen(false)}
+              onClick={() => {
+                const userRole = user?.roleName?.toUpperCase();
+                if (userRole === "ADMIN") {
+                  navigate(ROUTES.ADMIN_PROFILE_SETTINGS_FULL);
+                } else if (userRole === "INSTRUCTOR") {
+                  navigate(ROUTES.INSTRUCTOR_PROFILE_SETTINGS_FULL);
+                } else if (userRole === "TEACHER") {
+                  navigate(ROUTES.ADMIN_TEACHER_PROFILE_SETTINGS_FULL);
+                }
+                setPopoverOpen(false);
+              }}
             >
-              <Settings className="h-4 w-4 mr-2" />
+              <UserCircle className="h-4 w-4 mr-2" />
               <span className="text-sm">{t("header.profileSettings")}</span>
             </button>
 
