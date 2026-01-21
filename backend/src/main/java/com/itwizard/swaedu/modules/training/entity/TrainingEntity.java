@@ -17,6 +17,9 @@ public class TrainingEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "training_id", length = 255, unique = true)
+    private String trainingId;
+
     @Column(nullable = false, length = 255)
     private String name;
 

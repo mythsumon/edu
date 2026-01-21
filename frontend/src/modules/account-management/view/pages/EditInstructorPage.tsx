@@ -22,6 +22,7 @@ import { CollapsibleCard } from '../components/CollapsibleCard'
 import { FormField } from '../components/FormField'
 import { Input } from '@/shared/ui/input'
 import { CustomDropdownField, type DropdownOption } from '@/shared/components/CustomDropdown'
+import { BackToTop } from '@/shared/components/BackToTop'
 
 export const EditInstructorPage = () => {
   const { t } = useTranslation()
@@ -454,6 +455,7 @@ export const EditInstructorPage = () => {
           </CollapsibleCard>
         </form>
       </div>
+      <BackToTop />
     </PageLayout>
   )
 }

@@ -11,6 +11,11 @@
 -- Password: instructor123
 -- Role: INSTRUCTOR
 --
+-- Insert default staff user
+-- Username: staff
+-- Password: staff123
+-- Role: STAFF
+--
 -- Note: It is recommended to change the default password after first login
 -- To generate a new BCrypt hash, use BCryptPasswordEncoder in your application:
 -- BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -207,18 +212,18 @@ INSERT INTO master_code (code, code_name, parent_id, created_at, is_delete) VALU
     ('1200-3', 'Hardware', (SELECT id FROM master_code WHERE code = '1200' AND parent_id IS NULL), NOW(), FALSE)
 ON CONFLICT DO NOTHING;
 
--- Insert admin user
+-- Insert superadmin user
 INSERT INTO users (username, password, role_id, enabled)
-VALUES ('admin',
+VALUES ('superadmin',
         '$2a$10$LWSEfV04/gvaPfZED39xuOc.QDJs3nCBjvQ2NRqLxyCpHbrj0gpjK',
         (SELECT id FROM roles WHERE name = 'ADMIN'),
         TRUE)
 ON CONFLICT (username) DO NOTHING;
--- Insert admin profile
+-- Insert superadmin profile
 INSERT INTO admins (user_id, name, email, phone)
-VALUES ((SELECT id FROM users WHERE username = 'admin'),
-        'Admin User',
-        'admin@example.com',
+VALUES ((SELECT id FROM users WHERE username = 'superadmin'),
+        'Super Admin',
+        'superadmin@example.com',
         '+1234567890')
 ON CONFLICT (user_id) DO NOTHING;
 
@@ -233,7 +238,7 @@ ON CONFLICT (username) DO NOTHING;
 INSERT INTO instructors (user_id, instructor_id, name, email, phone, gender, dob, region_id, city_id, street, detail_address, status_id, classification_id, affiliation)
 VALUES ((SELECT id FROM users WHERE username = 'instructor'),
         'INST' || (SELECT id FROM users WHERE username = 'instructor'),
-        'Instructor User',
+        'Instructor',
         'instructor@example.com',
         '+1234567890',
         '남자',
@@ -244,7 +249,7 @@ VALUES ((SELECT id FROM users WHERE username = 'instructor'),
         'Detail Address',
         (SELECT id FROM master_code WHERE code = '100-1' AND parent_id = (SELECT id FROM master_code WHERE code = '100' AND parent_id IS NULL)),
         (SELECT id FROM master_code WHERE code = '200-1' AND parent_id = (SELECT id FROM master_code WHERE code = '200' AND parent_id IS NULL)),
-        NULL)
+        'SWAEDU Co., Ltd.')
 ON CONFLICT (user_id) DO NOTHING;
 
 -- Insert teacher user
@@ -261,6 +266,23 @@ VALUES ((SELECT id FROM users WHERE username = 'teacher-a'),
         'TeacherA',
         'teachera@example.com',
         '+1234567890')
+ON CONFLICT (user_id) DO NOTHING;
+
+-- Insert staff user
+INSERT INTO users (username, password, role_id, enabled)
+VALUES ('staff',
+        '$2a$10$rZ81l6FyUHNKbtfJNz1SBeaOnCNLQq5yyrrBPN2DBKHJs7P5zQBCm',
+        (SELECT id FROM roles WHERE name = 'STAFF'),
+        TRUE)
+ON CONFLICT (username) DO NOTHING;
+-- Insert staff profile
+INSERT INTO staff (user_id, staff_id, name, email, phone, status_id)
+VALUES ((SELECT id FROM users WHERE username = 'staff'),
+        'STAFF' || (SELECT id FROM users WHERE username = 'staff'),
+        'Staff Member',
+        'staff@example.com',
+        '+1234567890',
+        (SELECT id FROM master_code WHERE code = '100-1' AND parent_id = (SELECT id FROM master_code WHERE code = '100' AND parent_id IS NULL)))
 ON CONFLICT (user_id) DO NOTHING;
 
 

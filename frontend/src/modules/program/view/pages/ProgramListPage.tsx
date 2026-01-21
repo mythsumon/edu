@@ -11,7 +11,7 @@ import { Card } from "@/shared/ui/card";
 import { DataTable } from "@/shared/components/DataTable";
 import { LoadingOverlay } from "@/shared/components/LoadingOverlay";
 import { CustomPagination } from "@/shared/components/CustomPagination";
-import { ROUTES } from "@/shared/constants/routes";
+import { getProgramBasePath } from "../../lib/navigation";
 import { useProgramsQuery } from "../../controller/queries";
 import type { Program, ProgramResponseDto, ProgramFilterData } from "../../model/program.types";
 import { exportProgramsToExcel } from "../../model/program.service";
@@ -177,7 +177,7 @@ export const ProgramListPage = () => {
   };
 
   const handleAddProgram = () => {
-    navigate(ROUTES.ADMIN_PROGRAM_CREATE_FULL);
+    navigate(`${getProgramBasePath()}/create`);
   };
 
   const handleDownload = async () => {
@@ -216,7 +216,7 @@ export const ProgramListPage = () => {
 
   const handleDetail = React.useCallback(
     (program: Program) => {
-      navigate(`/admin/program/${program.id}/edit?mode=view`);
+      navigate(`${getProgramBasePath()}/${program.id}/edit?mode=view`);
     },
     [navigate]
   );

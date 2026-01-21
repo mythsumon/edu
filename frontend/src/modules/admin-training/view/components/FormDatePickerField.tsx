@@ -19,6 +19,7 @@ interface FormDatePickerFieldProps<TFieldValues extends FieldValues> {
   disabled?: boolean;
   minDate?: Date;
   maxDate?: Date;
+  showTodayButton?: boolean;
 }
 
 export const FormDatePickerField = <TFieldValues extends FieldValues>({
@@ -32,6 +33,7 @@ export const FormDatePickerField = <TFieldValues extends FieldValues>({
   disabled = false,
   minDate,
   maxDate,
+  showTodayButton = true,
 }: FormDatePickerFieldProps<TFieldValues>) => {
   return (
     <FormField id={id} label={label} required={required} error={error}>
@@ -49,6 +51,7 @@ export const FormDatePickerField = <TFieldValues extends FieldValues>({
             hasError={!!error}
             minDate={minDate}
             maxDate={maxDate}
+            showTodayButton={showTodayButton}
           />
         )}
       />

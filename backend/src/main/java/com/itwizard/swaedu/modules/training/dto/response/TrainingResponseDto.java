@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class TrainingResponseDto {
     private Long id;
+    private String trainingId;
     private String name;
     private ProgramResponseDto program;
     private InstitutionResponseDto institution;

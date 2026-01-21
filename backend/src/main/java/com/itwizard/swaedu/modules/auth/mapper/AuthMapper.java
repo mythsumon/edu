@@ -2,6 +2,7 @@ package com.itwizard.swaedu.modules.auth.mapper;
 
 import com.itwizard.swaedu.modules.admin.dto.response.AdminProfileDto;
 import com.itwizard.swaedu.modules.instructor.dto.response.InstructorProfileDto;
+import com.itwizard.swaedu.modules.staff.dto.response.StaffProfileDto;
 import com.itwizard.swaedu.modules.auth.dto.JwtPayload;
 import com.itwizard.swaedu.modules.auth.dto.response.UserResponseDto;
 import com.itwizard.swaedu.modules.auth.entity.User;
@@ -69,6 +70,17 @@ public class AuthMapper {
                     .build();
         }
 
+        StaffProfileDto staffDto = null;
+        if (user.getStaff() != null) {
+            staffDto = StaffProfileDto.builder()
+                    .name(user.getStaff().getName())
+                    .email(user.getStaff().getEmail())
+                    .phone(user.getStaff().getPhone())
+                    .statusId(user.getStaff().getStatusId())
+                    .profilePhoto(user.getStaff().getProfilePhoto())
+                    .build();
+        }
+
         return UserResponseDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -76,6 +88,7 @@ public class AuthMapper {
                 .enabled(user.getEnabled())
                 .admin(adminDto)
                 .instructor(instructorDto)
+                .staff(staffDto)
                 .build();
     }
 }

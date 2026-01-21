@@ -11,7 +11,7 @@ export { TeacherAccountManagementPage } from './view/pages/TeacherAccountManagem
 export { AddTeacherPage } from './view/pages/CreateTeacherPage'
 export { TeacherDetailPage } from './view/pages/TeacherDetailPage'
 export { EditTeacherPage } from './view/pages/EditTeacherPage'
-export { AccountSettingsPage } from './view/pages/AccountSettingsPage'
+export { AdminAccountSettingsPage } from './view/pages/AdminAccountSettingsPage'
 export { ProfileSettingsAdminPage } from './view/pages/ProfileSettingsAdminPage'
 export { ProfileSettingsInstructorPage } from './view/pages/ProfileSettingsInstructorPage'
 export { ProfileSettingsTeacherPage } from './view/pages/ProfileSettingsTeacherPage'

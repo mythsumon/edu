@@ -22,6 +22,7 @@ import { FormField } from '../components/FormField'
 import { Input } from '@/shared/ui/input'
 import { openPostcodeSearch } from '@/shared/lib/postcode'
 import { CustomDropdownField, type DropdownOption } from '@/shared/components/CustomDropdown'
+import { BackToTop } from '@/shared/components/BackToTop'
 
 export const AddInstructorPage = () => {
   const { t } = useTranslation()
@@ -447,6 +448,7 @@ export const AddInstructorPage = () => {
           </CollapsibleCard>
         </form>
       </div>
+      <BackToTop />
     </PageLayout>
   )
 }

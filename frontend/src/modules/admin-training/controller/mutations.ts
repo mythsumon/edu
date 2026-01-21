@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createAdminTraining, updateAdminTraining, deleteAdminTraining } from '../model/admin-training.service'
-import type { AdminTrainingCreateDto, AdminTrainingUpdateDto } from '../model/admin-training.types'
+import { createAdminTraining, updateAdminTraining, deleteAdminTraining, createPeriodsBulk } from '../model/admin-training.service'
+import type { AdminTrainingCreateDto, AdminTrainingUpdateDto, PeriodBulkCreateDto } from '../model/admin-training.types'
 import { adminTrainingQueryKeys } from './queryKeys'
 
 /**
@@ -51,6 +51,17 @@ export const useDeleteAdminTraining = () => {
     onSuccess: () => {
       // Invalidate admin training list queries after deletion
       queryClient.invalidateQueries({ queryKey: adminTrainingQueryKeys.lists() })
+    },
+  })
+}
+
+/**
+ * Create periods bulk mutation hook
+ */
+export const useCreatePeriodsBulk = () => {
+  return useMutation({
+    mutationFn: async (data: PeriodBulkCreateDto) => {
+      return await createPeriodsBulk(data)
     },
   })
 }

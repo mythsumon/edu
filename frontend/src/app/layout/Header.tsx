@@ -67,14 +67,25 @@ export const Header = () => {
     };
     loadUser();
 
-    // Listen for storage changes
+    // Listen for storage changes (from other tabs/windows)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === STORAGE_KEYS.USER) {
         loadUser();
       }
     };
+    
+    // Listen for custom user update event (from same window)
+    const handleUserUpdate = () => {
+      loadUser();
+    };
+    
     window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    window.addEventListener("userUpdated", handleUserUpdate);
+    
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("userUpdated", handleUserUpdate);
+    };
   }, []);
   ``;
 

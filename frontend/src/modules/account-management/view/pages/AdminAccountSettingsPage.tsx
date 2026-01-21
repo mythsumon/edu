@@ -12,13 +12,17 @@ import { useChangePassword } from '../../controller/mutations'
 import { changePasswordSchema, type ChangePasswordFormData } from '../../model/account-management.schema'
 import { FormPasswordField } from '../components/FormPasswordField'
 import { CollapsibleCard } from '../components/CollapsibleCard'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
+import { useLogoutMutation } from '@/modules/auth/controller/mutations'
 import type { UserResponseDto } from '@/modules/auth/model/auth.types'
 
-export const AccountSettingsPage = () => {
+export const AdminAccountSettingsPage = () => {
   const { t } = useTranslation()
   const { toast } = useToast()
   const navigate = useNavigate()
   const changePasswordMutation = useChangePassword()
+  const logoutMutation = useLogoutMutation()
   const formRef = useRef<HTMLFormElement>(null)
   const [user, setUser] = useState<UserResponseDto | null>(null)
 
@@ -83,6 +87,11 @@ export const AccountSettingsPage = () => {
         variant: 'success',
       })
       reset()
+      // Logout after successful password change
+      // Small delay to allow user to see the success message
+      setTimeout(() => {
+        logoutMutation.mutate()
+      }, 1500)
     } catch (error) {
       // Extract error message from various error formats
       let errorMessage = t('accountManagement.changePasswordError')
@@ -145,6 +154,27 @@ export const AccountSettingsPage = () => {
     >
       <div className="max-w-4xl p-6 mx-auto">
         <form ref={formRef} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <CollapsibleCard
+            title={t('accountManagement.accountInformation')}
+            description={t('accountManagement.accountInformationDescription')}
+            defaultExpanded={true}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="username">
+                  {t('accountManagement.username')}
+                </Label>
+                <Input
+                  id="username"
+                  type="text"
+                  value={user?.username || ''}
+                  disabled
+                  className="bg-muted"
+                />
+              </div>
+            </div>
+          </CollapsibleCard>
+
           <CollapsibleCard
             title={t('accountManagement.changePassword')}
             description={t('accountManagement.changePasswordDescription')}

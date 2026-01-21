@@ -11,6 +11,8 @@ import type {
   ListProgramsParams,
   InstitutionResponseDto,
   ListInstitutionsParams,
+  PeriodBulkCreateDto,
+  PeriodResponseDto,
 } from './admin-training.types'
 
 /**
@@ -119,4 +121,17 @@ export async function downloadClassTemplate(): Promise<Blob> {
     responseType: 'blob',
   })
   return response.data
+}
+
+/**
+ * Create multiple periods in bulk
+ */
+export async function createPeriodsBulk(
+  data: PeriodBulkCreateDto
+): Promise<PeriodResponseDto[]> {
+  const response = await axiosInstance.post<ApiResponse<PeriodResponseDto[]>>(
+    '/periods/bulk',
+    data
+  )
+  return response.data.data
 }

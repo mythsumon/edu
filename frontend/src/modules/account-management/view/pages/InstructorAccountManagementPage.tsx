@@ -13,6 +13,8 @@ import { debounce } from '@/shared/lib/debounce'
 import type { InstructorAccount, ListAccountsParams } from '../../model/account-management.types'
 import { useInstructorAccountsQuery } from '../../controller/queries'
 import { getCommonCodeById } from '@/modules/common-code/model/common-code.service'
+import { useMasterCodeChildrenByCodeQuery } from '@/modules/master-code-setup/controller/queries'
+import { MASTER_CODE_PARENT_CODES } from '@/shared/constants/master-code'
 import { LoadingState } from '@/shared/components/LoadingState'
 import { ErrorState } from '@/shared/components/ErrorState'
 import { ROUTES } from '@/shared/constants/routes'
@@ -229,6 +231,23 @@ export const InstructorAccountManagementPage = () => {
     return Array.from(new Set(classificationIds))
   }, [instructorAccounts])
 
+  // Collect unique statusIds from instructor accounts
+  const uniqueStatusIds = React.useMemo(() => {
+    const statusIds = instructorAccounts
+      .map((account) => account.statusId)
+      .filter((id): id is number => id !== undefined && id !== null)
+    return Array.from(new Set(statusIds))
+  }, [instructorAccounts])
+
+  // Fetch all status master codes (fetch once, since there are only a few statuses)
+  const { data: statusMasterCodesData } = useMasterCodeChildrenByCodeQuery(
+    MASTER_CODE_PARENT_CODES.STATUS
+  )
+  const statusMasterCodes = React.useMemo(
+    () => statusMasterCodesData?.items || [],
+    [statusMasterCodesData?.items]
+  )
+
   // Fetch all regions using useQueries
   const regionQueries = useQueries({
     queries: uniqueRegionIds.map((regionId) => ({
@@ -321,6 +340,17 @@ export const InstructorAccountManagementPage = () => {
     })
     return map
   }, [classificationQueryData])
+
+  // Create status map: statusId -> codeName
+  const statusMap = React.useMemo(() => {
+    const map = new Map<number, string>()
+    statusMasterCodes.forEach((status) => {
+      if (status.id && status.codeName) {
+        map.set(status.id, status.codeName)
+      }
+    })
+    return map
+  }, [statusMasterCodes])
 
   // Extract pagination metadata
   const paginationData = React.useMemo(() => {
@@ -426,6 +456,7 @@ export const InstructorAccountManagementPage = () => {
     onDetailClick: handleDetailClick,
     regionMap,
     classificationMap,
+    statusMap,
   })
 
   // Memoized header component to prevent re-renders

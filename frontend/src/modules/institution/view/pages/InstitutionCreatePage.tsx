@@ -3,9 +3,9 @@ import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
-import { ArrowLeft, Save, ChevronUp, ChevronDown } from "lucide-react";
+import { ArrowLeft, Save, ChevronUp, ChevronDown, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/shared/constants/routes";
+import { getInstitutionBasePath } from "../../lib/navigation";
 import { useTranslation } from "react-i18next";
 import { useState, useRef, useMemo, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
@@ -31,6 +31,7 @@ import { MASTER_CODE_PARENT_CODES } from "@/shared/constants/master-code";
 import { useTeachersListQuery } from "@/modules/teacher/controller/queries";
 import type { InstitutionCreateDto } from "../../model/institution.types";
 import { LoadingOverlay } from "@/shared/components/LoadingOverlay";
+import { openPostcodeSearch } from "@/shared/lib/postcode";
 
 export const InstitutionCreatePage = () => {
   const { t } = useTranslation();
@@ -241,6 +242,21 @@ export const InstitutionCreatePage = () => {
     }
   }, [selectedTeacher, setValue]);
 
+  const handleSearchAddress = () => {
+    openPostcodeSearch({
+      onComplete: (data) => {
+        // Use roadAddress if available, otherwise use address
+        const address = data.roadAddress || data.address;
+        setValue("streetRoad", address, { shouldValidate: true });
+      },
+      onClose: (state) => {
+        if (state === "FORCE_CLOSE") {
+          // User closed the popup without selecting
+        }
+      },
+    });
+  };
+
   const onSubmit = async (data: CreateInstitutionFormData) => {
     try {
       // Find district ID from district code
@@ -266,8 +282,8 @@ export const InstitutionCreatePage = () => {
       };
 
       await createInstitutionMutation.mutateAsync(createDto);
-      // Navigate to institution list page on success
-      navigate(ROUTES.ADMIN_INSTITUTION_FULL);
+      // Navigate to institution list page on success (role-aware)
+      navigate(getInstitutionBasePath());
     } catch (error) {
       // Error handling is done by the mutation
       // Stay on current page on error
@@ -285,7 +301,7 @@ export const InstitutionCreatePage = () => {
           <>
             <Button
               variant="outline"
-              onClick={() => navigate(ROUTES.ADMIN_INSTITUTION_FULL)}
+              onClick={() => navigate(getInstitutionBasePath())}
             >
               <ArrowLeft className="h-4 w-4" />
               {t("common.cancel")}
@@ -445,18 +461,32 @@ export const InstitutionCreatePage = () => {
                       required
                       error={errors.streetRoad}
                     >
-                      <Input
-                        id="streetRoad"
-                        type="text"
-                        placeholder={t("institution.streetRoadPlaceholder")}
-                        {...register("streetRoad")}
-                        className={
-                          errors.streetRoad ? "ring-2 ring-destructive" : ""
-                        }
-                        disabled={
-                          isSubmitting || createInstitutionMutation.isPending
-                        }
-                      />
+                      <div className="flex gap-2">
+                        <Input
+                          id="streetRoad"
+                          type="text"
+                          placeholder={t("institution.streetRoadPlaceholder")}
+                          {...register("streetRoad")}
+                          className={
+                            errors.streetRoad ? "ring-2 ring-destructive" : ""
+                          }
+                          disabled={
+                            isSubmitting || createInstitutionMutation.isPending
+                          }
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleSearchAddress}
+                          disabled={
+                            isSubmitting || createInstitutionMutation.isPending
+                          }
+                          className="shrink-0 whitespace-nowrap"
+                        >
+                          <Search className="h-4 w-4" />
+                          <span>{t("accountManagement.searchAddressButton")}</span>
+                        </Button>
+                      </div>
                     </FormField>
                     <FormField
                       id="detailAddress"

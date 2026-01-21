@@ -31,6 +31,7 @@ public class TrainingMapper {
         }
         return TrainingResponseDto.builder()
                 .id(entity.getId())
+                .trainingId(entity.getTrainingId())
                 .name(entity.getName())
                 .program(ProgramMapper.toResponseDto(entity.getProgram()))
                 .institution(InstitutionMapper.toResponseDto(entity.getInstitution()))

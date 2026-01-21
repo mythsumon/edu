@@ -14,6 +14,15 @@ import { useCommonCodeByIdQuery } from "@/modules/common-code/controller/queries
 import { useMasterCodeChildrenByCodeQuery } from "@/modules/master-code-setup/controller/queries";
 import { MASTER_CODE_PARENT_CODES } from "@/shared/constants/master-code";
 import { GENDER_OPTIONS } from "@/shared/constants/users";
+import {
+  STATUS_INACTIVE,
+  STATUS_ACTIVE,
+  STATUS_SUSPENDED,
+  STATUS_BLOCKED,
+  CLASSIFICATION_BASIC,
+  CLASSIFICATION_INTERMEDIATE,
+  CLASSIFICATION_ADVANCED,
+} from "../../constants/account-status";
 
 /**
  * Instructor Detail Page
@@ -57,6 +66,31 @@ export const InstructorDetailPage = () => {
   const statusName = instructor?.statusId
     ? statusMasterCodes.find((s) => s.id === instructor.statusId)?.codeName
     : undefined;
+
+  // Map status to pill styles
+  const getStatusStyle = (value: string | undefined) => {
+    if (!value) return 'bg-gray-100 text-gray-700'
+    const lowerValue = value.toLowerCase()
+    // Check inactive first since it contains "active"
+    if (lowerValue.includes(STATUS_INACTIVE)) {
+      // Inactive: light gray background, dark gray text
+      return 'bg-gray-100 text-gray-700'
+    }
+    if (lowerValue.includes(STATUS_ACTIVE)) {
+      // Active: light green background, dark green text
+      return 'bg-green-100 text-green-700'
+    }
+    if (lowerValue.includes(STATUS_SUSPENDED)) {
+      // Suspended: light amber background, dark amber text
+      return 'bg-amber-100 text-amber-700'
+    }
+    if (lowerValue.includes(STATUS_BLOCKED)) {
+      // Blocked: light red background, dark red text
+      return 'bg-red-100 text-red-700'
+    }
+    // Default: light gray background, dark gray text
+    return 'bg-gray-100 text-gray-700'
+  }
 
   // Fetch city name if cityId exists
   const { data: cityData } = useCommonCodeByIdQuery(
@@ -133,8 +167,8 @@ export const InstructorDetailPage = () => {
               </div>
               <div
                 className={cn(
-                  "inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium text-white",
-                  instructor.enabled ? "bg-blue-500" : "bg-gray-500"
+                  "inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium",
+                  getStatusStyle(statusName || (instructor.enabled ? t("accountManagement.active") : t("accountManagement.inactive")))
                 )}
               >
                 {statusName ||
@@ -341,8 +375,8 @@ export const InstructorDetailPage = () => {
                     {statusName ? (
                       <div
                         className={cn(
-                          "inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium text-white",
-                          instructor.enabled ? "bg-blue-500" : "bg-gray-500"
+                          "inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium",
+                          getStatusStyle(statusName)
                         )}
                       >
                         {statusName}
@@ -364,21 +398,14 @@ export const InstructorDetailPage = () => {
                     {classificationName ? (
                       <div
                         className={cn(
-                          "inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium text-white",
-                          classificationName.toLowerCase().includes("common") ||
-                            classificationName.toLowerCase().includes("일반")
-                            ? "bg-blue-500"
-                            : classificationName
-                                .toLowerCase()
-                                .includes("advanced") ||
-                              classificationName.toLowerCase().includes("고급")
-                            ? "bg-purple-500"
-                            : classificationName
-                                .toLowerCase()
-                                .includes("preparation") ||
-                              classificationName.toLowerCase().includes("준비")
-                            ? "bg-yellow-500"
-                            : "bg-gray-500"
+                          "inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium",
+                          classificationName.toLowerCase().includes(CLASSIFICATION_BASIC)
+                            ? "bg-blue-100 text-blue-700"
+                            : classificationName.toLowerCase().includes(CLASSIFICATION_INTERMEDIATE)
+                            ? "bg-amber-100 text-amber-700"
+                            : classificationName.toLowerCase().includes(CLASSIFICATION_ADVANCED)
+                            ? "bg-purple-100 text-purple-700"
+                            : "bg-gray-100 text-gray-700"
                         )}
                       >
                         {classificationName}

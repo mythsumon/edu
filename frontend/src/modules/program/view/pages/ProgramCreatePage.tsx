@@ -6,6 +6,7 @@ import { Textarea } from "@/shared/ui/textarea";
 import { ArrowLeft, Save, ChevronUp, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/shared/constants/routes";
+import { getProgramBasePath } from "../../lib/navigation";
 import { useTranslation } from "react-i18next";
 import { useState, useRef, useMemo, useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -147,8 +148,8 @@ export const ProgramCreatePage = () => {
       };
 
       await createProgramMutation.mutateAsync(createDto);
-      // Navigate to program list page on success
-      navigate(ROUTES.ADMIN_PROGRAM_MANAGEMENT_FULL);
+      // Navigate to program list page on success (role-aware)
+      navigate(getProgramBasePath());
     } catch (error) {
       // Error handling is done by the mutation
       // Stay on current page on error
@@ -166,7 +167,7 @@ export const ProgramCreatePage = () => {
           <>
             <Button
               variant="outline"
-              onClick={() => navigate(ROUTES.ADMIN_PROGRAM_MANAGEMENT_FULL)}
+              onClick={() => navigate(getProgramBasePath())}
             >
               <ArrowLeft className="h-4 w-4" />
               {t("common.cancel")}
