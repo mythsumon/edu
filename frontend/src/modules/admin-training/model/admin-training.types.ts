@@ -73,14 +73,39 @@ export interface ListInstitutionsParams {
 }
 
 /**
+ * Program Response DTO for Training (nested in training response)
+ */
+export interface TrainingProgramDto {
+  id: number
+  programId?: string | null
+  name: string
+}
+
+/**
+ * Institution Response DTO for Training (nested in training response)
+ */
+export interface TrainingInstitutionDto {
+  id: number
+  institutionId?: string | null
+  name: string
+}
+
+/**
  * Admin Training Response DTO (matches backend TrainingResponseDto)
  */
 export interface AdminTrainingResponseDto {
   id: number
   trainingId?: string | null
   name: string
+  program?: TrainingProgramDto | null
+  institution?: TrainingInstitutionDto | null
   description?: string | null
-  status?: string | null
+  startDate?: string | null
+  endDate?: string | null
+  note?: string | null
+  grade?: string | null
+  classInfo?: string | null
+  numberStudents?: number | null
   createdAt: string
   updatedAt: string
 }
@@ -103,8 +128,11 @@ export interface AdminTraining {
   id: number
   trainingId: string
   name: string
-  description: string
-  status: string
+  institutionName: string
+  grade: string
+  classInfo: string
+  startDate: string
+  endDate: string
   createdAt: string
   updatedAt: string
 }
@@ -114,8 +142,15 @@ export interface AdminTraining {
  */
 export interface AdminTrainingCreateDto {
   name: string
+  programId: number
+  institutionId: number
   description?: string | null
-  statusId?: number | null
+  startDate: string  // ISO date format: YYYY-MM-DD
+  endDate: string    // ISO date format: YYYY-MM-DD
+  note?: string | null
+  grade?: string | null
+  classInfo?: string | null
+  numberStudents?: number | null
 }
 
 /**
@@ -123,6 +158,47 @@ export interface AdminTrainingCreateDto {
  */
 export interface AdminTrainingUpdateDto {
   name: string
+  programId: number
+  institutionId: number
   description?: string | null
-  statusId?: number | null
+  startDate: string
+  endDate: string
+  note?: string | null
+  grade?: string | null
+  classInfo?: string | null
+  numberStudents?: number | null
+}
+
+/**
+ * Period Item DTO for bulk creation
+ */
+export interface PeriodItemDto {
+  date: string         // ISO date format: YYYY-MM-DD
+  startTime: string    // ISO time format: HH:mm:ss
+  endTime: string      // ISO time format: HH:mm:ss
+  numberMainInstructors?: number | null
+  numberAssistantInstructors?: number | null
+}
+
+/**
+ * Period Bulk Create DTO (matches backend PeriodBulkCreateDto)
+ */
+export interface PeriodBulkCreateDto {
+  trainingId: number
+  periods: PeriodItemDto[]
+}
+
+/**
+ * Period Response DTO
+ */
+export interface PeriodResponseDto {
+  id: number
+  date: string
+  startTime: string
+  endTime: string
+  numberMainInstructors?: number | null
+  numberAssistantInstructors?: number | null
+  trainingId: number
+  createdAt: string
+  updatedAt: string
 }

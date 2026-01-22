@@ -1,5 +1,6 @@
 import { axiosInstance } from '@/shared/http/axios/instance'
 import type { ApiResponse, PageResponse } from '@/shared/http/types/common'
+import type { UserResponseDto } from '@/modules/auth/model/auth.types'
 import type {
   AdminResponseDto,
   InstructorResponseDto,
@@ -11,6 +12,7 @@ import type {
   UpdateInstructorRequestDto,
   CreateTeacherRequestDto,
   UpdateTeacherRequestDto,
+  ChangePasswordRequestDto,
 } from './account-management.types'
 
 /**
@@ -198,6 +200,16 @@ export async function getInstructorById(id: number): Promise<InstructorResponseD
 }
 
 /**
+ * Get current instructor's profile (for logged-in instructor)
+ */
+export async function getInstructorMe(): Promise<InstructorResponseDto> {
+  const response = await axiosInstance.get<ApiResponse<InstructorResponseDto>>(
+    '/instructor/me'
+  )
+  return response.data.data
+}
+
+/**
  * Update an existing instructor
  */
 export async function updateInstructor(
@@ -206,6 +218,20 @@ export async function updateInstructor(
 ): Promise<InstructorResponseDto> {
   const response = await axiosInstance.put<ApiResponse<InstructorResponseDto>>(
     `/instructor/${id}`,
+    data
+  )
+  return response.data.data
+}
+
+/**
+ * Update current instructor's profile (for logged-in instructor)
+ * Uses PATCH method with partial update
+ */
+export async function updateInstructorMe(
+  data: Partial<Omit<UpdateInstructorRequestDto, 'username'>>
+): Promise<InstructorResponseDto> {
+  const response = await axiosInstance.patch<ApiResponse<InstructorResponseDto>>(
+    '/instructor/me',
     data
   )
   return response.data.data
@@ -378,4 +404,42 @@ export async function exportTeachersToExcel(
     }
   )
   return response.data
+}
+
+/**
+ * Update own profile (for current logged-in user)
+ * Uses username from authentication to update own profile
+ */
+export async function updateOwnProfile(
+  username: string,
+  roleName: string,
+  data: UpdateAdminRequestDto | UpdateInstructorRequestDto | UpdateTeacherRequestDto
+): Promise<AdminResponseDto | InstructorResponseDto | TeacherResponseDto> {
+  if (roleName.toUpperCase() === 'ADMIN') {
+    return await updateAdminByUsername(username, data as UpdateAdminRequestDto)
+  } else if (roleName.toUpperCase() === 'INSTRUCTOR') {
+    // Use the new /instructor/me endpoint for profile updates
+    // Remove username from data as it's not updatable via /me endpoint
+    const { username: _, ...updateData } = data as UpdateInstructorRequestDto
+    return await updateInstructorMe(updateData)
+  } else if (roleName.toUpperCase() === 'TEACHER') {
+    // Similar for teacher - get user ID from current user
+    const userResponse = await axiosInstance.get<ApiResponse<UserResponseDto>>('/user/me')
+    const currentUser = userResponse.data.data
+    return await updateTeacher(currentUser.id, data as UpdateTeacherRequestDto)
+  }
+  throw new Error(`Unsupported role: ${roleName}`)
+}
+
+/**
+ * Change password for current user
+ * Note: This endpoint may need to be created on the backend
+ */
+export async function changePassword(
+  data: ChangePasswordRequestDto
+): Promise<void> {
+  await axiosInstance.post<ApiResponse<void>>('/user/change-password', {
+    currentPassword: data.currentPassword,
+    newPassword: data.newPassword,
+  })
 }

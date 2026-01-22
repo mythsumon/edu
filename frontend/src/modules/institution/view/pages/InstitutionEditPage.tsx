@@ -3,9 +3,10 @@ import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
-import { ArrowLeft, Save, Edit, ChevronUp, ChevronDown } from "lucide-react";
+import { ArrowLeft, Save, Edit, ChevronUp, ChevronDown, Search } from "lucide-react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/shared/constants/routes";
+import { getInstitutionBasePath } from "../../lib/navigation";
 import { useTranslation } from "react-i18next";
 import { useState, useRef, useMemo, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
@@ -32,6 +33,7 @@ import { MASTER_CODE_PARENT_CODES } from "@/shared/constants/master-code";
 import { useTeachersListQuery } from "@/modules/teacher/controller/queries";
 import type { InstitutionUpdateDto } from "../../model/institution.types";
 import { LoadingOverlay } from "@/shared/components/LoadingOverlay";
+import { openPostcodeSearch } from "@/shared/lib/postcode";
 
 export const InstitutionEditPage = () => {
   const { t } = useTranslation();
@@ -284,6 +286,21 @@ export const InstitutionEditPage = () => {
     }
   }, [institutionData, districtList, reset]);
 
+  const handleSearchAddress = () => {
+    openPostcodeSearch({
+      onComplete: (data) => {
+        // Use roadAddress if available, otherwise use address
+        const address = data.roadAddress || data.address;
+        setValue("streetRoad", address, { shouldValidate: true });
+      },
+      onClose: (state) => {
+        if (state === "FORCE_CLOSE") {
+          // User closed the popup without selecting
+        }
+      },
+    });
+  };
+
   const onSubmit = async (data: UpdateInstitutionFormData) => {
     if (!institutionId) return;
 
@@ -328,7 +345,7 @@ export const InstitutionEditPage = () => {
       <PageLayout
         title={t("institution.editInstitution")}
         customBreadcrumbRoot={{
-          path: ROUTES.ADMIN_INSTITUTION_FULL,
+          path: getInstitutionBasePath(),
           label: t("sidebar.institution"),
         }}
       >
@@ -342,7 +359,7 @@ export const InstitutionEditPage = () => {
       <PageLayout
         title={t("institution.editInstitution")}
         customBreadcrumbRoot={{
-          path: ROUTES.ADMIN_INSTITUTION_FULL,
+          path: getInstitutionBasePath(),
           label: t("sidebar.institution"),
         }}
       >
@@ -353,7 +370,7 @@ export const InstitutionEditPage = () => {
             </p>
             <Button
               variant="outline"
-              onClick={() => navigate(ROUTES.ADMIN_INSTITUTION_FULL)}
+              onClick={() => navigate(getInstitutionBasePath())}
               className="mt-4"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -375,7 +392,7 @@ export const InstitutionEditPage = () => {
             : t("institution.institutionDetails")
         }
         customBreadcrumbRoot={{
-          path: ROUTES.ADMIN_INSTITUTION_FULL,
+          path: getInstitutionBasePath(),
           label: t("sidebar.institution"),
         }}
         actions={
@@ -424,7 +441,7 @@ export const InstitutionEditPage = () => {
                   }
                   setIsEditMode(false);
                 } else {
-                  navigate(ROUTES.ADMIN_INSTITUTION_FULL);
+                  navigate(getInstitutionBasePath());
                 }
               }}
             >
@@ -607,21 +624,37 @@ export const InstitutionEditPage = () => {
                         required
                         error={errors.streetRoad}
                       >
-                        <Input
-                          id="streetRoad"
-                          type="text"
-                          placeholder={t("institution.streetRoadPlaceholder")}
-                          {...register("streetRoad")}
-                          className={
-                            errors.streetRoad ? "ring-2 ring-destructive" : ""
-                          }
-                          readOnly={!isEditMode}
-                          disabled={
-                            !isEditMode ||
-                            isSubmitting ||
-                            updateInstitutionMutation.isPending
-                          }
-                        />
+                        <div className="flex gap-2">
+                          <Input
+                            id="streetRoad"
+                            type="text"
+                            placeholder={t("institution.streetRoadPlaceholder")}
+                            {...register("streetRoad")}
+                            className={
+                              errors.streetRoad ? "ring-2 ring-destructive" : ""
+                            }
+                            readOnly={!isEditMode}
+                            disabled={
+                              !isEditMode ||
+                              isSubmitting ||
+                              updateInstitutionMutation.isPending
+                            }
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleSearchAddress}
+                            disabled={
+                              !isEditMode ||
+                              isSubmitting ||
+                              updateInstitutionMutation.isPending
+                            }
+                            className="shrink-0 whitespace-nowrap"
+                          >
+                            <Search className="h-4 w-4" />
+                            <span>{t("accountManagement.searchAddressButton")}</span>
+                          </Button>
+                        </div>
                       </FormField>
                       <FormField
                         id="detailAddress"

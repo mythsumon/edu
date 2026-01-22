@@ -1,5 +1,15 @@
 import { z } from 'zod'
 
+/**
+ * Helper to create a number schema that handles NaN from empty inputs.
+ * When valueAsNumber: true is used with an empty input, it returns NaN.
+ * This uses z.number().transform() with refine to handle NaN properly.
+ */
+const requiredNumber = (minValue: number, errorRequired: string, errorMin: string) =>
+  z.number({ error: errorRequired })
+    .refine((val) => !isNaN(val), { message: errorRequired })
+    .refine((val) => val >= minValue, { message: errorMin })
+
 const periodSchema = (t: (key: string) => string) =>
   z.object({
     date: z
@@ -11,12 +21,16 @@ const periodSchema = (t: (key: string) => string) =>
     endTime: z
       .string()
       .min(1, t('training.validation.periodEndTimeRequired')),
-    mainLecturers: z
-      .number({ error: t('training.validation.mainLecturersMustBeNumber') })
-      .min(1, t('training.validation.mainLecturersRequired')),
-    assistantLecturers: z
-      .number({ error: t('training.validation.assistantLecturersMustBeNumber') })
-      .min(0, t('training.validation.assistantLecturersRequired')),
+    mainLecturers: requiredNumber(
+      1,
+      t('training.validation.mainLecturersMustBeNumber'),
+      t('training.validation.mainLecturersRequired')
+    ),
+    assistantLecturers: requiredNumber(
+      0,
+      t('training.validation.assistantLecturersMustBeNumber'),
+      t('training.validation.assistantLecturersRequired')
+    ),
   })
 
 export const createAdminTrainingSchema = (t: (key: string) => string) =>
@@ -45,12 +59,16 @@ export const createAdminTrainingSchema = (t: (key: string) => string) =>
     class: z
       .string()
       .min(1, t('training.validation.classRequired')),
-    numberOfStudents: z
-      .number({ error: t('training.validation.numberOfStudentsMustBeNumber') })
-      .min(1, t('training.validation.numberOfStudentsRequired')),
-    numberOfClasses: z
-      .number({ error: t('training.validation.numberOfClassesMustBeNumber') })
-      .min(1, t('training.validation.numberOfClassesRequired')),
+    numberOfStudents: requiredNumber(
+      1,
+      t('training.validation.numberOfStudentsMustBeNumber'),
+      t('training.validation.numberOfStudentsRequired')
+    ),
+    numberOfPeriods: requiredNumber(
+      1,
+      t('training.validation.numberOfPeriodsMustBeNumber'),
+      t('training.validation.numberOfPeriodsRequired')
+    ),
     periods: z.array(periodSchema(t)).min(1),
   }).refine(
     (data) => {
@@ -95,12 +113,16 @@ export const updateAdminTrainingSchema = (t: (key: string) => string) =>
     class: z
       .string()
       .min(1, t('training.validation.classRequired')),
-    numberOfStudents: z
-      .number({ error: t('training.validation.numberOfStudentsMustBeNumber') })
-      .min(1, t('training.validation.numberOfStudentsRequired')),
-    numberOfClasses: z
-      .number({ error: t('training.validation.numberOfClassesMustBeNumber') })
-      .min(1, t('training.validation.numberOfClassesRequired')),
+    numberOfStudents: requiredNumber(
+      1,
+      t('training.validation.numberOfStudentsMustBeNumber'),
+      t('training.validation.numberOfStudentsRequired')
+    ),
+    numberOfPeriods: requiredNumber(
+      1,
+      t('training.validation.numberOfPeriodsMustBeNumber'),
+      t('training.validation.numberOfPeriodsRequired')
+    ),
     periods: z.array(periodSchema(t)).min(1),
   }).refine(
     (data) => {

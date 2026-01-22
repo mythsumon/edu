@@ -50,4 +50,11 @@ export interface UserResponseDto {
     street: string
     detailAddress: string
   } | null
+  staff?: {
+    name: string
+    email: string
+    phone: string
+    statusId: number
+    profilePhoto: string
+  } | null
 }

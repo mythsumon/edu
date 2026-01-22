@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS roles (
 CREATE INDEX IF NOT EXISTS idx_roles_name ON roles(name);
 
 -- Insert default roles
-INSERT INTO roles (name) VALUES ('ADMIN'), ('INSTRUCTOR'), ('TEACHER')
+INSERT INTO roles (name) VALUES ('ADMIN'), ('INSTRUCTOR'), ('TEACHER'), ('STAFF')
 ON CONFLICT (name) DO NOTHING;
 
 -- Users table
@@ -104,13 +104,16 @@ CREATE TABLE IF NOT EXISTS teachers (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255),
     phone VARCHAR(50),
+    status_id BIGINT,
     profile_photo VARCHAR(500),
-    CONSTRAINT fk_teachers_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    CONSTRAINT fk_teachers_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_teachers_status FOREIGN KEY (status_id) REFERENCES master_code(id) ON DELETE RESTRICT
 );
 -- Create indexes for teachers table
 CREATE INDEX IF NOT EXISTS idx_teachers_email ON teachers(email);
 CREATE INDEX IF NOT EXISTS idx_teachers_phone ON teachers(phone);
 CREATE INDEX IF NOT EXISTS idx_teachers_teacher_id ON teachers(teacher_id);
+CREATE INDEX IF NOT EXISTS idx_teachers_status_id ON teachers(status_id);
 
 -- Instructors table
 CREATE TABLE IF NOT EXISTS instructors (
@@ -144,6 +147,24 @@ CREATE INDEX IF NOT EXISTS idx_instructors_region_id ON instructors(region_id);
 CREATE INDEX IF NOT EXISTS idx_instructors_city_id ON instructors(city_id);
 CREATE INDEX IF NOT EXISTS idx_instructors_status_id ON instructors(status_id);
 CREATE INDEX IF NOT EXISTS idx_instructors_classification_id ON instructors(classification_id);
+
+-- Staff table
+CREATE TABLE IF NOT EXISTS staff (
+    user_id BIGINT PRIMARY KEY,
+    staff_id VARCHAR(255) UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    phone VARCHAR(50),
+    status_id BIGINT,
+    profile_photo VARCHAR(500),
+    CONSTRAINT fk_staff_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_staff_status FOREIGN KEY (status_id) REFERENCES master_code(id) ON DELETE RESTRICT
+);
+-- Create indexes for staff table
+CREATE INDEX IF NOT EXISTS idx_staff_email ON staff(email);
+CREATE INDEX IF NOT EXISTS idx_staff_phone ON staff(phone);
+CREATE INDEX IF NOT EXISTS idx_staff_staff_id ON staff(staff_id);
+CREATE INDEX IF NOT EXISTS idx_staff_status_id ON staff(status_id);
 
 -- Institutions table
 CREATE TABLE IF NOT EXISTS institutions (
@@ -221,3 +242,56 @@ CREATE INDEX IF NOT EXISTS idx_programs_session_part_id ON programs(session_part
 CREATE INDEX IF NOT EXISTS idx_programs_status_id ON programs(status_id);
 CREATE INDEX IF NOT EXISTS idx_programs_program_type_id ON programs(program_type_id);
 CREATE INDEX IF NOT EXISTS idx_programs_is_delete ON programs(is_delete);
+
+-- Trainings table
+CREATE TABLE IF NOT EXISTS trainings (
+    id BIGSERIAL PRIMARY KEY,
+    training_id VARCHAR(255) UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    program_id BIGINT NOT NULL,
+    institution_id BIGINT NOT NULL,
+    description TEXT,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    note TEXT,
+    grade VARCHAR(50),
+    class VARCHAR(50),
+    number_students INT,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP,
+    is_delete BOOLEAN NOT NULL DEFAULT FALSE,
+    CONSTRAINT fk_training_program FOREIGN KEY (program_id) REFERENCES programs(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_training_institution FOREIGN KEY (institution_id) REFERENCES institutions(id) ON DELETE RESTRICT,
+    CONSTRAINT chk_training_date_range CHECK (end_date >= start_date),
+    CONSTRAINT chk_training_number_students CHECK (number_students >= 0)
+);
+
+-- Create indexes for trainings table
+CREATE INDEX IF NOT EXISTS idx_training_training_id ON trainings(training_id);
+CREATE INDEX IF NOT EXISTS idx_training_name ON trainings(name);
+CREATE INDEX IF NOT EXISTS idx_training_program_id ON trainings(program_id);
+CREATE INDEX IF NOT EXISTS idx_training_institution_id ON trainings(institution_id);
+CREATE INDEX IF NOT EXISTS idx_training_start_date ON trainings(start_date);
+CREATE INDEX IF NOT EXISTS idx_training_end_date ON trainings(end_date);
+CREATE INDEX IF NOT EXISTS idx_training_is_delete ON trainings(is_delete);
+
+-- Periods table
+CREATE TABLE IF NOT EXISTS periods (
+    id BIGSERIAL PRIMARY KEY,
+    date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    number_main_instructors INT,
+    number_assistant_instructors INT,
+    training_id BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP,
+    CONSTRAINT fk_period_training FOREIGN KEY (training_id) REFERENCES trainings(id) ON DELETE CASCADE,
+    CONSTRAINT chk_period_time_range CHECK (end_time > start_time),
+    CONSTRAINT chk_period_main_instructors CHECK (number_main_instructors >= 0),
+    CONSTRAINT chk_period_assistant_instructors CHECK (number_assistant_instructors >= 0)
+);
+
+-- Create indexes for periods table
+CREATE INDEX IF NOT EXISTS idx_period_date ON periods(date);
+CREATE INDEX IF NOT EXISTS idx_period_training_id ON periods(training_id);

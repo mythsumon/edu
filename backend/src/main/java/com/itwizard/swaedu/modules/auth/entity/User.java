@@ -2,6 +2,7 @@ package com.itwizard.swaedu.modules.auth.entity;
 
 import com.itwizard.swaedu.modules.admin.entity.Admin;
 import com.itwizard.swaedu.modules.instructor.entity.Instructor;
+import com.itwizard.swaedu.modules.staff.entity.Staff;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.ColumnDefault;
@@ -33,5 +34,8 @@ public class User {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Instructor instructor;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Staff staff;
 }
 

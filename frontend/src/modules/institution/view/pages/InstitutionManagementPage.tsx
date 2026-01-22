@@ -11,7 +11,7 @@ import { Card } from "@/shared/ui/card";
 import { DataTable } from "@/shared/components/DataTable";
 import { LoadingOverlay } from "@/shared/components/LoadingOverlay";
 import { CustomPagination } from "@/shared/components/CustomPagination";
-import { ROUTES } from "@/shared/constants/routes";
+import { getInstitutionBasePath } from "../../lib/navigation";
 import { useInstitutionsQuery } from "../../controller/queries";
 import type {
   Institution,
@@ -200,7 +200,7 @@ export const InstitutionManagementPage = () => {
   };
 
   const handleAddInstitution = () => {
-    navigate(ROUTES.ADMIN_INSTITUTION_CREATE_FULL);
+    navigate(`${getInstitutionBasePath()}/create`);
   };
 
   const handleDownload = async () => {
@@ -249,7 +249,7 @@ export const InstitutionManagementPage = () => {
 
   const handleDetail = React.useCallback(
     (institution: Institution) => {
-      navigate(`/admin/institution/${institution.id}/edit?mode=view`);
+      navigate(`${getInstitutionBasePath()}/${institution.id}/edit?mode=view`);
     },
     [navigate]
   );

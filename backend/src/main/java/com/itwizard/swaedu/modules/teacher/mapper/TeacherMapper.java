@@ -33,6 +33,7 @@ public class TeacherMapper {
                 .name(teacher.getName())
                 .email(teacher.getEmail())
                 .phone(teacher.getPhone())
+                .statusId(teacher.getStatusId())
                 .profilePhoto(teacher.getProfilePhoto())
                 .enabled(user != null ? user.getEnabled() : null)
                 .build();

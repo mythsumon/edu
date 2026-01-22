@@ -14,6 +14,9 @@ import {
   FileCode,
   Building2,
   GraduationCap,
+  Settings,
+  UserCircle,
+  KeyRound,
 } from "lucide-react";
 import logoImage from "@/assets/images/logo/logo.png";
 
@@ -127,12 +130,27 @@ export const Sidebar = () => {
         ],
       },
       {
-        titleKey: "sidebar.system",
+        titleKey: "sidebar.settings",
         items: [
           {
             nameKey: "sidebar.commonCode",
             href: ROUTES.ADMIN_COMMON_CODE_FULL,
             icon: FileCode,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.myAccount",
+        items: [
+          {
+            nameKey: "sidebar.accountSettings",
+            href: ROUTES.ADMIN_ACCOUNT_SETTINGS_FULL,
+            icon: KeyRound,
+          },
+          {
+            nameKey: "sidebar.profileSettings",
+            href: ROUTES.ADMIN_PROFILE_SETTINGS_FULL,
+            icon: UserCircle,
           },
         ],
       },
@@ -198,6 +216,115 @@ export const Sidebar = () => {
           },
         ],
       },
+      {
+        titleKey: "sidebar.settings",
+        items: [
+          {
+            nameKey: "sidebar.profile",
+            href: ROUTES.INSTRUCTOR_PROFILE_FULL,
+            icon: Settings,
+          },
+          {
+            nameKey: "sidebar.accountSettings",
+            href: ROUTES.INSTRUCTOR_ACCOUNT_SETTINGS_FULL,
+            icon: Settings,
+          },
+        ],
+      },
+    ],
+    []
+  );
+
+  // Teacher navigation sections
+  const teacherSections: MenuSection[] = useMemo(
+    () => [
+      {
+        titleKey: "sidebar.menu",
+        items: [
+          {
+            nameKey: "sidebar.dashboard",
+            href: ROUTES.TEACHER_DASHBOARD_FULL,
+            icon: LayoutDashboard,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.myAccount",
+        items: [
+          {
+            nameKey: "sidebar.accountSettings",
+            href: ROUTES.TEACHER_ACCOUNT_SETTINGS_FULL,
+            icon: KeyRound,
+          },
+          {
+            nameKey: "sidebar.profileSettings",
+            href: ROUTES.TEACHER_PROFILE_SETTINGS_FULL,
+            icon: UserCircle,
+          },
+        ],
+      },
+    ],
+    []
+  );
+
+  // Staff navigation sections
+  const staffSections: MenuSection[] = useMemo(
+    () => [
+      {
+        titleKey: "sidebar.menu",
+        items: [
+          {
+            nameKey: "sidebar.dashboard",
+            href: ROUTES.STAFF_DASHBOARD_FULL,
+            icon: LayoutDashboard,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.institution",
+        items: [
+          {
+            nameKey: "sidebar.institutionManagement",
+            href: ROUTES.STAFF_INSTITUTION_FULL,
+            icon: Building2,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.program",
+        items: [
+          {
+            nameKey: "sidebar.programManagement",
+            href: ROUTES.STAFF_PROGRAM_FULL,
+            icon: BookOpen,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.training",
+        items: [
+          {
+            nameKey: "sidebar.trainingManagement",
+            href: ROUTES.STAFF_TRAINING_FULL,
+            icon: GraduationCap,
+          },
+        ],
+      },
+      {
+        titleKey: "sidebar.myAccount",
+        items: [
+          {
+            nameKey: "sidebar.accountSettings",
+            href: ROUTES.STAFF_ACCOUNT_SETTINGS_FULL,
+            icon: KeyRound,
+          },
+          {
+            nameKey: "sidebar.profileSettings",
+            href: ROUTES.STAFF_PROFILE_SETTINGS_FULL,
+            icon: UserCircle,
+          },
+        ],
+      },
     ],
     []
   );
@@ -210,8 +337,14 @@ export const Sidebar = () => {
     if (userRole === "INSTRUCTOR") {
       return instructorSections;
     }
+    if (userRole === "TEACHER") {
+      return teacherSections;
+    }
+    if (userRole === "STAFF") {
+      return staffSections;
+    }
     return adminSections;
-  }, [userRole, adminSections, instructorSections]);
+  }, [userRole, adminSections, instructorSections, teacherSections, staffSections]);
 
   const isActiveRoute = (href: string) => {
     // Exact match

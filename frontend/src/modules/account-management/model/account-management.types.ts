@@ -28,6 +28,7 @@ export interface InstructorAccount {
   region?: string // region name from mastercode (codeName)
   classificationId?: number
   instructorClassification?: string // classification name from mastercode (codeName)
+  statusId?: number
 }
 
 /**
@@ -40,6 +41,7 @@ export interface TeacherAccount {
   username: string
   email?: string
   phoneNumber?: string
+  statusId?: number
 }
 
 /**
@@ -88,6 +90,7 @@ export interface TeacherDetail {
   name: string
   email?: string
   phone?: string
+  statusId?: number
   enabled?: boolean
   profilePhoto?: string
 }
@@ -133,6 +136,7 @@ export interface TeacherResponseDto {
   name: string
   email?: string
   phone?: string
+  statusId?: number
   profilePhoto?: string
   enabled?: boolean
 }
@@ -205,6 +209,7 @@ export interface CreateTeacherRequestDto {
   name: string
   email?: string
   phone?: string
+  statusId?: number
 }
 
 /**
@@ -214,6 +219,7 @@ export interface UpdateTeacherRequestDto {
   name: string
   email?: string
   phone?: string
+  statusId?: number
 }
 
 /**
@@ -228,4 +234,13 @@ export interface ListAccountsParams {
   classificationIds?: number[]
   statusIds?: number[]
   zoneIds?: number[]
+}
+
+/**
+ * Request DTO for changing password
+ */
+export interface ChangePasswordRequestDto {
+  currentPassword: string
+  newPassword: string
+  confirmPassword: string
 }

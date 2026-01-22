@@ -3,8 +3,10 @@ import { AppShell } from '../layout/AppShell'
 import { ProtectedLayout } from '../layout/ProtectedLayout'
 import { AdminRouteGuard } from '../layout/AdminRouteGuard'
 import { InstructorRouteGuard } from '../layout/InstructorRouteGuard'
+import { TeacherRouteGuard } from '../layout/TeacherRouteGuard'
+import { StaffRouteGuard } from '../layout/StaffRouteGuard'
 import { ROUTES } from '@/shared/constants/routes'
-import { DashboardPage } from '@/modules/dashboard'
+import { DashboardPage, TeacherDashboardPage, StaffDashboardPage } from '@/modules/dashboard'
 import { InstructorScheduleListPage, ConfirmedScheduleListPage, OngoingTrainingListPage, CompletedTrainingListPage, TrainingApplicationListPage, ApplyForLectureListPage, UpcomingTrainingListPage } from '@/modules/instructor-training'
 import { MasterCodeSetupPage, MasterCodeCreatePage } from '@/modules/master-code-setup'
 import { CommonCodePage } from '@/modules/common-code'
@@ -23,8 +25,14 @@ import {
   AddTeacherPage,
   TeacherDetailPage,
   EditTeacherPage,
+  AdminAccountSettingsPage,
+  ProfileSettingsAdminPage,
+  ProfileSettingsInstructorPage,
+  ProfileSettingsTeacherPage,
 } from '@/modules/account-management'
 import { AdminTrainingPage, AdminTrainingCreatePage } from '@/modules/admin-training'
+import { InstructorProfilePage, instructorProfileLoader } from '@/modules/instructor-profile'
+import { InstructorAccountSettingsPage } from '@/modules/instructor-account-setting'
 
 export const protectedRoutes: RouteObject[] = [
   {
@@ -39,8 +47,25 @@ export const protectedRoutes: RouteObject[] = [
             element: <AdminRouteGuard />,
             children: [
               {
+                index: true,
+                element: <Navigate to={ROUTES.ADMIN_DASHBOARD_FULL} replace />,
+              },
+              {
                 path: ROUTES.ADMIN_DASHBOARD,
                 element: <DashboardPage />,
+              },
+              {
+                path: ROUTES.ACCOUNT_SETTINGS,
+                element: <AdminAccountSettingsPage />,
+              },
+              {
+                path: ROUTES.PROFILE_SETTINGS,
+                element: <ProfileSettingsAdminPage />,
+              },
+              // Teacher profile settings (teachers use admin routes)
+              {
+                path: 'teacher-profile-settings',
+                element: <ProfileSettingsTeacherPage />,
               },
               {
                 path: ROUTES.ADMIN_PROGRAM,
@@ -186,6 +211,10 @@ export const protectedRoutes: RouteObject[] = [
             element: <InstructorRouteGuard />,
             children: [
               {
+                index: true,
+                element: <Navigate to={ROUTES.INSTRUCTOR_DASHBOARD_FULL} replace />,
+              },
+              {
                 path: ROUTES.INSTRUCTOR_DASHBOARD,
                 element: <DashboardPage />,
               },
@@ -247,6 +276,116 @@ export const protectedRoutes: RouteObject[] = [
                     // element: <SettingsAndUserManagementPage />,
                   },
                 ],
+              },
+              {
+                path: ROUTES.INSTRUCTOR_PROFILE,
+                element: <InstructorProfilePage />,
+                loader: instructorProfileLoader,
+              },
+              {
+                path: ROUTES.INSTRUCTOR_ACCOUNT_SETTINGS,
+                element: <InstructorAccountSettingsPage />,
+              },
+              {
+                path: ROUTES.ACCOUNT_SETTINGS,
+                element: <AdminAccountSettingsPage />,
+              },
+              {
+                path: ROUTES.PROFILE_SETTINGS,
+                element: <ProfileSettingsInstructorPage />,
+              },
+            ],
+          },
+          // Teacher routes grouped under /teacher
+          {
+            path: ROUTES.TEACHER,
+            element: <TeacherRouteGuard />,
+            children: [
+              {
+                index: true,
+                element: <Navigate to={ROUTES.TEACHER_DASHBOARD_FULL} replace />,
+              },
+              {
+                path: ROUTES.TEACHER_DASHBOARD,
+                element: <TeacherDashboardPage />,
+              },
+              {
+                path: ROUTES.ACCOUNT_SETTINGS,
+                element: <AdminAccountSettingsPage />,
+              },
+              {
+                path: ROUTES.PROFILE_SETTINGS,
+                element: <ProfileSettingsTeacherPage />,
+              },
+            ],
+          },
+          // Staff routes grouped under /staff
+          {
+            path: ROUTES.STAFF,
+            element: <StaffRouteGuard />,
+            children: [
+              {
+                index: true,
+                element: <Navigate to={ROUTES.STAFF_DASHBOARD_FULL} replace />,
+              },
+              {
+                path: ROUTES.STAFF_DASHBOARD,
+                element: <StaffDashboardPage />,
+              },
+              {
+                path: ROUTES.STAFF_INSTITUTION,
+                children: [
+                  {
+                    index: true,
+                    element: <InstitutionManagementPage />,
+                  },
+                  {
+                    path: ROUTES.ADMIN_INSTITUTION_CREATE,
+                    element: <InstitutionCreatePage />,
+                  },
+                  {
+                    path: ROUTES.ADMIN_INSTITUTION_EDIT,
+                    element: <InstitutionEditPage />,
+                  },
+                ],
+              },
+              {
+                path: ROUTES.STAFF_PROGRAM,
+                children: [
+                  {
+                    index: true,
+                    element: <ProgramListPage />,
+                  },
+                  {
+                    path: ROUTES.ADMIN_PROGRAM_CREATE,
+                    element: <ProgramCreatePage />,
+                  },
+                  {
+                    path: ROUTES.ADMIN_PROGRAM_EDIT,
+                    element: <ProgramEditPage />,
+                  },
+                ],
+              },
+              {
+                path: ROUTES.STAFF_TRAINING,
+                children: [
+                  {
+                    index: true,
+                    element: <AdminTrainingPage />,
+                  },
+                  {
+                    path: ROUTES.ADMIN_TRAINING_CREATE,
+                    element: <AdminTrainingCreatePage />,
+                  },
+                ],
+              },
+              {
+                path: ROUTES.ACCOUNT_SETTINGS,
+                element: <AdminAccountSettingsPage />,
+              },
+              {
+                path: ROUTES.PROFILE_SETTINGS,
+                element: <ProfileSettingsAdminPage />,
               },
             ],
           },

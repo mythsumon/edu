@@ -2,15 +2,19 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
-import { useRef } from 'react'
+import { useRef, useMemo } from 'react'
 import { PageLayout } from '@/app/layout/PageLayout'
 import { Button } from '@/shared/ui/button'
 import { useToast } from '@/shared/ui/use-toast'
 import { ROUTES } from '@/shared/constants/routes'
 import { useCreateTeacher } from '../../controller/mutations'
 import { createTeacherSchema, type CreateTeacherFormData } from '../../model/account-management.schema'
+import { useMasterCodeChildrenByCodeQuery } from '@/modules/master-code-setup/controller/queries'
+import { MASTER_CODE_PARENT_CODES } from '@/shared/constants/master-code'
 import { FormInputField } from '../components/FormInputField'
 import { FormPasswordField } from '../components/FormPasswordField'
+import { FormField } from '../components/FormField'
+import { CustomDropdownField, type DropdownOption } from '@/shared/components/CustomDropdown'
 import { CollapsibleCard } from '../components/CollapsibleCard'
 
 export const AddTeacherPage = () => {
@@ -23,6 +27,8 @@ export const AddTeacherPage = () => {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<CreateTeacherFormData>({
     resolver: zodResolver(createTeacherSchema(t)),
@@ -33,8 +39,22 @@ export const AddTeacherPage = () => {
       name: '',
       email: '',
       phone: '',
+      statusId: '',
     },
   })
+
+  const statusIdValue = watch('statusId')
+
+  // Fetch status master codes (parent code 100)
+  const { data: statusMasterCodesData, isLoading: isLoadingStatusCodes } = useMasterCodeChildrenByCodeQuery(
+    MASTER_CODE_PARENT_CODES.STATUS
+  )
+  const statusMasterCodes = statusMasterCodesData?.items || []
+
+  const statusOptions: DropdownOption[] = useMemo(
+    () => statusMasterCodes.map((status) => ({ value: String(status.id), label: status.codeName || '' })),
+    [statusMasterCodes]
+  )
 
   const onSubmit = async (data: CreateTeacherFormData) => {
     try {
@@ -44,6 +64,7 @@ export const AddTeacherPage = () => {
         name: data.name,
         email: data.email || undefined,
         phone: data.phone || undefined,
+        statusId: data.statusId ? parseInt(data.statusId, 10) : undefined,
       })
       toast({
         title: t('common.success'),
@@ -164,6 +185,19 @@ export const AddTeacherPage = () => {
                 error={errors.phone}
                 isSubmitting={isSubmitting}
               />
+
+              {/* Status */}
+              <FormField id="statusId" label={t('accountManagement.status')} required error={errors.statusId}>
+                <CustomDropdownField
+                  id="statusId"
+                  value={statusIdValue || ''}
+                  onChange={(value) => setValue('statusId', value, { shouldValidate: true })}
+                  placeholder={t('accountManagement.statusPlaceholder')}
+                  options={statusOptions}
+                  disabled={isSubmitting || isLoadingStatusCodes}
+                  hasError={!!errors.statusId}
+                />
+              </FormField>
             </div>
           </CollapsibleCard>
         </form>

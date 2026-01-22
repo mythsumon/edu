@@ -5,6 +5,15 @@ import { Checkbox } from '@/shared/ui/checkbox'
 import { cn } from '@/shared/lib/cn'
 import type { InstructorAccount } from '../../model/account-management.types'
 import { ActionsCell } from './InstructorAccountActionsCell'
+import {
+  STATUS_INACTIVE,
+  STATUS_ACTIVE,
+  STATUS_SUSPENDED,
+  STATUS_BLOCKED,
+  CLASSIFICATION_BASIC,
+  CLASSIFICATION_INTERMEDIATE,
+  CLASSIFICATION_ADVANCED,
+} from '../../constants/account-status'
 
 /**
  * Props for creating instructor account columns
@@ -13,6 +22,7 @@ export interface InstructorAccountColumnsProps {
   onDetailClick: (instructor: InstructorAccount) => void
   regionMap?: Map<number, string> // Map of regionId -> region name (codeName)
   classificationMap?: Map<number, string> // Map of classificationId -> classification name (codeName)
+  statusMap?: Map<number, string> // Map of statusId -> status name (codeName)
 }
 
 /**
@@ -22,6 +32,7 @@ export const useInstructorAccountColumns = ({
   onDetailClick,
   regionMap,
   classificationMap,
+  statusMap,
 }: InstructorAccountColumnsProps): ColumnDef<InstructorAccount>[] => {
   const { t } = useTranslation()
 
@@ -169,16 +180,19 @@ export const useInstructorAccountColumns = ({
           // Map classification to pill styles
           const getClassificationStyle = (value: string) => {
             const lowerValue = value.toLowerCase()
-            if (lowerValue.includes('common') || lowerValue.includes('일반')) {
-              return 'bg-blue-500 text-white'
+            if (lowerValue.includes(CLASSIFICATION_BASIC)) {
+              // Basic: light blue background, dark blue text
+              return 'bg-blue-100 text-blue-700'
             }
-            if (lowerValue.includes('advanced') || lowerValue.includes('고급')) {
-              return 'bg-purple-500 text-white'
+            if (lowerValue.includes(CLASSIFICATION_INTERMEDIATE)) {
+              // Intermediate: light amber background, dark amber text
+              return 'bg-amber-100 text-amber-700'
             }
-            if (lowerValue.includes('preparation') || lowerValue.includes('준비')) {
-              return 'bg-yellow-500 text-white'
+            if (lowerValue.includes(CLASSIFICATION_ADVANCED)) {
+              // Advanced: light purple background, dark purple text
+              return 'bg-purple-100 text-purple-700'
             }
-            return 'bg-gray-500 text-white'
+            return 'bg-gray-100 text-gray-700'
           }
 
           return (
@@ -197,6 +211,68 @@ export const useInstructorAccountColumns = ({
           )
         },
         meta: { width: 180 },
+      },
+      {
+        accessorKey: 'status',
+        header: () => (
+          <div style={{ width: '150px', minWidth: '150px', maxWidth: '150px' }}>
+            {t('accountManagement.status')}
+          </div>
+        ),
+        cell: ({ row }) => {
+          const instructor = row.original
+          const statusName = instructor.statusId && statusMap
+            ? statusMap.get(instructor.statusId)
+            : undefined
+
+          if (!statusName) {
+            return (
+              <div style={{ width: '150px', minWidth: '150px', maxWidth: '150px' }}>
+                -
+              </div>
+            )
+          }
+
+          // Map status to pill styles
+          const getStatusStyle = (value: string) => {
+            const lowerValue = value.toLowerCase()
+            // Check inactive first since it contains "active"
+            if (lowerValue.includes(STATUS_INACTIVE)) {
+              // Inactive: light gray background, dark gray text
+              return 'bg-gray-100 text-gray-700'
+            }
+            if (lowerValue.includes(STATUS_ACTIVE)) {
+              // Active: light green background, dark green text
+              return 'bg-green-100 text-green-700'
+            }
+            if (lowerValue.includes(STATUS_SUSPENDED)) {
+              // Suspended: light amber background, dark amber text
+              return 'bg-amber-100 text-amber-700'
+            }
+            if (lowerValue.includes(STATUS_BLOCKED)) {
+              // Blocked: light red background, dark red text
+              return 'bg-red-100 text-red-700'
+            }
+            // Default: light gray background, dark gray text
+            return 'bg-gray-100 text-gray-700'
+          }
+
+          return (
+            <div
+              style={{ width: '150px', minWidth: '150px', maxWidth: '150px' }}
+            >
+              <div
+                className={cn(
+                  'inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium',
+                  getStatusStyle(statusName)
+                )}
+              >
+                {statusName}
+              </div>
+            </div>
+          )
+        },
+        meta: { width: 150 },
       },
       {
         id: 'actions',
@@ -221,6 +297,6 @@ export const useInstructorAccountColumns = ({
         meta: { minWidth: 80, maxWidth: 100 },
       },
     ],
-    [t, onDetailClick, regionMap, classificationMap]
+    [t, onDetailClick, regionMap, classificationMap, statusMap]
   )
 }

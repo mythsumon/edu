@@ -37,6 +37,7 @@ export function mapInstructorAccount(dto: InstructorResponseDto): InstructorAcco
     region: undefined, // Will be populated from mastercode lookup using regionId
     classificationId: dto.classificationId,
     instructorClassification: undefined, // Will be populated from mastercode lookup using classificationId
+    statusId: dto.statusId,
   }
 }
 
@@ -104,6 +105,7 @@ export function mapTeacherAccount(dto: TeacherResponseDto): TeacherAccount {
     username: dto.username,
     email: dto.email,
     phoneNumber: dto.phone,
+    statusId: dto.statusId,
   }
 }
 
@@ -125,6 +127,7 @@ export function mapTeacherDetail(dto: TeacherResponseDto): TeacherDetail {
     name: dto.name,
     email: dto.email,
     phone: dto.phone,
+    statusId: dto.statusId,
     enabled: dto.enabled,
     profilePhoto: dto.profilePhoto,
   }

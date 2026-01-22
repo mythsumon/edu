@@ -11,7 +11,13 @@ import { Input } from "@/shared/ui/input";
 import { Card } from "@/shared/ui/card";
 import { DataTable } from "@/shared/components/DataTable";
 import { CustomPagination } from "@/shared/components/CustomPagination";
-import type { AdminTraining } from "../../model/admin-training.types";
+import { useAdminTrainingsQuery } from "../../controller/queries";
+import type {
+  AdminTraining,
+  AdminTrainingResponseDto,
+} from "../../model/admin-training.types";
+import { debounce } from "@/shared/lib/debounce";
+import { formatDateDot } from "@/shared/lib/date";
 
 /**
  * Actions Cell Component
@@ -44,6 +50,24 @@ const ActionsCell = ({ training, onDetail }: ActionsCellProps) => {
 };
 
 /**
+ * Map AdminTrainingResponseDto to AdminTraining for table display
+ */
+const mapTrainingDtoToTable = (dto: AdminTrainingResponseDto): AdminTraining => {
+  return {
+    id: dto.id,
+    trainingId: dto.trainingId || "-",
+    name: dto.name || "-",
+    institutionName: dto.institution?.name || "-",
+    grade: dto.grade || "-",
+    classInfo: dto.classInfo || "-",
+    startDate: dto.startDate ? formatDateDot(dto.startDate) : "-",
+    endDate: dto.endDate ? formatDateDot(dto.endDate) : "-",
+    createdAt: dto.createdAt,
+    updatedAt: dto.updatedAt,
+  };
+};
+
+/**
  * Admin Training Page
  * Displays admin training management interface
  */
@@ -58,29 +82,66 @@ export const AdminTrainingPage = () => {
 
   // Search and filter state
   const [searchQuery, setSearchQuery] = React.useState<string>("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] =
+    React.useState<string>("");
   const [page, setPage] = React.useState<number>(0);
   const [size, setSize] = React.useState<number>(20);
 
   // Filter state (will be used when filter dialog is implemented)
   const [filterCount] = React.useState<number>(0);
 
-  // Mock empty data - will be replaced with actual API calls later
-  const trainings: AdminTraining[] = [];
-
-  // Mock pagination data
-  const paginationData = React.useMemo(() => {
-    return {
-      total: 0,
-      page: page,
-      size: size,
-      totalPages: 0,
-    };
-  }, [page, size]);
+  // Debounce search query
+  const debouncedSetSearch = React.useMemo(
+    () =>
+      debounce((...args: unknown[]) => {
+        const value = args[0] as string;
+        setDebouncedSearchQuery(value);
+      }, 500),
+    []
+  );
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
+    const value = e.target.value;
+    setSearchQuery(value);
+    debouncedSetSearch(value);
   };
+
+  // Fetch trainings using React Query with debounced search
+  const { data: trainingsData } = useAdminTrainingsQuery({
+    q: debouncedSearchQuery || undefined,
+    page,
+    size,
+  });
+
+  // Map DTOs to table format
+  const trainings: AdminTraining[] = React.useMemo(() => {
+    if (!trainingsData?.items) return [];
+    return trainingsData.items.map(mapTrainingDtoToTable);
+  }, [trainingsData]);
+
+  // Extract pagination metadata
+  const paginationData = React.useMemo(() => {
+    if (!trainingsData) {
+      return {
+        total: 0,
+        page: 0,
+        size: size,
+        totalPages: 0,
+      };
+    }
+    return {
+      total: trainingsData.total,
+      page: trainingsData.page,
+      size: trainingsData.size,
+      totalPages: trainingsData.totalPages,
+    };
+  }, [trainingsData, size]);
+
+  // Reset to first page when search changes
+  React.useEffect(() => {
+    setPage(0);
+  }, [debouncedSearchQuery]);
 
   // Handle page change
   const handlePageChange = (newPage: number) => {
@@ -107,10 +168,12 @@ export const AdminTrainingPage = () => {
     console.log("Filter clicked");
   };
 
-  const handleDetail = React.useCallback((training: AdminTraining) => {
-    // TODO: Navigate to admin training detail page
-    console.log("View detail:", training);
-  }, []);
+  const handleDetail = React.useCallback(
+    (training: AdminTraining) => {
+      navigate(`/admin/training/${training.id}/edit?mode=view`);
+    },
+    [navigate]
+  );
 
   const columns = React.useMemo<ColumnDef<AdminTraining>[]>(
     () => [
@@ -183,81 +246,101 @@ export const AdminTrainingPage = () => {
         meta: { width: 200 },
       },
       {
-        accessorKey: "status",
-        header: () => (
-          <div style={{ width: "150px", minWidth: "150px", maxWidth: "150px" }}>
-            {t("training.status")}
-          </div>
-        ),
-        cell: ({ row }) => {
-          const status = row.getValue("status") as string | undefined;
-          const statusLower = status?.toLowerCase() || "";
-
-          // Determine badge color based on status
-          let badgeClass = "bg-muted text-muted-foreground"; // default/inactive
-          if (statusLower === "active") {
-            badgeClass = "bg-green-100 text-green-700";
-          } else if (statusLower === "pending") {
-            badgeClass = "bg-orange-100 text-yellow-700";
-          } else if (statusLower === "inactive") {
-            badgeClass = "bg-gray-100 text-gray-600";
-          }
-
-          return (
-            <div
-              style={{ width: "150px", minWidth: "150px", maxWidth: "150px" }}
-            >
-              {status ? (
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-medium ${badgeClass}`}
-                >
-                  {status}
-                </span>
-              ) : (
-                "-"
-              )}
-            </div>
-          );
-        },
-        meta: { width: 150 },
-      },
-      {
-        accessorKey: "description",
+        accessorKey: "institutionName",
         header: () => (
           <div style={{ width: "200px", minWidth: "200px", maxWidth: "200px" }}>
-            {t("training.notes")}
+            {t("training.institution")}
           </div>
         ),
         cell: ({ row }) => {
-          const description = row.getValue("description") as string | undefined;
+          const institutionName = row.getValue("institutionName") as
+            | string
+            | undefined;
           return (
             <div
               style={{ width: "200px", minWidth: "200px", maxWidth: "200px" }}
             >
-              {description || "-"}
+              {institutionName || "-"}
             </div>
           );
         },
         meta: { width: 200 },
       },
       {
-        accessorKey: "createdAt",
+        accessorKey: "grade",
         header: () => (
-          <div style={{ width: "150px", minWidth: "150px", maxWidth: "150px" }}>
-            {t("training.registrationDate")}
+          <div style={{ width: "100px", minWidth: "100px", maxWidth: "100px" }}>
+            {t("training.grade")}
           </div>
         ),
         cell: ({ row }) => {
-          const createdAt = row.getValue("createdAt") as string | undefined;
+          const grade = row.getValue("grade") as string | undefined;
           return (
             <div
-              style={{ width: "150px", minWidth: "150px", maxWidth: "150px" }}
+              style={{ width: "100px", minWidth: "100px", maxWidth: "100px" }}
             >
-              {createdAt || "-"}
+              {grade || "-"}
             </div>
           );
         },
-        meta: { width: 150 },
+        meta: { width: 100 },
+      },
+      {
+        accessorKey: "classInfo",
+        header: () => (
+          <div style={{ width: "100px", minWidth: "100px", maxWidth: "100px" }}>
+            {t("training.classInfo")}
+          </div>
+        ),
+        cell: ({ row }) => {
+          const classInfo = row.getValue("classInfo") as string | undefined;
+          return (
+            <div
+              style={{ width: "100px", minWidth: "100px", maxWidth: "100px" }}
+            >
+              {classInfo || "-"}
+            </div>
+          );
+        },
+        meta: { width: 100 },
+      },
+      {
+        accessorKey: "startDate",
+        header: () => (
+          <div style={{ width: "120px", minWidth: "120px", maxWidth: "120px" }}>
+            {t("training.startDateLabel")}
+          </div>
+        ),
+        cell: ({ row }) => {
+          const startDate = row.getValue("startDate") as string | undefined;
+          return (
+            <div
+              style={{ width: "120px", minWidth: "120px", maxWidth: "120px" }}
+            >
+              {startDate || "-"}
+            </div>
+          );
+        },
+        meta: { width: 120 },
+      },
+      {
+        accessorKey: "endDate",
+        header: () => (
+          <div style={{ width: "120px", minWidth: "120px", maxWidth: "120px" }}>
+            {t("training.endDateLabel")}
+          </div>
+        ),
+        cell: ({ row }) => {
+          const endDate = row.getValue("endDate") as string | undefined;
+          return (
+            <div
+              style={{ width: "120px", minWidth: "120px", maxWidth: "120px" }}
+            >
+              {endDate || "-"}
+            </div>
+          );
+        },
+        meta: { width: 120 },
       },
       {
         id: "actions",
