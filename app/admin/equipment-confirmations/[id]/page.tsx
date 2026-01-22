@@ -301,13 +301,13 @@ export default function AdminEquipmentConfirmationDetailPage() {
       title: '승인 확인',
       content: '이 교구 확인서를 승인하시겠습니까?',
       onOk: () => {
-        const updated: EquipmentConfirmationDoc = {
+        const updated: EquipmentConfirmation = {
           ...doc,
-          status: 'APPROVED' as EquipmentConfirmationStatus,
+          status: 'APPROVED',
           approvedAt: new Date().toISOString(),
           approvedBy: userProfile?.name || '관리자',
         }
-        upsertDoc(updated)
+        upsertEquipmentConfirmation(updated)
         setDoc(updated)
         appendAuditLog('approved', doc.id, userProfile?.userId || '', userProfile?.name || '')
         setAuditLogs(getAuditLogs(doc.id))
@@ -321,9 +321,9 @@ export default function AdminEquipmentConfirmationDetailPage() {
         // Trigger storage event for other tabs/windows
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new StorageEvent('storage', {
-            key: 'equipment_confirmation_docs',
-            newValue: localStorage.getItem('equipment_confirmation_docs'),
-            oldValue: localStorage.getItem('equipment_confirmation_docs'),
+            key: 'equipment_confirmations',
+            newValue: localStorage.getItem('equipment_confirmations'),
+            oldValue: localStorage.getItem('equipment_confirmations'),
           }))
         }
         
