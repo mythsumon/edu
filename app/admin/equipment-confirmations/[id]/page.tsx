@@ -344,6 +344,8 @@ export default function AdminEquipmentConfirmationDetailPage() {
       ...doc,
       status: 'REJECTED',
       rejectReason,
+      rejectedAt: new Date().toISOString(),
+      rejectedBy: userProfile?.name || '관리자',
       updatedAt: new Date().toISOString(),
     }
     upsertEquipmentConfirmation(updated)

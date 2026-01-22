@@ -83,6 +83,12 @@ export interface EquipmentConfirmation {
   
   // status management
   rejectReason?: string
+  approvedAt?: string
+  approvedBy?: string
+  rejectedAt?: string
+  rejectedBy?: string
+  submittedAt?: string
+  submittedBy?: string
 }
 
 /**
