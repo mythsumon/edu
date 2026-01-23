@@ -9,7 +9,7 @@ import type { ColumnsType } from 'antd/es/table'
 import { ChevronRight, Download, RotateCcw, Check, X, ArrowLeft, Eye, Search, RefreshCw, Filter } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import dayjs from 'dayjs'
-import { dataStore } from '@/lib/dataStore'
+import { dataStore, type Lesson } from '@/lib/dataStore'
 import { 
   DetailPageHeaderSticky,
   ApplicationSummaryCard,
@@ -561,13 +561,19 @@ export default function InstructorApplicationPage() {
           l => l.session === session || l.date === lesson.date
         )
         
+        // Type guard to check if lesson has applied properties
+        const lessonWithApplied = lesson as Lesson & { 
+          mainInstructorApplied?: number
+          assistantInstructorApplied?: number
+        }
+        
         return {
           session: session,
           date: lesson.date,
           startTime: lesson.startTime,
           endTime: lesson.endTime,
-          mainInstructorApplied: typeof lesson.mainInstructorApplied === 'number' 
-            ? lesson.mainInstructorApplied 
+          mainInstructorApplied: typeof lessonWithApplied.mainInstructorApplied === 'number' 
+            ? lessonWithApplied.mainInstructorApplied 
             : (assignmentLesson?.mainInstructors && Array.isArray(assignmentLesson.mainInstructors) 
                 ? assignmentLesson.mainInstructors.length 
                 : 0),
@@ -577,8 +583,8 @@ export default function InstructorApplicationPage() {
               ? assignmentLesson.mainInstructors[0]?.name 
               : undefined) || 
             '신청 대기',
-          assistantInstructorApplied: typeof lesson.assistantInstructorApplied === 'number'
-            ? lesson.assistantInstructorApplied
+          assistantInstructorApplied: typeof lessonWithApplied.assistantInstructorApplied === 'number'
+            ? lessonWithApplied.assistantInstructorApplied
             : (assignmentLesson?.assistantInstructors && Array.isArray(assignmentLesson.assistantInstructors)
                 ? assignmentLesson.assistantInstructors.length
                 : 0),
