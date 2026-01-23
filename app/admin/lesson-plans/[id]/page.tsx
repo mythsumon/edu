@@ -729,20 +729,7 @@ export default function AdminLessonPlanDetailPage() {
 
           {/* Education Goals */}
           <DetailSectionCard
-            title={
-              <div className="flex items-center justify-between w-full">
-                <span>교육목표</span>
-                {isEditMode && (
-                  <Button
-                    type="dashed"
-                    icon={<Edit className="w-4 h-4" />}
-                    onClick={handleAddGoal}
-                  >
-                    목표 추가
-                  </Button>
-                )}
-              </div>
-            }
+            title="교육목표"
             className="mb-6"
           >
             <div className="space-y-3">
@@ -777,10 +764,12 @@ export default function AdminLessonPlanDetailPage() {
 
           {/* Session Plans */}
           <DetailSectionCard
-            title={
-              <div className="flex items-center justify-between w-full">
-                <span>차시별 계획</span>
-                {isEditMode && (
+            title="차시별 계획"
+            className="mb-6"
+          >
+            <div className="space-y-4">
+              {isEditMode && (
+                <div className="flex justify-end mb-4">
                   <Button
                     type="primary"
                     icon={<Edit className="w-4 h-4" />}
@@ -788,12 +777,8 @@ export default function AdminLessonPlanDetailPage() {
                   >
                     차시 추가
                   </Button>
-                )}
-              </div>
-            }
-            className="mb-6"
-          >
-            <div className="space-y-4">
+                </div>
+              )}
               {doc.sessions.length === 0 ? (
                 <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   차시별 계획이 없습니다.

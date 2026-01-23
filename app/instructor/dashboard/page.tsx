@@ -332,7 +332,7 @@ const WeeklyCalendarView = ({
 
   const getEventsForDate = (date: Date) => {
     const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-    return instructorCalendarEvents.filter(event => event.date === dateString)
+    return []
   }
 
   return (
@@ -432,9 +432,10 @@ const DailyCalendarView = ({
 }: { 
   currentDate: Date
   onDateClick?: (dateString: string) => void
+  calendarEvents?: any[]
 }) => {
   const dateString = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`
-  const events = instructorCalendarEvents.filter(event => event.date === dateString)
+  const events = (calendarEvents || []).filter((event: any) => event.date === dateString)
   
   const dayOfWeek = currentDate.getDay()
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6

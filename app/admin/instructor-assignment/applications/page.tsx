@@ -567,10 +567,26 @@ export default function InstructorApplicationPage() {
           assistantInstructorApplied?: number
         }
         
-        // Type guard for assignmentLesson - it may not have mainInstructorName
-        const assignmentLessonWithName = assignmentLesson as (typeof assignmentLesson) & {
-          mainInstructorName?: string
-          assistantInstructorName?: string
+        // Safely access mainInstructorName - check if property exists first
+        const getMainInstructorName = (): string => {
+          if ('mainInstructorName' in lesson && (lesson as any).mainInstructorName) {
+            return (lesson as any).mainInstructorName
+          }
+          if (assignmentLesson?.mainInstructors && Array.isArray(assignmentLesson.mainInstructors) && assignmentLesson.mainInstructors[0]?.name) {
+            return assignmentLesson.mainInstructors[0].name
+          }
+          return '신청 대기'
+        }
+        
+        // Safely access assistantInstructorName
+        const getAssistantInstructorName = (): string | undefined => {
+          if ('assistantInstructorName' in lesson && (lesson as any).assistantInstructorName) {
+            return (lesson as any).assistantInstructorName
+          }
+          if (assignmentLesson?.assistantInstructors && Array.isArray(assignmentLesson.assistantInstructors) && assignmentLesson.assistantInstructors[0]?.name) {
+            return assignmentLesson.assistantInstructors[0].name
+          }
+          return undefined
         }
         
         return {
@@ -583,24 +599,15 @@ export default function InstructorApplicationPage() {
             : (assignmentLesson?.mainInstructors && Array.isArray(assignmentLesson.mainInstructors) 
                 ? assignmentLesson.mainInstructors.length 
                 : 0),
-          mainInstructorRequired: lesson.mainInstructorRequired || assignmentLesson?.mainInstructorRequired || 1,
-          mainInstructorName: lesson.mainInstructorName || 
-            assignmentLessonWithName?.mainInstructorName ||
-            (assignmentLesson?.mainInstructors && Array.isArray(assignmentLesson.mainInstructors) 
-              ? assignmentLesson.mainInstructors[0]?.name 
-              : undefined) || 
-            '신청 대기',
+          mainInstructorRequired: ('mainInstructorRequired' in lesson ? (lesson as any).mainInstructorRequired : undefined) || assignmentLesson?.mainInstructorRequired || 1,
+          mainInstructorName: getMainInstructorName(),
           assistantInstructorApplied: typeof lessonWithApplied.assistantInstructorApplied === 'number'
             ? lessonWithApplied.assistantInstructorApplied
             : (assignmentLesson?.assistantInstructors && Array.isArray(assignmentLesson.assistantInstructors)
                 ? assignmentLesson.assistantInstructors.length
                 : 0),
-          assistantInstructorRequired: lesson.assistantInstructorRequired || assignmentLesson?.assistantInstructorRequired || 0,
-          assistantInstructorName: lesson.assistantInstructorName ||
-            assignmentLessonWithName?.assistantInstructorName ||
-            (assignmentLesson?.assistantInstructors && Array.isArray(assignmentLesson.assistantInstructors)
-              ? assignmentLesson.assistantInstructors[0]?.name
-              : undefined),
+          assistantInstructorRequired: ('assistantInstructorRequired' in lesson ? (lesson as any).assistantInstructorRequired : undefined) || assignmentLesson?.assistantInstructorRequired || 0,
+          assistantInstructorName: getAssistantInstructorName(),
         }
       })
       
@@ -649,16 +656,16 @@ export default function InstructorApplicationPage() {
             )
             
             // Determine main instructor info
-            const mainInstructorRequired = lesson.mainInstructorRequired || assignmentLesson?.mainInstructorRequired || 1
-            const mainInstructorName = assignmentLesson?.mainInstructorName || 
+            const mainInstructorRequired = ('mainInstructorRequired' in lesson ? (lesson as any).mainInstructorRequired : undefined) || assignmentLesson?.mainInstructorRequired || 1
+            const mainInstructorName = ('mainInstructorName' in lesson ? (lesson as any).mainInstructorName : undefined) ||
               (assignmentLesson?.mainInstructors && Array.isArray(assignmentLesson.mainInstructors) 
                 ? assignmentLesson.mainInstructors[0]?.name 
                 : undefined) || 
               '신청 대기'
             
             // Determine assistant instructor info
-            const assistantInstructorRequired = lesson.assistantInstructorRequired || assignmentLesson?.assistantInstructorRequired || 0
-            const assistantInstructorName = assignmentLesson?.assistantInstructorName ||
+            const assistantInstructorRequired = ('assistantInstructorRequired' in lesson ? (lesson as any).assistantInstructorRequired : undefined) || assignmentLesson?.assistantInstructorRequired || 0
+            const assistantInstructorName = ('assistantInstructorName' in lesson ? (lesson as any).assistantInstructorName : undefined) ||
               (assignmentLesson?.assistantInstructors && Array.isArray(assignmentLesson.assistantInstructors)
                 ? assignmentLesson.assistantInstructors[0]?.name
                 : undefined)

@@ -385,7 +385,7 @@ export default function TravelSettlementPage() {
   }, [rows])
 
   return (
-    <ProtectedRoute allowedRoles={['admin']}>
+    <ProtectedRoute requiredRole="admin">
       <div className="min-h-screen bg-slate-50 p-6">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
@@ -653,8 +653,11 @@ export default function TravelSettlementPage() {
                   min={0}
                   step={0.1}
                   className="w-full"
-                  formatter={(value) => `${value} km`}
-                  parser={(value) => value?.replace(' km', '') || ''}
+                  formatter={(value) => value ? `${value} km` : ''}
+                  parser={(value) => {
+                    const num = value?.replace(' km', '') || '0'
+                    return parseFloat(num) || 0
+                  }}
                 />
               </Form.Item>
               <Form.Item
@@ -666,8 +669,11 @@ export default function TravelSettlementPage() {
                   min={0}
                   step={1000}
                   className="w-full"
-                  formatter={(value) => `${value}원`}
-                  parser={(value) => value?.replace('원', '') || ''}
+                  formatter={(value) => value ? `${value}원` : ''}
+                  parser={(value) => {
+                    const num = value?.replace('원', '') || '0'
+                    return parseFloat(num) || 0
+                  }}
                 />
               </Form.Item>
               <Form.Item
@@ -679,8 +685,11 @@ export default function TravelSettlementPage() {
                   min={0}
                   step={1000}
                   className="w-full"
-                  formatter={(value) => `${value}원`}
-                  parser={(value) => value?.replace('원', '') || ''}
+                  formatter={(value) => value ? `${value}원` : ''}
+                  parser={(value) => {
+                    const num = value?.replace('원', '') || '0'
+                    return parseFloat(num) || 0
+                  }}
                 />
               </Form.Item>
               <Form.Item

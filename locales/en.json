@@ -31,7 +31,9 @@
     "instructor": "Instructor Management",
     "systemSettings": "System Settings",
     "userManagement": "User Management",
-    "commonCode": "Common Code"
+    "commonCode": "Common Code",
+    "travelSettlement": "Travel Expense Settlement Management",
+    "instructorApplicationPolicy": "Instructor Application Policy Management"
   },
   "pageHeader": {
     "breadcrumbHome": "Home",

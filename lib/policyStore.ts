@@ -120,11 +120,12 @@ export function saveTrainingOverride(trainingId: string, override: Partial<Appli
     } else {
       // Create new
       const globalPolicy = getGlobalPolicy()
+      const { policyType: _, id: __, ...globalPolicyWithoutType } = globalPolicy
       overrides.push({
         id: `training-${trainingId}`,
         trainingId,
         policyType: 'TRAINING',
-        ...globalPolicy,
+        ...globalPolicyWithoutType,
         ...override,
       })
     }
