@@ -864,7 +864,12 @@ export default function AdminEquipmentConfirmationDetailPage() {
               <div>
                 <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">반납 상태</div>
                 <div className="text-base font-medium text-gray-900 dark:text-gray-100">
-                  {doc.returnConditionOk === 'Y' ? '양호' : '불량'}
+                  {doc.returnConfirm.conditionNote 
+                    ? (doc.returnConfirm.conditionNote.toLowerCase().includes('양호') || 
+                       doc.returnConfirm.conditionNote.toLowerCase().includes('정상')
+                       ? '양호' 
+                       : '불량')
+                    : '-'}
                 </div>
               </div>
             </div>
