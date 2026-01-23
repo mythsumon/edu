@@ -461,7 +461,8 @@ export default function AdminEquipmentConfirmationDetailPage() {
               icon={<Download className="w-4 h-4" />}
               onClick={() => {
                 // TODO: 실제 파일 다운로드 구현
-                const filename = `교구확인서_${doc.organizationName}_${doc.lectureDateText || ''}.pdf`
+                const dateText = doc.lectureDateRange?.start || ''
+                const filename = `교구확인서_${doc.institutionName}_${dateText}.pdf`
                 console.log('Download equipment confirmation:', filename)
                 message.info(`교구확인서 다운로드: ${filename}`)
               }}
@@ -827,48 +828,36 @@ export default function AdminEquipmentConfirmationDetailPage() {
               <div>
                 <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">대여 예정</div>
                 <div className="text-base font-medium text-gray-900 dark:text-gray-100">
-                  {doc.schedule.plannedBorrowText}
+                  {doc.borrowPlan.borrowDate && doc.borrowPlan.borrowTime 
+                    ? `${doc.borrowPlan.borrowDate} ${doc.borrowPlan.borrowTime}`
+                    : '-'}
                 </div>
               </div>
               <div>
                 <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">반납 예정</div>
                 <div className="text-base font-medium text-gray-900 dark:text-gray-100">
-                  {doc.schedule.plannedReturnText}
+                  {doc.returnPlan.plannedReturnDate && doc.returnPlan.plannedReturnTime
+                    ? `${doc.returnPlan.plannedReturnDate} ${doc.returnPlan.plannedReturnTime}`
+                    : '-'}
                 </div>
               </div>
-              {doc.schedule.actualBorrowAt && (
-                <div>
-                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">실제 대여</div>
-                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
-                    {dayjs(doc.schedule.actualBorrowAt).format('YYYY-MM-DD HH:mm')}
-                  </div>
-                </div>
-              )}
-              {doc.schedule.actualReturnAt && (
-                <div>
-                  <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">실제 반납</div>
-                  <div className="text-base font-medium text-gray-900 dark:text-gray-100">
-                    {dayjs(doc.schedule.actualReturnAt).format('YYYY-MM-DD HH:mm')}
-                  </div>
-                </div>
-              )}
               <div>
                 <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">대여자</div>
                 <div className="text-base font-medium text-gray-900 dark:text-gray-100">
-                  {doc.borrowerName}
+                  {doc.borrowPlan.borrowerName}
                 </div>
               </div>
               <div>
                 <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">예정 반납자</div>
                 <div className="text-base font-medium text-gray-900 dark:text-gray-100">
-                  {doc.plannedReturnerName}
+                  {doc.returnPlan.plannedReturnerName}
                 </div>
               </div>
-              {doc.actualReturnerName && (
+              {doc.returnConfirm.returnerName && (
                 <div>
                   <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">실제 반납자</div>
                   <div className="text-base font-medium text-gray-900 dark:text-gray-100">
-                    {doc.actualReturnerName}
+                    {doc.returnConfirm.returnerName}
                   </div>
                 </div>
               )}
@@ -967,31 +956,31 @@ export default function AdminEquipmentConfirmationDetailPage() {
           {/* 서명 */}
           <DetailSectionCard title="서명" className="mb-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {doc.signatures.manager && (
+              {doc.returnConfirm.adminManagerSignature && (
                   <SignatureSlot
                   label="담당자"
-                    signature={doc.signatures.manager}
-                  signerName={doc.equipmentManagerName || ''}
+                    signature={doc.returnConfirm.adminManagerSignature}
+                  signerName={doc.returnConfirm.adminManagerName || ''}
                     onApply={() => {}}
                     onDelete={() => {}}
                   disabled={true}
                   />
               )}
-              {doc.signatures.borrower && (
+              {doc.borrowPlan.borrowerSignature && (
                   <SignatureSlot
                   label="대여자"
-                    signature={doc.signatures.borrower}
-                  signerName={doc.borrowerName || ''}
+                    signature={doc.borrowPlan.borrowerSignature}
+                  signerName={doc.borrowPlan.borrowerName || ''}
                     onApply={() => {}}
                     onDelete={() => {}}
                   disabled={true}
                   />
               )}
-              {doc.signatures.returner && (
+              {doc.returnConfirm.returnerSignature && (
                   <SignatureSlot
                   label="반납자"
-                    signature={doc.signatures.returner}
-                  signerName={doc.actualReturnerName || doc.plannedReturnerName || ''}
+                    signature={doc.returnConfirm.returnerSignature}
+                  signerName={doc.returnConfirm.returnerName || doc.returnPlan.plannedReturnerName || ''}
                     onApply={() => {}}
                     onDelete={() => {}}
                   disabled={true}
