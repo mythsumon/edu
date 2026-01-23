@@ -30,7 +30,6 @@ import type {
 } from '@/app/instructor/equipment-confirmations/types'
 import { EquipmentItemsTable } from '@/app/instructor/equipment-confirmations/components/EquipmentItemsTable'
 import { EquipmentItemsTableV2 } from '@/app/instructor/equipment-confirmations/components/EquipmentItemsTableV2'
-import { AttachmentUploader } from '@/app/instructor/equipment-confirmations/components/AttachmentUploader'
 import { SignatureSlot } from '@/app/instructor/equipment-confirmations/components/SignatureSlot'
 import { SignatureSlotV2 } from '@/app/instructor/equipment-confirmations/components/SignatureSlotV2'
 import dayjs from 'dayjs'
@@ -994,16 +993,8 @@ export default function AdminEquipmentConfirmationDetailPage() {
             </div>
           </DetailSectionCard>
 
-          {/* 첨부 파일 */}
-          {doc.attachments && doc.attachments.length > 0 && (
-            <DetailSectionCard title="첨부 파일" className="mb-6">
-              <AttachmentUploader
-                attachments={doc.attachments}
-                onChange={() => {}}
-                disabled={true}
-              />
-            </DetailSectionCard>
-          )}
+          {/* 첨부 파일 - v2 type does not support attachments */}
+          {/* Note: EquipmentConfirmation v2 type does not include attachments field */}
 
           {/* 이력 로그 */}
           {auditLogs.length > 0 && (
