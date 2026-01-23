@@ -430,7 +430,8 @@ const WeeklyCalendarView = ({
 // Daily calendar view component
 const DailyCalendarView = ({ 
   currentDate,
-  onDateClick
+  onDateClick,
+  calendarEvents
 }: { 
   currentDate: Date
   onDateClick?: (dateString: string) => void

@@ -1,9 +1,4 @@
 {
-  "header": {
-    "title": "Overall Program Status",
-    "notifications": "Notifications",
-    "profile": "Profile"
-  },
   "hello": "Hello",
   "common": {
     "save": "Save",

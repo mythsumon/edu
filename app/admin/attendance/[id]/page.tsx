@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Button, Space, Modal, Input, Table, message, Card } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { ArrowLeft, CheckCircle2, XCircle, CheckCircle, Download } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, XCircle, CheckCircle, Download, Edit, AlertTriangle } from 'lucide-react'
 import { Badge } from 'antd'
 import { DetailPageHeaderSticky, DetailSectionCard } from '@/components/admin/operations'
 import { getAttendanceDocByEducationId, getAttendanceDocById, getAttendanceDocs, upsertAttendanceDoc, type AttendanceDocument } from '@/app/instructor/schedule/[educationId]/attendance/storage'
@@ -29,6 +29,7 @@ export default function AdminAttendanceDetailPage() {
   const [rejectModalVisible, setRejectModalVisible] = useState(false)
   const [rejectReason, setRejectReason] = useState('')
   const [loading, setLoading] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
   const [teacherEducationInfo, setTeacherEducationInfo] = useState<TeacherEducationInfo | null>(null)
 
   useEffect(() => {
@@ -240,13 +241,22 @@ export default function AdminAttendanceDetailPage() {
                 >
                   다운로드
                 </Button>
-                {doc.status === 'SUBMITTED' && (
+                {!isEditMode ? (
                   <>
+                    <Button
+                      icon={<Edit className="w-4 h-4" />}
+                      onClick={() => {
+                        const targetEducationId = doc.educationId || educationId.replace(/^attendance-/, '')
+                        router.push(`/instructor/schedule/${targetEducationId}/attendance`)
+                      }}
+                    >
+                      수정
+                    </Button>
                     <Button
                       type="primary"
                       icon={<CheckCircle2 className="w-4 h-4" />}
                       onClick={handleApprove}
-                      style={{ background: '#10b981', borderColor: '#10b981' }}
+                      disabled={doc.status === 'APPROVED'}
                     >
                       승인
                     </Button>
@@ -254,8 +264,24 @@ export default function AdminAttendanceDetailPage() {
                       danger
                       icon={<XCircle className="w-4 h-4" />}
                       onClick={() => setRejectModalVisible(true)}
+                      disabled={doc.status === 'REJECTED' || doc.status === 'APPROVED'}
                     >
                       반려
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button onClick={() => setIsEditMode(false)}>
+                      취소
+                    </Button>
+                    <Button
+                      type="primary"
+                      onClick={() => {
+                        // Save logic here if needed
+                        setIsEditMode(false)
+                      }}
+                    >
+                      저장
                     </Button>
                   </>
                 )}
@@ -273,6 +299,26 @@ export default function AdminAttendanceDetailPage() {
                 <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
                   제출 완료 (승인 대기 중)
                 </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reject reason banner */}
+        {doc.status === 'REJECTED' && doc.rejectReason && (
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5" />
+                <div className="flex-1">
+                  <div className="font-semibold text-red-900 dark:text-red-100 mb-1">반려 사유</div>
+                  <div className="text-sm text-red-700 dark:text-red-300">{doc.rejectReason}</div>
+                  {doc.rejectedAt && (
+                    <div className="text-xs text-red-600 dark:text-red-400 mt-1">
+                      반려일시: {dayjs(doc.rejectedAt).format('YYYY-MM-DD HH:mm')}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

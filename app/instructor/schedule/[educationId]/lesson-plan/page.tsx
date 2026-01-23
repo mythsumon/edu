@@ -585,6 +585,34 @@ export default function InstructorLessonPlanPage() {
           </div>
         </div>
 
+        {/* Status banner */}
+        {doc.status === 'SUBMITTED' && (
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  제출 완료 (승인 대기 중)
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {doc.status === 'REJECTED' && doc.rejectReason && (
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5" />
+                <div className="flex-1">
+                  <div className="font-semibold text-red-900 dark:text-red-100 mb-1">반려 사유</div>
+                  <div className="text-sm text-red-700 dark:text-red-300">{doc.rejectReason}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="max-w-7xl mx-auto px-6 py-8">
           {/* Education Summary */}
           <DetailSectionCard title="교육 정보" className="mb-6">
@@ -613,8 +641,7 @@ export default function InstructorLessonPlanPage() {
           </DetailSectionCard>
 
           {/* Basic Information */}
-          <Card className="rounded-xl mb-6">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">기본 정보</h2>
+          <DetailSectionCard title="기본 정보" className="mb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Auto-filled fields (read-only for instructor, editable for admin) */}
               <div>
@@ -888,12 +915,11 @@ export default function InstructorLessonPlanPage() {
                 )}
               </div>
             </div>
-          </Card>
+          </DetailSectionCard>
 
           {/* Education Goals */}
-          <Card className="rounded-xl mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">교육목표</h2>
+          <DetailSectionCard title="교육목표" className="mb-6">
+            <div className="flex items-center justify-end mb-4">
               {isEditable && (
                 <Button
                   type="dashed"
@@ -932,12 +958,11 @@ export default function InstructorLessonPlanPage() {
                 </div>
               ))}
             </div>
-          </Card>
+          </DetailSectionCard>
 
           {/* Session Plans */}
-          <Card className="rounded-xl mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">차시별 계획</h2>
+          <DetailSectionCard title="차시별 계획" className="mb-6">
+            <div className="flex items-center justify-end mb-4">
               {isEditable && (
                 <Button
                   type="primary"
@@ -1057,11 +1082,10 @@ export default function InstructorLessonPlanPage() {
                 ))
               )}
             </div>
-          </Card>
+          </DetailSectionCard>
 
           {/* Signature Section */}
-          <Card className="rounded-xl mb-6">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">서명</h2>
+          <DetailSectionCard title="서명" className="mb-6">
             <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-6">
               <div className="text-center mb-4">
                 <p className="text-base font-medium text-gray-700 dark:text-gray-300 mb-4">
@@ -1116,7 +1140,7 @@ export default function InstructorLessonPlanPage() {
                 </div>
               )}
             </div>
-          </Card>
+          </DetailSectionCard>
         </div>
       </div>
 

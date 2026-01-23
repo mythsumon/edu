@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Button, Space, Modal, Input, InputNumber, DatePicker, TimePicker, message, Badge } from 'antd'
-import { ArrowLeft, CheckCircle2, XCircle, AlertTriangle, Download } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, XCircle, AlertTriangle, Download, Edit } from 'lucide-react'
 import { DetailPageHeaderSticky, DetailSectionCard } from '@/components/admin/operations'
 import { useAuth } from '@/contexts/AuthContext'
 import {
@@ -469,26 +469,33 @@ export default function AdminEquipmentConfirmationDetailPage() {
             >
               다운로드
             </Button>
-            {doc.status === 'SUBMITTED' && (
-              <div className="flex gap-4">
-                <Button
-                  icon={<CheckCircle2 className="w-4 h-4" />}
-                  onClick={handleApprove}
-                  loading={loading}
-                  className="h-10 px-6 rounded-xl border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                  승인
-                </Button>
-                <Button
-                  icon={<XCircle className="w-4 h-4" />}
-                  onClick={() => setRejectModalVisible(true)}
-                  loading={loading}
-                  className="h-10 px-6 rounded-xl border border-red-300 font-medium transition-all text-red-700 hover:bg-red-600 hover:text-white hover:border-red-600"
-                >
-                  반려
-                </Button>
-              </div>
-            )}
+            <div className="flex gap-4">
+              <Button
+                icon={<Edit className="w-4 h-4" />}
+                onClick={() => router.push(`/instructor/equipment-confirmations/${id}`)}
+                className="h-10 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
+              >
+                수정
+              </Button>
+              <Button
+                icon={<CheckCircle2 className="w-4 h-4" />}
+                onClick={handleApprove}
+                loading={loading}
+                disabled={doc.status === 'APPROVED' || doc.status === 'BORROWED' || doc.status === 'RETURNED'}
+                className="h-10 px-6 rounded-xl border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                승인
+              </Button>
+              <Button
+                icon={<XCircle className="w-4 h-4" />}
+                onClick={() => setRejectModalVisible(true)}
+                loading={loading}
+                disabled={doc.status === 'REJECTED' || doc.status === 'APPROVED' || doc.status === 'BORROWED' || doc.status === 'RETURNED'}
+                className="h-10 px-6 rounded-xl border border-red-300 font-medium transition-all text-red-700 hover:bg-red-600 hover:text-white hover:border-red-600"
+              >
+                반려
+              </Button>
+            </div>
             {doc.status === 'APPROVED' && (
               <Button
                 type="primary"

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Button, message, Card, Space, Badge, Modal, Input } from 'antd'
-import { ArrowLeft, CheckCircle2, XCircle, Download } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, XCircle, Download, Edit, AlertTriangle } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { DetailSectionCard } from '@/components/admin/operations'
 import { EvidenceUploader } from '@/app/instructor/evidence/components/EvidenceUploader'
@@ -274,37 +274,71 @@ export default function AdminEvidenceDetailPage() {
                   <Button
                     icon={<Download className="w-4 h-4" />}
                     onClick={handleDownloadAll}
-                    className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-green-600 hover:text-white font-medium transition-all text-slate-700"
+                    className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
                   >
-                    다운로드 (낮은 해상도)
+                    다운로드
                   </Button>
                 )}
-                {canApprove && (
-                  <Button
-                    type="primary"
-                    icon={<CheckCircle2 className="w-4 h-4" />}
-                    onClick={handleApprove}
-                    size="large"
-                    className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white"
-                  >
-                    승인
-                  </Button>
-                )}
-                {canReject && (
-                  <Button
-                    danger
-                    icon={<XCircle className="w-4 h-4" />}
-                    onClick={handleReject}
-                    size="large"
-                    className="h-11 px-6 rounded-lg"
-                  >
-                    반려
-                  </Button>
-                )}
+                <Button
+                  icon={<Edit className="w-4 h-4" />}
+                  onClick={() => router.push(`/instructor/evidence/${id}`)}
+                >
+                  수정
+                </Button>
+                <Button
+                  type="primary"
+                  icon={<CheckCircle2 className="w-4 h-4" />}
+                  onClick={handleApprove}
+                  disabled={doc.status === 'APPROVED'}
+                >
+                  승인
+                </Button>
+                <Button
+                  danger
+                  icon={<XCircle className="w-4 h-4" />}
+                  onClick={handleReject}
+                  disabled={doc.status === 'REJECTED' || doc.status === 'APPROVED'}
+                >
+                  반려
+                </Button>
               </Space>
             </div>
           </div>
         </div>
+
+        {/* Submitted banner */}
+        {doc.status === 'SUBMITTED' && (
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  제출 완료 (승인 대기 중)
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reject reason banner */}
+        {doc.status === 'REJECTED' && doc.rejectReason && (
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5" />
+                <div className="flex-1">
+                  <div className="font-semibold text-red-900 dark:text-red-100 mb-1">반려 사유</div>
+                  <div className="text-sm text-red-700 dark:text-red-300">{doc.rejectReason}</div>
+                  {doc.rejectedAt && (
+                    <div className="text-xs text-red-600 dark:text-red-400 mt-1">
+                      반려일시: {dayjs(doc.rejectedAt).format('YYYY-MM-DD HH:mm')}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="max-w-7xl mx-auto px-6 py-8">
 

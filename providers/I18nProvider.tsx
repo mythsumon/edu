@@ -5,7 +5,7 @@ import krTranslations from '@/locales/kr/translation.json';
 import enTranslations from '@/locales/en/translation.json';
 
 type Locale = 'kr' | 'en';
-type Translations = typeof krTranslations;
+type Translations = typeof krTranslations & typeof enTranslations;
 
 interface I18nContextType {
   locale: Locale;
@@ -15,7 +15,7 @@ interface I18nContextType {
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
-const translations: Record<Locale, Translations> = {
+const translations: Record<Locale, any> = {
   kr: krTranslations,
   en: enTranslations,
 };

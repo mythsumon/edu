@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Button, Modal, Input, message, Image, Badge, Space } from 'antd'
-import { ArrowLeft, CheckCircle2, XCircle, Download } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, XCircle, Download, Edit, AlertTriangle } from 'lucide-react'
 import { DetailPageHeaderSticky, DetailSectionCard } from '@/components/admin/operations'
 import { getActivityLogById, upsertActivityLog } from '@/app/instructor/activity-logs/storage'
 import type { ActivityLog } from '@/app/instructor/activity-logs/types'
@@ -25,6 +25,7 @@ export default function AdminActivityLogDetailPage() {
   const [rejectModalVisible, setRejectModalVisible] = useState(false)
   const [rejectReason, setRejectReason] = useState('')
   const [loading, setLoading] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
 
   useEffect(() => {
     if (logId) {
@@ -208,13 +209,19 @@ export default function AdminActivityLogDetailPage() {
                     활동사진 다운로드
                   </Button>
                 )}
-                {log.status === 'SUBMITTED' && (
+                {!isEditMode ? (
                   <>
+                    <Button
+                      icon={<Edit className="w-4 h-4" />}
+                      onClick={() => router.push(`/instructor/activity-logs/${logId}`)}
+                    >
+                      수정
+                    </Button>
                     <Button
                       type="primary"
                       icon={<CheckCircle2 className="w-4 h-4" />}
                       onClick={handleApprove}
-                      style={{ background: '#10b981', borderColor: '#10b981' }}
+                      disabled={log.status === 'APPROVED'}
                     >
                       승인
                     </Button>
@@ -222,8 +229,21 @@ export default function AdminActivityLogDetailPage() {
                       danger
                       icon={<XCircle className="w-4 h-4" />}
                       onClick={() => setRejectModalVisible(true)}
+                      disabled={log.status === 'REJECTED' || log.status === 'APPROVED'}
                     >
                       반려
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button onClick={() => setIsEditMode(false)}>
+                      취소
+                    </Button>
+                    <Button
+                      type="primary"
+                      onClick={() => setIsEditMode(false)}
+                    >
+                      저장
                     </Button>
                   </>
                 )}
@@ -241,6 +261,26 @@ export default function AdminActivityLogDetailPage() {
                 <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
                   제출 완료 (승인 대기 중)
                 </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reject reason banner */}
+        {log.status === 'REJECTED' && log.rejectReason && (
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5" />
+                <div className="flex-1">
+                  <div className="font-semibold text-red-900 dark:text-red-100 mb-1">반려 사유</div>
+                  <div className="text-sm text-red-700 dark:text-red-300">{log.rejectReason}</div>
+                  {log.rejectedAt && (
+                    <div className="text-xs text-red-600 dark:text-red-400 mt-1">
+                      반려일시: {dayjs(log.rejectedAt).format('YYYY-MM-DD HH:mm')}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
