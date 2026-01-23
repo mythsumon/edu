@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Card, Button, Modal, message, Tooltip, Tabs, Table, Checkbox, Space } from 'antd'
+import { Card, Button, Modal, message, Tooltip, Table, Checkbox, Space } from 'antd'
 import { Calendar, CheckCircle2 } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import dayjs from 'dayjs'
@@ -23,7 +23,7 @@ export default function ApplyForEducationPage() {
   const searchParams = useSearchParams()
   const { userProfile } = useAuth()
   const educationIdParam = searchParams?.get('educationId') || null
-  const [activeTab, setActiveTab] = useState<'open' | 'closed'>('open')
+  // 탭 제거됨 (마감 탭 제거로 인해 단일 목록만 표시)
   const [allEducations, setAllEducations] = useState<Education[]>(dataStore.getEducations())
   const currentInstructorName = userProfile?.name || '홍길동'
   const currentInstructorId = userProfile?.userId || 'instructor-1'
@@ -144,18 +144,7 @@ export default function ApplyForEducationPage() {
         return false
       }
       
-      // Exclude if status is explicitly closed
-      if (education.status === '신청 마감' || education.educationStatus === '신청 마감') {
-        return false
-      }
-      
-      // Check if deadline passed
-      if (education.applicationDeadline) {
-        const deadline = dayjs(education.applicationDeadline)
-        if (now.isAfter(deadline, 'day')) {
-          return false // 마감일이 지난 것은 마감 탭으로
-        }
-      }
+      // 마감 체크 제거됨
       
       // Region filtering: 지역이 일치하지 않으면 표시하지 않음
       // 단, 교육의 regionAssignmentMode가 'FULL'이면 모든 지역에서 신청 가능
@@ -188,28 +177,10 @@ export default function ApplyForEducationPage() {
     })
   }, [allEducations, educationIdParam, instructorRegion])
   
-  // 마감된 교육
+  // 마감된 교육 - 제거됨
   const closedEducations = useMemo(() => {
-    const now = dayjs()
-    return allEducations.filter(education => {
-      // Status is 신청 마감 or deadline passed
-      const isStatusClosed = education.educationStatus === '신청 마감'
-      const isDeadlinePassed = education.applicationDeadline 
-        ? dayjs(education.applicationDeadline).isBefore(now, 'day')
-        : false
-      
-      if (!isStatusClosed && !isDeadlinePassed) {
-        return false
-      }
-      
-      // If educationId param exists, filter by it
-      if (educationIdParam && education.educationId !== educationIdParam) {
-        return false
-      }
-      
-      return true
-    })
-  }, [allEducations, educationIdParam])
+    return []
+  }, [])
 
   /**
    * Check if two time ranges overlap
@@ -509,32 +480,7 @@ export default function ApplyForEducationPage() {
       }
     }
     
-    // Exclude if explicitly closed
-    if (education.status === '신청 마감' || education.educationStatus === '신청 마감') {
-      return { 
-        canApply: false, 
-        reason: `교육 마감: 교육이 마감되었습니다.` 
-      }
-    }
-    
-    // 2. Check if deadline passed
-    if (education.applicationDeadline) {
-      const deadline = dayjs(education.applicationDeadline)
-      if (now.isAfter(deadline)) {
-        return { 
-          canApply: false, 
-          reason: `신청 마감: 신청 마감일(${education.applicationDeadline})이 지났습니다.` 
-        }
-      }
-    }
-    
-    // 3. Check if educationStatus is 마감
-    if (education.educationStatus === '신청 마감') {
-      return { 
-        canApply: false, 
-        reason: `교육 마감: 교육이 마감되었습니다.` 
-      }
-    }
+    // 마감 체크 제거됨
 
     // 4. Check assignment zone rule (부분 규칙 배정)
     const zoneCheck = checkAssignmentZone(education)
@@ -626,14 +572,7 @@ export default function ApplyForEducationPage() {
     })
   }
 
-  const getDaysUntilDeadline = (deadline: string) => {
-    const deadlineDate = dayjs(deadline)
-    const now = dayjs()
-    const days = deadlineDate.diff(now, 'day')
-    if (days < 0) return '마감됨'
-    if (days === 0) return '오늘 마감'
-    return `D-${days}`
-  }
+  // 마감일 표시 함수 제거됨
 
   // Get user's applications to check if already applied
   const [userApplications, setUserApplications] = useState<InstructorApplication[]>(() => {
@@ -799,131 +738,7 @@ export default function ApplyForEducationPage() {
     },
   ]
 
-  // Table columns for closed educations
-  const closedColumns: ColumnsType<Education> = [
-    {
-      title: '교육기관명',
-      dataIndex: 'institution',
-      key: 'institution',
-      width: 200,
-    },
-    {
-      title: '학년-반',
-      dataIndex: 'gradeClass',
-      key: 'gradeClass',
-      width: 100,
-    },
-    {
-      title: '교육명',
-      dataIndex: 'name',
-      key: 'name',
-      width: 250,
-    },
-    {
-      title: '지역',
-      dataIndex: 'region',
-      key: 'region',
-      width: 100,
-    },
-    {
-      title: '기간',
-      key: 'period',
-      width: 200,
-      render: (_, record) => {
-        return `${record.periodStart || ''} - ${record.periodEnd || ''}`
-      },
-    },
-    {
-      title: '선택',
-      key: 'action',
-      width: 300,
-      render: (_, record) => {
-        const mainApplication = getUserApplication(record.educationId, '주강사')
-        const assistantApplication = getUserApplication(record.educationId, '보조강사')
-
-        return (
-          <Space direction="vertical" size="small" style={{ width: '100%' }}>
-            {/* 주강사 */}
-            {mainApplication ? (
-              <Space>
-                <Checkbox checked={mainApplication.status === '수락됨'} disabled>
-                  주강사
-                </Checkbox>
-                <Button
-                  size="small"
-                  type={mainApplication.status === '수락됨' ? 'default' : 'primary'}
-                  danger={mainApplication.status !== '수락됨'}
-                  disabled
-                >
-                  {mainApplication.status === '수락됨' ? '확정' : '미확정'}
-                </Button>
-              </Space>
-            ) : (
-              <Button
-                type="primary"
-                size="small"
-                disabled
-                style={{ backgroundColor: '#d9d9d9' }}
-              >
-                주강사 신청
-              </Button>
-            )}
-
-            {/* 보조강사 */}
-            {assistantApplication ? (
-              <Space>
-                <Checkbox checked={assistantApplication.status === '수락됨'} disabled>
-                  보조교사
-                </Checkbox>
-                <Button
-                  size="small"
-                  type={assistantApplication.status === '수락됨' ? 'default' : 'primary'}
-                  danger={assistantApplication.status !== '수락됨'}
-                  disabled
-                >
-                  {assistantApplication.status === '수락됨' ? '확정' : '미확정'}
-                </Button>
-              </Space>
-            ) : (
-              <Button
-                size="small"
-                disabled
-                style={{ 
-                  backgroundColor: '#f5f5f5',
-                  borderColor: '#d9d9d9',
-                  color: '#d9d9d9',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-              >
-                <span style={{ 
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '16px',
-                  height: '16px',
-                  borderRadius: '50%',
-                  backgroundColor: '#ff4d4f',
-                  color: 'white',
-                  fontSize: '12px',
-                  lineHeight: '1',
-                  opacity: 0.5
-                }}>−</span>
-                보조교사
-              </Button>
-            )}
-          </Space>
-        )
-      },
-    },
-    {
-      title: '교육ID',
-      dataIndex: 'educationId',
-      key: 'educationId',
-      width: 120,
-    },
-  ]
+  // closedColumns 제거됨 (마감 탭 제거로 인해 사용하지 않음)
 
   return (
     <ProtectedRoute requiredRole="instructor">
@@ -940,7 +755,7 @@ export default function ApplyForEducationPage() {
           </div>
 
           {/* Statistics Card */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <Card className="rounded-xl">
               <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">전체</div>
               <div className="text-3xl font-bold text-slate-600">{allCount}</div>
@@ -949,70 +764,29 @@ export default function ApplyForEducationPage() {
               <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">신청 가능</div>
               <div className="text-3xl font-bold text-blue-600">{openEducations.length}</div>
             </Card>
-            <Card className="rounded-xl">
-              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">마감</div>
-              <div className="text-3xl font-bold text-gray-600">{closedEducations.length}</div>
-            </Card>
           </div>
 
-          {/* Tabs */}
-          <Card className="rounded-xl mb-6">
-            <Tabs
-              activeKey={activeTab}
-              onChange={(key) => setActiveTab(key as 'open' | 'closed')}
-              items={[
-                {
-                  key: 'open',
-                  label: `신청 가능 (${openEducations.length})`,
-                },
-                {
-                  key: 'closed',
-                  label: `마감 (${closedEducations.length})`,
-                },
-              ]}
-            />
-          </Card>
+          {/* 탭 제거됨 - 마감 탭 제거로 인해 단일 목록만 표시 */}
 
           {/* Education Table */}
           <Card className="rounded-xl">
-            {activeTab === 'open' ? (
-              openEducations.length > 0 ? (
-                <Table
-                  columns={openColumns}
-                  dataSource={openEducations}
-                  rowKey="key"
-                  pagination={{
-                    pageSize: 10,
-                    showSizeChanger: true,
-                    showTotal: (total) => `총 ${total}개`,
-                  }}
-                  scroll={{ x: 1200 }}
-                />
-              ) : (
-                <div className="text-center py-12">
-                  <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">신청 가능한 교육이 없습니다.</p>
-                </div>
-              )
+            {openEducations.length > 0 ? (
+              <Table
+                columns={openColumns}
+                dataSource={openEducations}
+                rowKey="key"
+                pagination={{
+                  pageSize: 10,
+                  showSizeChanger: true,
+                  showTotal: (total) => `총 ${total}개`,
+                }}
+                scroll={{ x: 1200 }}
+              />
             ) : (
-              closedEducations.length > 0 ? (
-                <Table
-                  columns={closedColumns}
-                  dataSource={closedEducations}
-                  rowKey="key"
-                  pagination={{
-                    pageSize: 10,
-                    showSizeChanger: true,
-                    showTotal: (total) => `총 ${total}개`,
-                  }}
-                  scroll={{ x: 1200 }}
-                />
-              ) : (
-                <div className="text-center py-12">
-                  <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">마감된 교육이 없습니다.</p>
-                </div>
-              )
+              <div className="text-center py-12">
+                <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500">신청 가능한 교육이 없습니다.</p>
+              </div>
             )}
           </Card>
         </div>

@@ -567,6 +567,12 @@ export default function InstructorApplicationPage() {
           assistantInstructorApplied?: number
         }
         
+        // Type guard for assignmentLesson - it may not have mainInstructorName
+        const assignmentLessonWithName = assignmentLesson as (typeof assignmentLesson) & {
+          mainInstructorName?: string
+          assistantInstructorName?: string
+        }
+        
         return {
           session: session,
           date: lesson.date,
@@ -579,6 +585,7 @@ export default function InstructorApplicationPage() {
                 : 0),
           mainInstructorRequired: lesson.mainInstructorRequired || assignmentLesson?.mainInstructorRequired || 1,
           mainInstructorName: lesson.mainInstructorName || 
+            assignmentLessonWithName?.mainInstructorName ||
             (assignmentLesson?.mainInstructors && Array.isArray(assignmentLesson.mainInstructors) 
               ? assignmentLesson.mainInstructors[0]?.name 
               : undefined) || 
@@ -590,6 +597,7 @@ export default function InstructorApplicationPage() {
                 : 0),
           assistantInstructorRequired: lesson.assistantInstructorRequired || assignmentLesson?.assistantInstructorRequired || 0,
           assistantInstructorName: lesson.assistantInstructorName ||
+            assignmentLessonWithName?.assistantInstructorName ||
             (assignmentLesson?.assistantInstructors && Array.isArray(assignmentLesson.assistantInstructors)
               ? assignmentLesson.assistantInstructors[0]?.name
               : undefined),

@@ -11,7 +11,7 @@ import { ModernKPICard, KPIData } from '@/components/dashboard/ModernKPICard'
 import { StatusBreakdownChart } from '@/components/dashboard/StatusBreakdownChart'
 import { PendingApplicationsPanel } from '@/components/dashboard/PendingApplicationsPanel'
 import { PendingEvidencePanel } from '@/components/dashboard/PendingEvidencePanel'
-import { Table, Badge, Space, Tabs, Button, Input } from 'antd'
+import { Table, Badge, Space, Tabs, Button, Input, Tooltip } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { Eye, Search } from 'lucide-react'
 import { getAttendanceDocs } from '@/app/instructor/schedule/[educationId]/attendance/storage'
@@ -44,6 +44,52 @@ import {
 import { dataStore } from '@/lib/dataStore'
 import { message } from 'antd'
 import { type SpecialCategory } from '@/types/region'
+
+// KPI Tooltip Helper Function
+const getKpiTooltip = (
+  type: 'REGION' | 'CATEGORY_REMOTE' | 'CATEGORY_SPECIAL' | 'SESSIONS_50',
+  payload?: { regionNumber?: number; regionName?: string }
+) => {
+  switch (type) {
+    case 'REGION': {
+      const regionName = payload?.regionName || `${payload?.regionNumber || ''}권역`
+      return {
+        title: '집계 기준',
+        lines: [
+          `교육기관 관리에서 등록된 권역(${regionName}) 기준`,
+          '해당 권역 교육기관으로 생성된 교육만 포함',
+          '교육 상태를 기준으로 진행률/건수를 계산',
+        ],
+      }
+    }
+    case 'CATEGORY_REMOTE':
+      return {
+        title: '집계 기준',
+        lines: [
+          '교육기관 분류(2분류=도서벽지) 기준',
+          '해당 분류 기관에서 생성된 교육만 포함',
+        ],
+      }
+    case 'CATEGORY_SPECIAL':
+      return {
+        title: '집계 기준',
+        lines: [
+          '교육기관 분류(2분류=특수학급/일반학교 내 특수학급) 기준',
+          '해당 분류 기관에서 생성된 교육만 포함',
+        ],
+      }
+    case 'SESSIONS_50':
+      return {
+        title: '집계 기준',
+        lines: [
+          '교육 차시(totalSessions)=50 기준',
+          '기관 분류/권역과 무관하게 50차시 교육만 포함',
+        ],
+      }
+    default:
+      return { title: '집계 기준', lines: [] }
+  }
+}
 
 interface SubmissionItem {
   id: string
@@ -997,32 +1043,50 @@ export default function AdminDashboardPage() {
                                     const color = regionColors[regionNumber as keyof typeof regionColors]
                                     const isSelected = selectedRegion === regionNumber
                                     
+                                    const tooltipContent = getKpiTooltip('REGION', { regionNumber })
+                                    
                                     return (
-                                      <div
+                                      <Tooltip
                                         key={regionNumber}
-                                        onClick={(e) => {
-                                          e.preventDefault()
-                                          e.stopPropagation()
-                                          try {
-                                            setSelectedRegion(regionNumber)
-                                            setSelectedSpecialCategory(undefined)
-                                            setShowRegionSelection(false)
-                                          } catch (error) {
-                                            console.error('Error selecting region:', error)
-                                          }
-                                        }}
-                                        className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all duration-300 ${
-                                          isSelected 
-                                            ? 'shadow-2xl scale-105 ring-4 ring-offset-2' 
-                                            : 'shadow-lg hover:shadow-xl hover:scale-[1.02]'
-                                        }`}
-                                        style={{
-                                          background: isSelected 
-                                            ? `linear-gradient(135deg, ${color.light} 0%, white 100%)`
-                                            : 'white',
-                                          border: isSelected ? `3px solid ${color.bg}` : '2px solid #e2e8f0',
-                                        }}
+                                        title={
+                                          <div className="py-1">
+                                            <div className="font-semibold text-white mb-2">{tooltipContent.title}</div>
+                                            <ul className="list-none space-y-1 m-0 p-0">
+                                              {tooltipContent.lines.map((line, idx) => (
+                                                <li key={idx} className="text-white text-sm before:content-['•'] before:mr-2">
+                                                  {line}
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                        }
+                                        placement="top"
+                                        overlayStyle={{ maxWidth: '300px' }}
                                       >
+                                        <div
+                                          onClick={(e) => {
+                                            e.preventDefault()
+                                            e.stopPropagation()
+                                            try {
+                                              setSelectedRegion(regionNumber)
+                                              setSelectedSpecialCategory(undefined)
+                                              setShowRegionSelection(false)
+                                            } catch (error) {
+                                              console.error('Error selecting region:', error)
+                                            }
+                                          }}
+                                          className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all duration-300 ${
+                                            isSelected 
+                                              ? 'shadow-2xl scale-105 ring-4 ring-offset-2' 
+                                              : 'shadow-lg hover:shadow-xl hover:scale-[1.02]'
+                                          }`}
+                                          style={{
+                                            background: isSelected 
+                                              ? `linear-gradient(135deg, ${color.light} 0%, white 100%)`
+                                              : 'white',
+                                            border: isSelected ? `3px solid ${color.bg}` : '2px solid #e2e8f0',
+                                          }}
+                                        >
                                         <div 
                                           className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${regionGradients[regionNumber as keyof typeof regionGradients]} opacity-10 rounded-bl-full transition-opacity duration-300 group-hover:opacity-20`}
                                         />
@@ -1097,21 +1161,73 @@ export default function AdminDashboardPage() {
                                           </div>
 
                                           <div className="space-y-1.5 pt-3 border-t border-slate-100">
-                                            <div className="flex items-center justify-between text-xs">
-                                              <span className="text-slate-600">도서·벽지</span>
-                                              <span className="font-semibold text-slate-900">{region.items.도서벽지}</span>
-                                            </div>
-                                            <div className="flex items-center justify-between text-xs">
-                                              <span className="text-slate-600">50차시</span>
-                                              <span className="font-semibold text-slate-900">{region.items['50차시']}</span>
-                                            </div>
-                                            <div className="flex items-center justify-between text-xs">
-                                              <span className="text-slate-600">특수학급</span>
-                                              <span className="font-semibold text-slate-900">{region.items.특수학급}</span>
-                                            </div>
+                                            <Tooltip
+                                              title={
+                                                <div className="py-1">
+                                                  <div className="font-semibold text-white mb-2">{getKpiTooltip('CATEGORY_REMOTE').title}</div>
+                                                  <ul className="list-none space-y-1 m-0 p-0">
+                                                    {getKpiTooltip('CATEGORY_REMOTE').lines.map((line, idx) => (
+                                                      <li key={idx} className="text-white text-sm before:content-['•'] before:mr-2">
+                                                        {line}
+                                                      </li>
+                                                    ))}
+                                                  </ul>
+                                                </div>
+                                              }
+                                              placement="top"
+                                              overlayStyle={{ maxWidth: '300px' }}
+                                            >
+                                              <div className="flex items-center justify-between text-xs">
+                                                <span className="text-slate-600">도서·벽지</span>
+                                                <span className="font-semibold text-slate-900">{region.items.도서벽지}</span>
+                                              </div>
+                                            </Tooltip>
+                                            <Tooltip
+                                              title={
+                                                <div className="py-1">
+                                                  <div className="font-semibold text-white mb-2">{getKpiTooltip('SESSIONS_50').title}</div>
+                                                  <ul className="list-none space-y-1 m-0 p-0">
+                                                    {getKpiTooltip('SESSIONS_50').lines.map((line, idx) => (
+                                                      <li key={idx} className="text-white text-sm before:content-['•'] before:mr-2">
+                                                        {line}
+                                                      </li>
+                                                    ))}
+                                                  </ul>
+                                                </div>
+                                              }
+                                              placement="top"
+                                              overlayStyle={{ maxWidth: '300px' }}
+                                            >
+                                              <div className="flex items-center justify-between text-xs">
+                                                <span className="text-slate-600">50차시</span>
+                                                <span className="font-semibold text-slate-900">{region.items['50차시']}</span>
+                                              </div>
+                                            </Tooltip>
+                                            <Tooltip
+                                              title={
+                                                <div className="py-1">
+                                                  <div className="font-semibold text-white mb-2">{getKpiTooltip('CATEGORY_SPECIAL').title}</div>
+                                                  <ul className="list-none space-y-1 m-0 p-0">
+                                                    {getKpiTooltip('CATEGORY_SPECIAL').lines.map((line, idx) => (
+                                                      <li key={idx} className="text-white text-sm before:content-['•'] before:mr-2">
+                                                        {line}
+                                                      </li>
+                                                    ))}
+                                                  </ul>
+                                                </div>
+                                              }
+                                              placement="top"
+                                              overlayStyle={{ maxWidth: '300px' }}
+                                            >
+                                              <div className="flex items-center justify-between text-xs">
+                                                <span className="text-slate-600">특수학급</span>
+                                                <span className="font-semibold text-slate-900">{region.items.특수학급}</span>
+                                              </div>
+                                            </Tooltip>
                                           </div>
                                         </div>
                                       </div>
+                                      </Tooltip>
                                     )
                                   })}
                                 </div>
@@ -1132,32 +1248,58 @@ export default function AdminDashboardPage() {
                                     const isSelected = selectedSpecialCategory === item.category
                                     const Icon = item.icon
                                     
+                                    // Determine tooltip type based on category
+                                    let tooltipType: 'CATEGORY_REMOTE' | 'CATEGORY_SPECIAL' | 'SESSIONS_50' = 'CATEGORY_REMOTE'
+                                    if (item.category === '특수학급') {
+                                      tooltipType = 'CATEGORY_SPECIAL'
+                                    } else if (item.category === '50차시') {
+                                      tooltipType = 'SESSIONS_50'
+                                    }
+                                    
+                                    const tooltipContent = getKpiTooltip(tooltipType)
+                                    
                                     return (
-                                      <div
+                                      <Tooltip
                                         key={item.label}
-                                        onClick={(e) => {
-                                          e.preventDefault()
-                                          e.stopPropagation()
-                                          try {
-                                            setSelectedSpecialCategory(item.category)
-                                            setSelectedRegion(undefined)
-                                            setShowRegionSelection(false)
-                                          } catch (error) {
-                                            console.error('Error selecting special category:', error)
-                                          }
-                                        }}
-                                        className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all duration-300 ${
-                                          isSelected 
-                                            ? 'shadow-2xl scale-105 ring-4 ring-offset-2' 
-                                            : 'shadow-lg hover:shadow-xl hover:scale-[1.02]'
-                                        }`}
-                                        style={{
-                                          background: isSelected 
-                                            ? `linear-gradient(135deg, ${item.color}15 0%, white 100%)`
-                                            : 'white',
-                                          border: isSelected ? `3px solid ${item.color}` : '2px solid #e2e8f0',
-                                        }}
+                                        title={
+                                          <div className="py-1">
+                                            <div className="font-semibold text-white mb-2">{tooltipContent.title}</div>
+                                            <ul className="list-none space-y-1 m-0 p-0">
+                                              {tooltipContent.lines.map((line, idx) => (
+                                                <li key={idx} className="text-white text-sm before:content-['•'] before:mr-2">
+                                                  {line}
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                        }
+                                        placement="top"
+                                        overlayStyle={{ maxWidth: '300px' }}
                                       >
+                                        <div
+                                          onClick={(e) => {
+                                            e.preventDefault()
+                                            e.stopPropagation()
+                                            try {
+                                              setSelectedSpecialCategory(item.category)
+                                              setSelectedRegion(undefined)
+                                              setShowRegionSelection(false)
+                                            } catch (error) {
+                                              console.error('Error selecting special category:', error)
+                                            }
+                                          }}
+                                          className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all duration-300 ${
+                                            isSelected 
+                                              ? 'shadow-2xl scale-105 ring-4 ring-offset-2' 
+                                              : 'shadow-lg hover:shadow-xl hover:scale-[1.02]'
+                                          }`}
+                                          style={{
+                                            background: isSelected 
+                                              ? `linear-gradient(135deg, ${item.color}15 0%, white 100%)`
+                                              : 'white',
+                                            border: isSelected ? `3px solid ${item.color}` : '2px solid #e2e8f0',
+                                          }}
+                                        >
                                         <div 
                                           className={`absolute top-0 right-0 w-40 h-40 bg-gradient-to-br ${specialItemGradients[item.category as keyof typeof specialItemGradients]} opacity-10 rounded-bl-full transition-opacity duration-300 group-hover:opacity-20`}
                                         />
@@ -1199,7 +1341,8 @@ export default function AdminDashboardPage() {
                                                 </div>
                                               </div>
                                             </div>
-                                      </div>
+                                        </div>
+                                      </Tooltip>
                                     )
                                   })}
                                 </div>
