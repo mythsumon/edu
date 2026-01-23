@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { Button, message, Card, Space, Badge, Modal, Input } from 'antd'
 import { ArrowLeft, CheckCircle2, XCircle, Edit, Download, AlertTriangle } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { DetailSectionCard } from '@/components/admin/operations'
+import { DetailSectionCard, DetailPageHeaderSticky } from '@/components/admin/operations'
 import {
   getLessonPlanById,
   upsertLessonPlan,
@@ -296,156 +296,149 @@ export default function AdminLessonPlanDetailPage() {
 
   return (
     <ProtectedRoute requiredRole="admin">
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 transition-colors">
-        {/* Header */}
-        <div className="bg-white dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700 sticky top-0 z-10 shadow-sm">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button
-                  icon={<ArrowLeft className="w-4 h-4" />}
-                  onClick={() => router.push('/admin/submissions')}
-                  className="flex items-center dark:text-gray-300"
-                >
-                  돌아가기
-                </Button>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    강의계획서 상세
-                  </h1>
-                  <div className="mt-1">
-                    {getStatusBadge(doc.status)}
-                  </div>
-                </div>
-              </div>
-              <Space>
-                <Button
-                  icon={<Download className="w-4 h-4" />}
-                  onClick={() => {
-                    const firstSession = doc.sessions?.[0]
-                    const sessionDate = firstSession?.date
-                    const startDate = doc.startDate
-                    const endDate = doc.endDate
-                    const institutionName = doc.institutionName || ''
-                    const gradeClass = doc.className || ''
-                    const instructorName = doc.authorInstructorName || ''
-                    
-                    const filename = generateLessonPlanFilename({
-                      sessionDate: sessionDate,
-                      startDate: startDate,
-                      endDate: endDate,
-                      schoolName: institutionName,
-                      gradeClass: gradeClass,
-                      instructorName: instructorName,
-                      documentType: '강의계획서',
-                    })
-                    
-                    // TODO: 실제 파일 다운로드 구현
-                    console.log('Download lesson plan:', filename)
-                    message.info(`강의계획서 다운로드: ${filename}`)
-                  }}
-                  className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
-                >
-                  다운로드
-                </Button>
-                {!isEditMode ? (
-                  <>
-                    <Button
-                      icon={<Edit className="w-4 h-4" />}
-                      onClick={() => setIsEditMode(true)}
-                    >
-                      수정
-                    </Button>
-                    {doc.status === 'SUBMITTED' && (
-                      <>
-                        <Button
-                          type="primary"
-                          icon={<CheckCircle2 className="w-4 h-4" />}
-                          onClick={handleApprove}
-                        >
-                          승인
-                        </Button>
-                        <Button
-                          danger
-                          icon={<XCircle className="w-4 h-4" />}
-                          onClick={handleReject}
-                        >
-                          반려
-                        </Button>
-                      </>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <Button onClick={() => setIsEditMode(false)}>
-                      취소
-                    </Button>
-                    <Button
-                      type="primary"
-                      onClick={handleSave}
-                    >
-                      저장
-                    </Button>
-                  </>
-                )}
-              </Space>
+      <div className="bg-slate-50 min-h-screen px-6 pt-0">
+        {/* Sticky Header */}
+        <DetailPageHeaderSticky
+          onBack={() => router.push('/admin/submissions')}
+          title="강의계획서 상세"
+        />
+
+        {/* Status Badge and Action Buttons */}
+        <div className="sticky top-[73px] z-10 bg-white border-b border-slate-200 px-6 py-3">
+          <div className="max-w-5xl mx-auto flex items-center justify-between">
+            <div>
+              {getStatusBadge(doc.status)}
             </div>
+            <Space>
+              <Button
+                icon={<Download className="w-4 h-4" />}
+                onClick={() => {
+                  const firstSession = doc.sessions?.[0]
+                  const sessionDate = firstSession?.date
+                  const startDate = doc.startDate
+                  const endDate = doc.endDate
+                  const institutionName = doc.institutionName || ''
+                  const gradeClass = doc.className || ''
+                  const instructorName = doc.authorInstructorName || ''
+                  
+                  const filename = generateLessonPlanFilename({
+                    sessionDate: sessionDate,
+                    startDate: startDate,
+                    endDate: endDate,
+                    schoolName: institutionName,
+                    gradeClass: gradeClass,
+                    instructorName: instructorName,
+                    documentType: '강의계획서',
+                  })
+                  
+                  // TODO: 실제 파일 다운로드 구현
+                  console.log('Download lesson plan:', filename)
+                  message.info(`강의계획서 다운로드: ${filename}`)
+                }}
+                className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
+              >
+                다운로드
+              </Button>
+              {!isEditMode ? (
+                <>
+                  <Button
+                    icon={<Edit className="w-4 h-4" />}
+                    onClick={() => setIsEditMode(true)}
+                    className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  >
+                    수정
+                  </Button>
+                  {doc.status === 'SUBMITTED' && (
+                    <>
+                      <Button
+                        type="primary"
+                        icon={<CheckCircle2 className="w-4 h-4" />}
+                        onClick={handleApprove}
+                        className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md bg-green-600 hover:bg-green-500 active:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
+                      >
+                        승인
+                      </Button>
+                      <Button
+                        danger
+                        icon={<XCircle className="w-4 h-4" />}
+                        onClick={handleReject}
+                        className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md bg-red-600 hover:bg-red-500 active:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
+                      >
+                        반려
+                      </Button>
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  <Button 
+                  onClick={() => setIsEditMode(false)}
+                  className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-slate-100 font-medium transition-all text-slate-700"
+                >
+                    취소
+                  </Button>
+                  <Button
+                    type="primary"
+                    onClick={handleSave}
+                    className="h-11 px-6 rounded-lg border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  >
+                    저장
+                  </Button>
+                </>
+              )}
+            </Space>
           </div>
         </div>
 
-        {/* Submitted banner */}
-        {doc.status === 'SUBMITTED' && (
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        {/* Main Content Container */}
+        <div className="max-w-5xl mx-auto pt-6 pb-12 space-y-4">
+          {/* Submitted banner */}
+          {doc.status === 'SUBMITTED' && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                <CheckCircle2 className="w-5 h-5 text-blue-600" />
+                <span className="text-sm font-medium text-blue-900">
                   제출 완료 (승인 대기 중)
                 </span>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Reject reason banner */}
-        {doc.status === 'REJECTED' && doc.rejectReason && (
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+          {/* Reject reason banner */}
+          {doc.status === 'REJECTED' && doc.rejectReason && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <div className="flex items-start gap-2">
-                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5" />
+                <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
                 <div className="flex-1">
-                  <div className="font-semibold text-red-900 dark:text-red-100 mb-1">반려 사유</div>
-                  <div className="text-sm text-red-700 dark:text-red-300">{doc.rejectReason}</div>
+                  <div className="font-semibold text-red-900 mb-1">반려 사유</div>
+                  <div className="text-sm text-red-700">{doc.rejectReason}</div>
                   {doc.rejectedAt && (
-                    <div className="text-xs text-red-600 dark:text-red-400 mt-1">
+                    <div className="text-xs text-red-600 mt-1">
                       반려일시: {dayjs(doc.rejectedAt).format('YYYY-MM-DD HH:mm')}
                     </div>
                   )}
                 </div>
               </div>
             </div>
-          </div>
-        )}
-
-        <div className="max-w-7xl mx-auto px-6 py-8">
+          )}
           {/* Education Summary */}
-          <DetailSectionCard title="교육 정보" className="mb-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">교육ID</div>
-                <div className="font-medium">{doc.educationId}</div>
+          <DetailSectionCard title="교육 정보">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+              <div className="space-y-1">
+                <div className="text-sm text-slate-500 font-medium">교육ID</div>
+                <div className="text-sm text-slate-900 font-medium">{doc.educationId}</div>
               </div>
-              <div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">교육명</div>
-                <div className="font-medium">{doc.educationName}</div>
+              <div className="space-y-1">
+                <div className="text-sm text-slate-500 font-medium">교육명</div>
+                <div className="text-sm text-slate-900 font-medium">{doc.educationName}</div>
               </div>
-              <div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">기관명</div>
-                <div className="font-medium">{doc.institutionName}</div>
+              <div className="space-y-1">
+                <div className="text-sm text-slate-500 font-medium">기관명</div>
+                <div className="text-sm text-slate-900 font-medium">{doc.institutionName}</div>
               </div>
-              <div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">기간</div>
-                <div className="font-medium">
+              <div className="space-y-1">
+                <div className="text-sm text-slate-500 font-medium">기간</div>
+                <div className="text-sm text-slate-900 font-medium">
                   {doc.startDate && doc.endDate
                     ? `${dayjs(doc.startDate).format('YYYY-MM-DD')} ~ ${dayjs(doc.endDate).format('YYYY-MM-DD')}`
                     : '-'}
@@ -455,7 +448,7 @@ export default function AdminLessonPlanDetailPage() {
           </DetailSectionCard>
 
           {/* Basic Information - Same as instructor page but admin can edit */}
-          <DetailSectionCard title="기본 정보" className="mb-6">
+          <DetailSectionCard title="기본 정보">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* All fields editable by admin */}
               <div>
@@ -728,10 +721,7 @@ export default function AdminLessonPlanDetailPage() {
           </DetailSectionCard>
 
           {/* Education Goals */}
-          <DetailSectionCard
-            title="교육목표"
-            className="mb-6"
-          >
+          <DetailSectionCard title="교육목표">
             <div className="space-y-3">
               {doc.goals.map((goal, index) => (
                 <div key={index} className="flex items-start gap-2">
@@ -763,10 +753,7 @@ export default function AdminLessonPlanDetailPage() {
           </DetailSectionCard>
 
           {/* Session Plans */}
-          <DetailSectionCard
-            title="차시별 계획"
-            className="mb-6"
-          >
+          <DetailSectionCard title="차시별 계획">
             <div className="space-y-4">
               {isEditMode && (
                 <div className="flex justify-end mb-4">
@@ -890,14 +877,14 @@ export default function AdminLessonPlanDetailPage() {
           </DetailSectionCard>
 
           {/* Signature Section */}
-          <DetailSectionCard title="서명" className="mb-6">
-            <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-6">
+          <DetailSectionCard title="서명">
+            <div className="border border-gray-300 rounded-lg p-6">
               <div className="text-center mb-4">
-                <p className="text-base font-medium text-gray-700 dark:text-gray-300 mb-4">
+                <p className="text-base font-medium text-gray-700 mb-4">
                   다음과 같이 강의계획서를 제출합니다.
                 </p>
                 <div className="mb-6">
-                  <p className="text-base text-gray-700 dark:text-gray-300">
+                  <p className="text-base text-gray-700">
                     {doc.signature?.signedAt 
                       ? dayjs(doc.signature.signedAt).format('YYYY. MM. DD.')
                       : doc.submittedAt
@@ -907,13 +894,13 @@ export default function AdminLessonPlanDetailPage() {
                 </div>
                 <div className="flex justify-end items-center gap-4">
                   <div className="text-right">
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">작성자</p>
+                    <p className="text-sm text-gray-600 mb-2">작성자</p>
                     {doc.signature ? (
                       <div className="flex items-center gap-2">
-                        <span className="text-base font-medium text-gray-900 dark:text-gray-100">
+                        <span className="text-base font-medium text-gray-900">
                           {doc.signature.signedByUserName}
                         </span>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">(인)</span>
+                        <span className="text-sm text-gray-500">(인)</span>
                         {doc.signature.signatureImageUrl && (
                           <img
                             src={doc.signature.signatureImageUrl}
@@ -924,18 +911,18 @@ export default function AdminLessonPlanDetailPage() {
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <span className="text-base font-medium text-gray-900 dark:text-gray-100">
+                        <span className="text-base font-medium text-gray-900">
                           {doc.authorInstructorName}
                         </span>
-                        <span className="text-sm text-gray-400 dark:text-gray-500">(미서명)</span>
+                        <span className="text-sm text-gray-400">(미서명)</span>
                       </div>
                     )}
                   </div>
                 </div>
               </div>
               {doc.submittedAt && (
-                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="text-sm text-gray-600">
                     <p>제출일시: {dayjs(doc.submittedAt).format('YYYY-MM-DD HH:mm')}</p>
                     {doc.approvedAt && (
                       <p className="mt-1">승인일시: {dayjs(doc.approvedAt).format('YYYY-MM-DD HH:mm')}</p>

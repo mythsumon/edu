@@ -656,7 +656,8 @@ export default function TravelSettlementPage() {
                   formatter={(value) => value ? `${value} km` : ''}
                   parser={(value) => {
                     const num = value?.replace(' km', '') || '0'
-                    return parseFloat(num) || 0
+                    const result = parseFloat(num) || 0
+                    return result as any
                   }}
                 />
               </Form.Item>
@@ -672,7 +673,8 @@ export default function TravelSettlementPage() {
                   formatter={(value) => value ? `${value}원` : ''}
                   parser={(value) => {
                     const num = value?.replace('원', '') || '0'
-                    return parseFloat(num) || 0
+                    const result = parseFloat(num) || 0
+                    return result as any
                   }}
                 />
               </Form.Item>
@@ -688,7 +690,8 @@ export default function TravelSettlementPage() {
                   formatter={(value) => value ? `${value}원` : ''}
                   parser={(value) => {
                     const num = value?.replace('원', '') || '0'
-                    return parseFloat(num) || 0
+                    const result = parseFloat(num) || 0
+                    return result as any
                   }}
                 />
               </Form.Item>

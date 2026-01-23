@@ -316,10 +316,12 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
 // Weekly calendar view component
 const WeeklyCalendarView = ({ 
   currentDate, 
-  onDateClick 
+  onDateClick,
+  events = []
 }: { 
   currentDate: Date
   onDateClick?: (dateString: string) => void
+  events?: InstructorCalendarEvent[]
 }) => {
   const startOfWeek = new Date(currentDate)
   startOfWeek.setDate(currentDate.getDate() - currentDate.getDay())
@@ -330,9 +332,9 @@ const WeeklyCalendarView = ({
     return date
   })
 
-  const getEventsForDate = (date: Date) => {
+  const getEventsForDate = (date: Date): InstructorCalendarEvent[] => {
     const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-    return []
+    return events.filter(event => event.date === dateString)
   }
 
   return (
@@ -382,7 +384,7 @@ const WeeklyCalendarView = ({
               </div>
               <div className="min-h-[220px] p-3 space-y-2">
                 {events.length > 0 ? (
-                  events.map((event, eventIndex) => {
+                  events.map((event: InstructorCalendarEvent, eventIndex: number) => {
                     const eventDateString = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`
                     return (
                       <div 
@@ -432,10 +434,10 @@ const DailyCalendarView = ({
 }: { 
   currentDate: Date
   onDateClick?: (dateString: string) => void
-  calendarEvents?: any[]
+  calendarEvents?: InstructorCalendarEvent[]
 }) => {
   const dateString = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`
-  const events = (calendarEvents || []).filter((event: any) => event.date === dateString)
+  const events = (calendarEvents || []).filter((event: InstructorCalendarEvent) => event.date === dateString)
   
   const dayOfWeek = currentDate.getDay()
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
@@ -462,7 +464,7 @@ const DailyCalendarView = ({
       
       {events.length > 0 ? (
         <div className="space-y-4">
-          {events.map((event, index) => (
+          {events.map((event: InstructorCalendarEvent, index: number) => (
             <div 
               key={index}
               onClick={() => {
@@ -1248,6 +1250,7 @@ export default function InstructorDashboard() {
                 {calendarView === 'weekly' && (
                   <WeeklyCalendarView 
                     currentDate={selectedDate}
+                    events={instructorCalendarEvents}
                     onDateClick={(dateString) => {
                       setSelectedDateForModal(dateString)
                       setIsEventModalOpen(true)
@@ -1256,7 +1259,14 @@ export default function InstructorDashboard() {
                 )}
                 
                 {calendarView === 'daily' && (
-                  <DailyCalendarView currentDate={selectedDate} />
+                  <DailyCalendarView 
+                    currentDate={selectedDate}
+                    calendarEvents={instructorCalendarEvents}
+                    onDateClick={(dateString) => {
+                      setSelectedDateForModal(dateString)
+                      setIsEventModalOpen(true)
+                    }}
+                  />
                 )}
               </div>
             </Card>
