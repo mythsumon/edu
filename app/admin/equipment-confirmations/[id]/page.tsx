@@ -19,10 +19,6 @@ import {
 } from '@/app/instructor/equipment-confirmations/storage-v2'
 import type { EquipmentConfirmation } from '@/app/instructor/equipment-confirmations/types-v2'
 import {
-  validateForApprove,
-  deriveInventory,
-  getInventory,
-  getAllDocs,
   appendAuditLog,
   getAuditLogs,
 } from '@/app/instructor/equipment-confirmations/admin-helpers'
@@ -135,15 +131,9 @@ export default function AdminEquipmentConfirmationDetailPage() {
         setDoc(loadedDoc)
         
         // Load inventory check and audit logs (using old type items for now)
-        const baseInventory = getInventory()
-        const allDocs = getAllDocs()
-        const itemsForInventory = loadedDoc.items.map(item => ({
-          id: item.id,
-          name: item.leftItemName || item.rightItemName || '',
-          quantity: item.leftQty || item.rightQty || 0,
-        }))
-        const derived = deriveInventory(itemsForInventory, allDocs, baseInventory)
-        setInventoryCheck(derived)
+        // Note: Inventory check is not available for v2 type (EquipmentConfirmation)
+        // v2 type uses different item structure (leftItemName/rightItemName vs name/quantity)
+        setInventoryCheck([])
         
         const logs = getAuditLogs(loadedDoc.id)
         setAuditLogs(logs)
@@ -284,16 +274,29 @@ export default function AdminEquipmentConfirmationDetailPage() {
     // Save before approve
     upsertEquipmentConfirmation(doc)
 
-    const baseInventory = getInventory()
-    // Convert items for validation
-    const itemsForValidation = doc.items.map(item => ({
-      id: item.id,
-      name: item.leftItemName || item.rightItemName || '',
-      quantity: item.leftQty || item.rightQty || 0,
-    }))
-    const validation = validateForApprove({ ...doc, items: itemsForValidation } as any, baseInventory)
-    if (!validation.valid) {
-      message.error(validation.errors.join('\n'))
+    // Simple validation for v2 type (EquipmentConfirmation)
+    const errors: string[] = []
+    if (!doc.borrowPlan.borrowerName) {
+      errors.push('대여자 이름을 입력해주세요.')
+    }
+    if (!doc.borrowPlan.borrowDate || !doc.borrowPlan.borrowTime) {
+      errors.push('대여 일시를 입력해주세요.')
+    }
+    if (!doc.returnPlan.plannedReturnerName) {
+      errors.push('반납 예정자 이름을 입력해주세요.')
+    }
+    if (!doc.returnPlan.plannedReturnDate || !doc.returnPlan.plannedReturnTime) {
+      errors.push('반납 예정 일시를 입력해주세요.')
+    }
+    if (!doc.borrowPlan.borrowerSignature) {
+      errors.push('대여자 서명이 필요합니다.')
+    }
+    if (doc.items.length === 0) {
+      errors.push('교구 목록을 입력해주세요.')
+    }
+    
+    if (errors.length > 0) {
+      message.error(errors.join('\n'))
       return
     }
 
@@ -312,11 +315,8 @@ export default function AdminEquipmentConfirmationDetailPage() {
         appendAuditLog('approved', doc.id, userProfile?.userId || '', userProfile?.name || '')
         setAuditLogs(getAuditLogs(doc.id))
         
-        // Update inventory check
-        const baseInventory = getInventory()
-        const allDocs = getAllDocs()
-        const derived = deriveInventory(updated.items, allDocs, baseInventory)
-        setInventoryCheck(derived)
+        // Note: Inventory check is not available for v2 type (EquipmentConfirmation)
+        // v2 type uses different item structure (leftItemName/rightItemName vs name/quantity)
         
         // Trigger storage event for other tabs/windows
         if (typeof window !== 'undefined') {
@@ -380,16 +380,8 @@ export default function AdminEquipmentConfirmationDetailPage() {
     appendAuditLog('borrowed', doc.id, userProfile?.userId || '', userProfile?.name || '')
     setAuditLogs(getAuditLogs(doc.id))
     
-    // Update inventory check
-    const baseInventory = getInventory()
-    const allDocs = getAllDocs()
-    const itemsForInventory = updated.items.map(item => ({
-      id: item.id,
-      name: item.leftItemName || item.rightItemName || '',
-      quantity: item.leftQty || item.rightQty || 0,
-    }))
-    const derived = deriveInventory(itemsForInventory, allDocs, baseInventory)
-    setInventoryCheck(derived)
+    // Note: Inventory check is not available for v2 type (EquipmentConfirmation)
+    setInventoryCheck([])
     
     message.success('대여 완료 처리되었습니다.')
   }
@@ -424,16 +416,8 @@ export default function AdminEquipmentConfirmationDetailPage() {
     appendAuditLog('returned', doc.id, userProfile?.userId || '', userProfile?.name || '')
     setAuditLogs(getAuditLogs(doc.id))
     
-    // Update inventory check
-    const baseInventory = getInventory()
-    const allDocs = getAllDocs()
-    const itemsForInventory = updated.items.map(item => ({
-      id: item.id,
-      name: item.leftItemName || item.rightItemName || '',
-      quantity: item.leftQty || item.rightQty || 0,
-    }))
-    const derived = deriveInventory(itemsForInventory, allDocs, baseInventory)
-    setInventoryCheck(derived)
+    // Note: Inventory check is not available for v2 type (EquipmentConfirmation)
+    setInventoryCheck([])
     
     message.success('반납 완료 처리되었습니다.')
   }
