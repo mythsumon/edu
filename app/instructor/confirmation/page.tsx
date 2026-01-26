@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Table, Button, Card, Input, Select, Space, DatePicker, Badge, Modal } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { ChevronRight, ArrowLeft, RotateCcw, RefreshCw, Eye, CheckCircle2, XCircle, Bell } from 'lucide-react'
+import { ChevronRight, ArrowLeft, RotateCcw, RefreshCw, Eye, CheckCircle2, XCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import dayjs, { Dayjs } from 'dayjs'
 import 'dayjs/locale/ko'
@@ -142,7 +142,6 @@ export default function InstructorConfirmationPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [assignedLessonsFilter, setAssignedLessonsFilter] = useState<string>('all')
   const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null)
-  const [notificationModalVisible, setNotificationModalVisible] = useState(false)
   const [detailTab, setDetailTab] = useState<'info' | 'lessons'>('info')
 
   const handleRowClick = (record: InstructorConfirmationItem) => {
@@ -167,9 +166,6 @@ export default function InstructorConfirmationPage() {
     setCurrentPage(1)
   }
 
-  const handleSendNotification = () => {
-    setNotificationModalVisible(true)
-  }
 
   const handleApprove = (instructorId: string) => {
     console.log('Approve instructor:', instructorId)
@@ -514,13 +510,6 @@ export default function InstructorConfirmationPage() {
                         </Button>
                       </>
                     )}
-                    <Button
-                      icon={<Bell className="w-4 h-4" />}
-                      onClick={handleSendNotification}
-                      className="h-11 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 font-medium transition-all"
-                    >
-                      알림 전송
-                    </Button>
                   </div>
                 </div>
               </div>
@@ -622,20 +611,6 @@ export default function InstructorConfirmationPage() {
         )
       )}
 
-      {/* Notification Modal */}
-      <Modal
-        title="알림 전송"
-        open={notificationModalVisible}
-        onOk={() => {
-          console.log('Send notification')
-          setNotificationModalVisible(false)
-        }}
-        onCancel={() => setNotificationModalVisible(false)}
-        okText="전송"
-        cancelText="취소"
-      >
-        <p>강사에게 알림을 전송하시겠습니까?</p>
-      </Modal>
       </div>
     </ProtectedRoute>
   )

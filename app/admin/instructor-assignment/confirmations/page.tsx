@@ -6,7 +6,7 @@ import { useState, useMemo, useEffect, useRef } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Table, Button, Card, Select, Space, DatePicker, Badge, Modal, Input } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { ArrowLeft, RotateCcw, RefreshCw, Eye, CheckCircle2, XCircle, Bell, Search, ChevronRight, Filter } from 'lucide-react'
+import { ArrowLeft, RotateCcw, RefreshCw, Eye, CheckCircle2, XCircle, Search, ChevronRight, Filter } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import dayjs, { Dayjs } from 'dayjs'
 import 'dayjs/locale/ko'
@@ -170,7 +170,6 @@ export default function InstructorConfirmationPage() {
     }
   }, [filterDropdownOpen])
   const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null)
-  const [notificationModalVisible, setNotificationModalVisible] = useState(false)
 
   const handleRowClick = (record: InstructorConfirmationItem) => {
     setSelectedInstructor(record)
@@ -193,9 +192,6 @@ export default function InstructorConfirmationPage() {
     setCurrentPage(1)
   }
 
-  const handleSendNotification = () => {
-    setNotificationModalVisible(true)
-  }
 
   const handleApprove = (instructorId: string) => {
     console.log('Approve instructor:', instructorId)
@@ -552,13 +548,6 @@ export default function InstructorConfirmationPage() {
                     </Button>
                   </>
                 )}
-                <Button
-                  icon={<Bell className="w-4 h-4" />}
-                  onClick={handleSendNotification}
-                  className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700 w-full sm:w-auto"
-                >
-                  알림 전송
-                </Button>
               </div>
             </DetailSectionCard>
 
@@ -606,20 +595,6 @@ export default function InstructorConfirmationPage() {
         </div>
       ) : null}
 
-      {/* Notification Modal */}
-      <Modal
-        title="알림 전송"
-        open={notificationModalVisible}
-        onOk={() => {
-          console.log('Send notification')
-          setNotificationModalVisible(false)
-        }}
-        onCancel={() => setNotificationModalVisible(false)}
-        okText="전송"
-        cancelText="취소"
-      >
-        <p>강사에게 알림을 전송하시겠습니까?</p>
-      </Modal>
       </div>
     </ProtectedRoute>
   )

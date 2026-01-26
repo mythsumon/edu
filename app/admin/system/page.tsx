@@ -132,8 +132,6 @@ export default function SystemSettingsPage() {
   }, [filterDropdownOpen])
 
   // Settings state
-  const [emailNotifications, setEmailNotifications] = useState(true)
-  const [smsNotifications, setSmsNotifications] = useState(false)
   const [autoBackup, setAutoBackup] = useState(true)
 
   const handleResetFilters = () => {
@@ -430,56 +428,6 @@ export default function SystemSettingsPage() {
                   </Card>
                 </div>
 
-                {/* 알림 설정 */}
-                <div className="mb-8">
-                  <Card className="rounded-2xl border border-slate-200 shadow-sm bg-white overflow-hidden">
-                    <div className="bg-gradient-to-r from-purple-50 to-indigo-50 px-6 py-4 border-b border-slate-200">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg">
-                            <Save className="w-5 h-5 text-white" />
-                          </div>
-                          <h3 className="text-lg font-bold text-slate-900">알림 설정</h3>
-                        </div>
-                        <Button
-                          type="primary"
-                          icon={<Save className="w-4 h-4 text-white" />}
-                          onClick={() => settingsForm.submit()}
-                          style={{
-                            color: 'white',
-                          }}
-                          className="h-11 px-6 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-md hover:shadow-lg !text-white hover:!text-white [&_.anticon]:!text-white [&_.anticon]:hover:!text-white [&>span]:!text-white [&>span]:hover:!text-white [&:hover>span]:!text-white [&:hover_.anticon]:!text-white [&:hover]:!text-white"
-                        >
-                          저장
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="p-6 space-y-4">
-                      <div className="flex items-center justify-between p-5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-700 rounded-xl border border-blue-100 dark:border-gray-600 hover:shadow-md transition-all">
-                        <div>
-                          <div className="text-base font-semibold text-slate-900 mb-1">이메일 알림</div>
-                          <div className="text-sm text-slate-600">중요한 알림을 이메일로 받습니다</div>
-                        </div>
-                        <Switch
-                          checked={emailNotifications}
-                          onChange={setEmailNotifications}
-                          className="[&_.ant-switch-checked]:bg-blue-600 [&_.ant-switch]:min-w-[44px] [&_.ant-switch]:h-6"
-                        />
-                      </div>
-                      <div className="flex items-center justify-between p-5 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-100 hover:shadow-md transition-all">
-                        <div>
-                          <div className="text-base font-semibold text-slate-900 mb-1">SMS 알림</div>
-                          <div className="text-sm text-slate-600">긴급 알림을 SMS로 받습니다</div>
-                        </div>
-                        <Switch
-                          checked={smsNotifications}
-                          onChange={setSmsNotifications}
-                          className="[&_.ant-switch-checked]:bg-blue-600 [&_.ant-switch]:min-w-[44px] [&_.ant-switch]:h-6"
-                        />
-                      </div>
-                    </div>
-                  </Card>
-                </div>
 
                 {/* 백업 설정 */}
                 <div className="mb-8">

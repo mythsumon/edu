@@ -107,8 +107,6 @@ export default function SystemSettingsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
   // Settings state
-  const [emailNotifications, setEmailNotifications] = useState(true)
-  const [smsNotifications, setSmsNotifications] = useState(false)
   const [autoBackup, setAutoBackup] = useState(true)
 
   const handleResetFilters = () => {
@@ -338,34 +336,6 @@ export default function SystemSettingsPage() {
                   </div>
                 </div>
 
-                {/* 알림 설정 */}
-                <div className="mb-8">
-                  <h3 className="text-lg font-semibold text-[#3a2e2a] mb-4">알림 설정</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                      <div>
-                        <div className="text-base font-medium text-gray-900">이메일 알림</div>
-                        <div className="text-sm text-gray-500">중요한 알림을 이메일로 받습니다</div>
-                      </div>
-                      <Switch
-                        checked={emailNotifications}
-                        onChange={setEmailNotifications}
-                        className="[&_.ant-switch-checked]:bg-blue-600"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                      <div>
-                        <div className="text-base font-medium text-gray-900">SMS 알림</div>
-                        <div className="text-sm text-gray-500">긴급 알림을 SMS로 받습니다</div>
-                      </div>
-                      <Switch
-                        checked={smsNotifications}
-                        onChange={setSmsNotifications}
-                        className="[&_.ant-switch-checked]:bg-blue-600"
-                      />
-                    </div>
-                  </div>
-                </div>
 
                 {/* 백업 설정 */}
                 <div className="mb-8">
