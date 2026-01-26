@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react'
-import { CheckCircle2, AlertCircle, XCircle, FileX, Clock, PauseCircle } from 'lucide-react'
+import { CheckCircle2, AlertCircle, XCircle, FileX, Clock, PauseCircle, Info } from 'lucide-react'
+import { Tooltip } from 'antd'
 
 interface DocumentStatusIndicatorProps {
   status?: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'
@@ -10,6 +11,7 @@ interface DocumentStatusIndicatorProps {
   onClick?: () => void
   educationId?: string
   documentId?: string
+  tooltip?: string | React.ReactNode
 }
 
 export const DocumentStatusIndicator: React.FC<DocumentStatusIndicatorProps> = ({
@@ -19,6 +21,7 @@ export const DocumentStatusIndicator: React.FC<DocumentStatusIndicatorProps> = (
   onClick,
   educationId,
   documentId,
+  tooltip,
 }) => {
   const getStatusDisplay = () => {
     // 미작성: X 표시 (status가 없고 documentId도 없을 때)
@@ -77,7 +80,7 @@ export const DocumentStatusIndicator: React.FC<DocumentStatusIndicatorProps> = (
     }
   }
 
-  return (
+  const content = (
     <div 
       className={`flex items-center gap-1.5 ${isClickable ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
       onClick={handleClick}
@@ -91,7 +94,14 @@ export const DocumentStatusIndicator: React.FC<DocumentStatusIndicatorProps> = (
           {count}
         </span>
       )}
+      {tooltip && (
+        <Tooltip title={tooltip} placement="top">
+          <Info className="w-3 h-3 text-slate-400 hover:text-slate-600 transition-colors cursor-help" />
+        </Tooltip>
+      )}
     </div>
   )
+
+  return content
 }
 

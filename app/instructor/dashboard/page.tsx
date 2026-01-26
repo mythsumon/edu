@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Card, Modal, Button, Badge } from 'antd'
+import { Card, Modal, Button, Badge, Tooltip } from 'antd'
 import { DocumentStatusIndicator, PasswordChangeModal } from '@/components/shared/common'
 import { 
   Calendar, 
@@ -141,6 +141,7 @@ const ModernKPICard = ({
 // Modern Course Card Component
 const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
   const router = useRouter()
+  const { userProfile } = useAuth()
   
   // Get document submission statuses
   const attendanceDoc = getAttendanceDocByEducationId(course.id)
@@ -154,6 +155,65 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
   const equipmentStatus = equipmentDoc?.status || 'DRAFT'
   const evidenceStatus = evidenceDoc?.status || 'DRAFT'
   const lessonPlanStatus = lessonPlanDoc?.status || 'DRAFT'
+  
+  // Tooltip texts for each document type
+  const attendanceTooltip = (
+    <div className="text-sm">
+      <div className="font-semibold mb-1">출석부 작성 가이드</div>
+      <div className="space-y-1">
+        <div>• 수업 전: 강사가 학교에 학생 명단 요청</div>
+        <div>• 학교 교사: 수업 전 기본 정보 및 학생 명단 입력</div>
+        <div>• 수업 중: 보조강사가 출석 체크 (실시간 또는 수업 후 입력 가능)</div>
+        <div>• 출석률: 총 차시의 80% 이상 출석 시 수료</div>
+        <div>• 서명: 학교 교사, 주강사, 보조강사 서명 필요</div>
+      </div>
+    </div>
+  )
+  
+  const activityLogTooltip = (
+    <div className="text-sm">
+      <div className="font-semibold mb-1">활동일지 작성 가이드</div>
+      <div className="space-y-1">
+        <div>• 주강사와 보조강사는 각각 별도로 활동일지를 작성합니다</div>
+        <div>• 각 강사는 자신의 문서에만 서명합니다</div>
+        <div>• 수업 내용, 활동 사항, 특이사항 등을 기록합니다</div>
+      </div>
+    </div>
+  )
+  
+  const lessonPlanTooltip = (
+    <div className="text-sm">
+      <div className="font-semibold mb-1">강의계획서 작성 가이드</div>
+      <div className="space-y-1">
+        <div>• 주강사만 작성합니다</div>
+        <div>• 교육 시작 전에 제출해야 합니다</div>
+        <div>• 교육 목표, 차시별 계획 등을 포함합니다</div>
+      </div>
+    </div>
+  )
+  
+  const equipmentTooltip = (
+    <div className="text-sm">
+      <div className="font-semibold mb-1">교구확인서 작성 가이드</div>
+      <div className="space-y-1">
+        <div>• 별도의 독립적인 양식입니다</div>
+        <div>• 수업 시작 전에 완료해야 합니다</div>
+        <div>• 승인되지 않으면 수업을 진행할 수 없습니다</div>
+        <div>• 대여/반납 정보 및 교구 상태를 기록합니다</div>
+      </div>
+    </div>
+  )
+  
+  const evidenceTooltip = (
+    <div className="text-sm">
+      <div className="font-semibold mb-1">증빙자료 업로드 가이드</div>
+      <div className="space-y-1">
+        <div>• 보조강사가 최소 5장 이상의 사진을 업로드해야 합니다</div>
+        <div>• 수업 중 촬영한 사진을 수업 종료 후 업로드합니다</div>
+        <div>• 활동 사진은 교육 활동의 증빙 자료로 사용됩니다</div>
+      </div>
+    </div>
+  )
   
   const statusColors = {
     '예정': 'from-blue-500 to-blue-600',
@@ -250,6 +310,7 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
                 onClick={handleAttendanceClick}
                 educationId={course.id}
                 documentId={attendanceDoc?.id}
+                tooltip={attendanceTooltip}
               />
               <DocumentStatusIndicator
                 status={activityStatus as any}
@@ -258,6 +319,7 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
                 onClick={handleActivityClick}
                 educationId={course.id}
                 documentId={activityLog?.id}
+                tooltip={activityLogTooltip}
               />
               <DocumentStatusIndicator
                 status={equipmentStatus as any}
@@ -266,6 +328,7 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
                 onClick={handleEquipmentClick}
                 educationId={course.id}
                 documentId={equipmentDoc?.id}
+                tooltip={equipmentTooltip}
               />
               <DocumentStatusIndicator
                 status={evidenceStatus as any}
@@ -280,6 +343,7 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
                 }}
                 educationId={course.id}
                 documentId={evidenceDoc?.id}
+                tooltip={evidenceTooltip}
               />
               <DocumentStatusIndicator
                 status={lessonPlanStatus as any}
@@ -290,6 +354,7 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
                 }}
                 educationId={course.id}
                 documentId={lessonPlanDoc?.id}
+                tooltip={lessonPlanTooltip}
               />
             </div>
           </div>
