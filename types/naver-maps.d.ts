@@ -3,8 +3,9 @@
  * 네이버 지도 SDK는 전역 window.naver 객체로 제공됩니다.
  */
 
-declare namespace naver {
-  namespace maps {
+declare global {
+  namespace naver {
+    namespace maps {
   class LatLng {
     constructor(lat: number, lng: number);
     lat(): number;
@@ -96,11 +97,9 @@ declare namespace naver {
       eventName: string,
       handler: (...args: any[]) => void
     ): void;
+    }
   }
-  }
-}
 
-declare global {
   interface Window {
     naver: {
       maps: typeof naver.maps;

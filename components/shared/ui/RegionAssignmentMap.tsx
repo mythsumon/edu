@@ -1,5 +1,7 @@
 'use client'
 
+/// <reference path="../../../types/naver-maps.d.ts" />
+
 import { useEffect, useRef, useState } from 'react'
 import { loadNaverMapScript } from '@/libs/naverMapLoader'
 import {
