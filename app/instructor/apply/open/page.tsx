@@ -654,18 +654,25 @@ export default function ApplyForEducationPage() {
           <Space direction="vertical" size="small" style={{ width: '100%' }}>
             {/* 주강사 */}
             {mainApplication ? (
-              <Space>
-                <Checkbox checked={mainApplication.status === '수락됨'} disabled>
-                  주강사
-                </Checkbox>
-                <Button
-                  size="small"
-                  type={mainApplication.status === '수락됨' ? 'default' : 'primary'}
-                  danger={mainApplication.status !== '수락됨'}
-                >
-                  {mainApplication.status === '수락됨' ? '확정' : '미확정'}
-                </Button>
-              </Space>
+              mainApplication.status === '수락됨' ? (
+                <Space>
+                  <Checkbox checked={true} disabled>
+                    주강사
+                  </Checkbox>
+                  <Button
+                    size="small"
+                    type="default"
+                  >
+                    확정
+                  </Button>
+                </Space>
+              ) : (
+                <Space>
+                  <Checkbox checked={false} disabled>
+                    주강사
+                  </Checkbox>
+                </Space>
+              )
             ) : (
               <Tooltip title={!applyCheckMain.canApply ? applyCheckMain.reason : ''}>
                 <Button
@@ -683,18 +690,25 @@ export default function ApplyForEducationPage() {
 
             {/* 보조강사 */}
             {assistantApplication ? (
-              <Space>
-                <Checkbox checked={assistantApplication.status === '수락됨'} disabled>
-                  보조교사
-                </Checkbox>
-                <Button
-                  size="small"
-                  type={assistantApplication.status === '수락됨' ? 'default' : 'primary'}
-                  danger={assistantApplication.status !== '수락됨'}
-                >
-                  {assistantApplication.status === '수락됨' ? '확정' : '미확정'}
-                </Button>
-              </Space>
+              assistantApplication.status === '수락됨' ? (
+                <Space>
+                  <Checkbox checked={true} disabled>
+                    보조교사
+                  </Checkbox>
+                  <Button
+                    size="small"
+                    type="default"
+                  >
+                    확정
+                  </Button>
+                </Space>
+              ) : (
+                <Space>
+                  <Checkbox checked={false} disabled>
+                    보조교사
+                  </Checkbox>
+                </Space>
+              )
             ) : (
               <Tooltip title={!applyCheckAssistant.canApply ? applyCheckAssistant.reason : ''}>
                 <Button
