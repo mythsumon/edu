@@ -1121,17 +1121,17 @@ export default function InstructorAttendancePage() {
         )}
 
         {/* Reject reason banner */}
-        {attendanceStatus === 'REJECTED' && attendanceSheet?.rejectReason && (
+        {attendanceStatus === 'REJECTED' && attendanceSheet?.adminReview?.reason && (
           <div className="max-w-7xl mx-auto px-6 py-4">
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
               <div className="flex items-start gap-2">
                 <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5" />
                 <div className="flex-1">
                   <div className="font-semibold text-red-900 dark:text-red-100 mb-1">반려 사유</div>
-                  <div className="text-sm text-red-700 dark:text-red-300">{attendanceSheet.rejectReason}</div>
-                  {attendanceSheet.rejectedAt && (
+                  <div className="text-sm text-red-700 dark:text-red-300">{attendanceSheet.adminReview.reason}</div>
+                  {attendanceSheet.adminReview.reviewedAt && (
                     <div className="text-xs text-red-600 dark:text-red-400 mt-1">
-                      반려일시: {dayjs(attendanceSheet.rejectedAt).format('YYYY-MM-DD HH:mm')}
+                      반려일시: {dayjs(attendanceSheet.adminReview.reviewedAt).format('YYYY-MM-DD HH:mm')}
                     </div>
                   )}
                 </div>
