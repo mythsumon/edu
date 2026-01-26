@@ -37,7 +37,7 @@ import { getDocByEducationId as getEquipmentDocByEducationId } from '@/app/instr
 import { getEvidenceDocByEducationId } from '@/app/instructor/evidence/storage'
 import { getLessonPlanByEducationId } from '@/app/instructor/schedule/[educationId]/lesson-plan/storage'
 import { getEducationDocSummariesByInstructor, type EducationDocSummary } from '@/entities/submission'
-import { dataStore } from '@/lib/dataStore'
+import { dataStore, type Education } from '@/lib/dataStore'
 import { useAuth } from '@/contexts/AuthContext'
 import dayjs from 'dayjs'
 
