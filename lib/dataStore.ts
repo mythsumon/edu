@@ -380,6 +380,7 @@ const defaultEducations: Education[] = [
     programTitle: '2024년 하반기 블록코딩 교육',
     courseName: '2024년 하반기 블록코딩 교육',
     totalSessions: 8,
+    regionAssignmentMode: 'PARTIAL',
   },
   // 신청 가능한 교육 예시 데이터 (강사공개 상태)
   {

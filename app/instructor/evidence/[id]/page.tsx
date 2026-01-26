@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
-import { Button, Input, message, Card, Space, Badge } from 'antd'
-import { ArrowLeft, Save, CheckCircle2, XCircle, Download } from 'lucide-react'
+import { Button, Input, message, Card, Space, Badge, Tooltip } from 'antd'
+import { ArrowLeft, Save, CheckCircle2, XCircle, Download, AlertTriangle, Info } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { DetailSectionCard } from '@/components/admin/operations'
@@ -285,9 +285,26 @@ export default function EvidenceDetailPage() {
                   돌아가기
                 </Button>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    증빙자료 제출
-                  </h1>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                      증빙자료 제출
+                    </h1>
+                    <Tooltip
+                      title={
+                        <div className="text-sm">
+                          <div className="font-semibold mb-1">증빙자료 업로드 가이드</div>
+                          <div className="space-y-1">
+                            <div>• 보조강사가 최소 5장 이상의 사진을 업로드해야 합니다</div>
+                            <div>• 수업 중 촬영한 사진을 수업 종료 후 업로드합니다</div>
+                            <div>• 활동 사진은 교육 활동의 증빙 자료로 사용됩니다</div>
+                          </div>
+                        </div>
+                      }
+                      placement="right"
+                    >
+                      <Info className="w-5 h-5 text-slate-400 hover:text-slate-600 transition-colors cursor-help" />
+                    </Tooltip>
+                  </div>
                   <div className="mt-1">{getStatusBadge(doc.status)}</div>
                 </div>
               </div>
@@ -327,6 +344,40 @@ export default function EvidenceDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* Submitted banner */}
+        {doc.status === 'SUBMITTED' && (
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  제출 완료 (승인 대기 중)
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reject reason banner */}
+        {doc.status === 'REJECTED' && doc.rejectReason && (
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5" />
+                <div className="flex-1">
+                  <div className="font-semibold text-red-900 dark:text-red-100 mb-1">반려 사유</div>
+                  <div className="text-sm text-red-700 dark:text-red-300">{doc.rejectReason}</div>
+                  {doc.rejectedAt && (
+                    <div className="text-xs text-red-600 dark:text-red-400 mt-1">
+                      반려일시: {dayjs(doc.rejectedAt).format('YYYY-MM-DD HH:mm')}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="max-w-7xl mx-auto px-6 py-8">
 

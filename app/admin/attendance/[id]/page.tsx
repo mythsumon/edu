@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Button, Space, Modal, Input, Table, message, Card } from 'antd'
+import { Button, Space, Modal, Input, Table, message, Card, Tooltip } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { ArrowLeft, CheckCircle2, XCircle, CheckCircle, Download, Edit, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, XCircle, CheckCircle, Download, Edit, AlertTriangle, Info } from 'lucide-react'
 import { Badge } from 'antd'
 import { DetailPageHeaderSticky, DetailSectionCard } from '@/components/admin/operations'
 import { getAttendanceDocByEducationId, getAttendanceDocById, getAttendanceDocs, upsertAttendanceDoc, type AttendanceDocument } from '@/app/instructor/schedule/[educationId]/attendance/storage'
@@ -211,9 +211,28 @@ export default function AdminAttendanceDetailPage() {
                   돌아가기
                 </Button>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    교육 출석부 상세
-                  </h1>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                      교육 출석부 상세
+                    </h1>
+                    <Tooltip
+                      title={
+                        <div className="text-sm">
+                          <div className="font-semibold mb-1">출석부 작성 가이드</div>
+                          <div className="space-y-1">
+                            <div>• 수업 전: 강사가 학교에 학생 명단 요청</div>
+                            <div>• 학교 교사: 수업 전 기본 정보 및 학생 명단 입력</div>
+                            <div>• 수업 중: 보조강사가 출석 체크 (실시간 또는 수업 후 입력 가능)</div>
+                            <div>• 출석률: 총 차시의 80% 이상 출석 시 수료</div>
+                            <div>• 서명: 학교 교사, 주강사, 보조강사 서명 필요</div>
+                          </div>
+                        </div>
+                      }
+                      placement="right"
+                    >
+                      <Info className="w-5 h-5 text-slate-400 hover:text-slate-600 transition-colors cursor-help" />
+                    </Tooltip>
+                  </div>
                   <div className="mt-1">{getStatusBadge()}</div>
                 </div>
               </div>

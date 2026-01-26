@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Button, Input, InputNumber, Select, Space, message, Modal, Badge, DatePicker, Radio, TimePicker } from 'antd'
-import { ArrowLeft, Save, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react'
+import { Button, Input, InputNumber, Select, Space, message, Modal, Badge, DatePicker, Radio, TimePicker, Tooltip } from 'antd'
+import { ArrowLeft, Save, CheckCircle2, XCircle, AlertTriangle, Info } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { DetailSectionCard } from '@/components/admin/operations'
@@ -335,9 +335,27 @@ export default function EquipmentConfirmationDetailPage() {
                   돌아가기
                 </Button>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    교구 확인서
-                  </h1>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                      교구 확인서
+                    </h1>
+                    <Tooltip
+                      title={
+                        <div className="text-sm">
+                          <div className="font-semibold mb-1">교구확인서 작성 가이드</div>
+                          <div className="space-y-1">
+                            <div>• 별도의 독립적인 양식입니다</div>
+                            <div>• 수업 시작 전에 완료해야 합니다</div>
+                            <div>• 승인되지 않으면 수업을 진행할 수 없습니다</div>
+                            <div>• 대여/반납 정보 및 교구 상태를 기록합니다</div>
+                          </div>
+                        </div>
+                      }
+                      placement="right"
+                    >
+                      <Info className="w-5 h-5 text-slate-400 hover:text-slate-600 transition-colors cursor-help" />
+                    </Tooltip>
+                  </div>
                   <div className="mt-1">{getStatusBadge()}</div>
                 </div>
               </div>
@@ -398,9 +416,43 @@ export default function EquipmentConfirmationDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* Submitted banner */}
+        {!isAdmin && doc.status === 'SUBMITTED' && (
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  제출 완료 (승인 대기 중)
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
         
         {/* Reject reason banner */}
         {!isAdmin && doc.status === 'REJECTED' && doc.rejectReason && (
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5" />
+                <div className="flex-1">
+                  <div className="font-semibold text-red-900 dark:text-red-100 mb-1">반려 사유</div>
+                  <div className="text-sm text-red-700 dark:text-red-300">{doc.rejectReason}</div>
+                  {doc.rejectedAt && (
+                    <div className="text-xs text-red-600 dark:text-red-400 mt-1">
+                      반려일시: {dayjs(doc.rejectedAt).format('YYYY-MM-DD HH:mm')}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Reject reason banner for admin */}
+        {isAdmin && doc.status === 'REJECTED' && doc.rejectReason && (
           <div className="max-w-7xl mx-auto px-6 py-4">
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
               <div className="flex items-start gap-2">

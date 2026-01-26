@@ -398,6 +398,124 @@ export default function MyScheduleListPage() {
       dataIndex: 'educationName',
       key: 'educationName',
       width: 200,
+      render: (text: string, record: EducationDocSummary) => {
+        // Get education data to check region assignment mode
+        // Try by educationId first, then by name and institution
+        let education = dataStore.getEducationById(record.educationId)
+        if (!education) {
+          // Try to find by name and institution
+          const allEducations = dataStore.getEducations()
+          education = allEducations.find(edu => 
+            (edu.name === record.educationName || edu.name.includes(record.educationName) || record.educationName.includes(edu.name)) &&
+            (edu.institution === record.institutionName || edu.institution.includes(record.institutionName) || record.institutionName.includes(edu.institution))
+          ) || null
+        }
+        
+        // Get instructor region - try multiple sources
+        let instructorRegion = ''
+        if ((userProfile as any)?.region) {
+          instructorRegion = (userProfile as any).region
+        } else {
+          // Try to get from instructor data by name
+          const { getInstructorByName } = require('@/entities/instructor/instructor-utils')
+          const instructor = getInstructorByName(userProfile?.name || '')
+          if (instructor && (instructor as any).region) {
+            instructorRegion = (instructor as any).region
+          } else if (userProfile?.name === '홍길동') {
+            instructorRegion = '수원시'
+          } else {
+            // Try to get from assignment
+            const assignment = dataStore.getInstructorAssignmentByEducationId(record.educationId)
+            if (assignment?.lessons && assignment.lessons.length > 0) {
+              const firstLesson = assignment.lessons[0]
+              if (firstLesson.mainInstructors && Array.isArray(firstLesson.mainInstructors) && firstLesson.mainInstructors.length > 0) {
+                const mainInstructor = firstLesson.mainInstructors[0]
+                if ((mainInstructor as any).region) {
+                  instructorRegion = (mainInstructor as any).region
+                }
+              }
+            }
+          }
+        }
+        
+        // Check region assignment status
+        const getRegionAssignmentStatus = () => {
+          if (!education) {
+            // If education not found, return default PARTIAL
+            return {
+              type: 'partial',
+              label: '부분 권역',
+              color: 'bg-blue-50 text-blue-700 border-blue-200'
+            }
+          }
+          
+          const regionMode = education.regionAssignmentMode || 'PARTIAL'
+          
+          if (regionMode === 'FULL') {
+            return {
+              type: 'full',
+              label: '전체 권역',
+              color: 'bg-purple-50 text-purple-700 border-purple-200'
+            }
+          }
+          
+          // PARTIAL mode: check if instructor's region matches education's region
+          if (education.region && instructorRegion) {
+            // Convert city to region zone if needed
+            const cityToRegionMap: Record<string, string> = {
+              '수원시': '1권역',
+              '성남시': '1권역',
+              '고양시': '1권역',
+              '용인시': '1권역',
+              '부천시': '2권역',
+              '안양시': '2권역',
+              '의정부시': '2권역',
+              '구리시': '2권역',
+              '평택시': '3권역',
+              '화성시': '3권역',
+            }
+            const instructorRegionZone = cityToRegionMap[instructorRegion] || instructorRegion
+            
+            // Check if regions match
+            const educationRegion = education.region.includes('권역') ? education.region : cityToRegionMap[education.region] || education.region
+            const isMatch = educationRegion === instructorRegionZone || education.region === instructorRegion
+            
+            if (isMatch) {
+              return {
+                type: 'match',
+                label: '권역 일치',
+                color: 'bg-green-50 text-green-700 border-green-200'
+              }
+            } else {
+              return {
+                type: 'mismatch',
+                label: '권역 불일치',
+                color: 'bg-red-50 text-red-700 border-red-200'
+              }
+            }
+          }
+          
+          // If PARTIAL mode but no region info, show PARTIAL indicator
+          return {
+            type: 'partial',
+            label: '부분 권역',
+            color: 'bg-blue-50 text-blue-700 border-blue-200'
+          }
+        }
+        
+        const regionStatus = getRegionAssignmentStatus()
+        
+        return (
+          <div className="flex items-center gap-2">
+            <span>{text}</span>
+            {regionStatus && (
+              <span className={`inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full border ${regionStatus.color} whitespace-nowrap`}>
+                {regionStatus.label}
+              </span>
+            )}
+          </div>
+        )
+      },
     },
     {
       title: '기관명',

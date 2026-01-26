@@ -59,6 +59,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/**", "/swagger-ui/**", "/sample/**").permitAll()
                         // Allow public access to uploaded files (GET requests)
                         .requestMatchers(HttpMethod.GET, "/files/**").permitAll()
+                        // Region management endpoints (admin only)
+                        .requestMatchers("/api/v1/admin/regions/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/instructor/me/**").hasAnyRole("INSTRUCTOR", "ADMIN")
                         .requestMatchers("/api/v1/staff/me").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/mastercode/**").authenticated()

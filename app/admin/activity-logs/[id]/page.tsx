@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Button, Modal, Input, message, Image, Badge, Space } from 'antd'
-import { ArrowLeft, CheckCircle2, XCircle, Download, Edit, AlertTriangle } from 'lucide-react'
+import { Button, Modal, Input, message, Image, Badge, Space, Tooltip } from 'antd'
+import { ArrowLeft, CheckCircle2, XCircle, Download, Edit, AlertTriangle, Info } from 'lucide-react'
 import { DetailPageHeaderSticky, DetailSectionCard } from '@/components/admin/operations'
 import { getActivityLogById, upsertActivityLog } from '@/app/instructor/activity-logs/storage'
 import type { ActivityLog } from '@/app/instructor/activity-logs/types'
@@ -25,7 +25,6 @@ export default function AdminActivityLogDetailPage() {
   const [rejectModalVisible, setRejectModalVisible] = useState(false)
   const [rejectReason, setRejectReason] = useState('')
   const [loading, setLoading] = useState(false)
-  const [isEditMode, setIsEditMode] = useState(false)
 
   useEffect(() => {
     if (logId) {
@@ -141,9 +140,26 @@ export default function AdminActivityLogDetailPage() {
                   돌아가기
                 </Button>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    교육 활동 일지 상세
-                  </h1>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                      교육 활동 일지 상세
+                    </h1>
+                    <Tooltip
+                      title={
+                        <div className="text-sm">
+                          <div className="font-semibold mb-1">활동일지 작성 가이드</div>
+                          <div className="space-y-1">
+                            <div>• 주강사와 보조강사는 각각 별도로 활동일지를 작성합니다</div>
+                            <div>• 각 강사는 자신의 문서에만 서명합니다</div>
+                            <div>• 수업 내용, 활동 사항, 특이사항 등을 기록합니다</div>
+                          </div>
+                        </div>
+                      }
+                      placement="right"
+                    >
+                      <Info className="w-5 h-5 text-slate-400 hover:text-slate-600 transition-colors cursor-help" />
+                    </Tooltip>
+                  </div>
                   <div className="mt-1">{getStatusBadge()}</div>
                 </div>
               </div>
@@ -209,44 +225,31 @@ export default function AdminActivityLogDetailPage() {
                     활동사진 다운로드
                   </Button>
                 )}
-                {!isEditMode ? (
-                  <>
-                    <Button
-                      icon={<Edit className="w-4 h-4" />}
-                      onClick={() => router.push(`/instructor/activity-logs/${logId}`)}
-                    >
-                      수정
-                    </Button>
-                    <Button
-                      type="primary"
-                      icon={<CheckCircle2 className="w-4 h-4" />}
-                      onClick={handleApprove}
-                      disabled={log.status === 'APPROVED'}
-                    >
-                      승인
-                    </Button>
-                    <Button
-                      danger
-                      icon={<XCircle className="w-4 h-4" />}
-                      onClick={() => setRejectModalVisible(true)}
-                      disabled={log.status === 'REJECTED' || log.status === 'APPROVED'}
-                    >
-                      반려
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button onClick={() => setIsEditMode(false)}>
-                      취소
-                    </Button>
-                    <Button
-                      type="primary"
-                      onClick={() => setIsEditMode(false)}
-                    >
-                      저장
-                    </Button>
-                  </>
-                )}
+                <Button
+                  icon={<Edit className="w-4 h-4" />}
+                  onClick={() => {
+                    const targetEducationId = log.educationId || logId.replace(/^log-/, '')
+                    router.push(`/instructor/activity-logs/${targetEducationId}`)
+                  }}
+                >
+                  수정
+                </Button>
+                <Button
+                  type="primary"
+                  icon={<CheckCircle2 className="w-4 h-4" />}
+                  onClick={handleApprove}
+                  disabled={log.status === 'APPROVED'}
+                >
+                  승인
+                </Button>
+                <Button
+                  danger
+                  icon={<XCircle className="w-4 h-4" />}
+                  onClick={() => setRejectModalVisible(true)}
+                  disabled={log.status === 'REJECTED' || log.status === 'APPROVED'}
+                >
+                  반려
+                </Button>
               </Space>
             </div>
           </div>

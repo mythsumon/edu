@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Button, Card, Input, Select, DatePicker, InputNumber, Space, message, Modal, Upload, Badge } from 'antd'
+import { Button, Card, Input, Select, DatePicker, InputNumber, Space, message, Modal, Upload, Badge, Tooltip } from 'antd'
 import { UploadOutlined } from '@ant-design/icons'
-import { ArrowLeft, Save, Trash2, Edit, X, CheckCircle2, XCircle } from 'lucide-react'
+import { ArrowLeft, Save, Trash2, Edit, X, CheckCircle2, XCircle, Info } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { DetailSectionCard } from '@/components/admin/operations'
@@ -335,9 +335,26 @@ export default function ActivityLogDetailPage() {
                   돌아가기
                 </Button>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    2025 소프트웨어(SW) 미래채움 – 교육 활동 일지
-                  </h1>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                      2025 소프트웨어(SW) 미래채움 – 교육 활동 일지
+                    </h1>
+                    <Tooltip
+                      title={
+                        <div className="text-sm">
+                          <div className="font-semibold mb-1">활동일지 작성 가이드</div>
+                          <div className="space-y-1">
+                            <div>• 주강사와 보조강사는 각각 별도로 활동일지를 작성합니다</div>
+                            <div>• 각 강사는 자신의 문서에만 서명합니다</div>
+                            <div>• 수업 내용, 활동 사항, 특이사항 등을 기록합니다</div>
+                          </div>
+                        </div>
+                      }
+                      placement="right"
+                    >
+                      <Info className="w-5 h-5 text-slate-400 hover:text-slate-600 transition-colors cursor-help" />
+                    </Tooltip>
+                  </div>
                   <div className="mt-1">
                     {(() => {
                       const statusMap = {

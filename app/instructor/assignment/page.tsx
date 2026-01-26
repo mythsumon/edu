@@ -192,6 +192,7 @@ const gradeClassOptions = [
 const assignmentStatusOptions = [
   { value: 'all', label: '전체' },
   { value: 'confirmed', label: '확정' },
+  { value: 'unconfirmed', label: '미확정' },
 ]
 
 const availableInstructors = [

@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Button, Input, Select, Space, message, Card, Badge, DatePicker, Table, Modal, Upload } from 'antd'
-import { ArrowLeft, Save, CheckCircle2, XCircle, Plus, Trash2, AlertTriangle, Upload as UploadIcon } from 'lucide-react'
+import { Button, Input, Select, Space, message, Card, Badge, DatePicker, Table, Modal, Upload, Tooltip } from 'antd'
+import { ArrowLeft, Save, CheckCircle2, XCircle, Plus, Trash2, AlertTriangle, Upload as UploadIcon, Info } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { DetailSectionCard } from '@/components/admin/operations'
@@ -541,9 +541,26 @@ export default function InstructorLessonPlanPage() {
                   돌아가기
                 </Button>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    강의계획서
-                  </h1>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                      강의계획서
+                    </h1>
+                    <Tooltip
+                      title={
+                        <div className="text-sm">
+                          <div className="font-semibold mb-1">강의계획서 작성 가이드</div>
+                          <div className="space-y-1">
+                            <div>• 주강사만 작성합니다</div>
+                            <div>• 교육 시작 전에 제출해야 합니다</div>
+                            <div>• 교육 목표, 차시별 계획 등을 포함합니다</div>
+                          </div>
+                        </div>
+                      }
+                      placement="right"
+                    >
+                      <Info className="w-5 h-5 text-slate-400 hover:text-slate-600 transition-colors cursor-help" />
+                    </Tooltip>
+                  </div>
                   <div className="flex items-center gap-2 mt-1">
                     {getStatusBadge(doc.status)}
                     {doc.status === 'REJECTED' && doc.rejectReason && (

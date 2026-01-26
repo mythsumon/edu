@@ -143,6 +143,112 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
   const router = useRouter()
   const { userProfile } = useAuth()
   
+  // Get education data to check region assignment mode
+  // Try by educationId first, then by name and institution
+  let education = dataStore.getEducationById(course.id)
+  if (!education) {
+    // Try to find by name and institution
+    const allEducations = dataStore.getEducations()
+    education = allEducations.find(edu => 
+      (edu.name === course.educationName || edu.name.includes(course.educationName) || course.educationName.includes(edu.name)) &&
+      (edu.institution === course.institutionName || edu.institution.includes(course.institutionName) || course.institutionName.includes(edu.institution))
+    ) || null
+  }
+  
+  // Get instructor region - try multiple sources
+  let instructorRegion = ''
+  if ((userProfile as any)?.region) {
+    instructorRegion = (userProfile as any).region
+  } else {
+    // Try to get from instructor data by name
+    const { getInstructorByName } = require('@/entities/instructor/instructor-utils')
+    const instructor = getInstructorByName(userProfile?.name || '')
+    if (instructor && (instructor as any).region) {
+      instructorRegion = (instructor as any).region
+    } else if (userProfile?.name === '홍길동') {
+      instructorRegion = '수원시'
+    } else {
+      // Try to get from assignment
+      const assignment = dataStore.getInstructorAssignmentByEducationId(course.id)
+      if (assignment?.lessons && assignment.lessons.length > 0) {
+        const firstLesson = assignment.lessons[0]
+        if (firstLesson.mainInstructors && Array.isArray(firstLesson.mainInstructors) && firstLesson.mainInstructors.length > 0) {
+          const mainInstructor = firstLesson.mainInstructors[0]
+          if ((mainInstructor as any).region) {
+            instructorRegion = (mainInstructor as any).region
+          }
+        }
+      }
+    }
+  }
+  
+  // Check region assignment status
+  const getRegionAssignmentStatus = () => {
+    if (!education) {
+      // If education not found, return default PARTIAL
+      return {
+        type: 'partial',
+        label: '부분 권역',
+        color: 'bg-blue-50 text-blue-700 border-blue-200'
+      }
+    }
+    
+    const regionMode = education.regionAssignmentMode || 'PARTIAL'
+    
+    if (regionMode === 'FULL') {
+      return {
+        type: 'full',
+        label: '전체 권역',
+        color: 'bg-purple-50 text-purple-700 border-purple-200'
+      }
+    }
+    
+    // PARTIAL mode: check if instructor's region matches education's region
+    if (education.region && instructorRegion) {
+      // Convert city to region zone if needed
+      const cityToRegionMap: Record<string, string> = {
+        '수원시': '1권역',
+        '성남시': '1권역',
+        '고양시': '1권역',
+        '용인시': '1권역',
+        '부천시': '2권역',
+        '안양시': '2권역',
+        '의정부시': '2권역',
+        '구리시': '2권역',
+        '평택시': '3권역',
+        '화성시': '3권역',
+      }
+      const instructorRegionZone = cityToRegionMap[instructorRegion] || instructorRegion
+      
+      // Check if regions match
+      const educationRegion = education.region.includes('권역') ? education.region : cityToRegionMap[education.region] || education.region
+      const isMatch = educationRegion === instructorRegionZone || education.region === instructorRegion
+      
+      if (isMatch) {
+        return {
+          type: 'match',
+          label: '권역 일치',
+          color: 'bg-green-50 text-green-700 border-green-200'
+        }
+      } else {
+        return {
+          type: 'mismatch',
+          label: '권역 불일치',
+          color: 'bg-red-50 text-red-700 border-red-200'
+        }
+      }
+    }
+    
+    // If PARTIAL mode but no region info, show PARTIAL indicator
+    return {
+      type: 'partial',
+      label: '부분 권역',
+      color: 'bg-blue-50 text-blue-700 border-blue-200'
+    }
+  }
+  
+  const regionStatus = getRegionAssignmentStatus()
+  
   // Get document submission statuses
   const attendanceDoc = getAttendanceDocByEducationId(course.id)
   const activityLog = getActivityLogByEducationId(course.id)
@@ -281,9 +387,16 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
         <div className={`absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r ${statusColors[course.status]}`}></div>
         <div className="pt-3 space-y-2.5">
           <div>
-            <h3 className="font-bold text-sm text-slate-900 line-clamp-2 mb-1 group-hover:text-blue-600 transition-colors">
-              {course.educationName}
-            </h3>
+            <div className="flex items-start justify-between gap-2 mb-1">
+              <h3 className="font-bold text-sm text-slate-900 line-clamp-2 flex-1 group-hover:text-blue-600 transition-colors">
+                {course.educationName}
+              </h3>
+              {regionStatus && (
+                <span className={`inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full border ${regionStatus.color} whitespace-nowrap`}>
+                  {regionStatus.label}
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-1.5 text-xs text-slate-600">
               <School className="w-3 h-3" />
               <span className="line-clamp-1">{course.institutionName}</span>

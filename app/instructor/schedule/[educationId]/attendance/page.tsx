@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
-import { Button, Card, Input, Select, Space, Table, InputNumber, message, Upload, Modal, DatePicker } from 'antd'
+import { Button, Card, Input, Select, Space, Table, InputNumber, message, Upload, Modal, DatePicker, Tooltip } from 'antd'
 import { UploadOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
-import { ArrowLeft, Save, Edit, X, UserPlus, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Save, Edit, X, UserPlus, CheckCircle, CheckCircle2, AlertTriangle, Info } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { DetailSectionCard, DefinitionListGrid } from '@/components/admin/operations'
@@ -1007,9 +1007,28 @@ export default function InstructorAttendancePage() {
                 >
                   돌아가기
                 </Button>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  2025 소프트웨어(SW) 미래채움 – 교육 출석부
-                </h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    2025 소프트웨어(SW) 미래채움 – 교육 출석부
+                  </h1>
+                  <Tooltip
+                    title={
+                      <div className="text-sm">
+                        <div className="font-semibold mb-1">출석부 작성 가이드</div>
+                        <div className="space-y-1">
+                          <div>• 수업 전: 강사가 학교에 학생 명단 요청</div>
+                          <div>• 학교 교사: 수업 전 기본 정보 및 학생 명단 입력</div>
+                          <div>• 수업 중: 보조강사가 출석 체크 (실시간 또는 수업 후 입력 가능)</div>
+                          <div>• 출석률: 총 차시의 80% 이상 출석 시 수료</div>
+                          <div>• 서명: 학교 교사, 주강사, 보조강사 서명 필요</div>
+                        </div>
+                      </div>
+                    }
+                    placement="right"
+                  >
+                    <Info className="w-5 h-5 text-slate-400 hover:text-slate-600 transition-colors cursor-help" />
+                  </Tooltip>
+                </div>
               </div>
               <Space>
                 {!isEditMode ? (
@@ -1086,6 +1105,40 @@ export default function InstructorAttendancePage() {
             </div>
           </div>
         </div>
+
+        {/* Submitted banner */}
+        {attendanceStatus === 'SUBMITTED' && (
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  제출 완료 (승인 대기 중)
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reject reason banner */}
+        {attendanceStatus === 'REJECTED' && attendanceSheet?.rejectReason && (
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5" />
+                <div className="flex-1">
+                  <div className="font-semibold text-red-900 dark:text-red-100 mb-1">반려 사유</div>
+                  <div className="text-sm text-red-700 dark:text-red-300">{attendanceSheet.rejectReason}</div>
+                  {attendanceSheet.rejectedAt && (
+                    <div className="text-xs text-red-600 dark:text-red-400 mt-1">
+                      반려일시: {dayjs(attendanceSheet.rejectedAt).format('YYYY-MM-DD HH:mm')}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="max-w-7xl mx-auto px-6 py-8">
           {/* Teacher Education Info Alert */}

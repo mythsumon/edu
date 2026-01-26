@@ -478,18 +478,89 @@ export default function EducationStatusPage() {
 
     const selectedRows = data.filter(item => selectedIds.includes(item.key))
 
-    // "오픈예정"으로 변경하는 경우 시간 설정 모달 표시
-    if (statusValue === '오픈예정' && selectedRows.length === 1) {
+    // 일괄 변경의 경우 시간 설정은 지원하지 않음 (단일 선택일 때만 시간 설정 가능)
+    // "오픈예정" 또는 "강사공개" → "신청마감"으로 일괄 변경하는 경우 즉시 변경
+    const needsScheduleOption = statusValue === '오픈예정' || 
+      (selectedRows.some(row => row.status === '강사공개') && statusValue === '신청마감')
+
+    // 단일 선택이고 시간 설정이 필요한 경우에만 옵션 제공
+    if (needsScheduleOption && selectedRows.length === 1) {
       const row = selectedRows[0]
       const education = dataStore.getEducationById(row.educationId)
       if (education) {
-        setSelectedEducationForSchedule(education)
-        setScheduleModalOpen(true)
+        const currentStatus = row.status as EducationStatus
+        const isIrreversible = isIrreversibleTransition(currentStatus, statusValue as EducationStatus)
+
+        Modal.confirm({
+          title: '상태 변경 확인',
+          content: (
+            <div>
+              <p>교육 상태를 '{statusValue}'로 변경하시겠습니까?</p>
+              {isIrreversible && (
+                <p className="mt-2 text-orange-600 text-sm">
+                  ⚠️ 이 변경은 되돌릴 수 없습니다.
+                </p>
+              )}
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                <p className="text-sm text-gray-700 mb-2">변경 방법을 선택하세요:</p>
+                <ul className="text-xs text-gray-600 space-y-1">
+                  <li>• <strong>즉시 변경</strong>: 시간 설정 없이 바로 상태를 변경합니다.</li>
+                  <li>• <strong>시간 설정</strong>: 자동 전환 시간을 설정하고 상태를 변경합니다.</li>
+                </ul>
+              </div>
+            </div>
+          ),
+          okText: '즉시 변경',
+          cancelText: '취소',
+          width: 500,
+          onOk: () => {
+            // 즉시 변경 (시간 설정 없이)
+            const updates: Partial<Education> = { status: statusValue }
+            if (statusValue === '오픈예정') {
+              updates.openAt = undefined
+              updates.closeAt = undefined
+            } else if (statusValue === '신청마감') {
+              updates.closeAt = undefined
+            }
+
+            dataStore.updateEducation(row.educationId, updates)
+            const updatedEducation = dataStore.getEducationById(row.educationId)
+            if (updatedEducation) {
+              educationScheduler.scheduleEducation(updatedEducation)
+            }
+
+            setData(prev => prev.map(item => {
+              if (item.key === row.key) {
+                return { ...item, status: statusValue }
+              }
+              return item
+            }))
+            setSelectedIds([])
+            setStatusValue('')
+            message.success('상태가 변경되었습니다.')
+          },
+          footer: (_, { OkBtn, CancelBtn }) => (
+            <>
+              <CancelBtn />
+              <Button
+                onClick={() => {
+                  Modal.destroyAll()
+                  setSelectedEducationForSchedule(education)
+                  setScheduleModalOpen(true)
+                }}
+                type="primary"
+              >
+                시간 설정
+              </Button>
+              <OkBtn />
+            </>
+          ),
+        })
         return
       }
     }
 
-    // 그 외의 경우 기존 로직
+    // 그 외의 경우 기존 로직 (일괄 변경 또는 시간 설정 불필요한 경우)
     const isIrreversible = selectedRows.some(row => 
       isIrreversibleTransition(row.status as EducationStatus, statusValue as EducationStatus)
     )
@@ -515,7 +586,9 @@ export default function EducationStatusPage() {
         selectedRows.forEach(row => {
           const education = dataStore.getEducationById(row.educationId)
           if (education) {
-            dataStore.updateEducation(row.educationId, { status: statusValue })
+            const updates: Partial<Education> = { status: statusValue }
+            // 일괄 변경 시 시간 정보는 초기화하지 않음 (기존 값 유지)
+            dataStore.updateEducation(row.educationId, updates)
             affectedEducationIds.push(row.educationId)
             // 스케줄러에 알림
             educationScheduler.scheduleEducation(education)
@@ -548,11 +621,22 @@ export default function EducationStatusPage() {
   const handleScheduleTimeConfirm = (openAt: string | null, closeAt: string | null, applicationRestriction?: 'MAIN_ONLY' | 'ASSISTANT_ONLY' | 'ALL') => {
     if (!selectedEducationForSchedule) return
 
+    // 현재 교육의 상태 확인
+    const currentEducation = dataStore.getEducationById(selectedEducationForSchedule.educationId)
+    if (!currentEducation) return
+
+    // 상태 결정: 오픈예정으로 변경하거나, 강사공개 상태에서 신청마감으로 변경하는 경우
+    let targetStatus: EducationStatus = '오픈예정'
+    if (currentEducation.status === '강사공개') {
+      // 강사공개 → 신청마감으로 변경하는 경우
+      targetStatus = '신청마감'
+    }
+
     const updates: Partial<Education> = {
-      status: '오픈예정',
+      status: targetStatus,
       openAt: openAt || undefined,
       closeAt: closeAt || undefined,
-      applicationRestriction: applicationRestriction || 'ALL',
+      applicationRestriction: applicationRestriction || currentEducation.applicationRestriction || 'ALL',
     }
 
     // dataStore 업데이트
@@ -569,10 +653,10 @@ export default function EducationStatusPage() {
       if (item.educationId === selectedEducationForSchedule.educationId) {
         return { 
           ...item, 
-          status: '오픈예정',
+          status: targetStatus,
           openAt: openAt || undefined,
           closeAt: closeAt || undefined,
-          applicationRestriction: applicationRestriction || 'ALL',
+          applicationRestriction: applicationRestriction || currentEducation.applicationRestriction || 'ALL',
         }
       }
       return item
@@ -599,6 +683,84 @@ export default function EducationStatusPage() {
 
     const isIrreversible = isIrreversibleTransition(currentStatus, newStatus)
 
+    // "오픈예정" 또는 "강사공개" → "신청마감"으로 변경하는 경우 시간 설정 옵션 제공
+    const needsScheduleOption = newStatus === '오픈예정' || (currentStatus === '강사공개' && newStatus === '신청마감')
+
+    if (needsScheduleOption) {
+      const education = dataStore.getEducationById(row.educationId)
+      if (!education) return
+
+      Modal.confirm({
+        title: '상태 변경 확인',
+        content: (
+          <div>
+            <p>교육 상태를 '{newStatus}'로 변경하시겠습니까?</p>
+            {isIrreversible && (
+              <p className="mt-2 text-orange-600 text-sm">
+                ⚠️ 이 변경은 되돌릴 수 없습니다.
+              </p>
+            )}
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <p className="text-sm text-gray-700 mb-2">변경 방법을 선택하세요:</p>
+              <ul className="text-xs text-gray-600 space-y-1">
+                <li>• <strong>즉시 변경</strong>: 시간 설정 없이 바로 상태를 변경합니다.</li>
+                <li>• <strong>시간 설정</strong>: 자동 전환 시간을 설정하고 상태를 변경합니다.</li>
+              </ul>
+            </div>
+          </div>
+        ),
+        okText: '즉시 변경',
+        cancelText: '취소',
+        width: 500,
+        onOk: () => {
+          // 즉시 변경 (시간 설정 없이)
+          const updates: Partial<Education> = { status: newStatus }
+          // 기존 시간 정보는 유지하되 상태만 변경
+          if (newStatus === '오픈예정') {
+            // 오픈예정으로 변경할 때는 openAt/closeAt을 유지하거나 초기화
+            // 사용자가 즉시 변경을 선택했으므로 시간 정보는 유지하지 않음
+            updates.openAt = undefined
+            updates.closeAt = undefined
+          } else if (newStatus === '신청마감') {
+            // 신청마감으로 변경할 때는 closeAt만 초기화
+            updates.closeAt = undefined
+          }
+
+          dataStore.updateEducation(row.educationId, updates)
+          const updatedEducation = dataStore.getEducationById(row.educationId)
+          if (updatedEducation) {
+            educationScheduler.scheduleEducation(updatedEducation)
+          }
+
+          setData(prev => prev.map(item => {
+            if (item.key === id) {
+              return { ...item, status: newStatus }
+            }
+            return item
+          }))
+          message.success('상태가 변경되었습니다.')
+        },
+        footer: (_, { OkBtn, CancelBtn }) => (
+          <>
+            <CancelBtn />
+            <Button
+              onClick={() => {
+                Modal.destroyAll()
+                setSelectedEducationForSchedule(education)
+                setScheduleModalOpen(true)
+              }}
+              type="primary"
+            >
+              시간 설정
+            </Button>
+            <OkBtn />
+          </>
+        ),
+      })
+      return
+    }
+
+    // 그 외의 경우 기존 로직
     Modal.confirm({
       title: '상태 변경 확인',
       content: (
@@ -614,16 +776,6 @@ export default function EducationStatusPage() {
       okText: '변경',
       cancelText: '취소',
       onOk: () => {
-        // "오픈예정"으로 변경하는 경우 시간 설정 모달 표시
-        if (newStatus === '오픈예정') {
-          const education = dataStore.getEducationById(row.educationId)
-          if (education) {
-            setSelectedEducationForSchedule(education)
-            setScheduleModalOpen(true)
-          }
-          return
-        }
-
         // Update dataStore
         const education = dataStore.getEducationById(row.educationId)
         if (education) {

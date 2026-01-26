@@ -202,8 +202,6 @@ export default function AdminEvidenceDetailPage() {
     )
   }
 
-  const canApprove = doc.status === 'SUBMITTED'
-  const canReject = doc.status === 'SUBMITTED'
 
   const handleDownloadAll = async () => {
     if (!doc || doc.items.length === 0) {
@@ -281,7 +279,10 @@ export default function AdminEvidenceDetailPage() {
                 )}
                 <Button
                   icon={<Edit className="w-4 h-4" />}
-                  onClick={() => router.push(`/instructor/evidence/${id}`)}
+                  onClick={() => {
+                    const targetEducationId = doc.educationId || id
+                    router.push(`/instructor/evidence/${targetEducationId}?educationId=${targetEducationId}`)
+                  }}
                 >
                   수정
                 </Button>

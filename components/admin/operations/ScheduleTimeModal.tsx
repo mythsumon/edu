@@ -109,12 +109,12 @@ export function ScheduleTimeModal({
       <Form form={form} layout="vertical" className="mt-4">
         <div className="mb-4 p-4 bg-blue-50 rounded-lg">
           <p className="text-sm text-gray-600 mb-2">
-            교육 상태를 "오픈예정"으로 변경하고, 자동 전환 시간을 설정할 수 있습니다.
+            자동 전환 시간을 설정할 수 있습니다. 시간을 설정하지 않으면 수동으로 상태를 변경해야 합니다.
           </p>
           <ul className="text-xs text-gray-500 list-disc list-inside space-y-1">
             <li>강사공개 전환 시간: 오픈예정 → 강사공개로 자동 전환되는 시간</li>
             <li>신청마감 전환 시간: 강사공개 → 신청마감으로 자동 전환되는 시간</li>
-            <li>시간을 설정하지 않으면 수동으로 상태를 변경해야 합니다.</li>
+            <li>체크박스를 해제하면 해당 시간을 설정하지 않습니다.</li>
           </ul>
         </div>
 

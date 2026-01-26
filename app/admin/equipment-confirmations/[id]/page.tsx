@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Button, Space, Modal, Input, InputNumber, DatePicker, TimePicker, message, Badge } from 'antd'
-import { ArrowLeft, CheckCircle2, XCircle, AlertTriangle, Download, Edit } from 'lucide-react'
+import { Button, Space, Modal, Input, InputNumber, DatePicker, TimePicker, message, Badge, Tooltip } from 'antd'
+import { ArrowLeft, CheckCircle2, XCircle, AlertTriangle, Download, Edit, Info } from 'lucide-react'
 import { DetailPageHeaderSticky, DetailSectionCard } from '@/components/admin/operations'
 import { useAuth } from '@/contexts/AuthContext'
 import {
@@ -448,76 +448,100 @@ export default function AdminEquipmentConfirmationDetailPage() {
   return (
     <ProtectedRoute requiredRole="admin">
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 transition-colors">
-        <DetailPageHeaderSticky
-          title="교구 확인서 상세"
-          onBack={() => router.back()}
-        />
-
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="mb-6 flex items-center gap-4">
-            {getStatusBadge()}
-            <Button
-              icon={<Download className="w-4 h-4" />}
-              onClick={() => {
-                // TODO: 실제 파일 다운로드 구현
-                const dateText = doc.lectureDateRange?.start || ''
-                const filename = `교구확인서_${doc.institutionName}_${dateText}.pdf`
-                console.log('Download equipment confirmation:', filename)
-                message.info(`교구확인서 다운로드: ${filename}`)
-              }}
-              className="h-10 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
-            >
-              다운로드
-            </Button>
-            <div className="flex gap-4">
-              <Button
-                icon={<Edit className="w-4 h-4" />}
-                onClick={() => router.push(`/instructor/equipment-confirmations/${id}`)}
-                className="h-10 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
-              >
-                수정
-              </Button>
-              <Button
-                icon={<CheckCircle2 className="w-4 h-4" />}
-                onClick={handleApprove}
-                loading={loading}
-                disabled={doc.status === 'APPROVED' || doc.status === 'BORROWED' || doc.status === 'RETURNED'}
-                className="h-10 px-6 rounded-xl border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              >
-                승인
-              </Button>
-              <Button
-                icon={<XCircle className="w-4 h-4" />}
-                onClick={() => setRejectModalVisible(true)}
-                loading={loading}
-                disabled={doc.status === 'REJECTED' || doc.status === 'APPROVED' || doc.status === 'BORROWED' || doc.status === 'RETURNED'}
-                className="h-10 px-6 rounded-xl border border-red-300 font-medium transition-all text-red-700 hover:bg-red-600 hover:text-white hover:border-red-600"
-              >
-                반려
-              </Button>
+        {/* Header */}
+        <div className="bg-white dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700 sticky top-0 z-10 shadow-sm">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Button
+                  icon={<ArrowLeft className="w-4 h-4" />}
+                  onClick={() => router.back()}
+                  className="flex items-center dark:text-gray-300"
+                >
+                  돌아가기
+                </Button>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                      교구 확인서 상세
+                    </h1>
+                    <Tooltip
+                      title={
+                        <div className="text-sm">
+                          <div className="font-semibold mb-1">교구확인서 작성 가이드</div>
+                          <div className="space-y-1">
+                            <div>• 별도의 독립적인 양식입니다</div>
+                            <div>• 수업 시작 전에 완료해야 합니다</div>
+                            <div>• 승인되지 않으면 수업을 진행할 수 없습니다</div>
+                            <div>• 대여/반납 정보 및 교구 상태를 기록합니다</div>
+                          </div>
+                        </div>
+                      }
+                      placement="right"
+                    >
+                      <Info className="w-5 h-5 text-slate-400 hover:text-slate-600 transition-colors cursor-help" />
+                    </Tooltip>
+                  </div>
+                  <div className="mt-1">{getStatusBadge()}</div>
+                </div>
+              </div>
+              <Space>
+                <Button
+                  icon={<Download className="w-4 h-4" />}
+                  onClick={() => {
+                    // TODO: 실제 파일 다운로드 구현
+                    const dateText = doc.lectureDateRange?.start || ''
+                    const filename = `교구확인서_${doc.institutionName}_${dateText}.pdf`
+                    console.log('Download equipment confirmation:', filename)
+                    message.info(`교구확인서 다운로드: ${filename}`)
+                  }}
+                  className="h-11 px-6 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white font-medium transition-all text-slate-700"
+                >
+                  다운로드
+                </Button>
+                <Button
+                  icon={<Edit className="w-4 h-4" />}
+                  onClick={() => {
+                    const targetEducationId = doc.educationId || id.replace(/^equipment-/, '')
+                    router.push(`/instructor/equipment-confirmations/${targetEducationId}`)
+                  }}
+                >
+                  수정
+                </Button>
+                <Button
+                  type="primary"
+                  icon={<CheckCircle2 className="w-4 h-4" />}
+                  onClick={handleApprove}
+                  disabled={doc.status === 'APPROVED' || doc.status === 'BORROWED' || doc.status === 'RETURNED'}
+                >
+                  승인
+                </Button>
+                <Button
+                  danger
+                  icon={<XCircle className="w-4 h-4" />}
+                  onClick={() => setRejectModalVisible(true)}
+                  disabled={doc.status === 'REJECTED' || doc.status === 'APPROVED' || doc.status === 'BORROWED' || doc.status === 'RETURNED'}
+                >
+                  반려
+                </Button>
+              </Space>
             </div>
-            {doc.status === 'APPROVED' && (
-              <Button
-                type="primary"
-                onClick={handleBorrowComplete}
-                loading={loading}
-                className="h-10 px-6 rounded-xl border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              >
-                대여완료 처리
-              </Button>
-            )}
-            {doc.status === 'BORROWED' && (
-              <Button
-                type="primary"
-                onClick={handleReturnComplete}
-                loading={loading}
-                className="h-10 px-6 rounded-xl border-0 font-medium transition-all shadow-sm hover:shadow-md text-white hover:text-white active:text-white bg-slate-900 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              >
-                반납완료 처리
-              </Button>
-            )}
           </div>
         </div>
+
+        {/* Submitted banner */}
+        {doc.status === 'SUBMITTED' && (
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  제출 완료 (승인 대기 중)
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Reject reason banner */}
         {doc.status === 'REJECTED' && doc.rejectReason && (
@@ -540,6 +564,31 @@ export default function AdminEquipmentConfirmationDetailPage() {
         )}
 
         <div className="max-w-7xl mx-auto px-6 py-8">
+          {/* Additional action buttons for specific statuses */}
+          {(doc.status === 'APPROVED' || doc.status === 'BORROWED') && (
+            <div className="mb-6 flex justify-end gap-4">
+              {doc.status === 'APPROVED' && (
+                <Button
+                  type="primary"
+                  onClick={handleBorrowComplete}
+                  loading={loading}
+                  className="h-11 px-6 rounded-xl"
+                >
+                  대여완료 처리
+                </Button>
+              )}
+              {doc.status === 'BORROWED' && (
+                <Button
+                  type="primary"
+                  onClick={handleReturnComplete}
+                  loading={loading}
+                  className="h-11 px-6 rounded-xl"
+                >
+                  반납완료 처리
+                </Button>
+              )}
+            </div>
+          )}
 
           {/* 기본 정보 */}
           <DetailSectionCard title="기본 정보" className="mb-6">
