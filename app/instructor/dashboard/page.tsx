@@ -145,14 +145,14 @@ const ModernCourseCard = ({ course }: { course: InstructorCourse }) => {
   
   // Get education data to check region assignment mode
   // Try by educationId first, then by name and institution
-  let education = dataStore.getEducationById(course.id)
+  let education: Education | undefined = dataStore.getEducationById(course.id)
   if (!education) {
     // Try to find by name and institution
     const allEducations = dataStore.getEducations()
     education = allEducations.find(edu => 
       (edu.name === course.educationName || edu.name.includes(course.educationName) || course.educationName.includes(edu.name)) &&
       (edu.institution === course.institutionName || edu.institution.includes(course.institutionName) || course.institutionName.includes(edu.institution))
-    ) || null
+    )
   }
   
   // Get instructor region - try multiple sources

@@ -18,7 +18,7 @@ import {
   type EducationDocSummary,
 } from '@/entities/submission'
 import { DocumentStatusIndicator, EducationDetailDrawer } from '@/components/shared/common'
-import { dataStore } from '@/lib/dataStore'
+import { dataStore, type Education } from '@/lib/dataStore'
 import type { AttendanceDocument } from '@/app/instructor/schedule/[educationId]/attendance/storage'
 import type { ActivityLog } from '@/app/instructor/activity-logs/types'
 import type { EquipmentConfirmationDoc } from '@/app/instructor/equipment-confirmations/types'
@@ -401,14 +401,14 @@ export default function MyScheduleListPage() {
       render: (text: string, record: EducationDocSummary) => {
         // Get education data to check region assignment mode
         // Try by educationId first, then by name and institution
-        let education = dataStore.getEducationById(record.educationId)
+        let education: Education | undefined = dataStore.getEducationById(record.educationId)
         if (!education) {
           // Try to find by name and institution
           const allEducations = dataStore.getEducations()
           education = allEducations.find(edu => 
             (edu.name === record.educationName || edu.name.includes(record.educationName) || record.educationName.includes(edu.name)) &&
             (edu.institution === record.institutionName || edu.institution.includes(record.institutionName) || record.institutionName.includes(edu.institution))
-          ) || null
+          )
         }
         
         // Get instructor region - try multiple sources
