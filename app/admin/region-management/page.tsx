@@ -7,19 +7,6 @@ import { Save, Edit } from 'lucide-react'
 import { RegionAssignmentMap } from '@/components/shared/ui/RegionAssignmentMap'
 import { getAllRegions, getRegionById, updateRegion, getAllAreas, type Region, type Area } from '@/lib/regionStore'
 
-interface Region {
-  id: number
-  name: string
-  color: string
-  mode: 'PARTIAL' | 'FULL'
-  areas: Array<{ code: string; name: string }>
-}
-
-interface Area {
-  code: string
-  name: string
-}
-
 export default function RegionManagementPage() {
   const [regions, setRegions] = useState<Region[]>([])
   const [areas, setAreas] = useState<Area[]>([])
