@@ -3,12 +3,6 @@
  * NEXT_PUBLIC_NAVER_MAP_CLIENT_ID 환경변수를 사용하여 SDK를 로드합니다.
  */
 
-declare global {
-  interface Window {
-    naver: typeof import('naver-maps');
-  }
-}
-
 let mapScriptLoaded = false;
 let mapScriptLoading = false;
 let loadPromise: Promise<void> | null = null;
