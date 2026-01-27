@@ -145,7 +145,7 @@ export function RegionAssignmentMap({
           const allPaths: naver.maps.LatLng[][] = []
 
           features.forEach(feature => {
-            const paths = featureToPaths(feature, naver)
+            const paths = featureToPaths(feature, naver.maps)
             allPaths.push(...paths)
 
             paths.forEach(path => {
@@ -200,7 +200,7 @@ export function RegionAssignmentMap({
 
           // 라벨 표시 (권역 중심)
           if (allPaths.length > 0) {
-            const centroid = calculateCentroid(allPaths, naver)
+            const centroid = calculateCentroid(allPaths, naver.maps)
             centroidsRef.current.set(region.id, centroid)
             
             const label = new naver.maps.Marker({

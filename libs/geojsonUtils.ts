@@ -18,13 +18,18 @@ export interface GeoJson {
 }
 
 /**
+ * 네이버 지도 API 타입 별칭 (순환 참조 방지)
+ */
+type NaverMapsApi = typeof naver.maps;
+
+/**
  * GeoJSON 좌표 배열을 네이버 지도 LatLng 배열로 변환
  */
 export const coordinatesToLatLngArray = (
   coordinates: number[][],
-  naver: { maps: typeof naver.maps }
+  naverMaps: NaverMapsApi
 ): naver.maps.LatLng[] => {
-  return coordinates.map(([lng, lat]) => new naver.maps.LatLng(lat, lng));
+  return coordinates.map(([lng, lat]) => new naverMaps.LatLng(lat, lng));
 };
 
 /**
@@ -32,9 +37,9 @@ export const coordinatesToLatLngArray = (
  */
 export const polygonToPaths = (
   coordinates: number[][][],
-  naver: { maps: typeof naver.maps }
+  naverMaps: NaverMapsApi
 ): naver.maps.LatLng[][] => {
-  return coordinates.map(ring => coordinatesToLatLngArray(ring, naver));
+  return coordinates.map(ring => coordinatesToLatLngArray(ring, naverMaps));
 };
 
 /**
@@ -42,12 +47,12 @@ export const polygonToPaths = (
  */
 export const multiPolygonToPaths = (
   coordinates: number[][][][],
-  naver: { maps: typeof naver.maps }
+  naverMaps: NaverMapsApi
 ): naver.maps.LatLng[][] => {
   const paths: naver.maps.LatLng[][] = [];
   coordinates.forEach(polygon => {
     polygon.forEach(ring => {
-      paths.push(coordinatesToLatLngArray(ring, naver));
+      paths.push(coordinatesToLatLngArray(ring, naverMaps));
     });
   });
   return paths;
@@ -58,14 +63,14 @@ export const multiPolygonToPaths = (
  */
 export const featureToPaths = (
   feature: GeoJsonFeature,
-  naver: { maps: typeof naver.maps }
+  naverMaps: NaverMapsApi
 ): naver.maps.LatLng[][] => {
   const { geometry } = feature;
   
   if (geometry.type === 'Polygon') {
-    return polygonToPaths(geometry.coordinates as number[][][], naver);
+    return polygonToPaths(geometry.coordinates as number[][][], naverMaps);
   } else if (geometry.type === 'MultiPolygon') {
-    return multiPolygonToPaths(geometry.coordinates as number[][][][], naver);
+    return multiPolygonToPaths(geometry.coordinates as number[][][][], naverMaps);
   }
   
   return [];
@@ -76,10 +81,10 @@ export const featureToPaths = (
  */
 export const calculateCentroid = (
   paths: naver.maps.LatLng[][],
-  naver: { maps: typeof naver.maps }
+  naverMaps: NaverMapsApi
 ): naver.maps.LatLng => {
   if (paths.length === 0 || paths[0].length === 0) {
-    return new naver.maps.LatLng(37.5665, 126.9780); // 서울 기본 좌표
+    return new naverMaps.LatLng(37.5665, 126.9780); // 서울 기본 좌표
   }
 
   // 첫 번째 외곽 경로의 모든 좌표 사용
@@ -93,7 +98,7 @@ export const calculateCentroid = (
     sumLng += point.lng();
   });
 
-  return new naver.maps.LatLng(sumLat / count, sumLng / count);
+  return new naverMaps.LatLng(sumLat / count, sumLng / count);
 };
 
 /**
