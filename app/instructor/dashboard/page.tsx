@@ -22,7 +22,8 @@ import {
   TrendingUp,
   Sparkles,
   BarChart3,
-  Zap
+  Zap,
+  DollarSign
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { InstructorCourse, InstructorCalendarEvent } from '@/mock/instructorDashboardData'
@@ -39,6 +40,8 @@ import { getLessonPlanByEducationId } from '@/app/instructor/schedule/[education
 import { getEducationDocSummariesByInstructor, type EducationDocSummary } from '@/entities/submission'
 import { dataStore, type Education } from '@/lib/dataStore'
 import { useAuth } from '@/contexts/AuthContext'
+import { getSettlementRows } from '@/entities/settlement/settlement-store'
+import type { TravelSettlementRow } from '@/entities/settlement'
 import dayjs from 'dayjs'
 
 // Modern Status Badge Component
@@ -820,6 +823,38 @@ export default function InstructorDashboard() {
   const ongoingCount = coursesWithDocuments.filter(c => c.status === '진행중').length
   const completedCount = coursesWithDocuments.filter(c => c.status === '완료').length
 
+  // Calculate settlement summary
+  const settlementSummary = useMemo(() => {
+    try {
+      const allRows = getSettlementRows()
+      const instructorRows = allRows.filter(row => 
+        row.instructorId === currentInstructorId || 
+        row.instructorName === currentInstructorName
+      )
+      
+      const currentMonth = dayjs().format('YYYY-MM')
+      const currentMonthRows = instructorRows.filter(row => {
+        const rowMonth = dayjs(row.periodStart).format('YYYY-MM')
+        return rowMonth === currentMonth
+      })
+
+      return {
+        totalPay: instructorRows.reduce((sum, row) => sum + row.totalPay, 0),
+        currentMonthPay: currentMonthRows.reduce((sum, row) => sum + row.totalPay, 0),
+        totalCount: instructorRows.length,
+        currentMonthCount: currentMonthRows.length,
+      }
+    } catch (error) {
+      console.error('Failed to calculate settlement summary:', error)
+      return {
+        totalPay: 0,
+        currentMonthPay: 0,
+        totalCount: 0,
+        currentMonthCount: 0,
+      }
+    }
+  }, [currentInstructorId, currentInstructorName])
+
   // Measure content height and set max-height for animation
   useEffect(() => {
     if (listContainerRef.current) {
@@ -1043,7 +1078,7 @@ export default function InstructorDashboard() {
           </div>
 
           {/* Modern KPI Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
             <ModernKPICard 
               icon={<Play className="w-6 h-6" />}
               title="내 출강 리스트"
@@ -1092,6 +1127,16 @@ export default function InstructorDashboard() {
               gradient="#64748b, #475569"
               isActive={activeFilter === 'completed'}
               onClick={() => handleKPICardClick('completed')}
+            />
+            
+            <ModernKPICard 
+              icon={<DollarSign className="w-6 h-6" />}
+              title="정산 내역"
+              count={settlementSummary.currentMonthPay}
+              trend={`이번 달: ${settlementSummary.currentMonthPay.toLocaleString()}원`}
+              gradient="#06b6d4, #0891b2"
+              isActive={false}
+              onClick={() => router.push('/instructor/settlements')}
             />
           </div>
 

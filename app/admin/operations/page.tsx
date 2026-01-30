@@ -20,6 +20,8 @@ import {
   SessionsListCard
 } from '@/components/admin/operations'
 import type { ExcelRowData } from '@/components/admin/operations'
+import { EducationFeeCalculationFlow, AllowanceRateTable } from '@/components/shared/common'
+import { dataStore } from '@/lib/dataStore'
 import dayjs, { Dayjs } from 'dayjs'
 import 'dayjs/locale/ko'
 import { getProgramSessionByValue } from '@/lib/commonCodeStore'
@@ -152,6 +154,116 @@ const dummyData: EducationItem[] = [
     period: '2025.01.20 ~ 2025.02.20',
     periodStart: '2025.01.20',
     periodEnd: '2025.02.20',
+  },
+  {
+    key: '6',
+    status: '확정',
+    educationId: 'EDU-2025-102',
+    name: '12차시 스크래치 프로그래밍 기초',
+    institution: '평택안일초등학교',
+    region: '평택시',
+    gradeClass: '4학년 3반',
+    requestOrg: '경기도교육청',
+    schoolName: '평택안일초등학교',
+    programTitle: '12차시 스크래치 프로그래밍 기초',
+    courseName: '12차시 스크래치 프로그래밍 기초',
+    totalSessions: 12,
+    note: '-',
+    period: '2025.10.01 ~ 2025.10.15',
+    periodStart: '2025.10.01',
+    periodEnd: '2025.10.15',
+    lessons: [
+      {
+        title: '1차시',
+        date: '2025.10.01',
+        startTime: '09:00',
+        endTime: '10:40',
+        mainInstructors: 1,
+        assistantInstructors: 1,
+        mainInstructorName: '홍길동',
+        assistantInstructorName: '김보조',
+      },
+      {
+        title: '2차시',
+        date: '2025.10.03',
+        startTime: '09:00',
+        endTime: '10:40',
+        mainInstructors: 1,
+        assistantInstructors: 1,
+        mainInstructorName: '홍길동',
+        assistantInstructorName: '김보조',
+      },
+      {
+        title: '3차시',
+        date: '2025.10.05',
+        startTime: '09:00',
+        endTime: '10:40',
+        mainInstructors: 1,
+        assistantInstructors: 1,
+        mainInstructorName: '홍길동',
+        assistantInstructorName: '김보조',
+      },
+    ],
+  },
+  {
+    key: '7',
+    status: '종료',
+    educationId: 'EDU-2024-201',
+    name: '2024년 하반기 블록코딩 교육',
+    institution: '평택안일초등학교',
+    region: '평택시',
+    gradeClass: '5학년 1반',
+    requestOrg: '경기도교육청',
+    schoolName: '평택안일초등학교',
+    programTitle: '2024년 하반기 블록코딩 교육',
+    courseName: '2024년 하반기 블록코딩 교육',
+    totalSessions: 8,
+    note: '-',
+    period: '2024.09.01 ~ 2024.09.30',
+    periodStart: '2024.09.01',
+    periodEnd: '2024.09.30',
+    lessons: [
+      {
+        title: '1차시',
+        date: '2024.09.01',
+        startTime: '09:00',
+        endTime: '10:40',
+        mainInstructors: 1,
+        assistantInstructors: 1,
+        mainInstructorName: '홍길동',
+        assistantInstructorName: '김보조',
+      },
+      {
+        title: '2차시',
+        date: '2024.09.05',
+        startTime: '09:00',
+        endTime: '10:40',
+        mainInstructors: 1,
+        assistantInstructors: 1,
+        mainInstructorName: '홍길동',
+        assistantInstructorName: '김보조',
+      },
+      {
+        title: '3차시',
+        date: '2024.09.08',
+        startTime: '09:00',
+        endTime: '10:40',
+        mainInstructors: 1,
+        assistantInstructors: 1,
+        mainInstructorName: '홍길동',
+        assistantInstructorName: '김보조',
+      },
+      {
+        title: '4차시',
+        date: '2024.09.12',
+        startTime: '09:00',
+        endTime: '10:40',
+        mainInstructors: 1,
+        assistantInstructors: 1,
+        mainInstructorName: '홍길동',
+        assistantInstructorName: '김보조',
+      },
+    ],
   },
 ]
 
@@ -637,6 +749,25 @@ export default function EducationManagementPage() {
                 <div className="text-center py-8 text-slate-500 text-sm">수업 정보가 없습니다.</div>
               </DetailSectionCard>
             )}
+
+            {/* Education Fee Calculation Flow */}
+            {(() => {
+              const education = dataStore.getEducations().find(e => e.educationId === selectedEducation.educationId)
+              const assignments = dataStore.getInstructorAssignments()
+              if (education) {
+                return (
+                  <DetailSectionCard title="교육비 계산">
+                    <AllowanceRateTable />
+                    <EducationFeeCalculationFlow
+                      education={education}
+                      assignments={assignments}
+                      policy="STATUS_BASED"
+                    />
+                  </DetailSectionCard>
+                )
+              }
+              return null
+            })()}
           </div>
         </div>
       ) : viewMode === 'register' ? (

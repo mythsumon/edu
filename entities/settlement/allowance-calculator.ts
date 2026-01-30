@@ -7,68 +7,142 @@ import type { AllowancePolicy, InstitutionCategory } from './settlement-types'
 
 /**
  * Default allowance policy
+ * 수업 기준: 기본금(차시×초중고특수도서벽지금액) + 주말수당(차시당5천원) + 출장수당(Km별금액지급)
  * Can be configured by admin later
  */
 export const DEFAULT_ALLOWANCE_POLICY: AllowancePolicy = {
-  leadRatePerSession: 50000, // 50,000 won per session for lead instructor
-  assistantRatePerSession: 30000, // 30,000 won per session for assistant instructor
+  baseRates: {
+    ELEMENTARY: { main: 40000, assistant: 30000 },  // 초등학교 차시당 금액
+    MIDDLE: { main: 45000, assistant: 35000 },      // 중학교 차시당 금액
+    HIGH: { main: 50000, assistant: 40000 },        // 고등학교 차시당 금액
+    SPECIAL: { main: 50000, assistant: 40000 },    // 특수학교 차시당 금액
+    ISLAND: { main: 45000, assistant: 35000 },     // 도서벽지 차시당 금액
+    GENERAL: { main: 40000, assistant: 30000 },    // 일반 차시당 금액 (기본값)
+  },
+  weekendRatePerSession: 5000,  // 주말수당 차시당 5천원
+  
+  // 하위 호환성
+  leadRatePerSession: 40000,
+  assistantRatePerSession: 30000,
   categoryBonuses: {
-    MIDDLE: 10000, // +10,000 won for middle school
-    SPECIAL_CLASS: 15000, // +15,000 won for special class
-    REMOTE_RURAL: 20000, // +20,000 won for remote/rural
+    MIDDLE: 0,
+    SPECIAL_CLASS: 0,
+    REMOTE_RURAL: 0,
   },
 }
 
 /**
  * Calculate allowance for an instructor
+ * 수업 기준: 기본금(차시×초중고특수도서벽지금액) + 주말수당(차시당5천원) + 추가수당(15명 이상 + 보조강사 없음: 차시당 5천원)
  * 
  * @param totalSessions - Total number of sessions
+ * @param weekendSessions - Number of weekend sessions (Saturday/Sunday)
  * @param role - 'main' (lead) or 'assistant'
- * @param institutionCategory - Institution category for bonus calculation
+ * @param institutionCategory - Institution category for base rate calculation
  * @param policy - Allowance policy configuration
- * @returns Object with base, bonus, and total allowance
+ * @param studentCount - Number of students (for extra allowance calculation)
+ * @param hasAssistant - Whether assistant instructor is assigned (for extra allowance calculation)
+ * @returns Object with base, weekend, extra, bonus, and total allowance
  */
 export function computeAllowance(
   totalSessions: number,
+  weekendSessions: number,
   role: 'main' | 'assistant',
   institutionCategory: InstitutionCategory,
-  policy: AllowancePolicy = DEFAULT_ALLOWANCE_POLICY
+  policy: AllowancePolicy = DEFAULT_ALLOWANCE_POLICY,
+  studentCount?: number,
+  hasAssistant?: boolean
 ): {
   base: number
+  weekend: number
+  extra: number
   bonus: number
   total: number
 } {
-  // Calculate base allowance
-  const ratePerSession = role === 'main' 
-    ? policy.leadRatePerSession 
-    : policy.assistantRatePerSession
+  // 학교 유형별 차시당 기본금 가져오기
+  let ratePerSession: number
+  if (policy.baseRates) {
+    const categoryKey = institutionCategory === 'SPECIAL_CLASS' ? 'SPECIAL' 
+      : institutionCategory === 'REMOTE_RURAL' ? 'ISLAND'
+      : institutionCategory === 'MIDDLE' ? 'MIDDLE'
+      : institutionCategory === 'HIGH' ? 'HIGH'
+      : institutionCategory === 'ELEMENTARY' ? 'ELEMENTARY'
+      : 'GENERAL'
+    
+    const categoryRates = policy.baseRates[categoryKey] || policy.baseRates.GENERAL
+    ratePerSession = role === 'main' ? categoryRates.main : categoryRates.assistant
+  } else {
+    // 레거시 지원
+    ratePerSession = role === 'main' 
+      ? (policy.leadRatePerSession || 50000)
+      : (policy.assistantRatePerSession || 30000)
+  }
+
+  // 기본금 계산: 차시 × 학교유형별 금액
   const base = totalSessions * ratePerSession
 
-  // Calculate category bonus
+  // 주말수당 계산: 주말 차시 × 5000원
+  const weekendRate = policy.weekendRatePerSession || 5000
+  const weekend = weekendSessions * weekendRate
+
+  // 추가 수당 계산: 15명 이상 + 보조강사 없음 → 차시당 5천원
+  // 주강사만 해당 (보조강사는 제외)
+  let extra = 0
+  if (role === 'main' && studentCount !== undefined && hasAssistant !== undefined) {
+    if (studentCount >= 15 && !hasAssistant) {
+      extra = totalSessions * 5000
+    }
+  }
+
+  // 레거시 보너스 (deprecated, 0으로 설정)
   let bonus = 0
-  if (institutionCategory === 'MIDDLE') {
-    bonus = policy.categoryBonuses.MIDDLE
-  } else if (institutionCategory === 'SPECIAL_CLASS') {
-    bonus = policy.categoryBonuses.SPECIAL_CLASS
-  } else if (institutionCategory === 'REMOTE_RURAL') {
-    bonus = policy.categoryBonuses.REMOTE_RURAL
+  if (policy.categoryBonuses) {
+    if (institutionCategory === 'MIDDLE') {
+      bonus = policy.categoryBonuses.MIDDLE || 0
+    } else if (institutionCategory === 'SPECIAL_CLASS' || institutionCategory === 'SPECIAL') {
+      bonus = policy.categoryBonuses.SPECIAL_CLASS || 0
+    } else if (institutionCategory === 'REMOTE_RURAL' || institutionCategory === 'ISLAND') {
+      bonus = policy.categoryBonuses.REMOTE_RURAL || 0
+    }
   }
 
   return {
     base,
+    weekend,
+    extra,
     bonus,
-    total: base + bonus,
+    total: base + weekend + extra + bonus,
   }
 }
 
 /**
  * Get allowance policy from localStorage or return default
+ * Migrates old policy format to new format if needed
  */
 export function getAllowancePolicy(): AllowancePolicy {
   try {
     const stored = localStorage.getItem('settlement.allowancePolicy')
     if (stored) {
-      return JSON.parse(stored)
+      const policy: AllowancePolicy = JSON.parse(stored)
+      // Migrate old policy: add baseRates if missing
+      if (!policy.baseRates) {
+        // Use legacy rates to create baseRates
+        const mainRate = policy.leadRatePerSession || 50000
+        const assistantRate = policy.assistantRatePerSession || 30000
+        policy.baseRates = {
+          ELEMENTARY: { main: mainRate, assistant: assistantRate },
+          MIDDLE: { main: mainRate, assistant: assistantRate },
+          HIGH: { main: mainRate, assistant: assistantRate },
+          SPECIAL: { main: mainRate, assistant: assistantRate },
+          ISLAND: { main: mainRate, assistant: assistantRate },
+          GENERAL: { main: mainRate, assistant: assistantRate },
+        }
+      }
+      // Ensure weekendRatePerSession exists
+      if (policy.weekendRatePerSession === undefined) {
+        policy.weekendRatePerSession = 5000
+      }
+      return policy
     }
   } catch (error) {
     console.error('Failed to load allowance policy:', error)

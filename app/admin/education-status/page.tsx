@@ -21,6 +21,7 @@ import { attendanceSheetStore } from '@/lib/attendanceSheetStore'
 import { dataStore, type Education } from '@/lib/dataStore'
 import { educationScheduler } from '@/lib/educationScheduler'
 import { educationToStatusItem } from '@/entities/education/education-utils'
+import { EducationFeeCalculationFlow, AllowanceRateTable } from '@/components/shared/common'
 
 const { RangePicker } = DatePicker
 
@@ -501,6 +502,19 @@ export default function EducationStatusPage() {
                   ⚠️ 이 변경은 되돌릴 수 없습니다.
                 </p>
               )}
+              
+              {/* 교육비 계산 흐름 표시 (확정/종료 상태로 변경할 때) */}
+              {(statusValue === '확정' || statusValue === '종료') && education && (
+                <div className="mt-4">
+                  <AllowanceRateTable />
+                  <EducationFeeCalculationFlow
+                    education={education}
+                    assignments={dataStore.getInstructorAssignments()}
+                    policy="STATUS_BASED"
+                  />
+                </div>
+              )}
+              
               <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                 <p className="text-sm text-gray-700 mb-2">변경 방법을 선택하세요:</p>
                 <ul className="text-xs text-gray-600 space-y-1">
@@ -565,6 +579,11 @@ export default function EducationStatusPage() {
       isIrreversibleTransition(row.status as EducationStatus, statusValue as EducationStatus)
     )
 
+    // 일괄 변경 시 첫 번째 교육의 교육비 계산 흐름 표시 (확정/종료 상태로 변경할 때)
+    const firstEducation = selectedRows.length > 0 
+      ? dataStore.getEducations().find(e => e.educationId === selectedRows[0].educationId)
+      : null
+
     Modal.confirm({
       title: '상태 변경 확인',
       content: (
@@ -575,10 +594,24 @@ export default function EducationStatusPage() {
               ⚠️ 이 변경은 되돌릴 수 없습니다.
             </p>
           )}
+          
+          {/* 교육비 계산 흐름 표시 (확정/종료 상태로 변경할 때) */}
+          {(statusValue === '확정' || statusValue === '종료') && firstEducation && (
+            <div className="mt-4">
+              <p className="text-sm text-gray-600 mb-2">교육비 계산 예시 (첫 번째 교육 기준):</p>
+              <AllowanceRateTable />
+              <EducationFeeCalculationFlow
+                education={firstEducation}
+                assignments={dataStore.getInstructorAssignments()}
+                policy="STATUS_BASED"
+              />
+            </div>
+          )}
         </div>
       ),
       okText: '변경',
       cancelText: '취소',
+      width: 700,
       onOk: () => {
         const affectedEducationIds: string[] = []
         
@@ -771,10 +804,23 @@ export default function EducationStatusPage() {
               ⚠️ 이 변경은 되돌릴 수 없습니다.
             </p>
           )}
+          
+          {/* 교육비 계산 흐름 표시 (확정/종료 상태로 변경할 때) */}
+          {(newStatus === '확정' || newStatus === '종료') && education && (
+            <div className="mt-4">
+              <AllowanceRateTable />
+              <EducationFeeCalculationFlow
+                education={education}
+                assignments={dataStore.getInstructorAssignments()}
+                policy="STATUS_BASED"
+              />
+            </div>
+          )}
         </div>
       ),
       okText: '변경',
       cancelText: '취소',
+      width: 700,
       onOk: () => {
         // Update dataStore
         const education = dataStore.getEducationById(row.educationId)

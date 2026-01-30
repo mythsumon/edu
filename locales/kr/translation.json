@@ -82,6 +82,9 @@
     "userManagement": "사용자 관리",
     "commonCode": "공통 코드",
     "travelSettlement": "출장비 정산 관리",
-    "instructorApplicationPolicy": "강사 신청 정책 관리"
+    "instructorApplicationPolicy": "강사 신청 정책 관리",
+    "equipmentManagement": "교구 관리",
+    "equipmentWishlist": "교구 확인서 위시리스트",
+    "equipmentInventory": "교구 재고 관리"
   }
 }

@@ -52,6 +52,12 @@ public class InstitutionEntity {
     @Column(length = 500)
     private String address;
 
+    @Column(name = "institution_lat", precision = 10, scale = 7)
+    private java.math.BigDecimal institutionLat;
+
+    @Column(name = "institution_lng", precision = 10, scale = 7)
+    private java.math.BigDecimal institutionLng;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "major_category_id", foreignKey = @ForeignKey(name = "fk_institutions_major_category"))
     private MasterCodeEntity majorCategory;

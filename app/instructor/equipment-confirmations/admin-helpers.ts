@@ -1,5 +1,7 @@
 import type { EquipmentConfirmationDoc, EquipmentItem, InventoryItem, AuditLogEntry } from './types'
 import { getDocs } from './storage'
+import { getAllEquipmentConfirmations } from './storage-v2'
+import type { EquipmentConfirmation } from './types-v2'
 
 const INVENTORY_KEY = 'teaching_aid_inventory'
 const AUDIT_LOG_KEY = 'teaching_aid_audit_logs'
@@ -43,13 +45,29 @@ export function getInventory(): InventoryItem[] {
     localStorage.setItem(INVENTORY_KEY, JSON.stringify(initialData))
     // 초기 데이터로 계산된 재고 반환
     const allDocs = getAllDocs()
+    const allV2Docs = getAllEquipmentConfirmations()
     const rentedCounts: Record<string, number> = {}
     
+    // Old type docs
     allDocs
       .filter(doc => doc.status === 'BORROWED')
       .forEach(doc => {
         doc.items.forEach(item => {
           rentedCounts[item.name] = (rentedCounts[item.name] || 0) + item.quantity
+        })
+      })
+    
+    // V2 type docs
+    allV2Docs
+      .filter(doc => doc.status === 'BORROWED')
+      .forEach(doc => {
+        doc.items.forEach(item => {
+          if (item.leftItemName && item.leftQty) {
+            rentedCounts[item.leftItemName] = (rentedCounts[item.leftItemName] || 0) + item.leftQty
+          }
+          if (item.rightItemName && item.rightQty) {
+            rentedCounts[item.rightItemName] = (rentedCounts[item.rightItemName] || 0) + item.rightQty
+          }
         })
       })
     
@@ -62,15 +80,32 @@ export function getInventory(): InventoryItem[] {
   
   try {
     const items: InventoryItem[] = JSON.parse(stored)
-    // Calculate rented quantities from BORROWED docs
+    // Calculate rented quantities from BORROWED docs (both old and v2 types)
     const allDocs = getAllDocs()
+    const allV2Docs = getAllEquipmentConfirmations()
     const rentedCounts: Record<string, number> = {}
     
+    // Old type docs
     allDocs
       .filter(doc => doc.status === 'BORROWED')
       .forEach(doc => {
         doc.items.forEach(item => {
           rentedCounts[item.name] = (rentedCounts[item.name] || 0) + item.quantity
+        })
+      })
+    
+    // V2 type docs
+    allV2Docs
+      .filter(doc => doc.status === 'BORROWED')
+      .forEach(doc => {
+        doc.items.forEach(item => {
+          // V2 type has leftItemName/leftQty and rightItemName/rightQty
+          if (item.leftItemName && item.leftQty) {
+            rentedCounts[item.leftItemName] = (rentedCounts[item.leftItemName] || 0) + item.leftQty
+          }
+          if (item.rightItemName && item.rightQty) {
+            rentedCounts[item.rightItemName] = (rentedCounts[item.rightItemName] || 0) + item.rightQty
+          }
         })
       })
     
@@ -318,10 +353,12 @@ export function getInventoryByDate(
   // Get base inventory
   const baseInventory = getInventory()
   const allDocs = getAllDocs()
+  const allV2Docs = getAllEquipmentConfirmations()
   
   // Calculate rented quantities for the specific date
   const rentedCounts: Record<string, number> = {}
   
+  // Old type docs
   allDocs
     .filter(doc => {
       // Filter by status: APPROVED, BORROWED, or RETURNED (but return date is after query date)
@@ -358,6 +395,43 @@ export function getInventoryByDate(
       doc.items.forEach(item => {
         if (!equipmentName || item.name === equipmentName) {
           rentedCounts[item.name] = (rentedCounts[item.name] || 0) + item.quantity
+        }
+      })
+    })
+  
+  // V2 type docs
+  allV2Docs
+    .filter(doc => {
+      // Filter by status: APPROVED, BORROWED, or RETURNED
+      if (doc.status === 'APPROVED' || doc.status === 'BORROWED') {
+        // Check if query date is between borrow and return dates
+        if (doc.borrowPlan.borrowDate && doc.returnPlan.plannedReturnDate) {
+          const borrowDate = doc.borrowPlan.borrowDate
+          const returnDate = doc.returnPlan.plannedReturnDate
+          return queryDateStr >= borrowDate && queryDateStr <= returnDate
+        }
+        // If no dates set, assume it's active if status is BORROWED
+        return doc.status === 'BORROWED'
+      }
+      // For RETURNED status, check if return date is after query date
+      if (doc.status === 'RETURNED' && doc.returnConfirm.returnDate) {
+        const returnDate = doc.returnConfirm.returnDate
+        return queryDateStr <= returnDate
+      }
+      return false
+    })
+    .forEach(doc => {
+      doc.items.forEach(item => {
+        // V2 type has leftItemName/leftQty and rightItemName/rightQty
+        if (item.leftItemName && item.leftQty) {
+          if (!equipmentName || item.leftItemName === equipmentName) {
+            rentedCounts[item.leftItemName] = (rentedCounts[item.leftItemName] || 0) + item.leftQty
+          }
+        }
+        if (item.rightItemName && item.rightQty) {
+          if (!equipmentName || item.rightItemName === equipmentName) {
+            rentedCounts[item.rightItemName] = (rentedCounts[item.rightItemName] || 0) + item.rightQty
+          }
         }
       })
     })

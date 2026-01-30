@@ -8,4 +8,6 @@ export { InputField } from './InputField';
 export { SearchToolbar } from './SearchToolbar';
 export { DocumentStatusIndicator } from './DocumentStatusIndicator';
 export { EducationDetailDrawer } from './EducationDetailDrawer';
+export { EducationFeeCalculationFlow } from './EducationFeeCalculationFlow'
+export { AllowanceRateTable } from './AllowanceRateTable';
 export { PasswordChangeModal } from './PasswordChangeModal';

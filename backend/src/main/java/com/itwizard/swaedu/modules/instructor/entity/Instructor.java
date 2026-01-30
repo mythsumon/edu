@@ -58,6 +58,15 @@ public class Instructor {
     @Column(name = "detail_address")
     private String detailAddress;
 
+    @Column(name = "home_address", length = 500)
+    private String homeAddress;
+
+    @Column(name = "home_lat", precision = 10, scale = 7)
+    private java.math.BigDecimal homeLat;
+
+    @Column(name = "home_lng", precision = 10, scale = 7)
+    private java.math.BigDecimal homeLng;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status_id", foreignKey = @ForeignKey(name = "fk_instructors_status"))
     private MasterCodeEntity status;

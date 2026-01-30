@@ -40,6 +40,13 @@ const adminMenuConfig = [
     ],
   },
   {
+    labelKey: 'sidebar.equipmentManagement',
+    items: [
+      { labelKey: 'sidebar.equipmentWishlist', href: '/admin/equipment-confirmations/wishlist' },
+      { labelKey: 'sidebar.equipmentInventory', href: '/admin/teaching-aids/inventory' },
+    ],
+  },
+  {
     labelKey: 'sidebar.systemManagement',
     items: [
       { labelKey: 'sidebar.settings', href: '/admin/system' },

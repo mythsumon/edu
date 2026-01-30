@@ -7,6 +7,8 @@ import { Eye, Download, CheckCircle2, XCircle } from 'lucide-react'
 import type { EducationDocSummary } from '@/entities/submission'
 import { getEvidenceByEducationGrouped } from '@/entities/submission'
 import { generateAttendanceFilename, generateActivityLogFilename } from '@/lib/filenameGenerator'
+import { EducationFeeCalculationFlow } from './EducationFeeCalculationFlow'
+import { dataStore } from '@/lib/dataStore'
 import dayjs from 'dayjs'
 
 interface EducationDetailDrawerProps {
@@ -83,18 +85,32 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
       onClose={onClose}
       open={open}
     >
-      {summary && (
-        <div className="space-y-6">
-          <div>
-            <h3 className="text-lg font-semibold mb-2">기본 정보</h3>
-            <div className="space-y-2 text-sm">
-              <div><span className="font-medium">교육ID:</span> {summary.educationId}</div>
-              <div><span className="font-medium">기관명:</span> {summary.institutionName}</div>
-              <div><span className="font-medium">강사명:</span> {summary.instructorName}</div>
+      {summary && (() => {
+        // 교육 정보 가져오기
+        const education = dataStore.getEducations().find(e => e.educationId === summary.educationId)
+        const assignments = dataStore.getInstructorAssignments()
+        
+        return (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold mb-2">기본 정보</h3>
+              <div className="space-y-2 text-sm">
+                <div><span className="font-medium">교육ID:</span> {summary.educationId}</div>
+                <div><span className="font-medium">기관명:</span> {summary.institutionName}</div>
+                <div><span className="font-medium">강사명:</span> {summary.instructorName}</div>
+              </div>
             </div>
-          </div>
 
-          <Tabs
+            {/* 교육비 계산 흐름 */}
+            {education && (
+              <EducationFeeCalculationFlow
+                education={education}
+                assignments={assignments}
+                policy="STATUS_BASED"
+              />
+            )}
+
+            <Tabs
             items={[
               {
                 key: 'attendance',
@@ -637,8 +653,9 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
               },
             ]}
           />
-        </div>
-      )}
+          </div>
+        )
+      })()}
     </Drawer>
   )
 }
