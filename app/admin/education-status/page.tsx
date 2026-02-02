@@ -795,10 +795,7 @@ export default function EducationStatusPage() {
     }
 
     // 그 외의 경우 기존 로직
-    // 단일 선택인 경우 education 가져오기
-    const education = selectedRows.length === 1 
-      ? dataStore.getEducationById(selectedRows[0].educationId)
-      : null
+    const education = dataStore.getEducationById(row.educationId)
     
     Modal.confirm({
       title: '상태 변경 확인',
@@ -828,19 +825,16 @@ export default function EducationStatusPage() {
       cancelText: '취소',
       width: 700,
       onOk: () => {
-        // Update dataStore for each selected row
-        selectedRows.forEach(row => {
-          const education = dataStore.getEducationById(row.educationId)
-          if (education) {
-            dataStore.updateEducation(row.educationId, { status: newStatus })
-            // 스케줄러에 알림
-            educationScheduler.scheduleEducation(education)
-          }
-        })
+        // Update dataStore
+        if (education) {
+          dataStore.updateEducation(row.educationId, { status: newStatus })
+          // 스케줄러에 알림
+          educationScheduler.scheduleEducation(education)
+        }
         
         // Update local state
         setData(prev => prev.map(item => {
-          if (selectedIds.includes(item.key)) {
+          if (item.key === id) {
             // Auto-create AttendanceSheet when status reaches "확정" or "교육 진행 중"
             if ((newStatus === '확정' || newStatus === '교육 진행 중') && item.educationId) {
               const education = dataStore.getEducationById(item.educationId)
