@@ -7,6 +7,7 @@ import { ArrowLeft, Save, CheckCircle2, XCircle, Download, AlertTriangle, Info }
 import { useAuth } from '@/contexts/AuthContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { DetailSectionCard } from '@/components/admin/operations'
+import { EducationBasicInfoForm, type EducationBasicInfoData } from '@/components/shared/common'
 import { EvidenceUploader } from '../components/EvidenceUploader'
 import {
   getEvidenceDocById,
@@ -401,6 +402,30 @@ export default function EvidenceDetailPage() {
                 <p className="text-base font-semibold text-gray-900 dark:text-gray-100">{doc.assistantInstructorName}</p>
               </div>
             </div>
+          </DetailSectionCard>
+
+          {/* 기본 정보 */}
+          <DetailSectionCard title="기본 정보" className="mb-6">
+            <EducationBasicInfoForm
+              data={{
+                className: '',
+                regionCity: '',
+                startDate: '',
+                endDate: '',
+                totalSessions: 0,
+                expectedStudents: 0,
+                educationType: '',
+                institutionType: '',
+                targetLevel: '',
+                learningTech: '',
+                textbook: '',
+                담당자명: '',
+                담당자연락처: '',
+              }}
+              isEditable={false}
+              isAdmin={false}
+              onChange={() => {}}
+            />
           </DetailSectionCard>
 
           {/* Evidence Upload */}

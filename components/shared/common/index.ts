@@ -11,3 +11,5 @@ export { EducationDetailDrawer } from './EducationDetailDrawer';
 export { EducationFeeCalculationFlow } from './EducationFeeCalculationFlow'
 export { AllowanceRateTable } from './AllowanceRateTable';
 export { PasswordChangeModal } from './PasswordChangeModal';
+export { EducationBasicInfoForm } from './EducationBasicInfoForm';
+export type { EducationBasicInfoData } from './EducationBasicInfoForm';

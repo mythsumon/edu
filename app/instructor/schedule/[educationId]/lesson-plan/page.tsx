@@ -7,6 +7,7 @@ import { ArrowLeft, Save, CheckCircle2, XCircle, Plus, Trash2, AlertTriangle, Up
 import { useAuth } from '@/contexts/AuthContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { DetailSectionCard } from '@/components/admin/operations'
+import { EducationBasicInfoForm, type EducationBasicInfoData } from '@/components/shared/common'
 import {
   getLessonPlanById,
   getLessonPlanByEducationId,
@@ -14,7 +15,6 @@ import {
 } from './storage'
 import type { LessonPlanDoc, LessonPlanStatus, EducationType, InstitutionType, TargetLevel, LessonPlanSession } from './types'
 import { dataStore } from '@/lib/dataStore'
-import { getAllRegionCityCodes } from '@/lib/commonCodeStore'
 import dayjs from 'dayjs'
 
 const { TextArea } = Input
@@ -95,14 +95,6 @@ export default function InstructorLessonPlanPage() {
     return false
   }, [isAdmin, assignment, education, userProfile, educationId])
 
-  // Region city options
-  const regionCityOptions = useMemo(() => {
-    const codes = getAllRegionCityCodes()
-    return codes.map(code => ({
-      label: code.label,
-      value: code.label, // Use label as value for simplicity
-    }))
-  }, [])
 
   // Load doc
   const loadDoc = async () => {
@@ -117,33 +109,33 @@ export default function InstructorLessonPlanPage() {
         const instructorId = mainInstructor?.id || userProfile?.userId || 'instructor-unknown'
         const instructorName = mainInstructor?.name || userProfile?.name || '강사'
 
-        // Use education data if available, otherwise use defaults
-        const startDate = education?.periodStart ? dayjs(education.periodStart).format('YYYY-MM-DD') : ''
-        const endDate = education?.periodEnd ? dayjs(education.periodEnd).format('YYYY-MM-DD') : ''
+        // Use education data if available, otherwise use defaults from reference image
+        const startDate = education?.periodStart ? dayjs(education.periodStart).format('YYYY-MM-DD') : '2025-10-31'
+        const endDate = education?.periodEnd ? dayjs(education.periodEnd).format('YYYY-MM-DD') : '2025-11-06'
         
         // Parse gradeClass
         const gradeClassMatch = education?.gradeClass?.match(/(\d+)학년\s*(\d+)반/)
-        const className = gradeClassMatch ? `${gradeClassMatch[1]}학년 ${gradeClassMatch[2]}반` : education?.gradeClass || ''
+        const className = gradeClassMatch ? `${gradeClassMatch[1]}학년 ${gradeClassMatch[2]}반` : education?.gradeClass || '4학년 1반'
 
         loadedDoc = {
           id: `lp-${Date.now()}`,
           educationId: educationId,
           status: 'DRAFT',
-          educationName: education?.name || '',
-          institutionName: education?.institution || '',
+          educationName: education?.name || '8차시 블록코딩과 엔트리 기초 및 인공지능 AI',
+          institutionName: education?.institution || '중부초등학교',
           className: className,
-          regionCity: education?.region || '',
+          regionCity: education?.region || '성남시',
           startDate: startDate,
           endDate: endDate,
-          totalSessions: education?.period?.split('차시')[0] ? parseInt(education.period.split('차시')[0]) || 0 : 0,
-          expectedStudents: 0,
-          educationType: '센터교육',
+          totalSessions: education?.period?.split('차시')[0] ? parseInt(education.period.split('차시')[0]) || 8 : 8,
+          expectedStudents: education?.studentCount || 22,
+          educationType: '방문교육',
           institutionType: '일반학교',
           targetLevel: '초등',
-          learningTech: '',
-          textbook: '',
-          담당자명: '',
-          담당자연락처: '',
+          learningTech: '엔트리',
+          textbook: '컴퓨터',
+          담당자명: '박희준 선생님',
+          담당자연락처: '031-730-7109',
           goals: ['', '', ''],
           sessions: [],
           authorInstructorId: instructorId,
@@ -659,279 +651,27 @@ export default function InstructorLessonPlanPage() {
 
           {/* Basic Information */}
           <DetailSectionCard title="기본 정보" className="mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Auto-filled fields (read-only for instructor, editable for admin) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  학급명 <span className="text-red-500">*</span>
-                </label>
-                {isEditable && isAdmin ? (
-                  <Input
-                    value={doc.className}
-                    onChange={(e) => handleFieldChange('className', e.target.value)}
-                  />
-                ) : (
-                  <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
-                    {doc.className || '-'}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  지역(시/군) <span className="text-red-500">*</span>
-                </label>
-                {isEditable ? (
-                  <Select
-                    className="w-full"
-                    value={doc.regionCity}
-                    onChange={(value) => handleFieldChange('regionCity', value)}
-                    options={regionCityOptions}
-                    placeholder="지역 선택"
-                  />
-                ) : (
-                  <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
-                    {doc.regionCity || '-'}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  교육시작일 예정 <span className="text-red-500">*</span>
-                </label>
-                {isEditable && isAdmin ? (
-                  <DatePicker
-                    className="w-full"
-                    value={doc.startDate ? dayjs(doc.startDate) : null}
-                    onChange={(date) => handleFieldChange('startDate', date ? date.format('YYYY-MM-DD') : '')}
-                    format="YYYY-MM-DD"
-                  />
-                ) : (
-                  <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
-                    {doc.startDate ? dayjs(doc.startDate).format('YYYY-MM-DD') : '-'}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  교육종료일 예정 <span className="text-red-500">*</span>
-                </label>
-                {isEditable && isAdmin ? (
-                  <DatePicker
-                    className="w-full"
-                    value={doc.endDate ? dayjs(doc.endDate) : null}
-                    onChange={(date) => handleFieldChange('endDate', date ? date.format('YYYY-MM-DD') : '')}
-                    format="YYYY-MM-DD"
-                  />
-                ) : (
-                  <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
-                    {doc.endDate ? dayjs(doc.endDate).format('YYYY-MM-DD') : '-'}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  총 교육 차시 <span className="text-red-500">*</span>
-                </label>
-                {isEditable && isAdmin ? (
-                  <Input
-                    type="number"
-                    value={doc.totalSessions}
-                    onChange={(e) => handleFieldChange('totalSessions', parseInt(e.target.value) || 0)}
-                  />
-                ) : (
-                  <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
-                    {doc.totalSessions || '-'}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  교육인원 <span className="text-red-500">*</span>
-                </label>
-                {isEditable && isAdmin ? (
-                  <Input
-                    type="number"
-                    value={doc.expectedStudents}
-                    onChange={(e) => handleFieldChange('expectedStudents', parseInt(e.target.value) || 0)}
-                  />
-                ) : (
-                  <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
-                    {doc.expectedStudents || '-'}
-                  </div>
-                )}
-              </div>
-
-              {/* Select fields */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  교육구분 <span className="text-red-500">*</span>
-                </label>
-                {isEditable ? (
-                  <Select
-                    className="w-full"
-                    value={doc.educationType}
-                    onChange={(value) => handleFieldChange('educationType', value)}
-                    options={[
-                      { label: '센터교육', value: '센터교육' },
-                      { label: '방문교육', value: '방문교육' },
-                      { label: '온라인', value: '온라인' },
-                    ]}
-                  />
-                ) : (
-                  <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
-                    {doc.educationType || '-'}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  기관구분 <span className="text-red-500">*</span>
-                </label>
-                {isEditable ? (
-                  <Select
-                    className="w-full"
-                    value={doc.institutionType}
-                    onChange={(value) => {
-                      handleFieldChange('institutionType', value)
-                      if (value !== '기타') {
-                        handleFieldChange('institutionTypeEtc', undefined)
-                      }
-                    }}
-                    options={[
-                      { label: '일반학교', value: '일반학교' },
-                      { label: '도서관', value: '도서관' },
-                      { label: '도서벽지', value: '도서벽지' },
-                      { label: '지역아동센터', value: '지역아동센터' },
-                      { label: '특수학급', value: '특수학급' },
-                      { label: '수원센터', value: '수원센터' },
-                      { label: '의정부센터', value: '의정부센터' },
-                      { label: '온라인', value: '온라인' },
-                      { label: '연계거점', value: '연계거점' },
-                      { label: '기타', value: '기타' },
-                    ]}
-                  />
-                ) : (
-                  <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
-                    {doc.institutionType || '-'}
-                  </div>
-                )}
-              </div>
-
-              {doc.institutionType === '기타' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    기타 상세 <span className="text-red-500">*</span>
-                  </label>
-                  {isEditable ? (
-                    <Input
-                      value={doc.institutionTypeEtc || ''}
-                      onChange={(e) => handleFieldChange('institutionTypeEtc', e.target.value)}
-                      placeholder="기타 상세 입력"
-                    />
-                  ) : (
-                    <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
-                      {doc.institutionTypeEtc || '-'}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  교육대상 <span className="text-red-500">*</span>
-                </label>
-                {isEditable ? (
-                  <Select
-                    className="w-full"
-                    value={doc.targetLevel}
-                    onChange={(value) => handleFieldChange('targetLevel', value)}
-                    options={[
-                      { label: '초등', value: '초등' },
-                      { label: '중등', value: '중등' },
-                      { label: '고등', value: '고등' },
-                      { label: '혼합', value: '혼합' },
-                    ]}
-                  />
-                ) : (
-                  <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
-                    {doc.targetLevel || '-'}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  학습기술 <span className="text-red-500">*</span>
-                </label>
-                {isEditable ? (
-                  <Input
-                    value={doc.learningTech}
-                    onChange={(e) => handleFieldChange('learningTech', e.target.value)}
-                    placeholder="예: 엔트리"
-                  />
-                ) : (
-                  <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
-                    {doc.learningTech || '-'}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  교육교재 <span className="text-red-500">*</span>
-                </label>
-                {isEditable ? (
-                  <Input
-                    value={doc.textbook}
-                    onChange={(e) => handleFieldChange('textbook', e.target.value)}
-                    placeholder="예: 컴퓨터"
-                  />
-                ) : (
-                  <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
-                    {doc.textbook || '-'}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  기관 담당자명 <span className="text-red-500">*</span>
-                </label>
-                {isEditable ? (
-                  <Input
-                    value={doc.담당자명}
-                    onChange={(e) => handleFieldChange('담당자명', e.target.value)}
-                  />
-                ) : (
-                  <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
-                    {doc.담당자명 || '-'}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  기관 담당자 연락처 <span className="text-red-500">*</span>
-                </label>
-                {isEditable ? (
-                  <Input
-                    value={doc.담당자연락처}
-                    onChange={(e) => handleFieldChange('담당자연락처', e.target.value)}
-                    placeholder="010-1234-5678"
-                  />
-                ) : (
-                  <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
-                    {doc.담당자연락처 || '-'}
-                  </div>
-                )}
-              </div>
-            </div>
+            <EducationBasicInfoForm
+              data={{
+                className: doc.className,
+                regionCity: doc.regionCity,
+                startDate: doc.startDate,
+                endDate: doc.endDate,
+                totalSessions: doc.totalSessions,
+                expectedStudents: doc.expectedStudents,
+                educationType: doc.educationType,
+                institutionType: doc.institutionType,
+                institutionTypeEtc: doc.institutionTypeEtc,
+                targetLevel: doc.targetLevel,
+                learningTech: doc.learningTech,
+                textbook: doc.textbook,
+                담당자명: doc.담당자명,
+                담당자연락처: doc.담당자연락처,
+              }}
+              isEditable={isEditable}
+              isAdmin={isAdmin}
+              onChange={handleFieldChange}
+            />
           </DetailSectionCard>
 
           {/* Education Goals */}

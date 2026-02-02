@@ -8,10 +8,11 @@ import { ArrowLeft, Save, Trash2, Edit, X, CheckCircle2, XCircle, Info } from 'l
 import { useAuth } from '@/contexts/AuthContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { DetailSectionCard } from '@/components/admin/operations'
+import { EducationBasicInfoForm, type EducationBasicInfoData } from '@/components/shared/common'
 import { PhotoUploader } from '../components/PhotoUploader'
 import { SessionRowsTable } from '../components/SessionRowsTable'
 import { ActivityLog, ActivityLogSessionRow, UploadedImage } from '../types'
-import { upsertActivityLog, getActivityLogById, getActivityLogByEducationId } from '../storage'
+import { upsertActivityLog, getActivityLogById, getActivityLogByActivityLogId } from '../storage'
 import dayjs from 'dayjs'
 
 const { TextArea } = Input
@@ -689,6 +690,49 @@ export default function ActivityLogDetailPage() {
                 <div className="text-base font-medium text-gray-900 dark:text-gray-100">{totalGraduates}명</div>
               </div>
             </div>
+          </DetailSectionCard>
+
+          {/* 기본 정보 */}
+          <DetailSectionCard title="기본 정보" className="mb-6">
+            <EducationBasicInfoForm
+              data={{
+                className: formData.grade && formData.class ? `${formData.grade}학년 ${formData.class}반` : '',
+                regionCity: formData.region,
+                startDate: formData.startDate,
+                endDate: formData.endDate,
+                totalSessions: 0,
+                expectedStudents: formData.totalApplicants,
+                educationType: formData.educationType,
+                institutionType: formData.institutionType,
+                targetLevel: '',
+                learningTech: '',
+                textbook: '',
+                담당자명: '',
+                담당자연락처: '',
+              }}
+              isEditable={isEditMode}
+              isAdmin={isAdmin}
+              onChange={(field, value) => {
+                if (field === 'className') {
+                  const match = value.match(/(\d+)학년\s*(\d+)반/)
+                  if (match) {
+                    setFormData({ ...formData, grade: match[1], class: match[2] })
+                  }
+                } else if (field === 'regionCity') {
+                  setFormData({ ...formData, region: value })
+                } else if (field === 'startDate') {
+                  setFormData({ ...formData, startDate: value })
+                } else if (field === 'endDate') {
+                  setFormData({ ...formData, endDate: value })
+                } else if (field === 'expectedStudents') {
+                  setFormData({ ...formData, totalApplicants: value })
+                } else if (field === 'educationType') {
+                  setFormData({ ...formData, educationType: value })
+                } else if (field === 'institutionType') {
+                  setFormData({ ...formData, institutionType: value })
+                }
+              }}
+            />
           </DetailSectionCard>
 
           {/* SECTION 2: 차시 목록 */}

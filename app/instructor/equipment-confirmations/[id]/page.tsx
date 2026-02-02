@@ -7,6 +7,7 @@ import { ArrowLeft, Save, CheckCircle2, XCircle, AlertTriangle, Info } from 'luc
 import { useAuth } from '@/contexts/AuthContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { DetailSectionCard } from '@/components/admin/operations'
+import { EducationBasicInfoForm, type EducationBasicInfoData } from '@/components/shared/common'
 import { EquipmentItemsTableV2 } from '../components/EquipmentItemsTableV2'
 import { SignatureSlotV2 } from '../components/SignatureSlotV2'
 import {
@@ -727,6 +728,40 @@ export default function EquipmentConfirmationDetailPage() {
                 </div>
               </div>
             </div>
+          </DetailSectionCard>
+
+          {/* 교육 기본 정보 */}
+          <DetailSectionCard title="교육 기본 정보" className="mb-6">
+            <EducationBasicInfoForm
+              data={{
+                className: '',
+                regionCity: '',
+                startDate: doc.lectureDateRange.start,
+                endDate: doc.lectureDateRange.end,
+                totalSessions: doc.담당차시_총차시.총차시,
+                expectedStudents: doc.expectedParticipants,
+                educationType: '',
+                institutionType: '',
+                targetLevel: '',
+                learningTech: '',
+                textbook: '',
+                담당자명: '',
+                담당자연락처: '',
+              }}
+              isEditable={isEditable}
+              isAdmin={isAdmin}
+              onChange={(field, value) => {
+                if (field === 'startDate') {
+                  handleFieldChange('lectureDateRange', { ...doc.lectureDateRange, start: value })
+                } else if (field === 'endDate') {
+                  handleFieldChange('lectureDateRange', { ...doc.lectureDateRange, end: value })
+                } else if (field === 'totalSessions') {
+                  handleFieldChange('담당차시_총차시', { ...doc.담당차시_총차시, 총차시: value })
+                } else if (field === 'expectedStudents') {
+                  handleFieldChange('expectedParticipants', value)
+                }
+              }}
+            />
           </DetailSectionCard>
 
           {/* Section 2: 대여 교구 목록 및 수량 */}

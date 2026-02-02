@@ -9,6 +9,7 @@ import { ArrowLeft, Save, Edit, X, UserPlus, CheckCircle, CheckCircle2, AlertTri
 import { useAuth } from '@/contexts/AuthContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { DetailSectionCard, DefinitionListGrid } from '@/components/admin/operations'
+import { EducationBasicInfoForm, type EducationBasicInfoData } from '@/components/shared/common'
 import { InstitutionContactAndSignatures } from '@/components/instructor/attendance/InstitutionContactAndSignatures'
 import type { InstitutionContact, AttendanceSignatures, Signature } from '@/components/instructor/attendance/InstitutionContactAndSignatures'
 import { dataStore } from '@/lib/dataStore'
@@ -1566,6 +1567,48 @@ export default function InstructorAttendancePage() {
               </div>
             </div>
           </Modal>
+
+          {/* 기본 정보 */}
+          <DetailSectionCard title="기본 정보" className="mb-6">
+            <EducationBasicInfoForm
+              data={{
+                className: headerData.gradeClass,
+                regionCity: headerData.location,
+                startDate: '',
+                endDate: '',
+                totalSessions: headerData.totalSessions,
+                expectedStudents: headerData.maleCount + headerData.femaleCount,
+                educationType: '',
+                institutionType: '',
+                targetLevel: '',
+                learningTech: '',
+                textbook: '',
+                담당자명: headerData.schoolContactName,
+                담당자연락처: '',
+              }}
+              isEditable={isEditMode}
+              isAdmin={isAdmin}
+              onChange={(field, value) => {
+                if (field === 'className') {
+                  const match = value.match(/(\d+)학년\s*(\d+)반/)
+                  if (match) {
+                    setHeaderData({ ...headerData, gradeClass: value, grade: match[1], className: match[2] })
+                  }
+                } else if (field === 'regionCity') {
+                  setHeaderData({ ...headerData, location: value })
+                } else if (field === 'totalSessions') {
+                  setHeaderData({ ...headerData, totalSessions: value })
+                } else if (field === 'expectedStudents') {
+                  const total = value
+                  const maleCount = Math.floor(total / 2)
+                  const femaleCount = total - maleCount
+                  setHeaderData({ ...headerData, maleCount, femaleCount })
+                } else if (field === '담당자명') {
+                  setHeaderData({ ...headerData, schoolContactName: value })
+                }
+              }}
+            />
+          </DetailSectionCard>
 
           {/* SECTION 2: 회차별 수업 정보 - 가로형 테이블 */}
           {sessions && sessions.length > 0 && (
