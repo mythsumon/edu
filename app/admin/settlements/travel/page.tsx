@@ -6,7 +6,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Table, Card, Input, Button, Select, DatePicker, Modal, Form, InputNumber, Space, Badge, message, Switch, Tooltip } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { Search, Filter, Download, Eye, Edit, RotateCcw, Settings, Info, MapPin, Calendar, User } from 'lucide-react'
+import { Search, Filter, Download, Eye, Edit, RotateCcw, Settings, Info, MapPin, Calendar, User, X } from 'lucide-react'
 import dayjs, { Dayjs } from 'dayjs'
 import 'dayjs/locale/ko'
 import type { TravelSettlementRow, PaymentCountingMode, DailyTravelRecord } from '@/entities/settlement'
@@ -40,7 +40,7 @@ const COMPLETION_TOOLTIP = "완료 건수는 성과 분석에만 사용됩니다
 const SESSION_RULE_TOOLTIP = "총 차시가 4회 이상인 교육만 완료 통계에 포함됩니다.\n2-3회 교육은 완료 건수에서 제외됩니다."
 const TBD_TOOLTIP = "주강사가 없는 교육은 현재 완료 건수에서 제외됩니다.\n이 규칙은 확인이 필요합니다."
 const COUNTING_ELIGIBLE_TOOLTIP = "정산 계산 대상만 표시합니다.\n현재 설정된 정산 계산 모드에 따라 결정됩니다."
-const DAILY_TRAVEL_TOOLTIP = "출장비는 강사별, 일별로 집계됩니다.\n같은 날 여러 교육이 있으면 하나의 경로로 계산되어 하루에 한 번만 지급됩니다."
+const DAILY_TRAVEL_TOOLTIP = "여비(출장비)는 강사별, 일별로 집계됩니다.\n• 같은 날 여러 교육이 있으면 집 → 기관1 → 기관2 → ... → 집 경로로 계산\n• 31개 시군청간 거리표 기준 (같은 시군 내 이동 = 0km)\n• 거리 구간별 정책: 50~70km=2만원, 70~90km=3만원, 90~110km=4만원, 110~130km=5만원, 130km 이상=6만원\n• 같은 날 여러 교육이 있어도 여비는 하루에 한 번만 지급"
 
 export default function TravelSettlementPage() {
   const [rows, setRows] = useState<TravelSettlementRow[]>([])
@@ -58,8 +58,10 @@ export default function TravelSettlementPage() {
   const [selectedDailyRecord, setSelectedDailyRecord] = useState<DailyTravelRecord | null>(null)
   const [dailyTravelModalOpen, setDailyTravelModalOpen] = useState(false)
   const [viewMode, setViewMode] = useState<'education' | 'daily'>('education')
+  const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set())
   const [paymentCountingMode, setPaymentCountingModeState] = useState<PaymentCountingMode>(getPaymentCountingMode())
   const [form] = Form.useForm()
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
 
   // Initialize store on mount
   useEffect(() => {
@@ -140,12 +142,13 @@ export default function TravelSettlementPage() {
     })
   }, [rows, searchText, monthFilter, institutionFilter, instructorFilter, statusFilter, countingEligibleOnly])
 
-  // Group by instructor and date for instructor-based view
-  const instructorGroupedData = useMemo(() => {
-    // First group by instructor
-    const instructorMap = new Map<string, {
+  // Group by instructor, month, and date for improved UX
+  const instructorMonthlyGroupedData = useMemo(() => {
+    // First group by instructor and month
+    const instructorMonthMap = new Map<string, {
       instructorId: string
       instructorName: string
+      month: string
       rows: TravelSettlementRow[]
       totalTravelExpense: number
       totalAllowance: number
@@ -155,10 +158,12 @@ export default function TravelSettlementPage() {
     }>()
 
     filteredData.forEach(row => {
-      const instructorKey = `${row.instructorId}_${row.instructorName}`
-      const existing = instructorMap.get(instructorKey) || {
+      const month = dayjs(row.date || row.periodStart).format('YYYY-MM')
+      const instructorKey = `${row.instructorId}_${row.instructorName}_${month}`
+      const existing = instructorMonthMap.get(instructorKey) || {
         instructorId: row.instructorId,
         instructorName: row.instructorName,
+        month,
         rows: [],
         totalTravelExpense: 0,
         totalAllowance: 0,
@@ -173,7 +178,7 @@ export default function TravelSettlementPage() {
       existing.totalPay += row.totalPay
       existing.educationCount = new Set(existing.rows.map(r => r.educationId)).size
 
-      // Group by date within instructor
+      // Group by date within instructor and month
       const dateKey = row.date || row.periodStart || ''
       if (dateKey) {
         const dateGroup = existing.dateGroups.get(dateKey) || []
@@ -181,30 +186,42 @@ export default function TravelSettlementPage() {
         existing.dateGroups.set(dateKey, dateGroup)
       }
 
-      instructorMap.set(instructorKey, existing)
+      instructorMonthMap.set(instructorKey, existing)
     })
 
-    // Sort rows within each instructor by date (newest first, then by date)
-    const result = Array.from(instructorMap.values()).map(group => {
-      // Sort rows by date (periodStart or date) - oldest first
+    // Sort and organize data
+    const result = Array.from(instructorMonthMap.values()).map(group => {
+      // Sort rows by date (oldest first)
       group.rows.sort((a, b) => {
         const dateA = a.date || a.periodStart || ''
         const dateB = b.date || b.periodStart || ''
         const dateDiff = dayjs(dateA).valueOf() - dayjs(dateB).valueOf()
-        // If same date, sort by education name
         if (dateDiff === 0) {
           return a.educationName.localeCompare(b.educationName)
         }
         return dateDiff
       })
       
-      return group
+      // Sort date groups
+      const sortedDateGroups = Array.from(group.dateGroups.entries())
+        .sort(([dateA], [dateB]) => dayjs(dateA).valueOf() - dayjs(dateB).valueOf())
+        .map(([date, rows]) => ({
+          date,
+          rows: rows.sort((a, b) => a.educationName.localeCompare(b.educationName)),
+          totalTravelExpense: rows.reduce((sum, r) => sum + r.travelExpense, 0),
+          totalAllowance: rows.reduce((sum, r) => sum + r.allowanceTotal, 0),
+          totalPay: rows.reduce((sum, r) => sum + r.totalPay, 0),
+        }))
+      
+      return {
+        ...group,
+        sortedDateGroups,
+      }
     }).sort((a, b) => {
-      // Sort instructors by name
+      // Sort by instructor name, then by month (newest first)
       const nameCompare = a.instructorName.localeCompare(b.instructorName)
       if (nameCompare !== 0) return nameCompare
-      // If same name, sort by total pay (descending)
-      return b.totalPay - a.totalPay
+      return b.month.localeCompare(a.month)
     })
 
     return result
@@ -604,18 +621,6 @@ export default function TravelSettlementPage() {
             </div>
             <Space>
               <Button
-                type={viewMode === 'education' ? 'primary' : 'default'}
-                onClick={() => setViewMode('education')}
-              >
-                교육별 보기
-              </Button>
-              <Button
-                type={viewMode === 'daily' ? 'primary' : 'default'}
-                onClick={() => setViewMode('daily')}
-              >
-                강사별 일별 여비
-              </Button>
-              <Button
                 icon={<Settings className="w-4 h-4" />}
                 onClick={() => setSettingsModalOpen(true)}
               >
@@ -631,65 +636,227 @@ export default function TravelSettlementPage() {
             </Space>
           </div>
 
-          {/* Filters */}
-          <Card className="mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Input
-                placeholder="교육ID, 교육명, 기관명, 강사명 검색"
-                prefix={<Search className="w-4 h-4 text-gray-400" />}
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                allowClear
-              />
-              <Input
-                placeholder="기관명 검색"
-                prefix={<Search className="w-4 h-4 text-gray-400" />}
-                value={institutionFilter}
-                onChange={(e) => setInstitutionFilter(e.target.value)}
-                allowClear
-              />
-              <Input
-                placeholder="강사명 검색"
-                prefix={<Search className="w-4 h-4 text-gray-400" />}
-                value={instructorFilter}
-                onChange={(e) => setInstructorFilter(e.target.value)}
-                allowClear
-              />
-              <Select
-                placeholder="월 선택"
-                value={monthFilter}
-                onChange={setMonthFilter}
-                allowClear
-                className="w-full"
-              >
-                {monthOptions.map(month => (
-                  <Select.Option key={month} value={month}>
-                    {dayjs(month).format('YYYY년 MM월')}
-                  </Select.Option>
-                ))}
-              </Select>
-              <Select
-                placeholder="상태 선택"
-                value={statusFilter}
-                onChange={setStatusFilter}
-                className="w-full"
-              >
-                <Select.Option value="all">전체</Select.Option>
-                {statusOptions.map(status => (
-                  <Select.Option key={status} value={status}>
-                    {status}
-                  </Select.Option>
-                ))}
-              </Select>
-              <div className="flex items-center">
-                <Switch
-                  checked={countingEligibleOnly}
-                  onChange={setCountingEligibleOnly}
+          {/* Search and Filters */}
+          <Card className="mb-6 rounded-xl shadow-sm border border-slate-200">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 p-4">
+              {/* Main Search Input */}
+              <div className="flex-1 w-full lg:max-w-[500px]">
+                <Input
+                  placeholder="교육ID, 교육명, 기관명, 강사명으로 검색"
+                  prefix={<Search className="h-5 w-5 text-slate-400" />}
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  allowClear
+                  onPressEnter={() => {}}
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 transition hover:border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                 />
-                <span className="ml-2 text-sm">계산 대상만 보기</span>
-                <Tooltip title={COUNTING_ELIGIBLE_TOOLTIP}>
-                  <Info className="w-3 h-3 text-slate-400 hover:text-slate-600 transition-colors cursor-help ml-1" />
-                </Tooltip>
+              </div>
+
+              {/* Active Filters Display */}
+              <div className="flex flex-wrap items-center gap-2 flex-1">
+                {(institutionFilter || instructorFilter || monthFilter || statusFilter !== 'all' || countingEligibleOnly) && (
+                  <>
+                    {institutionFilter && (
+                      <Badge
+                        count={
+                          <span className="flex items-center gap-1 px-2 py-0.5">
+                            <span className="text-xs">기관: {institutionFilter}</span>
+                            <X
+                              className="w-3 h-3 cursor-pointer hover:text-red-500"
+                              onClick={() => setInstitutionFilter('')}
+                            />
+                          </span>
+                        }
+                        style={{ backgroundColor: '#e0e7ff', color: '#4f46e5', border: '1px solid #c7d2fe' }}
+                      />
+                    )}
+                    {instructorFilter && (
+                      <Badge
+                        count={
+                          <span className="flex items-center gap-1 px-2 py-0.5">
+                            <span className="text-xs">강사: {instructorFilter}</span>
+                            <X
+                              className="w-3 h-3 cursor-pointer hover:text-red-500"
+                              onClick={() => setInstructorFilter('')}
+                            />
+                          </span>
+                        }
+                        style={{ backgroundColor: '#e0e7ff', color: '#4f46e5', border: '1px solid #c7d2fe' }}
+                      />
+                    )}
+                    {monthFilter && (
+                      <Badge
+                        count={
+                          <span className="flex items-center gap-1 px-2 py-0.5">
+                            <span className="text-xs">월: {dayjs(monthFilter).format('YYYY년 MM월')}</span>
+                            <X
+                              className="w-3 h-3 cursor-pointer hover:text-red-500"
+                              onClick={() => setMonthFilter(null)}
+                            />
+                          </span>
+                        }
+                        style={{ backgroundColor: '#e0e7ff', color: '#4f46e5', border: '1px solid #c7d2fe' }}
+                      />
+                    )}
+                    {statusFilter !== 'all' && (
+                      <Badge
+                        count={
+                          <span className="flex items-center gap-1 px-2 py-0.5">
+                            <span className="text-xs">상태: {statusFilter}</span>
+                            <X
+                              className="w-3 h-3 cursor-pointer hover:text-red-500"
+                              onClick={() => setStatusFilter('all')}
+                            />
+                          </span>
+                        }
+                        style={{ backgroundColor: '#e0e7ff', color: '#4f46e5', border: '1px solid #c7d2fe' }}
+                      />
+                    )}
+                    {countingEligibleOnly && (
+                      <Badge
+                        count={
+                          <span className="flex items-center gap-1 px-2 py-0.5">
+                            <span className="text-xs">계산 대상만</span>
+                            <X
+                              className="w-3 h-3 cursor-pointer hover:text-red-500"
+                              onClick={() => setCountingEligibleOnly(false)}
+                            />
+                          </span>
+                        }
+                        style={{ backgroundColor: '#e0e7ff', color: '#4f46e5', border: '1px solid #c7d2fe' }}
+                      />
+                    )}
+                    <Button
+                      type="text"
+                      size="small"
+                      onClick={() => {
+                        setInstitutionFilter('')
+                        setInstructorFilter('')
+                        setMonthFilter(null)
+                        setStatusFilter('all')
+                        setCountingEligibleOnly(false)
+                        setSearchText('')
+                      }}
+                      className="text-xs text-slate-500 hover:text-slate-700"
+                    >
+                      전체 초기화
+                    </Button>
+                  </>
+                )}
+              </div>
+
+              {/* Filter Button */}
+              <div className="relative filter-dropdown-container">
+                <Button
+                  icon={<Filter className="w-4 h-4" />}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setFilterDropdownOpen(!filterDropdownOpen)
+                  }}
+                  className={`h-11 px-4 rounded-xl border transition-all ${
+                    filterDropdownOpen || institutionFilter || instructorFilter || monthFilter || statusFilter !== 'all' || countingEligibleOnly
+                      ? 'border-blue-400 bg-blue-50 text-blue-600'
+                      : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                  }`}
+                >
+                  필터
+                  {(institutionFilter || instructorFilter || monthFilter || statusFilter !== 'all' || countingEligibleOnly) && (
+                    <Badge count={[institutionFilter, instructorFilter, monthFilter, statusFilter !== 'all' ? 1 : 0, countingEligibleOnly ? 1 : 0].filter(Boolean).length} style={{ backgroundColor: '#ef4444' }} className="ml-2" />
+                  )}
+                </Button>
+
+                {/* Filter Dropdown */}
+                {filterDropdownOpen && (
+                  <Card
+                    className="absolute right-0 top-full mt-2 w-80 z-50 shadow-lg border border-slate-200 rounded-xl"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between pb-2 border-b">
+                        <span className="font-semibold text-slate-700">필터 옵션</span>
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<X className="w-4 h-4" />}
+                          onClick={() => setFilterDropdownOpen(false)}
+                        />
+                      </div>
+
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1.5">기관명</label>
+                          <Input
+                            placeholder="기관명 검색"
+                            prefix={<Search className="w-4 h-4 text-slate-400" />}
+                            value={institutionFilter}
+                            onChange={(e) => setInstitutionFilter(e.target.value)}
+                            allowClear
+                            className="rounded-lg"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1.5">강사명</label>
+                          <Input
+                            placeholder="강사명 검색"
+                            prefix={<Search className="w-4 h-4 text-slate-400" />}
+                            value={instructorFilter}
+                            onChange={(e) => setInstructorFilter(e.target.value)}
+                            allowClear
+                            className="rounded-lg"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1.5">월 선택</label>
+                          <Select
+                            placeholder="월 선택"
+                            value={monthFilter}
+                            onChange={setMonthFilter}
+                            allowClear
+                            className="w-full rounded-lg"
+                          >
+                            {monthOptions.map(month => (
+                              <Select.Option key={month} value={month}>
+                                {dayjs(month).format('YYYY년 MM월')}
+                              </Select.Option>
+                            ))}
+                          </Select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1.5">상태</label>
+                          <Select
+                            placeholder="상태 선택"
+                            value={statusFilter}
+                            onChange={setStatusFilter}
+                            className="w-full rounded-lg"
+                          >
+                            <Select.Option value="all">전체</Select.Option>
+                            {statusOptions.map(status => (
+                              <Select.Option key={status} value={status}>
+                                {status}
+                              </Select.Option>
+                            ))}
+                          </Select>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-2 border-t">
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={countingEligibleOnly}
+                              onChange={setCountingEligibleOnly}
+                            />
+                            <span className="text-sm text-slate-700">계산 대상만 보기</span>
+                            <Tooltip title={COUNTING_ELIGIBLE_TOOLTIP}>
+                              <Info className="w-3 h-3 text-slate-400 hover:text-slate-600 transition-colors cursor-help" />
+                            </Tooltip>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                )}
               </div>
             </div>
           </Card>
@@ -716,165 +883,175 @@ export default function TravelSettlementPage() {
             </div>
           )}
 
-          {/* Table or Daily Travel View */}
-          {viewMode === 'education' ? (
-            <div className="space-y-6">
-              {instructorGroupedData.length === 0 ? (
+          {/* Education View */}
+          <div className="space-y-6">
+              {instructorMonthlyGroupedData.length === 0 ? (
                 <Card>
                   <div className="text-center py-8 text-slate-400">
                     정산 데이터가 없습니다.
                   </div>
                 </Card>
               ) : (
-                instructorGroupedData.map((group) => (
-                  <Card 
-                    key={group.instructorId} 
-                    className="border-l-4 border-l-blue-500 shadow-lg hover:shadow-xl transition-shadow"
-                  >
-                    {/* 강사 헤더 */}
-                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6 pb-6 border-b border-slate-200">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center shadow-md">
-                          <User className="w-7 h-7 text-blue-600" />
-                        </div>
-                        <div>
-                          <div className="font-bold text-2xl text-slate-800 mb-1">{group.instructorName}</div>
-                          <div className="text-sm text-slate-500">
-                            교육 {group.educationCount}건 · 총 {group.rows.length}건
+                // Group by instructor first, then show months
+                (() => {
+                  const instructorMap = new Map<string, typeof instructorMonthlyGroupedData>()
+                  instructorMonthlyGroupedData.forEach(group => {
+                    const key = `${group.instructorId}_${group.instructorName}`
+                    const existing = instructorMap.get(key) || []
+                    existing.push(group)
+                    instructorMap.set(key, existing)
+                  })
+
+                  return Array.from(instructorMap.entries()).map(([key, monthGroups]) => {
+                    const firstGroup = monthGroups[0]
+                    const totalPay = monthGroups.reduce((sum, g) => sum + g.totalPay, 0)
+                    const totalTravelExpense = monthGroups.reduce((sum, g) => sum + g.totalTravelExpense, 0)
+                    const totalAllowance = monthGroups.reduce((sum, g) => sum + g.totalAllowance, 0)
+                    const totalRows = monthGroups.reduce((sum, g) => sum + g.rows.length, 0)
+                    const totalEducationCount = new Set(monthGroups.flatMap(g => g.rows.map(r => r.educationId))).size
+
+                    return (
+                      <Card 
+                        key={key}
+                        className="border-l-4 border-l-blue-500 shadow-lg hover:shadow-xl transition-shadow mb-6"
+                      >
+                        {/* 강사 헤더 */}
+                        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6 pb-6 border-b border-slate-200">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center shadow-md">
+                              <User className="w-7 h-7 text-blue-600" />
+                            </div>
+                            <div>
+                              <div className="font-bold text-2xl text-slate-800 mb-1">{firstGroup.instructorName}</div>
+                              <div className="text-sm text-slate-500">
+                                교육 {totalEducationCount}건 · 총 {totalRows}건 · {monthGroups.length}개월
+                              </div>
+                            </div>
+                          </div>
+                          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl px-6 py-5 border-2 border-blue-200 shadow-sm min-w-[200px]">
+                            <div className="text-sm font-semibold text-slate-600 mb-2">총 지급액</div>
+                            <div className="text-3xl font-bold text-blue-600 mb-3">
+                              {totalPay.toLocaleString()}원
+                            </div>
+                            <div className="space-y-1 text-xs text-slate-600">
+                              <div className="flex justify-between">
+                                <span>출장비:</span>
+                                <span className="font-medium">{totalTravelExpense.toLocaleString()}원</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>수당:</span>
+                                <span className="font-medium">{totalAllowance.toLocaleString()}원</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl px-6 py-5 border-2 border-blue-200 shadow-sm min-w-[200px]">
-                        <div className="text-sm font-semibold text-slate-600 mb-2">총 지급액</div>
-                        <div className="text-3xl font-bold text-blue-600 mb-3">
-                          {group.totalPay.toLocaleString()}원
+
+                        {/* 월별 그룹 */}
+                        <div className="space-y-4">
+                          {monthGroups.map((monthGroup) => {
+                            const monthKey = `${key}_${monthGroup.month}`
+                            const isExpanded = expandedMonths.has(monthKey)
+                            
+                            return (
+                              <Card
+                                key={monthKey}
+                                className="border border-slate-200 hover:border-blue-300 transition-colors"
+                              >
+                                {/* 월별 헤더 */}
+                                <div 
+                                  className="flex items-center justify-between cursor-pointer"
+                                  onClick={() => {
+                                    const newExpanded = new Set(expandedMonths)
+                                    if (isExpanded) {
+                                      newExpanded.delete(monthKey)
+                                    } else {
+                                      newExpanded.add(monthKey)
+                                    }
+                                    setExpandedMonths(newExpanded)
+                                  }}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <Calendar className="w-5 h-5 text-blue-500" />
+                                    <div>
+                                      <div className="font-bold text-lg text-slate-800">
+                                        {dayjs(monthGroup.month).format('YYYY년 MM월')}
+                                      </div>
+                                      <div className="text-xs text-slate-500">
+                                        {monthGroup.sortedDateGroups.length}일 · {monthGroup.rows.length}건
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-4">
+                                    <div className="text-right">
+                                      <div className="text-xs text-slate-500">월 총액</div>
+                                      <div className="font-bold text-lg text-blue-600">
+                                        {monthGroup.totalPay.toLocaleString()}원
+                                      </div>
+                                    </div>
+                                    <div className="text-slate-400">
+                                      {isExpanded ? '▼' : '▶'}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* 날짜별 그룹 (확장 시 표시) */}
+                                {isExpanded && (
+                                  <div className="mt-4 space-y-3 pt-4 border-t border-slate-200">
+                                    {monthGroup.sortedDateGroups.map((dateGroup) => (
+                                      <Card
+                                        key={dateGroup.date}
+                                        className="bg-slate-50 border border-slate-200"
+                                      >
+                                        <div className="flex items-center justify-between mb-3">
+                                          <div className="flex items-center gap-2">
+                                            <Badge count={dateGroup.rows.length} style={{ backgroundColor: '#1890ff' }} />
+                                            <span className="font-semibold text-slate-700">
+                                              {dayjs(dateGroup.date).format('YYYY년 MM월 DD일 (ddd)')}
+                                            </span>
+                                            <span className="text-xs text-slate-500">
+                                              {dateGroup.rows.map(r => r.institutionName).join(', ')}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-4 text-sm">
+                                            <div className="text-right">
+                                              <div className="text-xs text-slate-500">출장비</div>
+                                              <div className="font-medium">{dateGroup.totalTravelExpense.toLocaleString()}원</div>
+                                            </div>
+                                            <div className="text-right">
+                                              <div className="text-xs text-slate-500">수당</div>
+                                              <div className="font-medium">{dateGroup.totalAllowance.toLocaleString()}원</div>
+                                            </div>
+                                            <div className="text-right border-l pl-4">
+                                              <div className="text-xs text-slate-500">합계</div>
+                                              <div className="font-bold text-blue-600">{dateGroup.totalPay.toLocaleString()}원</div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <div className="overflow-x-auto">
+                                          <Table
+                                            columns={columns}
+                                            dataSource={dateGroup.rows}
+                                            rowKey="id"
+                                            pagination={false}
+                                            size="small"
+                                            className="[&_.ant-table-thead>tr>th]:bg-slate-100 [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-thead>tr>th]:text-slate-700"
+                                            scroll={{ x: 'max-content' }}
+                                          />
+                                        </div>
+                                      </Card>
+                                    ))}
+                                  </div>
+                                )}
+                              </Card>
+                            )
+                          })}
                         </div>
-                        <div className="space-y-1 text-xs text-slate-600">
-                          <div className="flex justify-between">
-                            <span>출장비:</span>
-                            <span className="font-medium">{group.totalTravelExpense.toLocaleString()}원</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>수당:</span>
-                            <span className="font-medium">{group.totalAllowance.toLocaleString()}원</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* 교육 목록 테이블 */}
-                    <div className="overflow-x-auto -mx-6 px-6">
-                      <Table
-                        columns={columns}
-                        dataSource={group.rows}
-                        rowKey="id"
-                        pagination={false}
-                        size="middle"
-                        className="[&_.ant-table-thead>tr>th]:bg-slate-50 [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-thead>tr>th]:text-slate-700 [&_.ant-table-tbody>tr:hover]:bg-blue-50/50"
-                        scroll={{ x: 'max-content' }}
-                      />
-                    </div>
-                  </Card>
-                ))
+                      </Card>
+                    )
+                  })
+                })()
               )}
             </div>
-          ) : (
-            <Card>
-              <div className="space-y-4">
-                {dailyTravelData.length === 0 ? (
-                  <div className="text-center py-8 text-slate-400">
-                    일별 여비 내역이 없습니다.
-                  </div>
-                ) : (
-                  dailyTravelData.map(({ instructorId, instructorName, month, records, totalTravelExpense, totalDistance }) => (
-                    <Card key={`${instructorId}_${month}`} className="mb-4 border-l-4 border-l-blue-500">
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <div className="flex items-center gap-2 mb-2">
-                            <User className="w-5 h-5 text-blue-500" />
-                            <span className="font-bold text-lg">{instructorName}</span>
-                            <span className="text-slate-500">({dayjs(month).format('YYYY년 MM월')})</span>
-                          </div>
-                          <div className="text-sm text-slate-600 ml-7">
-                            총 {records.length}일, 총 거리: {totalDistance.toFixed(1)}km
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-sm text-slate-500 mb-1">총 출장비</div>
-                          <div className="text-2xl font-bold text-blue-600">
-                            {totalTravelExpense.toLocaleString()}원
-                          </div>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        {records.map((record) => {
-                          const dayRows = filteredData.filter(row => 
-                            row.dailyTravelRecordId === record.id
-                          )
-                          const dayTotalAllowance = dayRows.reduce((sum, r) => sum + r.allowanceTotal, 0)
-                          const dayTotalPay = (record.travelExpenseOverride ?? record.travelExpense) + dayTotalAllowance
-                          
-                          return (
-                            <Card
-                              key={record.id}
-                              className="bg-slate-50 border border-slate-200 hover:border-blue-300 transition-colors cursor-pointer"
-                              onClick={() => {
-                                setSelectedDailyRecord(record)
-                                setDailyTravelModalOpen(true)
-                              }}
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <Calendar className="w-4 h-4 text-slate-400" />
-                                  <span className="font-semibold">
-                                    {dayjs(record.date).format('YYYY년 MM월 DD일 (ddd)')}
-                                  </span>
-                                  <Badge count={`${record.institutions.length}곳`} style={{ backgroundColor: '#1890ff' }} />
-                                  {record.routeMapImageUrl && (
-                                    <Badge count="지도" style={{ backgroundColor: '#52c41a' }} />
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-6">
-                                  <div className="text-right">
-                                    <div className="text-xs text-slate-500">총 거리</div>
-                                    <div className="font-semibold">
-                                      {(record.distanceKmOverride ?? record.totalDistanceKm).toFixed(1)}km
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    <div className="text-xs text-slate-500">출장비</div>
-                                    <div className="font-semibold text-blue-600">
-                                      {(record.travelExpenseOverride ?? record.travelExpense).toLocaleString()}원
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    <div className="text-xs text-slate-500">수당 합계</div>
-                                    <div className="font-semibold">
-                                      {dayTotalAllowance.toLocaleString()}원
-                                    </div>
-                                  </div>
-                                  <div className="text-right border-l pl-4">
-                                    <div className="text-xs text-slate-500">총 지급액</div>
-                                    <div className="font-bold text-lg text-blue-600">
-                                      {dayTotalPay.toLocaleString()}원
-                                    </div>
-                                  </div>
-                                  <Eye className="w-4 h-4 text-slate-400" />
-                                </div>
-                              </div>
-                              <div className="mt-2 text-xs text-slate-500 ml-7">
-                                경로: 집 → {record.institutions.map(inst => inst.institutionName).join(' → ')} → 집
-                              </div>
-                            </Card>
-                          )
-                        })}
-                      </div>
-                    </Card>
-                  ))
-                )}
-              </div>
-            </Card>
-          )}
 
           {/* Detail Modal */}
           <Modal
@@ -958,12 +1135,22 @@ export default function TravelSettlementPage() {
                   
                   {/* 계산 흐름 표시 */}
                   <div className="bg-slate-50 rounded-lg p-4 mb-4 border border-slate-200">
-                    <h4 className="text-sm font-semibold text-slate-700 mb-3">계산 흐름</h4>
+                    <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                      계산 흐름
+                      <Tooltip title="정산 계산은 다음 순서로 진행됩니다: 1) 여비 계산, 2) 기본 강사료, 3) 각종 수당, 4) 합계, 5) 세금 공제 후 순지급액">
+                        <Info className="w-3 h-3 text-slate-400 hover:text-slate-600 transition-colors cursor-help" />
+                      </Tooltip>
+                    </h4>
                     <div className="space-y-2.5 text-sm text-slate-600">
                       <div className="flex items-start gap-2">
                         <span className="text-slate-400 font-mono">1.</span>
                         <div className="flex-1">
-                          <span className="font-medium text-slate-700">출장비</span>
+                          <span className="font-medium text-slate-700 flex items-center gap-1">
+                            여비(출장비)
+                            <Tooltip title={DAILY_TRAVEL_TOOLTIP}>
+                              <Info className="w-3 h-3 text-slate-400 hover:text-slate-600 transition-colors cursor-help" />
+                            </Tooltip>
+                          </span>
                           {selectedRow.dailyTravelRecordId ? (
                             <>
                               <div className="text-xs text-slate-500 mt-0.5 ml-4">
@@ -971,6 +1158,9 @@ export default function TravelSettlementPage() {
                               </div>
                               <div className="text-xs text-slate-500 mt-0.5 ml-4">
                                 집 → 기관1 → 기관2 → ... → 집 경로의 총 거리에 따른 정책 금액
+                              </div>
+                              <div className="text-xs text-slate-500 mt-0.5 ml-4">
+                                (31개 시군청간 거리표 기준, 같은 시군 내 이동 = 0km)
                               </div>
                             </>
                           ) : (
@@ -986,40 +1176,37 @@ export default function TravelSettlementPage() {
                       <div className="flex items-start gap-2">
                         <span className="text-slate-400 font-mono">2.</span>
                         <div className="flex-1">
-                          <span className="font-medium text-slate-700">기본금</span>
+                          <span className="font-medium text-slate-700">기본 강사료</span>
                           <div className="text-xs text-slate-500 mt-0.5 ml-4">
-                            차시 {selectedRow.totalSessions}회 × {selectedRow.institutionCategory === 'ELEMENTARY' ? '초등학교' : 
-                              selectedRow.institutionCategory === 'MIDDLE' ? '중학교' :
-                              selectedRow.institutionCategory === 'HIGH' ? '고등학교' :
-                              selectedRow.institutionCategory === 'SPECIAL' ? '특수학교' :
-                              selectedRow.institutionCategory === 'ISLAND' ? '도서벽지' : '일반'} 차시당 금액
-                            {selectedRow.role === 'main' ? ' (주강사)' : ' (보조강사)'}
+                            차시 {selectedRow.totalSessions}회 × {selectedRow.role === 'main' ? '40,000원 (주강사)' : '30,000원 (보조강사)'}
                           </div>
                           <div className="text-slate-700 mt-1 ml-4">
-                            = {selectedRow.totalSessions} × {Math.round(selectedRow.allowanceBase / selectedRow.totalSessions).toLocaleString()} = <span className="font-semibold">{selectedRow.allowanceBase.toLocaleString()}원</span>
+                            = {selectedRow.totalSessions} × {selectedRow.role === 'main' ? '40,000' : '30,000'} = <span className="font-semibold">{selectedRow.allowanceBase.toLocaleString()}원</span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-start gap-2">
-                        <span className="text-slate-400 font-mono">3.</span>
-                        <div className="flex-1">
-                          <span className="font-medium text-slate-700">주말수당</span>
-                          <div className="text-xs text-slate-500 mt-0.5 ml-4">
-                            주말 차시(토/일) × 5천원
-                            {selectedRow.allowanceWeekend ? ` (주말 ${Math.round((selectedRow.allowanceWeekend || 0) / 5000)}회)` : ' (주말 차시 없음)'}
-                          </div>
-                          <div className="text-slate-700 mt-1 ml-4">
-                            = {selectedRow.allowanceWeekend ? `${Math.round((selectedRow.allowanceWeekend || 0) / 5000)} × 5,000` : '0'} = <span className="font-semibold">{(selectedRow.allowanceWeekend || 0).toLocaleString()}원</span>
+                      {selectedRow.allowanceWeekend && selectedRow.allowanceWeekend > 0 && (
+                        <div className="flex items-start gap-2">
+                          <span className="text-slate-400 font-mono">3.</span>
+                          <div className="flex-1">
+                            <span className="font-medium text-slate-700">휴일/주말수당</span>
+                            <div className="text-xs text-slate-500 mt-0.5 ml-4">
+                              주말 차시(토/일) × 5,000원
+                              {selectedRow.allowanceWeekend ? ` (주말 ${Math.round((selectedRow.allowanceWeekend || 0) / 5000)}회)` : ' (주말 차시 없음)'}
+                            </div>
+                            <div className="text-slate-700 mt-1 ml-4">
+                              = {selectedRow.allowanceWeekend ? `${Math.round((selectedRow.allowanceWeekend || 0) / 5000)} × 5,000` : '0'} = <span className="font-semibold">{(selectedRow.allowanceWeekend || 0).toLocaleString()}원</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      )}
                       {selectedRow.allowanceExtra && selectedRow.allowanceExtra > 0 && (
                         <div className="flex items-start gap-2">
-                          <span className="text-slate-400 font-mono">4.</span>
+                          <span className="text-slate-400 font-mono">{selectedRow.allowanceWeekend && selectedRow.allowanceWeekend > 0 ? '4.' : '3.'}</span>
                           <div className="flex-1">
-                            <span className="font-medium text-slate-700">추가 수당</span>
+                            <span className="font-medium text-slate-700">추가 수당 (15명 이상 + 보조강사 없음)</span>
                             <div className="text-xs text-slate-500 mt-0.5 ml-4">
-                              학생 15명 이상 + 보조강사 없음 → 차시당 5천원
+                              학생 15명 이상 + 보조강사 없음 → 차시당 5,000원
                             </div>
                             <div className="text-slate-700 mt-1 ml-4">
                               = {selectedRow.totalSessions} × 5,000 = <span className="font-semibold">{selectedRow.allowanceExtra.toLocaleString()}원</span>
@@ -1028,20 +1215,41 @@ export default function TravelSettlementPage() {
                         </div>
                       )}
                       <div className="flex items-start gap-2">
-                        <span className="text-slate-400 font-mono">{selectedRow.allowanceExtra && selectedRow.allowanceExtra > 0 ? '5.' : '4.'}</span>
+                        <span className="text-slate-400 font-mono">
+                          {(() => {
+                            let step = 3
+                            if (selectedRow.allowanceWeekend && selectedRow.allowanceWeekend > 0) step++
+                            if (selectedRow.allowanceExtra && selectedRow.allowanceExtra > 0) step++
+                            return step
+                          })()}.
+                        </span>
                         <div className="flex-1">
                           <span className="font-medium text-slate-700">수당 합계</span>
                           <div className="text-slate-700 mt-1 ml-4">
-                            = 기본금 + 주말수당{selectedRow.allowanceExtra && selectedRow.allowanceExtra > 0 ? ' + 추가수당' : ''} = {selectedRow.allowanceBase.toLocaleString()} + {(selectedRow.allowanceWeekend || 0).toLocaleString()}{selectedRow.allowanceExtra && selectedRow.allowanceExtra > 0 ? ` + ${selectedRow.allowanceExtra.toLocaleString()}` : ''} = <span className="font-semibold">{selectedRow.allowanceTotal.toLocaleString()}원</span>
+                            = 기본금{selectedRow.allowanceWeekend && selectedRow.allowanceWeekend > 0 ? ' + 주말수당' : ''}{selectedRow.allowanceExtra && selectedRow.allowanceExtra > 0 ? ' + 추가수당' : ''} = {selectedRow.allowanceBase.toLocaleString()}{selectedRow.allowanceWeekend && selectedRow.allowanceWeekend > 0 ? ` + ${(selectedRow.allowanceWeekend || 0).toLocaleString()}` : ''}{selectedRow.allowanceExtra && selectedRow.allowanceExtra > 0 ? ` + ${selectedRow.allowanceExtra.toLocaleString()}` : ''} = <span className="font-semibold">{selectedRow.allowanceTotal.toLocaleString()}원</span>
                           </div>
                         </div>
                       </div>
                       <div className="flex items-start gap-2 pt-2 border-t-2 border-slate-300">
                         <span className="text-blue-600 font-bold font-mono">총</span>
                         <div className="flex-1">
-                          <span className="font-bold text-blue-600 text-base">총 지급액</span>
+                          <span className="font-bold text-blue-600 text-base">총액 (세전)</span>
                           <div className="text-blue-600 font-bold mt-1 ml-4 text-base">
-                            = 출장비 + 수당 합계 = {selectedRow.travelExpense.toLocaleString()} + {selectedRow.allowanceTotal.toLocaleString()} = <span className="text-lg">{selectedRow.totalPay.toLocaleString()}원</span>
+                            = 여비 + 수당 합계 = {selectedRow.travelExpense.toLocaleString()} + {selectedRow.allowanceTotal.toLocaleString()} = <span className="text-lg">{selectedRow.totalPay.toLocaleString()}원</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2 pt-2 border-t border-slate-200">
+                        <span className="text-green-600 font-bold font-mono">세</span>
+                        <div className="flex-1">
+                          <span className="font-bold text-green-600 text-base flex items-center gap-1">
+                            세금 공제 후 순지급액
+                            <Tooltip title="세금 공제: 3.3% (사업소득세 포함 지방소득세)">
+                              <Info className="w-3 h-3 text-green-400 hover:text-green-600 transition-colors cursor-help" />
+                            </Tooltip>
+                          </span>
+                          <div className="text-green-600 font-bold mt-1 ml-4 text-base">
+                            = 총액 {selectedRow.totalPay.toLocaleString()}원 - 세금 {Math.round(selectedRow.totalPay * 0.033).toLocaleString()}원 (3.3%) = <span className="text-lg">{Math.round(selectedRow.totalPay * 0.967).toLocaleString()}원</span>
                           </div>
                         </div>
                       </div>

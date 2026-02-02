@@ -23,6 +23,20 @@ export interface LessonPlanSession {
   content: string // 활동내용 (multiline)
   materials: string // 준비물
   note?: string // 비고
+  
+  // Settlement calculation fields
+  startTime?: string // HH:mm (for event participation hours calculation)
+  endTime?: string // HH:mm
+  studentCount?: number // 학생 수 (for no assistant allowance calculation)
+  hasAssistant?: boolean // 보조강사 배정 여부
+  isWeekend?: boolean // 주말 여부 (Saturday/Sunday)
+  isHoliday?: boolean // 공휴일 여부
+  isEventParticipation?: boolean // 행사참여 여부 (주말수당 제외)
+  eventParticipationHours?: number // 행사참여 시간 (25k per hour)
+  isMentoring?: boolean // 멘토링 활동 여부
+  mentoringHours?: number // 멘토링 시간 (1-3 hours, max 3h/day, 40k per hour)
+  isResearchActivity?: boolean // 연구 활동 여부
+  equipmentTransportRequired?: boolean // 교구 운반 필요 여부 (20k per day)
 }
 
 export interface LessonPlanDoc {

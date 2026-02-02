@@ -12,7 +12,7 @@ import { EducationBasicInfoForm, type EducationBasicInfoData } from '@/component
 import { PhotoUploader } from '../components/PhotoUploader'
 import { SessionRowsTable } from '../components/SessionRowsTable'
 import { ActivityLog, ActivityLogSessionRow, UploadedImage } from '../types'
-import { upsertActivityLog, getActivityLogById, getActivityLogByActivityLogId } from '../storage'
+import { upsertActivityLog, getActivityLogById, getActivityLogByEducationId } from '../storage'
 import dayjs from 'dayjs'
 
 const { TextArea } = Input

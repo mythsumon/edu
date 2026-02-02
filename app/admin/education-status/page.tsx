@@ -490,7 +490,8 @@ export default function EducationStatusPage() {
       const education = dataStore.getEducationById(row.educationId)
       if (education) {
         const currentStatus = row.status as EducationStatus
-        const isIrreversible = isIrreversibleTransition(currentStatus, statusValue as EducationStatus)
+        const newStatus = statusValue as EducationStatus
+        const isIrreversible = isIrreversibleTransition(currentStatus, newStatus)
 
         Modal.confirm({
           title: '상태 변경 확인',
@@ -504,7 +505,7 @@ export default function EducationStatusPage() {
               )}
               
               {/* 교육비 계산 흐름 표시 (확정/종료 상태로 변경할 때) */}
-              {(statusValue === '확정' || statusValue === '종료') && education && (
+              {(newStatus === '확정' || newStatus === '종료') && education && (
                 <div className="mt-4">
                   <AllowanceRateTable />
                   <EducationFeeCalculationFlow
@@ -596,7 +597,7 @@ export default function EducationStatusPage() {
           )}
           
           {/* 교육비 계산 흐름 표시 (확정/종료 상태로 변경할 때) */}
-          {(statusValue === '확정' || statusValue === '종료') && firstEducation && (
+          {((statusValue as EducationStatus) === '확정' || (statusValue as EducationStatus) === '종료') && firstEducation && (
             <div className="mt-4">
               <p className="text-sm text-gray-600 mb-2">교육비 계산 예시 (첫 번째 교육 기준):</p>
               <AllowanceRateTable />

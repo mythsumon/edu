@@ -12,12 +12,12 @@ import type { AllowancePolicy, InstitutionCategory } from './settlement-types'
  */
 export const DEFAULT_ALLOWANCE_POLICY: AllowancePolicy = {
   baseRates: {
-    ELEMENTARY: { main: 40000, assistant: 30000 },  // 초등학교 차시당 금액
-    MIDDLE: { main: 45000, assistant: 35000 },      // 중학교 차시당 금액
-    HIGH: { main: 50000, assistant: 40000 },        // 고등학교 차시당 금액
-    SPECIAL: { main: 50000, assistant: 40000 },    // 특수학교 차시당 금액
-    ISLAND: { main: 45000, assistant: 35000 },     // 도서벽지 차시당 금액
-    GENERAL: { main: 40000, assistant: 30000 },    // 일반 차시당 금액 (기본값)
+    ELEMENTARY: { main: 40000, assistant: 30000 },  // 초등학교 차시당 금액 (Main: 40k, Assistant: 30k)
+    MIDDLE: { main: 40000, assistant: 30000 },      // 중학교 차시당 금액 (Base: 40k/30k, +5k allowance)
+    HIGH: { main: 40000, assistant: 30000 },        // 고등학교 차시당 금액 (Base: 40k/30k, +10k allowance)
+    SPECIAL: { main: 40000, assistant: 30000 },    // 특수학교 차시당 금액 (Base: 40k/30k, +10k allowance)
+    ISLAND: { main: 40000, assistant: 30000 },     // 도서벽지 차시당 금액 (Base: 40k/30k, +5k allowance)
+    GENERAL: { main: 40000, assistant: 30000 },    // 일반 차시당 금액 (Main: 40k, Assistant: 30k)
   },
   weekendRatePerSession: 5000,  // 주말수당 차시당 5천원
   

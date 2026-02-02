@@ -22,10 +22,17 @@ dayjs.locale('ko')
 const { RangePicker } = DatePicker
 
 // Tooltip texts
-const TRAVEL_EXPENSE_TOOLTIP = "출장비는 강사 기준으로 일별로 계산됩니다.\n같은 날 여러 교육이 있는 경우, 집 → 기관1 → 기관2 → ... → 집 경로의 총 거리로 계산됩니다.\n같은 날 여러 교육이 있어도 출장비는 하루에 한 번만 지급됩니다."
-const ALLOWANCE_TOOLTIP = "기본금은 차시 × 학교유형별 금액으로 계산됩니다.\n(초등/중/고/특수/도서벽지별 차시당 금액)\n주강사와 보조강사는 별도의 단가가 적용됩니다."
-const WEEKEND_ALLOWANCE_TOOLTIP = "주말수당은 주말(토요일/일요일) 차시당 5천원이 지급됩니다."
-const EXTRA_ALLOWANCE_TOOLTIP = "추가 수당: 학생 15명 이상 + 보조강사 없음 → 차시당 5천원\n주강사에게만 지급되며, 보조강사는 제외됩니다."
+const TRAVEL_EXPENSE_TOOLTIP = "여비(출장비)는 강사 기준으로 일별로 계산됩니다.\n• 같은 날 여러 교육이 있는 경우: 집 → 기관1 → 기관2 → ... → 집 경로의 총 거리로 계산\n• 같은 시군 내 이동은 0km로 처리\n• 거리 구간별 정책: 50~70km=2만원, 70~90km=3만원, 90~110km=4만원, 110~130km=5만원, 130km 이상=6만원\n• 같은 날 여러 교육이 있어도 여비는 하루에 한 번만 지급"
+const ALLOWANCE_TOOLTIP = "기본 강사료는 차시 × 역할별 금액으로 계산됩니다.\n• 주강사: 차시당 40,000원\n• 보조강사: 차시당 30,000원\n• 학교 유형(초등/중/고/특수/도서벽지)에 따른 추가 수당은 별도로 계산됩니다."
+const WEEKEND_ALLOWANCE_TOOLTIP = "휴일/주말수당: 주말(토요일/일요일) 차시당 5,000원\n• 단, 행사참여인 경우 주말수당은 지급되지 않습니다."
+const EXTRA_ALLOWANCE_TOOLTIP = "추가 수당: 학생 15명 이상 + 보조강사 없음 → 차시당 5,000원\n• 주강사에게만 지급되며, 보조강사는 제외됩니다."
+const REMOTE_ISLAND_TOOLTIP = "도서·벽지 수당: 차시당 5,000원\n• 도서·벽지 학교에서 교육 시 지급\n• 지역 내외 관계없이 지급됩니다."
+const SPECIAL_EDUCATION_TOOLTIP = "특별수당: 차시당 10,000원\n• 특수학교 또는 일반학교의 특수학급에서 교육 시 지급됩니다."
+const MIDDLE_HIGH_TOOLTIP = "중고등부 수당:\n• 중학교: 차시당 5,000원\n• 고등학교: 차시당 10,000원"
+const EQUIPMENT_TRANSPORT_TOOLTIP = "교구 운반 수당: 일당 20,000원\n• 교구를 픽업하거나 반납하는 날 지급\n• 월 최대 300,000원까지 지급 (월 한도 적용)"
+const EVENT_PARTICIPATION_TOOLTIP = "행사참여수당: 시간당 25,000원\n• 공식 행사 지원 시 지급\n• 행사참여 시 주말수당은 지급되지 않습니다."
+const MENTORING_TOOLTIP = "멘토링 수당:\n• 방법 A: 차시당 10,000원\n• 방법 B: 시간당 40,000원 (1-3시간, 일 최대 3시간)"
+const TAX_TOOLTIP = "세금 공제: 3.3% (사업소득세 포함 지방소득세)\n• 총액에서 세금을 공제한 순지급액이 입금됩니다."
 
 export default function InstructorSettlementsPage() {
   const { userProfile } = useAuth()
@@ -562,12 +569,22 @@ export default function InstructorSettlementsPage() {
                   
                   {/* 계산 흐름 표시 */}
                   <div className="bg-slate-50 rounded-lg p-4 mb-4 border border-slate-200">
-                    <h4 className="text-sm font-semibold text-slate-700 mb-3">계산 흐름</h4>
+                    <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                      계산 흐름
+                      <Tooltip title="정산 계산은 다음 순서로 진행됩니다: 1) 여비 계산, 2) 기본 강사료, 3) 각종 수당, 4) 합계, 5) 세금 공제 후 순지급액">
+                        <Info className="w-3 h-3 text-slate-400 hover:text-slate-600 transition-colors cursor-help" />
+                      </Tooltip>
+                    </h4>
                     <div className="space-y-2.5 text-sm text-slate-600">
                       <div className="flex items-start gap-2">
                         <span className="text-slate-400 font-mono">1.</span>
                         <div className="flex-1">
-                          <span className="font-medium text-slate-700">출장비</span>
+                          <span className="font-medium text-slate-700 flex items-center gap-1">
+                            여비(출장비)
+                            <Tooltip title={TRAVEL_EXPENSE_TOOLTIP}>
+                              <Info className="w-3 h-3 text-slate-400 hover:text-slate-600 transition-colors cursor-help" />
+                            </Tooltip>
+                          </span>
                           {selectedRow.dailyTravelRecordId ? (
                             <>
                               <div className="text-xs text-slate-500 mt-0.5 ml-4">
@@ -575,6 +592,9 @@ export default function InstructorSettlementsPage() {
                               </div>
                               <div className="text-xs text-slate-500 mt-0.5 ml-4">
                                 집 → 기관1 → 기관2 → ... → 집 경로의 총 거리에 따른 정책 금액
+                              </div>
+                              <div className="text-xs text-slate-500 mt-0.5 ml-4">
+                                (31개 시군청간 거리표 기준, 같은 시군 내 이동 = 0km)
                               </div>
                             </>
                           ) : (
@@ -590,36 +610,52 @@ export default function InstructorSettlementsPage() {
                       <div className="flex items-start gap-2">
                         <span className="text-slate-400 font-mono">2.</span>
                         <div className="flex-1">
-                          <span className="font-medium text-slate-700">기본금</span>
+                          <span className="font-medium text-slate-700 flex items-center gap-1">
+                            기본 강사료
+                            <Tooltip title={ALLOWANCE_TOOLTIP}>
+                              <Info className="w-3 h-3 text-slate-400 hover:text-slate-600 transition-colors cursor-help" />
+                            </Tooltip>
+                          </span>
                           <div className="text-xs text-slate-500 mt-0.5 ml-4">
-                            차시 {selectedRow.totalSessions}회 × 학교유형별 차시당 금액
-                            {selectedRow.role === 'main' ? ' (주강사)' : ' (보조강사)'}
+                            차시 {selectedRow.totalSessions}회 × {selectedRow.role === 'main' ? '40,000원 (주강사)' : '30,000원 (보조강사)'}
                           </div>
                           <div className="text-slate-700 mt-1 ml-4">
-                            = {selectedRow.totalSessions} × {Math.round(selectedRow.allowanceBase / selectedRow.totalSessions).toLocaleString()} = <span className="font-semibold">{selectedRow.allowanceBase.toLocaleString()}원</span>
+                            = {selectedRow.totalSessions} × {selectedRow.role === 'main' ? '40,000' : '30,000'} = <span className="font-semibold">{selectedRow.allowanceBase.toLocaleString()}원</span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-start gap-2">
-                        <span className="text-slate-400 font-mono">3.</span>
-                        <div className="flex-1">
-                          <span className="font-medium text-slate-700">주말수당</span>
-                          <div className="text-xs text-slate-500 mt-0.5 ml-4">
-                            주말 차시(토/일) × 5천원
-                            {selectedRow.allowanceWeekend ? ` (주말 ${Math.round((selectedRow.allowanceWeekend || 0) / 5000)}회)` : ' (주말 차시 없음)'}
-                          </div>
-                          <div className="text-slate-700 mt-1 ml-4">
-                            = {selectedRow.allowanceWeekend ? `${Math.round((selectedRow.allowanceWeekend || 0) / 5000)} × 5,000` : '0'} = <span className="font-semibold">{(selectedRow.allowanceWeekend || 0).toLocaleString()}원</span>
+                      {selectedRow.allowanceWeekend && selectedRow.allowanceWeekend > 0 && (
+                        <div className="flex items-start gap-2">
+                          <span className="text-slate-400 font-mono">3.</span>
+                          <div className="flex-1">
+                            <span className="font-medium text-slate-700 flex items-center gap-1">
+                              휴일/주말수당
+                              <Tooltip title={WEEKEND_ALLOWANCE_TOOLTIP}>
+                                <Info className="w-3 h-3 text-slate-400 hover:text-slate-600 transition-colors cursor-help" />
+                              </Tooltip>
+                            </span>
+                            <div className="text-xs text-slate-500 mt-0.5 ml-4">
+                              주말 차시(토/일) × 5,000원
+                              {selectedRow.allowanceWeekend ? ` (주말 ${Math.round((selectedRow.allowanceWeekend || 0) / 5000)}회)` : ' (주말 차시 없음)'}
+                            </div>
+                            <div className="text-slate-700 mt-1 ml-4">
+                              = {selectedRow.allowanceWeekend ? `${Math.round((selectedRow.allowanceWeekend || 0) / 5000)} × 5,000` : '0'} = <span className="font-semibold">{(selectedRow.allowanceWeekend || 0).toLocaleString()}원</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      )}
                       {selectedRow.allowanceExtra && selectedRow.allowanceExtra > 0 && (
                         <div className="flex items-start gap-2">
-                          <span className="text-slate-400 font-mono">4.</span>
+                          <span className="text-slate-400 font-mono">{selectedRow.allowanceWeekend && selectedRow.allowanceWeekend > 0 ? '4.' : '3.'}</span>
                           <div className="flex-1">
-                            <span className="font-medium text-slate-700">추가 수당</span>
+                            <span className="font-medium text-slate-700 flex items-center gap-1">
+                              추가 수당 (15명 이상 + 보조강사 없음)
+                              <Tooltip title={EXTRA_ALLOWANCE_TOOLTIP}>
+                                <Info className="w-3 h-3 text-slate-400 hover:text-slate-600 transition-colors cursor-help" />
+                              </Tooltip>
+                            </span>
                             <div className="text-xs text-slate-500 mt-0.5 ml-4">
-                              학생 15명 이상 + 보조강사 없음 → 차시당 5천원
+                              학생 15명 이상 + 보조강사 없음 → 차시당 5,000원
                             </div>
                             <div className="text-slate-700 mt-1 ml-4">
                               = {selectedRow.totalSessions} × 5,000 = <span className="font-semibold">{selectedRow.allowanceExtra.toLocaleString()}원</span>
@@ -628,20 +664,41 @@ export default function InstructorSettlementsPage() {
                         </div>
                       )}
                       <div className="flex items-start gap-2">
-                        <span className="text-slate-400 font-mono">{selectedRow.allowanceExtra && selectedRow.allowanceExtra > 0 ? '5.' : '4.'}</span>
+                        <span className="text-slate-400 font-mono">
+                          {(() => {
+                            let step = 3
+                            if (selectedRow.allowanceWeekend && selectedRow.allowanceWeekend > 0) step++
+                            if (selectedRow.allowanceExtra && selectedRow.allowanceExtra > 0) step++
+                            return step
+                          })()}.
+                        </span>
                         <div className="flex-1">
                           <span className="font-medium text-slate-700">수당 합계</span>
                           <div className="text-slate-700 mt-1 ml-4">
-                            = 기본금 + 주말수당{selectedRow.allowanceExtra && selectedRow.allowanceExtra > 0 ? ' + 추가수당' : ''} = {selectedRow.allowanceBase.toLocaleString()} + {(selectedRow.allowanceWeekend || 0).toLocaleString()}{selectedRow.allowanceExtra && selectedRow.allowanceExtra > 0 ? ` + ${selectedRow.allowanceExtra.toLocaleString()}` : ''} = <span className="font-semibold">{selectedRow.allowanceTotal.toLocaleString()}원</span>
+                            = 기본금{selectedRow.allowanceWeekend && selectedRow.allowanceWeekend > 0 ? ' + 주말수당' : ''}{selectedRow.allowanceExtra && selectedRow.allowanceExtra > 0 ? ' + 추가수당' : ''} = {selectedRow.allowanceBase.toLocaleString()}{selectedRow.allowanceWeekend && selectedRow.allowanceWeekend > 0 ? ` + ${(selectedRow.allowanceWeekend || 0).toLocaleString()}` : ''}{selectedRow.allowanceExtra && selectedRow.allowanceExtra > 0 ? ` + ${selectedRow.allowanceExtra.toLocaleString()}` : ''} = <span className="font-semibold">{selectedRow.allowanceTotal.toLocaleString()}원</span>
                           </div>
                         </div>
                       </div>
                       <div className="flex items-start gap-2 pt-2 border-t-2 border-slate-300">
                         <span className="text-blue-600 font-bold font-mono">총</span>
                         <div className="flex-1">
-                          <span className="font-bold text-blue-600 text-base">총 지급액</span>
+                          <span className="font-bold text-blue-600 text-base">총액 (세전)</span>
                           <div className="text-blue-600 font-bold mt-1 ml-4 text-base">
-                            = 출장비 + 수당 합계 = {selectedRow.travelExpense.toLocaleString()} + {selectedRow.allowanceTotal.toLocaleString()} = <span className="text-lg">{selectedRow.totalPay.toLocaleString()}원</span>
+                            = 여비 + 수당 합계 = {selectedRow.travelExpense.toLocaleString()} + {selectedRow.allowanceTotal.toLocaleString()} = <span className="text-lg">{selectedRow.totalPay.toLocaleString()}원</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2 pt-2 border-t border-slate-200">
+                        <span className="text-green-600 font-bold font-mono">세</span>
+                        <div className="flex-1">
+                          <span className="font-bold text-green-600 text-base flex items-center gap-1">
+                            세금 공제 후 순지급액
+                            <Tooltip title={TAX_TOOLTIP}>
+                              <Info className="w-3 h-3 text-green-400 hover:text-green-600 transition-colors cursor-help" />
+                            </Tooltip>
+                          </span>
+                          <div className="text-green-600 font-bold mt-1 ml-4 text-base">
+                            = 총액 {selectedRow.totalPay.toLocaleString()}원 - 세금 {Math.round(selectedRow.totalPay * 0.033).toLocaleString()}원 (3.3%) = <span className="text-lg">{Math.round(selectedRow.totalPay * 0.967).toLocaleString()}원</span>
                           </div>
                         </div>
                       </div>
