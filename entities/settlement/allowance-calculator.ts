@@ -62,14 +62,17 @@ export function computeAllowance(
   // 학교 유형별 차시당 기본금 가져오기
   let ratePerSession: number
   if (policy.baseRates) {
-    const categoryKey = institutionCategory === 'SPECIAL_CLASS' ? 'SPECIAL' 
-      : institutionCategory === 'REMOTE_RURAL' ? 'ISLAND'
-      : institutionCategory === 'MIDDLE' ? 'MIDDLE'
-      : institutionCategory === 'HIGH' ? 'HIGH'
-      : institutionCategory === 'ELEMENTARY' ? 'ELEMENTARY'
+    // 타입 가드: baseRates에 존재하는 카테고리만 사용
+    const validCategory = (institutionCategory === 'ELEMENTARY' || 
+                           institutionCategory === 'MIDDLE' || 
+                           institutionCategory === 'HIGH' || 
+                           institutionCategory === 'SPECIAL' || 
+                           institutionCategory === 'ISLAND' || 
+                           institutionCategory === 'GENERAL')
+      ? institutionCategory 
       : 'GENERAL'
     
-    const categoryRates = policy.baseRates[categoryKey] || policy.baseRates.GENERAL
+    const categoryRates = policy.baseRates[validCategory] || policy.baseRates.GENERAL
     ratePerSession = role === 'main' ? categoryRates.main : categoryRates.assistant
   } else {
     // 레거시 지원
@@ -99,9 +102,9 @@ export function computeAllowance(
   if (policy.categoryBonuses) {
     if (institutionCategory === 'MIDDLE') {
       bonus = policy.categoryBonuses.MIDDLE || 0
-    } else if (institutionCategory === 'SPECIAL_CLASS' || institutionCategory === 'SPECIAL') {
+    } else if (institutionCategory === 'SPECIAL') {
       bonus = policy.categoryBonuses.SPECIAL_CLASS || 0
-    } else if (institutionCategory === 'REMOTE_RURAL' || institutionCategory === 'ISLAND') {
+    } else if (institutionCategory === 'ISLAND') {
       bonus = policy.categoryBonuses.REMOTE_RURAL || 0
     }
   }
