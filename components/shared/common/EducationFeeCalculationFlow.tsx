@@ -48,7 +48,16 @@ export const EducationFeeCalculationFlow: React.FC<EducationFeeCalculationFlowPr
   }
   
   const institutionCategory = getInstitutionCategory(education.institution)
-  const baseRates = DEFAULT_ALLOWANCE_POLICY.baseRates[institutionCategory] || DEFAULT_ALLOWANCE_POLICY.baseRates.GENERAL
+  // 타입 가드: baseRates에 존재하는 카테고리만 사용
+  const validCategory = (institutionCategory === 'ELEMENTARY' || 
+                         institutionCategory === 'MIDDLE' || 
+                         institutionCategory === 'HIGH' || 
+                         institutionCategory === 'SPECIAL' || 
+                         institutionCategory === 'ISLAND' || 
+                         institutionCategory === 'GENERAL')
+    ? institutionCategory 
+    : 'GENERAL'
+  const baseRates = DEFAULT_ALLOWANCE_POLICY.baseRates[validCategory]
   const mainRatePerSession = baseRates.main
   const assistantRatePerSession = baseRates.assistant
   
