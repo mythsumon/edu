@@ -271,6 +271,30 @@ export default function SubmissionsPage() {
     }
 
     try {
+      // Check if this is an AttendanceSheet
+      if (type === 'attendance') {
+        const sheet = attendanceSheetStore.getByEducationId(id) ?? attendanceSheetStore.getById(id)
+        if (sheet && sheet.status === 'SUBMITTED_TO_ADMIN') {
+          const result = attendanceSheetStore.adminReview(
+            sheet.attendanceId,
+            { status: 'REJECTED', reason },
+            {
+              role: 'admin',
+              id: userProfile?.userId || 'admin-1',
+              name: userProfile?.name || '관리자',
+            }
+          )
+          if (result) {
+            message.success('출석부가 반려되었습니다.')
+            loadSummaries()
+            setDrawerOpen(false)
+            setSelectedEducationId(null)
+            return
+          }
+        }
+      }
+      
+      // Fallback to old system
       if (type === 'attendance') {
         const docs = getAttendanceDocs()
         const doc = docs.find(d => d.id === id)
