@@ -527,7 +527,7 @@ export default function InstructorAttendancePage() {
       }
       
       // Update AttendanceSheet if it exists
-      if (attendanceSheet && attendanceSheet.status === 'INSTRUCTOR_IN_PROGRESS') {
+      if (attendanceSheet && attendanceSheet.status === 'SENT_TO_INSTRUCTOR') {
         // Convert students to AttendanceSheet format
         const sheetStudents = students.map((s, idx) => ({
           no: s.number,
