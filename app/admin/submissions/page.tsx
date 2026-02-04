@@ -155,11 +155,14 @@ export default function SubmissionsPage() {
       if (type === 'attendance') {
         const sheet = attendanceSheetStore.getByEducationId(id) ?? attendanceSheetStore.getById(id)
         if (sheet && sheet.status === 'SUBMITTED_TO_ADMIN') {
-          const adminName = userProfile?.name || '관리자'
           const result = attendanceSheetStore.adminReview(
             sheet.attendanceId,
             { status: 'APPROVED' },
-            adminName
+            {
+              role: 'admin',
+              id: userProfile?.userId || 'admin-1',
+              name: userProfile?.name || '관리자',
+            }
           )
           if (result) {
             message.success('출석부가 승인되었습니다.')
