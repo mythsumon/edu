@@ -125,12 +125,71 @@ To add more cities to the distance matrix:
 - Status: CANCELLED
 - Result: Excluded from teaching fee, shown separately as cancelled record
 
+## 출장비 정산 관리 흐름 (Workflow)
+
+### 1. 접근
+- 관리자 권한으로 `/admin/settlements/instructor` 페이지 접속
+
+### 2. 필터 선택
+- **월 선택**: 정산할 월 선택 (예: 2025년 1월)
+- **강사 선택**: 특정 강사만 보기 또는 전체 강사 보기
+
+### 3. 데이터 자동 계산
+시스템이 자동으로 다음을 계산:
+1. **일별 정산**: 강사별, 날짜별로 그룹화하여 계산
+2. **월별 정산**: 강사별로 월 전체 합계 계산
+
+### 4. 일별 정산 테이블 확인
+각 행을 클릭하면 상세 내역 확인:
+- **수업별 계산 상세**: 기본 강사료, 각종 수당 (도서벽지, 특수, 주말, 15명+보조없음)
+- **출장거리 계산**: 경로, 구간별 거리, 출장수당
+- **행사 참여**: 시간당 계산
+- **교구운반 수당**: 일일 합계
+- **일일 합계**: 모든 항목 합계
+
+### 5. 월별 정산 요약 확인
+- 강사별 총 일수, 차시, 기본 강사료, 수당 합계, 교구운반, 행사, 출장수당
+- 총액, 세금(3.3%), 실지급액
+
+### 6. 데이터 내보내기
+- **JSON 복사**: 클립보드에 JSON 형식으로 복사
+- **CSV 다운로드**: 엑셀에서 열 수 있는 CSV 파일 다운로드
+
+## 계산 흐름 (Calculation Flow)
+
+```
+1. 활동 데이터 수집
+   ↓
+2. 강사별, 날짜별로 그룹화
+   ↓
+3. 일별 정산 계산
+   ├─ 기본 강사료 (차시 × 단가)
+   ├─ 수당 계산
+   │  ├─ 도서벽지 (+5,000원/차시)
+   │  ├─ 특수 (+10,000원/차시)
+   │  ├─ 주말 (+5,000원/차시)
+   │  └─ 15명+보조없음 (+5,000원/차시)
+   ├─ 출장거리 계산
+   │  └─ 출장수당 (거리 구간별 고정 금액)
+   ├─ 교구운반 수당 (+20,000원/일)
+   └─ 행사 참여 (시간 × 25,000원)
+   ↓
+4. 월별 집계
+   ├─ 일별 정산 합계
+   ├─ 교구운반 캡 적용 (최대 300,000원)
+   ├─ 총액 계산
+   ├─ 세금 계산 (3.3%)
+   └─ 실지급액 계산
+   ↓
+5. 테이블 표시 및 내보내기
+```
+
 ## Usage
 
 1. Navigate to `/admin/settlements/instructor`
 2. Select month and instructor (optional)
 3. View daily and monthly settlement tables
-4. Expand daily rows to see activity details
+4. Expand daily rows to see detailed calculation breakdown
 5. Export as JSON (copy to clipboard) or CSV (download file)
 
 ## Data Model
