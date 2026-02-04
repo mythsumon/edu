@@ -835,8 +835,8 @@ export default function EducationStatusPage() {
         // Update local state
         setData(prev => prev.map(item => {
           if (item.key === id) {
-            // Auto-create AttendanceSheet when status reaches "확정" or "교육 진행 중"
-            if ((newStatus === '확정' || newStatus === '교육 진행 중') && item.educationId) {
+            // Auto-create AttendanceSheet when status reaches "확정"
+            if (newStatus === '확정' && item.educationId) {
               const education = dataStore.getEducationById(item.educationId)
               if (education) {
                 const existingSheet = attendanceSheetStore.getByEducationId(item.educationId)
@@ -846,12 +846,21 @@ export default function EducationStatusPage() {
                   const gradeClass = education.gradeClass || ''
                   const [grade, className] = gradeClass.split('학년').map(s => s.trim())
                   
-                  attendanceSheetStore.create(item.educationId, institutionId, {
+                  attendanceSheetStore.create(
+                    item.educationId, 
+                    institutionId, 
+                    {
                     grade: grade || '',
                     className: className?.replace('반', '').trim() || '',
                     teacherName: '',
                     teacherContact: '',
-                  })
+                    },
+                    {
+                      role: 'admin',
+                      id: userProfile?.userId || 'admin',
+                      name: userProfile?.name || 'Admin',
+                    }
+                  )
                 }
               }
             }

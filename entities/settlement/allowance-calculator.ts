@@ -7,16 +7,17 @@ import type { AllowancePolicy, InstitutionCategory } from './settlement-types'
 
 /**
  * Default allowance policy
+ * 강사비(Base fee+특수or도서벽지) 정리표에 따른 기본금액
  * 수업 기준: 기본금(차시×초중고특수도서벽지금액) + 주말수당(차시당5천원) + 출장수당(Km별금액지급)
  * Can be configured by admin later
  */
 export const DEFAULT_ALLOWANCE_POLICY: AllowancePolicy = {
   baseRates: {
     ELEMENTARY: { main: 40000, assistant: 30000 },  // 초등학교 차시당 금액 (Main: 40k, Assistant: 30k)
-    MIDDLE: { main: 40000, assistant: 30000 },      // 중학교 차시당 금액 (Base: 40k/30k, +5k allowance)
-    HIGH: { main: 40000, assistant: 30000 },        // 고등학교 차시당 금액 (Base: 40k/30k, +10k allowance)
-    SPECIAL: { main: 40000, assistant: 30000 },    // 특수학교 차시당 금액 (Base: 40k/30k, +10k allowance)
-    ISLAND: { main: 40000, assistant: 30000 },     // 도서벽지 차시당 금액 (Base: 40k/30k, +5k allowance)
+    MIDDLE: { main: 45000, assistant: 35000 },      // 중학교 차시당 금액 (Main: 45k, Assistant: 35k)
+    HIGH: { main: 50000, assistant: 40000 },        // 고등학교 차시당 금액 (Main: 50k, Assistant: 40k)
+    SPECIAL: { main: 40000, assistant: 30000 },    // 특수학교 차시당 금액 (기본 초등 기준, 추가금 별도 계산)
+    ISLAND: { main: 40000, assistant: 30000 },     // 도서벽지 차시당 금액 (기본 초등 기준, 추가금 별도 계산)
     GENERAL: { main: 40000, assistant: 30000 },    // 일반 차시당 금액 (Main: 40k, Assistant: 30k)
   },
   weekendRatePerSession: 5000,  // 주말수당 차시당 5천원
@@ -33,6 +34,7 @@ export const DEFAULT_ALLOWANCE_POLICY: AllowancePolicy = {
 
 /**
  * Calculate allowance for an instructor
+ * 강사비(Base fee+특수or도서벽지) 정리표에 따른 계산
  * 수업 기준: 기본금(차시×초중고특수도서벽지금액) + 주말수당(차시당5천원) + 추가수당(15명 이상 + 보조강사 없음: 차시당 5천원)
  * 
  * @param totalSessions - Total number of sessions
@@ -42,6 +44,8 @@ export const DEFAULT_ALLOWANCE_POLICY: AllowancePolicy = {
  * @param policy - Allowance policy configuration
  * @param studentCount - Number of students (for extra allowance calculation)
  * @param hasAssistant - Whether assistant instructor is assigned (for extra allowance calculation)
+ * @param isRemoteIsland - Whether institution is in remote/rural area (도서벽지)
+ * @param isSpecialClass - Whether it's a special class (특수학급)
  * @returns Object with base, weekend, extra, bonus, and total allowance
  */
 export function computeAllowance(
@@ -51,7 +55,9 @@ export function computeAllowance(
   institutionCategory: InstitutionCategory,
   policy: AllowancePolicy = DEFAULT_ALLOWANCE_POLICY,
   studentCount?: number,
-  hasAssistant?: boolean
+  hasAssistant?: boolean,
+  isRemoteIsland?: boolean,
+  isSpecialClass?: boolean
 ): {
   base: number
   weekend: number
@@ -59,8 +65,8 @@ export function computeAllowance(
   bonus: number
   total: number
 } {
-  // 학교 유형별 차시당 기본금 가져오기
-  let ratePerSession: number
+  // 학교 유형별 차시당 기본금 가져오기 (초등/중등/고등 기준)
+  let baseRatePerSession: number
   if (policy.baseRates) {
     // 타입 가드: baseRates에 존재하는 카테고리만 사용
     const validCategory = (institutionCategory === 'ELEMENTARY' || 
@@ -72,17 +78,29 @@ export function computeAllowance(
       ? institutionCategory 
       : 'GENERAL'
     
-    const categoryRates = policy.baseRates[validCategory] || policy.baseRates.GENERAL
-    ratePerSession = role === 'main' ? categoryRates.main : categoryRates.assistant
+    // SPECIAL이나 ISLAND는 초등 기준으로 시작
+    const categoryForBase = (validCategory === 'SPECIAL' || validCategory === 'ISLAND') 
+      ? 'ELEMENTARY' 
+      : validCategory
+    
+    const categoryRates = policy.baseRates[categoryForBase] || policy.baseRates.GENERAL
+    baseRatePerSession = role === 'main' ? categoryRates.main : categoryRates.assistant
   } else {
     // 레거시 지원
-    ratePerSession = role === 'main' 
+    baseRatePerSession = role === 'main' 
       ? (policy.leadRatePerSession || 50000)
       : (policy.assistantRatePerSession || 30000)
   }
 
-  // 기본금 계산: 차시 × 학교유형별 금액
-  const base = totalSessions * ratePerSession
+  // 도서벽지 추가금: 차시당 5,000원
+  const remoteIslandBonus = (isRemoteIsland || institutionCategory === 'ISLAND') ? totalSessions * 5000 : 0
+
+  // 특수 추가금: 차시당 10,000원
+  const specialBonus = (isSpecialClass || institutionCategory === 'SPECIAL') ? totalSessions * 10000 : 0
+
+  // 기본금 계산: 차시 × 학교유형별 금액 + 도서벽지 추가금 + 특수 추가금
+  // 중복지급 적용: 도서벽지 지역에 있는 특수학급의 경우 둘 다 반영
+  const base = totalSessions * baseRatePerSession + remoteIslandBonus + specialBonus
 
   // 주말수당 계산: 주말 차시 × 5000원
   const weekendRate = policy.weekendRatePerSession || 5000
@@ -99,15 +117,6 @@ export function computeAllowance(
 
   // 레거시 보너스 (deprecated, 0으로 설정)
   let bonus = 0
-  if (policy.categoryBonuses) {
-    if (institutionCategory === 'MIDDLE') {
-      bonus = policy.categoryBonuses.MIDDLE || 0
-    } else if (institutionCategory === 'SPECIAL') {
-      bonus = policy.categoryBonuses.SPECIAL_CLASS || 0
-    } else if (institutionCategory === 'ISLAND') {
-      bonus = policy.categoryBonuses.REMOTE_RURAL || 0
-    }
-  }
 
   return {
     base,

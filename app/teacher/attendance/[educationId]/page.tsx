@@ -38,10 +38,6 @@ export default function TeacherAttendancePage() {
   const [attendanceSheet, setAttendanceSheet] = useState<AttendanceSheet | null>(null)
   const [students, setStudents] = useState<Student[]>([])
   const [isEditMode, setIsEditMode] = useState(false)
-  const [signatureModalVisible, setSignatureModalVisible] = useState(false)
-  const [signatureType, setSignatureType] = useState<'image' | 'typed'>('typed')
-  const [typedName, setTypedName] = useState('')
-  const [signatureImageUrl, setSignatureImageUrl] = useState('')
 
   // Get program options
   const getProgramOptions = (): Array<{ value: string; label: string }> => {
@@ -112,12 +108,21 @@ export default function TeacherAttendancePage() {
       // Create new sheet if doesn't exist
       const gradeClass = edu.gradeClass || ''
       const [grade, className] = gradeClass.split('학년').map(s => s.trim())
-      sheet = attendanceSheetStore.create(educationId, currentInstitutionId, {
-        grade: grade || '',
-        className: className?.replace('반', '').trim() || '',
-        teacherName: userProfile?.name || '',
-        teacherContact: '',
-      })
+      sheet = attendanceSheetStore.create(
+        educationId, 
+        currentInstitutionId, 
+        {
+          grade: grade || '',
+          className: className?.replace('반', '').trim() || '',
+          teacherName: userProfile?.name || '',
+          teacherContact: '',
+        },
+        {
+          role: 'teacher',
+          id: userProfile?.userId || 'teacher-1',
+          name: userProfile?.name || 'Teacher',
+        }
+      )
     }
     
     if (sheet) {
@@ -196,31 +201,6 @@ export default function TeacherAttendancePage() {
     message.success('출석부 정보가 저장되었습니다.')
   }
 
-  const handleShare = () => {
-    if (!attendanceSheet) return
-    
-    Modal.confirm({
-      title: '강사에게 전달',
-      content: '출석부 정보를 강사에게 전달하시겠습니까? 전달 후에는 수정할 수 없습니다.',
-      okText: '전달',
-      cancelText: '취소',
-      onOk: () => {
-        const result = attendanceSheetStore.transitionStatus(
-          attendanceSheet.attendanceId,
-          'READY_FOR_INSTRUCTOR',
-          currentTeacherId
-        )
-        
-        if (result) {
-          setAttendanceSheet(result)
-          setIsEditMode(false)
-          message.success('강사에게 전달되었습니다.')
-        } else {
-          message.error('전달 중 오류가 발생했습니다.')
-        }
-      },
-    })
-  }
 
   const handleAddStudent = () => {
     const newNo = students.length > 0 
@@ -325,7 +305,6 @@ export default function TeacherAttendancePage() {
   ]
 
   const canEdit = attendanceSheet?.status === 'TEACHER_DRAFT' || attendanceSheet?.status === 'REJECTED'
-  const canShare = attendanceSheet?.status === 'TEACHER_DRAFT' && students.length > 0
 
   if (!education) {
     return (
@@ -627,224 +606,6 @@ export default function TeacherAttendancePage() {
               }}
             />
           </DetailSectionCard>
-
-          {canShare && (
-            <div className="mt-6">
-              <Button
-                type="primary"
-                size="large"
-                icon={<Send className="w-4 h-4" />}
-                onClick={handleShare}
-                block
-              >
-                강사에게 전달(공유)
-              </Button>
-            </div>
-          )}
-
-          {/* 서명 섹션 */}
-          {attendanceSheet && (
-            <DetailSectionCard title="서명" className="mt-6">
-              {attendanceSheet.teacherSignature ? (
-                <div className="space-y-4">
-                  <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FileCheck className="w-5 h-5 text-green-600" />
-                      <span className="font-medium text-green-900 dark:text-green-100">서명 완료</span>
-                    </div>
-                    <div className="text-sm text-gray-700 dark:text-gray-300">
-                      서명자: {attendanceSheet.teacherSignature.signedBy}
-                    </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      서명일: {dayjs(attendanceSheet.teacherSignature.signedAt).format('YYYY-MM-DD HH:mm')}
-                    </div>
-                    {attendanceSheet.teacherSignature.method === 'TYPED' && (
-                      <div className="mt-2 p-2 bg-white dark:bg-gray-800 rounded border">
-                        <span className="text-lg font-semibold">{attendanceSheet.teacherSignature.signatureRef}</span>
-                      </div>
-                    )}
-                    {attendanceSheet.teacherSignature.method === 'PNG' && attendanceSheet.teacherSignature.signatureRef && (
-                      <div className="mt-2">
-                        <img
-                          src={attendanceSheet.teacherSignature.signatureRef}
-                          alt="서명"
-                          className="max-w-[200px] max-h-[80px] object-contain border border-gray-300 rounded p-2 bg-white"
-                        />
-                      </div>
-                    )}
-                  </div>
-                  <Button
-                    type="default"
-                    icon={<FileCheck className="w-4 h-4" />}
-                    onClick={() => {
-                      setTypedName(userProfile?.name || attendanceSheet.teacherInfo.teacherName || '')
-                      setSignatureImageUrl(userProfile?.signatureImageUrl || '')
-                      setSignatureType(userProfile?.signatureImageUrl ? 'image' : 'typed')
-                      setSignatureModalVisible(true)
-                    }}
-                  >
-                    서명 수정
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FileCheck className="w-5 h-5 text-yellow-600" />
-                      <span className="font-medium text-yellow-900 dark:text-yellow-100">서명 필요</span>
-                    </div>
-                    <p className="text-sm text-gray-700 dark:text-gray-300">
-                      출석부에 서명을 완료해주세요.
-                    </p>
-                  </div>
-                  <Button
-                    type="primary"
-                    size="large"
-                    icon={<FileCheck className="w-4 h-4" />}
-                    onClick={() => {
-                      setTypedName(userProfile?.name || attendanceSheet.teacherInfo.teacherName || '')
-                      setSignatureImageUrl(userProfile?.signatureImageUrl || '')
-                      setSignatureType(userProfile?.signatureImageUrl ? 'image' : 'typed')
-                      setSignatureModalVisible(true)
-                    }}
-                    block
-                  >
-                    서명하기
-                  </Button>
-                </div>
-              )}
-            </DetailSectionCard>
-          )}
-
-          {/* 서명 모달 */}
-          <Modal
-            title="출석부 서명"
-            open={signatureModalVisible}
-            onOk={() => {
-              if (signatureType === 'typed' && !typedName.trim()) {
-                message.warning('이름을 입력해주세요.')
-                return
-              }
-              if (signatureType === 'image' && !signatureImageUrl) {
-                message.warning('서명 이미지를 선택해주세요.')
-                return
-              }
-              if (!attendanceSheet) return
-
-              const signature = {
-                method: (signatureType === 'image' ? 'PNG' : 'TYPED') as 'PNG' | 'TYPED',
-                signedBy: userProfile?.name || attendanceSheet.teacherInfo.teacherName || '학교선생님',
-                signedAt: new Date().toISOString(),
-                signatureRef: signatureType === 'typed' ? typedName : signatureImageUrl,
-              }
-
-              // If already signed, just update
-              if (attendanceSheet.teacherSignature) {
-                const updated = {
-                  ...attendanceSheet,
-                  teacherSignature: signature,
-                  updatedAt: new Date().toISOString(),
-                }
-                attendanceSheetStore.upsert(updated)
-                setAttendanceSheet(updated)
-                message.success('서명이 업데이트되었습니다.')
-              } else {
-                // Try to use addTeacherSignature, fallback to direct update
-                const result = attendanceSheetStore.addTeacherSignature(attendanceSheet.attendanceId, signature)
-                if (result) {
-                  setAttendanceSheet(result)
-                  message.success('서명이 완료되었습니다.')
-                } else {
-                  // Direct update if status doesn't allow transition
-                  const updated = {
-                    ...attendanceSheet,
-                    teacherSignature: signature,
-                    updatedAt: new Date().toISOString(),
-                  }
-                  attendanceSheetStore.upsert(updated)
-                  setAttendanceSheet(updated)
-                  message.success('서명이 완료되었습니다.')
-                }
-              }
-              setSignatureModalVisible(false)
-            }}
-            onCancel={() => {
-              setSignatureModalVisible(false)
-            }}
-            okText="서명하기"
-            cancelText="취소"
-          >
-            {attendanceSheet && (
-              <div className="space-y-4">
-                <div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">교육 정보</div>
-                  <div className="font-medium">{attendanceSheet.programName || education?.name}</div>
-                  <div className="text-sm text-gray-500">
-                    {attendanceSheet.institutionName || education?.institution} - {attendanceSheet.teacherInfo.grade}학년 {attendanceSheet.teacherInfo.className}반
-                  </div>
-                </div>
-
-                <Form.Item label="서명 방식">
-                  <Select
-                    value={signatureType}
-                    onChange={setSignatureType}
-                    options={[
-                      { value: 'typed', label: '이름 입력' },
-                      { value: 'image', label: '서명 이미지' },
-                    ]}
-                  />
-                </Form.Item>
-
-                {signatureType === 'typed' ? (
-                  <Form.Item label="이름" required>
-                    <Input
-                      value={typedName}
-                      onChange={(e) => setTypedName(e.target.value)}
-                      placeholder="서명할 이름을 입력하세요"
-                    />
-                  </Form.Item>
-                ) : (
-                  <Form.Item label="서명 이미지">
-                    {signatureImageUrl ? (
-                      <div className="space-y-2">
-                        <img
-                          src={signatureImageUrl}
-                          alt="서명"
-                          className="max-w-[200px] max-h-[80px] object-contain border border-gray-300 rounded p-2"
-                        />
-                        <Button
-                          size="small"
-                          onClick={() => {
-                            if (userProfile?.signatureImageUrl) {
-                              setSignatureImageUrl(userProfile.signatureImageUrl)
-                            }
-                          }}
-                        >
-                          내 서명 사용
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="text-sm text-gray-500">
-                        {userProfile?.signatureImageUrl ? (
-                          <Button
-                            onClick={() => setSignatureImageUrl(userProfile.signatureImageUrl || '')}
-                          >
-                            내 서명 이미지 사용
-                          </Button>
-                        ) : (
-                          <span>서명 이미지가 없습니다. 이름 입력 방식을 사용하세요.</span>
-                        )}
-                      </div>
-                    )}
-                  </Form.Item>
-                )}
-
-                <div className="text-xs text-gray-500">
-                  서명 후에는 수정할 수 있습니다. 확인 후 진행해주세요.
-                </div>
-              </div>
-            )}
-          </Modal>
         </div>
       </div>
     </ProtectedRoute>

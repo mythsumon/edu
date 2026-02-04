@@ -166,10 +166,14 @@ function getInstitutionData(institutionName: string): {
   schoolLat?: number
   schoolLng?: number
   category: InstitutionCategory
+  isRemoteIsland?: boolean
+  isSpecialClass?: boolean
 } {
   // 학교 유형 추론 (기관명에서 키워드 찾기)
   let category: InstitutionCategory = 'GENERAL'
   const nameLower = institutionName.toLowerCase()
+  let isRemoteIsland = false
+  let isSpecialClass = false
   
   if (nameLower.includes('초등') || nameLower.includes('초교')) {
     category = 'ELEMENTARY'
@@ -179,8 +183,18 @@ function getInstitutionData(institutionName: string): {
     category = 'HIGH'
   } else if (nameLower.includes('특수') || nameLower.includes('특수학교')) {
     category = 'SPECIAL'
+    isSpecialClass = true
   } else if (nameLower.includes('도서') || nameLower.includes('벽지') || nameLower.includes('섬')) {
     category = 'ISLAND'
+    isRemoteIsland = true
+  }
+  
+  // 도서벽지와 특수는 별도로 체크 (중복 가능)
+  if (nameLower.includes('도서') || nameLower.includes('벽지') || nameLower.includes('섬')) {
+    isRemoteIsland = true
+  }
+  if (nameLower.includes('특수') || nameLower.includes('특수학급')) {
+    isSpecialClass = true
   }
   
   // Mock institution data with actual coordinates
@@ -205,6 +219,8 @@ function getInstitutionData(institutionName: string): {
       schoolLat: institution.lat,
       schoolLng: institution.lng,
       category,
+      isRemoteIsland,
+      isSpecialClass,
     }
   }
   
@@ -215,6 +231,8 @@ function getInstitutionData(institutionName: string): {
     schoolLat: 37.5665,
     schoolLng: 126.9780,
     category,
+    isRemoteIsland,
+    isSpecialClass,
   }
 }
 

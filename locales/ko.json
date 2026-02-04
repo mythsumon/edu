@@ -33,7 +33,9 @@
     "documentManagement": "문서 제출 관리",
     "submissions": "제출 대기 목록",
     "userManagement": "사용자 관리",
-    "commonCode": "공통 코드"
+    "commonCode": "공통 코드",
+    "travelSettlement": "출장비 정산 관리",
+    "instructorApplicationPolicy": "강사 신청 정책 관리"
   },
   "pageHeader": {
     "breadcrumbHome": "홈",

@@ -5,12 +5,9 @@ import { usePathname } from 'next/navigation'
 import { 
   LayoutDashboard, 
   GraduationCap, 
-  FileCheck,
-  ClipboardList,
   User,
   Settings,
   LogOut,
-  Bell,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
@@ -38,30 +35,10 @@ const teacherMenuConfig: MenuGroup[] = [
     ],
   },
   {
-    label: '수업 관리',
-    icon: GraduationCap,
-    items: [
-      { label: '내 학교 수업 목록', href: '/teacher/classes', icon: GraduationCap },
-    ],
-  },
-  {
-    label: '출석부',
-    icon: FileCheck,
-    items: [
-      { label: '출석부 서명/확인', href: '/teacher/attendance-sign', icon: FileCheck },
-    ],
-  },
-  {
-    label: '요청함',
-    icon: Bell,
-    items: [
-      { label: '강사 요청', href: '/teacher/requests', icon: ClipboardList },
-    ],
-  },
-  {
     label: '설정',
     icon: Settings,
     items: [
+      { label: '설정', href: '/teacher/settings', icon: Settings },
       { label: '내 정보', href: '/teacher/profile', icon: User },
     ],
   },
@@ -182,40 +159,35 @@ export function TeacherSidebar({ isCollapsed, setIsCollapsed }: TeacherSidebarPr
 
           {/* Footer */}
           <div className="border-t border-gray-200 dark:border-gray-700 p-4">
-            {!isCollapsed && userProfile && (
-              <div className="mb-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                    <User className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+            <div className="space-y-1">
+              {!isCollapsed && userProfile && (
+                <div className="flex items-center gap-3 px-3 py-2.5">
+                  <User className="w-5 h-5 flex-shrink-0 text-gray-500 dark:text-gray-400" />
+                  <div className="flex-1 min-w-0 text-left">
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                       {userProfile.name}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
                       {userProfile.email}
-                    </p>
+                    </div>
                   </div>
                 </div>
-                <Button
-                  type="text"
-                  size="small"
-                  onClick={() => setIsProfileModalOpen(true)}
-                  className="w-full text-left text-xs text-gray-600 dark:text-gray-400"
-                >
-                  프로필 수정
-                </Button>
-              </div>
-            )}
-            <button
-              onClick={handleLogout}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors ${
-                isCollapsed ? 'justify-center' : ''
-              }`}
-            >
-              <LogOut className="w-5 h-5" />
-              {!isCollapsed && <span className="text-sm font-medium">로그아웃</span>}
-            </button>
+              )}
+              {isCollapsed && userProfile && (
+                <div className="flex items-center justify-center px-3 py-2.5">
+                  <User className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                </div>
+              )}
+              <button
+                onClick={handleLogout}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                  isCollapsed ? 'justify-center' : ''
+                }`}
+              >
+                <LogOut className="w-5 h-5 flex-shrink-0" />
+                {!isCollapsed && <span className="text-sm font-medium">로그아웃</span>}
+              </button>
+            </div>
           </div>
         </div>
       </aside>
