@@ -22,6 +22,7 @@ import { dataStore, type Education } from '@/lib/dataStore'
 import { educationScheduler } from '@/lib/educationScheduler'
 import { educationToStatusItem } from '@/entities/education/education-utils'
 import { EducationFeeCalculationFlow, AllowanceRateTable } from '@/components/shared/common'
+import { useAuth } from '@/contexts/AuthContext'
 
 const { RangePicker } = DatePicker
 
@@ -171,6 +172,7 @@ const dummyData: EducationStatusItem[] = [
 ]
 
 export default function EducationStatusPage() {
+  const { userProfile } = useAuth()
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [statusValue, setStatusValue] = useState<string>('')
   const [currentPage, setCurrentPage] = useState(1)
