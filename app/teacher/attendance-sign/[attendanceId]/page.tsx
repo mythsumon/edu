@@ -119,7 +119,15 @@ export default function TeacherAttendanceSignDetailPage() {
       setAttendanceSheet(updated)
       message.success('서명이 업데이트되었습니다.')
     } else {
-      const result = attendanceSheetStore.addTeacherSignature(attendanceSheet.attendanceId, signature)
+      const result = attendanceSheetStore.addTeacherSignature(
+        attendanceSheet.attendanceId,
+        signature,
+        {
+          role: 'teacher',
+          id: userProfile?.userId || 'teacher-1',
+          name: userProfile?.name || attendanceSheet.teacherInfo.teacherName || 'Teacher',
+        }
+      )
       if (result) {
         setAttendanceSheet(result)
         message.success('서명이 완료되었습니다.')
