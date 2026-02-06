@@ -88,7 +88,7 @@
     "systemSettings": "System Settings",
     "userManagement": "User Management",
     "commonCode": "Common Code",
-    "travelSettlement": "Travel Expense Settlement Management",
+    "instructorSettlement": "Instructor Payment Summary",
     "instructorApplicationPolicy": "Instructor Application Policy Management"
   },
   "pageHeader": {
