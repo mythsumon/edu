@@ -146,8 +146,9 @@ function generateSingleLocationMapUrl(
 
 /**
  * Generate route description for map image
+ * Uses city/county names from regions
  */
-export function generateRouteDescription(
+function generateRouteDescriptionFromRegions(
   homeRegion: InstructorRegion,
   institutionRegions: InstitutionRegion[]
 ): string {
@@ -182,7 +183,7 @@ export function generateMapImageWithFallback(
   
   // Fallback: Return placeholder image
   // In production, this could be a pre-rendered image or a default map image
-  const routeDescription = generateRouteDescription(homeRegion, institutionRegions)
+  const routeDescription = generateRouteDescriptionFromRegions(homeRegion, institutionRegions)
   
   // Return a data URL with route description as placeholder
   // In real implementation, this would be replaced with actual map image

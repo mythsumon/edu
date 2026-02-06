@@ -9,7 +9,7 @@ import type { Dayjs } from 'dayjs'
 import { Calendar, DollarSign, MapPin, Info, Eye, ChevronDown, ChevronRight, Search, Filter } from 'lucide-react'
 import dayjs from 'dayjs'
 import 'dayjs/locale/ko'
-import type { InstructorPaymentSummary, InstructorYearlyPayment, InstructorMonthlyPayment, InstructorDailyPayment } from '@/entities/settlement'
+import type { InstructorPaymentSummary, InstructorYearlyPayment, InstructorMonthlyPayment, InstructorDailyPayment } from '@/entities/settlement/instructor-payment-types'
 import { calculateAllInstructorPayments } from '@/entities/settlement/instructor-payment-calculator'
 import { dataStore } from '@/lib/dataStore'
 import { useAuth } from '@/contexts/AuthContext'
@@ -249,7 +249,7 @@ export default function InstructorPaymentsPage() {
 
   if (!paymentSummary) {
     return (
-      <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
+      <ProtectedRoute requiredRole="instructor">
         <div className="p-6">
           <Card>
             <div className="text-center py-8">
@@ -262,7 +262,7 @@ export default function InstructorPaymentsPage() {
   }
 
   return (
-    <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
+    <ProtectedRoute requiredRole="instructor">
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

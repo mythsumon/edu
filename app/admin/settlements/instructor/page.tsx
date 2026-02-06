@@ -10,7 +10,7 @@ import type { Dayjs } from 'dayjs'
 import { Calendar, DollarSign, MapPin, Info, Eye, ChevronDown, ChevronRight, Search, User, Download, Filter } from 'lucide-react'
 import dayjs from 'dayjs'
 import 'dayjs/locale/ko'
-import type { InstructorPaymentSummary, InstructorYearlyPayment, InstructorMonthlyPayment, InstructorDailyPayment } from '@/entities/settlement'
+import type { InstructorPaymentSummary, InstructorYearlyPayment, InstructorMonthlyPayment, InstructorDailyPayment } from '@/entities/settlement/instructor-payment-types'
 import { calculateAllInstructorPayments } from '@/entities/settlement/instructor-payment-calculator'
 import { dataStore } from '@/lib/dataStore'
 
@@ -301,7 +301,7 @@ export default function AdminInstructorPaymentsPage() {
   }, [paymentSummaries])
 
   return (
-    <ProtectedRoute allowedRoles={['ADMIN']}>
+    <ProtectedRoute requiredRole="admin">
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -353,7 +353,7 @@ export default function AdminInstructorPaymentsPage() {
         <Card>
           <Tabs
             activeKey={activeTab}
-            onChange={setActiveTab}
+            onChange={(key) => setActiveTab(key as 'summary' | 'detail')}
             items={[
               {
                 key: 'summary',
