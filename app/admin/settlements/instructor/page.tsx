@@ -306,7 +306,33 @@ export default function AdminInstructorPaymentsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">강사별 정산 내역 (관리자)</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold">강사별 정산 내역 (관리자)</h1>
+              <Tooltip
+                title={
+                  <div className="max-w-md">
+                    <div className="font-semibold mb-2">정산 시스템 계산 방식</div>
+                    <div className="text-sm space-y-1">
+                      <div><strong>강사 기준 계산:</strong> 모든 계산은 강사별로 수행됩니다.</div>
+                      <div><strong>출장수당 계산:</strong></div>
+                      <div>• 강사당 하루 1회만 지급 (여러 기관 방문 시에도 1회)</div>
+                      <div>• 경로: 집 → 기관1 → 기관2 → ... → 집 (총 거리 합산)</div>
+                      <div>• 거리 기준: 고정 거리표 (31개 시군청간 거리표)</div>
+                      <div>• 50km 미만 또는 동일 시/군 = 지급 없음</div>
+                      <div>• 거리 구간별: 50-70km=2만원, 70-90km=3만원, 90-110km=4만원, 110-130km=5만원, 130km 이상=6만원</div>
+                      <div>• 지도 이미지: 출장수당 지급 시 참고용 지도 이미지 저장</div>
+                      <div className="mt-2"><strong>강사료:</strong></div>
+                      <div>• 주강사: 40,000원/차시, 보조강사: 30,000원/차시</div>
+                      <div>• 추가 수당: 도서벽지(5천원), 특수교육(1만원), 주말(5천원), 중학교(5천원), 고등학교(1만원) 등</div>
+                      <div className="mt-2"><strong>정산 대상:</strong> 확정 또는 완료 상태의 교육만 실제 지급</div>
+                    </div>
+                  </div>
+                }
+                placement="right"
+              >
+                <Info className="w-5 h-5 text-blue-500 cursor-help" />
+              </Tooltip>
+            </div>
             <p className="text-gray-500 mt-1">
               모든 강사들의 정산 내역을 확인할 수 있습니다.
             </p>
@@ -785,7 +811,24 @@ function DailyPaymentCard({
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4" />
               <span className="text-sm font-semibold">출장수당</span>
-              <Tooltip title={dailyPayment.travelAllowance.explanation}>
+              <Tooltip
+                title={
+                  <div className="max-w-sm">
+                    <div className="font-semibold mb-2">출장수당 계산 방식</div>
+                    <div className="text-sm space-y-1 whitespace-pre-line">
+                      {dailyPayment.travelAllowance.explanation}
+                      {'\n\n'}
+                      <strong>계산 원칙:</strong>
+                      {'\n'}• 강사당 하루 1회만 지급
+                      {'\n'}• 여러 기관 방문 시 총 거리 합산
+                      {'\n'}• 고정 거리표 기준 (실시간 API 사용 안 함)
+                      {'\n'}• 50km 미만 또는 동일 지역 = 지급 없음
+                      {'\n'}• 지도 이미지는 참고용 증빙 자료
+                    </div>
+                  </div>
+                }
+                placement="top"
+              >
                 <Info className="w-4 h-4 text-gray-400 cursor-help" />
               </Tooltip>
             </div>

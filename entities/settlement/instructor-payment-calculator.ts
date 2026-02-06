@@ -179,6 +179,15 @@ function calculateDailyTravelRoute(
 
 /**
  * Calculate daily travel allowance
+ * 
+ * Rules:
+ * - Calculated ONCE per instructor per day (even if multiple trainings)
+ * - Route: Home → Institution(s) → Home (aggregated distance)
+ * - Uses fixed city-to-city distance matrix (not live map APIs)
+ * - Distance brackets: 20,000 KRW to 60,000 KRW
+ * - Under 50 km or same city/county = no payment (0 KRW)
+ * - Multiple institutions on same day = travel allowance paid only once
+ * - Map image required as evidence (but distance from fixed table)
  */
 function calculateDailyTravelAllowance(
   route: DailyTravelRoute
@@ -186,12 +195,13 @@ function calculateDailyTravelAllowance(
   const distanceKm = route.totalDistanceKm
   
   // Same region = 0 km = 0 KRW
+  // Under 50 km = 0 KRW (per requirements)
   if (distanceKm === 0) {
     return {
       totalDistanceKm: 0,
       distanceBracket: { minKm: 0, maxKm: 50, amount: 0 },
       amount: 0,
-      explanation: `동일 지역 이동 (${route.homeRegion.cityCounty}): 출장수당 없음`,
+      explanation: `동일 지역 이동 (${route.homeRegion.cityCounty}): 출장수당 없음\n• 같은 시/군 내 이동은 거리 0km로 계산\n• 50km 미만 또는 동일 지역 = 출장수당 지급 없음`,
       mapImageUrl: route.mapImageUrl,
     }
   }
@@ -218,6 +228,9 @@ function calculateDailyTravelAllowance(
     ? `${bracket.minKm}km 이상`
     : `${bracket.minKm}km ~ ${bracket.maxKm}km`
   
+  // Enhanced explanation with calculation details
+  const explanation = `총 이동거리 ${distanceKm.toFixed(1)}km (${route.routeDescription})\n• 거리 구간: ${bracketDescription}\n• 출장수당: ${amount.toLocaleString()}원\n• 계산 기준: 고정 거리표 (31개 시군청간 거리표)\n• 같은 날 여러 기관 방문 시에도 하루 1회만 지급`
+  
   return {
     totalDistanceKm: distanceKm,
     distanceBracket: {
@@ -226,7 +239,7 @@ function calculateDailyTravelAllowance(
       amount: bracket.amount,
     },
     amount,
-    explanation: `총 이동거리 ${distanceKm.toFixed(1)}km (${route.routeDescription}): ${bracketDescription} 구간 → ${amount.toLocaleString()}원`,
+    explanation,
     mapImageUrl: route.mapImageUrl,
   }
 }

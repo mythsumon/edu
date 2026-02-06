@@ -29,7 +29,7 @@ export default function TeacherAttendanceSignPage() {
   const currentInstitutionId = 'INST-001' // TODO: Get from teacher profile
   const currentInstitutionName = '평택안일초등학교' // TODO: Get from teacher profile
 
-  // Load all AttendanceSheets for this institution (not just WAITING_TEACHER_SIGNATURE)
+  // Load all AttendanceSheets for this institution (not just RETURNED_TO_TEACHER)
   const attendanceSheets = useMemo(() => {
     return attendanceSheetStore.getByInstitutionId(currentInstitutionId)
   }, [currentInstitutionId])
@@ -158,9 +158,9 @@ export default function TeacherAttendanceSignPage() {
     // Check if this is an AttendanceSheet
     const sheet = attendanceSheetStore.getByEducationId(selectedAttendance.educationId)
     if (sheet) {
-      // Allow signature for WAITING_TEACHER_SIGNATURE, SIGNED_BY_TEACHER, APPROVED, and completed sheets
-      const canSign = sheet.status === 'WAITING_TEACHER_SIGNATURE' || 
-                      sheet.status === 'SIGNED_BY_TEACHER' || 
+      // Allow signature for RETURNED_TO_TEACHER, FINAL_SENT_TO_INSTRUCTOR, APPROVED, and completed sheets
+      const canSign = sheet.status === 'RETURNED_TO_TEACHER' || 
+                      sheet.status === 'FINAL_SENT_TO_INSTRUCTOR' || 
                       sheet.status === 'APPROVED' ||
                       (selectedAttendance?.status === 'APPROVED' && !sheet.teacherSignature)
       
