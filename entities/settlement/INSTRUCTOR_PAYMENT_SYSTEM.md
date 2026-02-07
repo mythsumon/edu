@@ -91,8 +91,14 @@ This system provides an instructor-centric view of payment and travel allowance 
 
 ### Training Payment
 
-- **Main Instructor**: 40,000 KRW per session
-- **Assistant Instructor**: 30,000 KRW per session
+**Note**: The payment statement format uses different base rates than the internal calculation system:
+- **Internal Calculation** (for display/explanation): Main: 40,000 KRW, Assistant: 30,000 KRW per session
+- **Payment Statement Format** (for official statements): Main: 32,000 KRW, Assistant: 24,000 KRW per session
+
+The payment statement generator (`payment-statement-generator.ts`) uses the official rates (32,000/24,000) to match the required statement format.
+
+- **Main Instructor**: 32,000 KRW per session (statement format) / 40,000 KRW per session (internal calculation)
+- **Assistant Instructor**: 24,000 KRW per session (statement format) / 30,000 KRW per session (internal calculation)
 - Formula: `Rate × Sessions = Payment Amount`
 
 ### Travel Allowance
@@ -156,3 +162,5 @@ instructorSummary.monthlyPayments.forEach(monthly => {
 - Map image generation requires Kakao Maps API key (`NEXT_PUBLIC_KAKAO_MAP_API_KEY`)
 - Distance matrix needs to be populated with actual values from "31개 시군청간 거리표"
 - Instructor home region should be fetched from actual instructor data (currently mocked)
+
+The instructor settlement system must be designed with an instructor-centric approach, where all calculations are performed based on the instructor rather than individual trainings. An instructor may serve as a main instructor or an assistant instructor depending on the training, and the role must be applied per training when calculating fees. The base session fee is 40,000 KRW per session for main instructors and 30,000 KRW per session for assistant instructors, with multiple session-based allowances applied cumulatively, including island/remote area allowance (5,000 KRW), special education allowance (10,000 KRW), weekend allowance (5,000 KRW, excluding event participation), middle school allowance (5,000 KRW), high school allowance (10,000 KRW), and an additional allowance of 5,000 KRW per session when a class has 15 or more students and no assistant instructor is assigned (main instructor only). Additional activity-based payments include teaching equipment transport allowance (20,000 KRW per day, capped at 300,000 KRW per month), event participation allowance (25,000 KRW per hour), and mentoring or instructor capacity-building allowances as defined by policy. Travel allowance must be calculated once per instructor per day based on the instructor’s home region and the total daily route (home → institution(s) → home), using a predefined fixed city-to-city distance matrix rather than live map APIs; travel allowance is paid according to distance brackets ranging from 20,000 KRW to 60,000 KRW, while distances under 50 km or within the same city or county are not paid, and when multiple institutions are visited on the same day, travel allowance is paid only once. For every travel allowance payment, a reference map image showing the departure point, intermediate institutions, and return route must be stored as supporting evidence, although the distance calculation itself must rely solely on the fixed distance table. All assigned trainings are included for budget counting and statistical purposes regardless of status, but actual payments are made only for trainings with a confirmed or completed status. The total settlement amount is subject to a 3.3% withholding tax (including local income tax), and the instructor-facing user interface must clearly display calculation formulas, applied allowances, travel allowance reasons, and explanations for any zero-value items to ensure transparency and trust.

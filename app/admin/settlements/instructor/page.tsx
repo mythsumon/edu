@@ -8,10 +8,14 @@ import { Card, Button, Select, Space, Badge, Collapse, Image, Modal, Tooltip, Di
 import type { ColumnsType } from 'antd/es/table'
 import type { Dayjs } from 'dayjs'
 import { Calendar, DollarSign, MapPin, Info, Eye, ChevronDown, ChevronRight, Search, User, Download, Filter } from 'lucide-react'
+import { message } from 'antd'
 import dayjs from 'dayjs'
 import 'dayjs/locale/ko'
 import type { InstructorPaymentSummary, InstructorYearlyPayment, InstructorMonthlyPayment, InstructorDailyPayment } from '@/entities/settlement/instructor-payment-types'
 import { calculateAllInstructorPayments } from '@/entities/settlement/instructor-payment-calculator'
+import { generatePaymentStatements, generateDailyPaymentStatements, downloadPaymentStatementsCSV, type PaymentStatementRow } from '@/entities/settlement/payment-statement-generator'
+import PaymentPolicyTables from '@/components/shared/common/PaymentPolicyTables'
+import PaymentStatementDetailTable from '@/components/shared/common/PaymentStatementDetailTable'
 import { dataStore } from '@/lib/dataStore'
 
 dayjs.locale('ko')
@@ -33,7 +37,7 @@ export default function AdminInstructorPaymentsPage() {
   const [selectedMapUrl, setSelectedMapUrl] = useState<string | undefined>(undefined)
   const [selectedRouteDescription, setSelectedRouteDescription] = useState<string>('')
   const [searchText, setSearchText] = useState('')
-  const [activeTab, setActiveTab] = useState<'summary' | 'detail'>('summary')
+  const [activeTab, setActiveTab] = useState<'summary' | 'detail' | 'policy'>('summary')
   const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null)
   const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set())
   const [expandedMonths, setExpandedMonths] = useState<Map<string, Set<string>>>(new Map()) // year -> Set<month>
@@ -234,6 +238,31 @@ export default function AdminInstructorPaymentsPage() {
     setExpandedMonths(new Map())
   }
 
+  // Handle individual instructor export (교육 날짜별)
+  const handleExportInstructorStatement = (summary: InstructorPaymentSummary) => {
+    const allDailyPayments: InstructorDailyPayment[] = []
+    summary.yearlyPayments.forEach(yearly => {
+      yearly.monthlyPayments.forEach(monthly => {
+        monthly.dailyPayments.forEach(daily => {
+          allDailyPayments.push(daily)
+        })
+      })
+    })
+    
+    if (allDailyPayments.length === 0) {
+      message.warning(`${summary.instructorName} 강사의 정산 데이터가 없습니다.`)
+      return
+    }
+    
+    // Generate daily payment statements (교육 날짜별)
+    const statements = generateDailyPaymentStatements(allDailyPayments)
+    const dateRange = allDailyPayments.length > 0 
+      ? `${allDailyPayments[0].date}~${allDailyPayments[allDailyPayments.length - 1].date}`
+      : new Date().toISOString().split('T')[0]
+    downloadPaymentStatementsCSV(statements, `수당명세서_${summary.instructorName}_${dateRange}.csv`)
+    message.success(`${summary.instructorName} 강사의 수당명세서가 다운로드되었습니다. (교육 날짜별)`)
+  }
+
   // Summary table columns
   const summaryColumns: ColumnsType<InstructorPaymentSummary> = [
     {
@@ -280,6 +309,25 @@ export default function AdminInstructorPaymentsPage() {
       key: 'eligiblePayment',
       align: 'right',
       render: (amount) => <span className="font-semibold text-orange-600">{amount.toLocaleString()}원</span>,
+    },
+    {
+      title: '명세서 내보내기',
+      key: 'export',
+      align: 'center',
+      width: 150,
+      render: (_, record) => (
+        <Button
+          type="default"
+          size="small"
+          icon={<Download className="w-3 h-3" />}
+          onClick={(e) => {
+            e.stopPropagation()
+            handleExportInstructorStatement(record)
+          }}
+        >
+          내보내기
+        </Button>
+      ),
     },
   ]
 
@@ -337,6 +385,45 @@ export default function AdminInstructorPaymentsPage() {
               모든 강사들의 정산 내역을 확인할 수 있습니다.
             </p>
           </div>
+          <div className="flex items-center gap-2">
+            <Button
+              type="primary"
+              icon={<Download className="w-4 h-4" />}
+              onClick={() => {
+                if (paymentSummaries.length === 0) {
+                  message.warning('내보낼 정산 데이터가 없습니다.')
+      return
+    }
+
+                // Generate statements for all instructors (교육 날짜별)
+                const allDailyPayments: InstructorDailyPayment[] = []
+                paymentSummaries.forEach(summary => {
+                  summary.yearlyPayments.forEach(yearly => {
+                    yearly.monthlyPayments.forEach(monthly => {
+                      monthly.dailyPayments.forEach(daily => {
+                        allDailyPayments.push(daily)
+                      })
+                    })
+                  })
+                })
+                
+                if (allDailyPayments.length === 0) {
+                  message.warning('내보낼 정산 데이터가 없습니다.')
+                  return
+                }
+                
+                // Generate daily payment statements (교육 날짜별)
+                const statements = generateDailyPaymentStatements(allDailyPayments)
+                const dateRange = allDailyPayments.length > 0 
+                  ? `${allDailyPayments[0].date}~${allDailyPayments[allDailyPayments.length - 1].date}`
+                  : new Date().toISOString().split('T')[0]
+                downloadPaymentStatementsCSV(statements, `수당명세서_${dateRange}.csv`)
+                message.success('수당명세서가 다운로드되었습니다. (교육 날짜별)')
+              }}
+            >
+              수당명세서 내보내기
+            </Button>
+          </div>
         </div>
 
         {/* Overall Summary */}
@@ -345,7 +432,7 @@ export default function AdminInstructorPaymentsPage() {
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">
                 {totals.totalInstructors}
-              </div>
+          </div>
               <div className="text-sm text-gray-500 mt-1">강사 수</div>
             </div>
             <div className="text-center">
@@ -379,7 +466,7 @@ export default function AdminInstructorPaymentsPage() {
         <Card>
           <Tabs
             activeKey={activeTab}
-            onChange={(key) => setActiveTab(key as 'summary' | 'detail')}
+            onChange={(key) => setActiveTab(key as 'summary' | 'detail' | 'policy')}
             items={[
               {
                 key: 'summary',
@@ -404,21 +491,21 @@ export default function AdminInstructorPaymentsPage() {
                         allowClear
                       />
                       {dateRange && (
-                        <Button
+              <Button
                           size="small"
                           onClick={() => setDateRange(null)}
                           icon={<Filter className="w-4 h-4" />}
                         >
                           날짜 필터 초기화
-                        </Button>
+              </Button>
                       )}
-                    </div>
+            </div>
 
                     {/* Summary Table */}
-                    <Table
+            <Table
                       columns={summaryColumns}
                       dataSource={filteredSummaries}
-                      rowKey="instructorId"
+              rowKey="instructorId"
                       loading={loading}
                       pagination={{
                         pageSize: 20,
@@ -452,9 +539,14 @@ export default function AdminInstructorPaymentsPage() {
                   </div>
                 ),
               },
+              {
+                key: 'policy',
+                label: '정리표',
+                children: <PaymentPolicyTables />,
+              },
             ]}
-          />
-        </Card>
+            />
+          </Card>
 
         {/* Map Modal */}
         <Modal
@@ -515,8 +607,8 @@ function InstructorDetailView({
   expandedYears: Set<string>
   onYearToggle: (year: string) => void
 }) {
-  return (
-    <div className="space-y-4">
+                  return (
+                          <div className="space-y-4">
       {/* Instructor Selector */}
       <div className="flex items-center gap-2 mb-4">
         <span className="text-sm font-medium">강사 선택:</span>
@@ -533,8 +625,8 @@ function InstructorDetailView({
             label: `${s.instructorName} (${s.homeRegion.cityCounty})`,
           }))}
         />
-      </div>
-
+                                  </div>
+                                  
       {/* Instructor Info */}
       <Card size="small" className="bg-gray-50">
         <div className="flex items-center justify-between">
@@ -542,32 +634,20 @@ function InstructorDetailView({
             <div className="font-semibold text-lg">{summary.instructorName}</div>
             <div className="text-sm text-gray-500 mt-1">
               집 주소: {summary.homeRegion.cityCounty} {summary.homeRegion.address}
-            </div>
-          </div>
+                                    </div>
+                                  </div>
           <div className="text-right">
             <div className="text-sm text-gray-500">총 정산액</div>
             <div className="text-xl font-bold text-orange-600">
               {summary.eligiblePayment.toLocaleString()}원
-            </div>
-          </div>
-        </div>
+                                      </div>
+                                            </div>
+                                      </div>
       </Card>
-
-      {/* Yearly Breakdown */}
-      <div className="space-y-4">
-        {summary.yearlyPayments.map(yearlyPayment => (
-          <YearlyPaymentCard
-            key={yearlyPayment.year}
-            yearlyPayment={yearlyPayment}
-            isExpanded={expandedYears.has(yearlyPayment.year)}
-            expandedMonths={expandedMonths.get(yearlyPayment.year) || new Set()}
-            onYearToggle={() => onYearToggle(yearlyPayment.year)}
-            onMonthToggle={(month) => onMonthToggle(yearlyPayment.year, month)}
-            onMapClick={onMapClick}
-          />
-        ))}
-      </div>
-    </div>
+                                    
+      {/* Payment Statement Table */}
+      <PaymentStatementDetailTable summary={summary} onMapClick={onMapClick} />
+                                      </div>
   )
 }
 
@@ -598,43 +678,43 @@ function YearlyPaymentCard({
             <Calendar className="w-5 h-5 text-blue-600" />
             <span className="font-bold text-lg">{yearlyPayment.year}년</span>
             <Badge count={yearlyPayment.totalMonths} showZero color="blue" />
-          </div>
+                                      </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
               <div className="text-sm text-gray-500">연간 정산액</div>
               <div className="text-xl font-bold text-orange-600">
                 {yearlyPayment.eligiblePayment.toLocaleString()}원
-              </div>
-            </div>
+                                            </div>
+                                      </div>
             <Button
               type="text"
               icon={isExpanded ? <ChevronDown /> : <ChevronRight />}
               onClick={onYearToggle}
             />
-          </div>
-        </div>
+                                    </div>
+                                      </div>
       }
     >
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
         <div>
           <div className="text-sm text-gray-500">정산 월수</div>
           <div className="text-lg font-semibold">{yearlyPayment.totalMonths}개월</div>
-        </div>
+                                            </div>
         <div>
           <div className="text-sm text-gray-500">교육 일수</div>
           <div className="text-lg font-semibold">{yearlyPayment.totalDays}일</div>
-        </div>
+                                      </div>
         <div>
           <div className="text-sm text-gray-500">총 차시</div>
           <div className="text-lg font-semibold">{yearlyPayment.totalSessions}차시</div>
-        </div>
+                                    </div>
         <div>
           <div className="text-sm text-gray-500">총 정산액</div>
           <div className="text-lg font-semibold">
             {yearlyPayment.totalPayment.toLocaleString()}원
-          </div>
-        </div>
-      </div>
+                                  </div>
+                                  </div>
+                                </div>
 
       {isExpanded && (
         <div className="space-y-4 mt-4">
@@ -648,8 +728,8 @@ function YearlyPaymentCard({
               onMapClick={onMapClick}
             />
           ))}
-        </div>
-      )}
+                        </div>
+                      )}
     </Card>
   )
 }
@@ -677,45 +757,45 @@ function MonthlyPaymentCard({
             <Calendar className="w-4 h-4" />
             <span className="font-semibold">{monthlyPayment.month}</span>
             <Badge count={monthlyPayment.totalDays} showZero />
-          </div>
+                              </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
               <div className="text-sm text-gray-500">총 정산액</div>
               <div className="text-lg font-bold text-orange-600">
                 {monthlyPayment.eligiblePayment.toLocaleString()}원
-              </div>
-            </div>
+                              </div>
+                                    </div>
             <Button
               type="text"
               icon={isExpanded ? <ChevronDown /> : <ChevronRight />}
               onClick={onToggle}
             />
-          </div>
-        </div>
+                                </div>
+                              </div>
       }
     >
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
         <div>
           <div className="text-sm text-gray-500">교육 일수</div>
           <div className="text-lg font-semibold">{monthlyPayment.totalDays}일</div>
-        </div>
+                                </div>
         <div>
           <div className="text-sm text-gray-500">총 차시</div>
           <div className="text-lg font-semibold">{monthlyPayment.totalSessions}차시</div>
-        </div>
+                                </div>
         <div>
           <div className="text-sm text-gray-500">강사비</div>
           <div className="text-lg font-semibold">
             {monthlyPayment.totalTrainingPayment.toLocaleString()}원
-          </div>
-        </div>
+                                </div>
+                              </div>
         <div>
           <div className="text-sm text-gray-500">출장수당</div>
           <div className="text-lg font-semibold">
             {monthlyPayment.totalTravelAllowance.toLocaleString()}원
-          </div>
-        </div>
-      </div>
+                            </div>
+                        </div>
+                                </div>
 
       {isExpanded && (
         <div className="space-y-4 mt-4">
@@ -727,8 +807,8 @@ function MonthlyPaymentCard({
               onMapClick={onMapClick}
             />
           ))}
-        </div>
-      )}
+                        </div>
+                      )}
     </Card>
   )
 }
@@ -753,16 +833,16 @@ function DailyPaymentCard({
             <Calendar className="w-4 h-4" />
             <span>{dayjs(dailyPayment.date).format('YYYY년 MM월 DD일 (ddd)')}</span>
             <Badge count={dailyPayment.trainings.length} showZero />
-          </div>
+                                </div>
           <div className="text-lg font-bold text-orange-600">
             {dailyPayment.totalPayment.toLocaleString()}원
-          </div>
-        </div>
+                          </div>
+                      </div>
       }
     >
       <div className="space-y-4">
         {/* Trainings */}
-        <div>
+                      <div>
           <div className="text-sm font-semibold mb-2">교육 내역</div>
           <div className="space-y-2">
             {dailyPayment.trainings.map((training, index) => (
@@ -780,7 +860,7 @@ function DailyPaymentCard({
                     <span className="text-sm text-gray-500">
                       ({training.institution.cityCounty} {training.institution.institutionName})
                     </span>
-                  </div>
+                            </div>
                   <div className="text-sm text-gray-500 mt-1">
                     {training.sessionCount}차시
                     {training.startTime && training.endTime && (
@@ -788,8 +868,8 @@ function DailyPaymentCard({
                         {training.startTime} ~ {training.endTime}
                       </span>
                     )}
-                  </div>
-                </div>
+                            </div>
+                            </div>
                 <div className="text-right">
                   {dailyPayment.trainingPayments
                     .filter(p => p.training.educationId === training.educationId && p.role === training.role)
@@ -797,14 +877,14 @@ function DailyPaymentCard({
                       <div key={p.role} className="text-sm">
                         <div className="font-semibold">{p.totalAmount.toLocaleString()}원</div>
                         <div className="text-xs text-gray-500">{p.paymentFormula}</div>
-                      </div>
+                            </div>
                     ))}
-                </div>
-              </div>
+                            </div>
+                            </div>
             ))}
-          </div>
-        </div>
-
+                          </div>
+                      </div>
+                      
         {/* Travel Allowance */}
         <div className="border-t pt-4">
           <div className="flex items-center justify-between">
@@ -824,19 +904,19 @@ function DailyPaymentCard({
                       {'\n'}• 고정 거리표 기준 (실시간 API 사용 안 함)
                       {'\n'}• 50km 미만 또는 동일 지역 = 지급 없음
                       {'\n'}• 지도 이미지는 참고용 증빙 자료
-                    </div>
-                  </div>
+                          </div>
+                          </div>
                 }
                 placement="top"
               >
                 <Info className="w-4 h-4 text-gray-400 cursor-help" />
               </Tooltip>
-            </div>
+                        </div>
             <div className="flex items-center gap-2">
               <div className="text-right">
                 <div className="font-semibold">
                   {dailyPayment.travelAllowance.amount.toLocaleString()}원
-                </div>
+                    </div>
                 <div className="text-xs text-gray-500">
                   {dailyPayment.travelAllowance.totalDistanceKm.toFixed(1)}km
                 </div>
@@ -856,8 +936,8 @@ function DailyPaymentCard({
                   지도 보기
                 </Button>
               )}
-            </div>
-          </div>
+        </div>
+      </div>
           <div className="text-xs text-gray-500 mt-1">
             {dailyPayment.travelAllowance.explanation}
           </div>

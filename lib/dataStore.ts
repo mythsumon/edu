@@ -35,6 +35,10 @@ export interface Education {
   mainInstructorId?: string // Single main instructor ID
   assistantInstructorIds?: string[] // Array of assistant instructor IDs
   lessons?: Lesson[]
+  // 교육 생성 시 구분하는 필드 (정산 계산용)
+  isSpecialEducation?: boolean // 특별수당: 특수학교/특수학급 여부
+  isRemoteIsland?: boolean // 도서벽지수당: 도서벽지 지역 여부
+  educationLevel?: 'elementary' | 'middle' | 'high' | 'mixed' // 중,고등부 수당: 교육 단계
 }
 
 export interface Lesson {

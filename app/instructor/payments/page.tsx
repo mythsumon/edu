@@ -4,15 +4,18 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useMemo, useEffect } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Card, Button, Select, Space, Badge, Collapse, Image, Modal, Tooltip, Divider, DatePicker, Input } from 'antd'
+import { Card, Button, Select, Space, Badge, Collapse, Image, Modal, Tooltip, Divider, DatePicker, Input, Tabs } from 'antd'
 import type { Dayjs } from 'dayjs'
-import { Calendar, DollarSign, MapPin, Info, Eye, ChevronDown, ChevronRight, Search, Filter } from 'lucide-react'
+import { Calendar, DollarSign, MapPin, Info, Eye, ChevronDown, ChevronRight, Search, Filter, Download } from 'lucide-react'
 import dayjs from 'dayjs'
 import 'dayjs/locale/ko'
 import type { InstructorPaymentSummary, InstructorYearlyPayment, InstructorMonthlyPayment, InstructorDailyPayment } from '@/entities/settlement/instructor-payment-types'
 import { calculateAllInstructorPayments } from '@/entities/settlement/instructor-payment-calculator'
+import { generatePaymentStatements, downloadPaymentStatementsCSV } from '@/entities/settlement/payment-statement-generator'
+import PaymentPolicyTables from '@/components/shared/common/PaymentPolicyTables'
 import { dataStore } from '@/lib/dataStore'
 import { useAuth } from '@/contexts/AuthContext'
+import { message } from 'antd'
 
 dayjs.locale('ko')
 
@@ -37,6 +40,7 @@ export default function InstructorPaymentsPage() {
   const [selectedMapUrl, setSelectedMapUrl] = useState<string | undefined>(undefined)
   const [selectedRouteDescription, setSelectedRouteDescription] = useState<string>('')
   const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null)
+  const [activeTab, setActiveTab] = useState<'payment' | 'policy'>('payment')
 
   // Get current instructor ID
   const currentInstructorId = userProfile?.userId?.toString() || 'instructor-1'
@@ -318,67 +322,89 @@ export default function InstructorPaymentsPage() {
           </div>
         </div>
 
-        {/* Overall Summary */}
+        {/* Tabs */}
         <Card>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
-                {filteredSummary?.totalYears || paymentSummary.totalYears || 0}
-              </div>
-              <div className="text-sm text-gray-500 mt-1">정산 연수</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-indigo-600">
-                {filteredSummary?.totalMonths || paymentSummary.totalMonths || 0}
-              </div>
-              <div className="text-sm text-gray-500 mt-1">정산 월수</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
-                {filteredSummary?.totalDays || paymentSummary.totalDays || 0}
-              </div>
-              <div className="text-sm text-gray-500 mt-1">교육 일수</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">
-                {filteredSummary?.totalSessions || paymentSummary.totalSessions || 0}
-              </div>
-              <div className="text-sm text-gray-500 mt-1">총 차시</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">
-                {(filteredSummary?.eligiblePayment || paymentSummary.eligiblePayment || 0).toLocaleString()}원
-              </div>
-              <div className="text-sm text-gray-500 mt-1">정산 금액</div>
-            </div>
-          </div>
-        </Card>
+          <Tabs
+            activeKey={activeTab}
+            onChange={(key) => setActiveTab(key as 'payment' | 'policy')}
+            items={[
+              {
+                key: 'payment',
+                label: '정산 내역',
+                children: (
+                  <div className="space-y-6">
+                    {/* Overall Summary */}
+                    <Card>
+                      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-blue-600">
+                            {filteredSummary?.totalYears || paymentSummary.totalYears || 0}
+                          </div>
+                          <div className="text-sm text-gray-500 mt-1">정산 연수</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-indigo-600">
+                            {filteredSummary?.totalMonths || paymentSummary.totalMonths || 0}
+                          </div>
+                          <div className="text-sm text-gray-500 mt-1">정산 월수</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-green-600">
+                            {filteredSummary?.totalDays || paymentSummary.totalDays || 0}
+                          </div>
+                          <div className="text-sm text-gray-500 mt-1">교육 일수</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-purple-600">
+                            {filteredSummary?.totalSessions || paymentSummary.totalSessions || 0}
+                          </div>
+                          <div className="text-sm text-gray-500 mt-1">총 차시</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-orange-600">
+                            {(filteredSummary?.eligiblePayment || paymentSummary.eligiblePayment || 0).toLocaleString()}원
+                          </div>
+                          <div className="text-sm text-gray-500 mt-1">정산 금액</div>
+                        </div>
+                      </div>
+                    </Card>
 
-        {/* Yearly Breakdown */}
-        <Card title="연도별 정산 내역" extra={
-          <div className="text-sm text-gray-500">
-            집 주소: {paymentSummary.homeRegion.cityCounty} {paymentSummary.homeRegion.address}
-          </div>
-        }>
-          {filteredSummary ? (
-            <div className="space-y-4">
-              {filteredSummary.yearlyPayments.map(yearlyPayment => (
-                <YearlyPaymentCard
-                  key={yearlyPayment.year}
-                  yearlyPayment={yearlyPayment}
-                  isExpanded={expandedYears.has(yearlyPayment.year)}
-                  expandedMonths={expandedMonths.get(yearlyPayment.year) || new Set()}
-                  onYearToggle={() => handleYearToggle(yearlyPayment.year)}
-                  onMonthToggle={(month) => handleMonthToggle(yearlyPayment.year, month)}
-                  onMapClick={handleMapClick}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              선택한 날짜 범위에 해당하는 정산 내역이 없습니다.
-            </div>
-          )}
+                    {/* Yearly Breakdown */}
+                    <Card title="연도별 정산 내역" extra={
+                      <div className="text-sm text-gray-500">
+                        집 주소: {paymentSummary.homeRegion.cityCounty} {paymentSummary.homeRegion.address}
+                      </div>
+                    }>
+                      {filteredSummary ? (
+                        <div className="space-y-4">
+                          {filteredSummary.yearlyPayments.map(yearlyPayment => (
+                            <YearlyPaymentCard
+                              key={yearlyPayment.year}
+                              yearlyPayment={yearlyPayment}
+                              isExpanded={expandedYears.has(yearlyPayment.year)}
+                              expandedMonths={expandedMonths.get(yearlyPayment.year) || new Set()}
+                              onYearToggle={() => handleYearToggle(yearlyPayment.year)}
+                              onMonthToggle={(month) => handleMonthToggle(yearlyPayment.year, month)}
+                              onMapClick={handleMapClick}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          선택한 날짜 범위에 해당하는 정산 내역이 없습니다.
+                        </div>
+                      )}
+                    </Card>
+                  </div>
+                ),
+              },
+              {
+                key: 'policy',
+                label: '정리표',
+                children: <PaymentPolicyTables />,
+              },
+            ]}
+          />
         </Card>
 
         {/* Map Modal */}

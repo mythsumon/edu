@@ -454,6 +454,10 @@ export function calculateInstructorPaymentSummary(
             endTime: lesson.endTime,
             educationStatus: education.status || education.educationStatus || '대기',
             isCountingEligible,
+            // 교육 생성 시 구분하는 필드 사용
+            isSpecialEducation: education.isSpecialEducation ?? false,
+            isRemoteIsland: education.isRemoteIsland ?? false,
+            educationLevel: education.educationLevel,
           })
           
           dailyTrainings.set(key, existing)
@@ -479,6 +483,10 @@ export function calculateInstructorPaymentSummary(
             endTime: lesson.endTime,
             educationStatus: education.status || education.educationStatus || '대기',
             isCountingEligible,
+            // 교육 생성 시 구분하는 필드 사용
+            isSpecialEducation: education.isSpecialEducation ?? false,
+            isRemoteIsland: education.isRemoteIsland ?? false,
+            educationLevel: education.educationLevel,
           })
           
           dailyTrainings.set(key, existing)
