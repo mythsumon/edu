@@ -254,12 +254,32 @@ function calculateTrainingPayment(
   // Base rate per session based on role
   const ratePerSession = role === 'main' ? 40000 : 30000
   
-  // Calculate payment
-  const paymentAmount = ratePerSession * training.sessionCount
-  const paymentFormula = `${ratePerSession.toLocaleString()}원 × ${training.sessionCount}차시 = ${paymentAmount.toLocaleString()}원`
+  // Check if weekend (주말) - check if date is Saturday (6) or Sunday (0)
+  const date = new Date(training.date)
+  const dayOfWeek = date.getDay()
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
   
-  // TODO: Add additional allowances (weekend, remote island, special class, no assistant)
-  // This would require more data from the education
+  // Weekend allowance (휴일/주말 수당) - 5,000원 per session
+  // Rule: 차시별 Date가 weekend일 경우 차시당 추가 강사료 5,000원
+  // Exception: 행사참여수당과 중복 지급 불가 (행사참여 시 주말수당 제외)
+  // Note: isEventParticipation would need to be added to DailyTrainingAssignment if needed
+  // For now, we calculate weekend allowance for all weekend sessions
+  const weekendAllowancePerSession = 5000
+  const weekendSessions = isWeekend ? training.sessionCount : 0
+  // TODO: Exclude weekend allowance if isEventParticipation is true
+  const weekendAllowance = weekendSessions * weekendAllowancePerSession
+  
+  // Calculate base payment
+  const paymentAmount = ratePerSession * training.sessionCount
+  
+  // Calculate total with weekend allowance
+  const totalAmount = paymentAmount + weekendAllowance
+  
+  // Build payment formula
+  let paymentFormula = `${ratePerSession.toLocaleString()}원 × ${training.sessionCount}차시 = ${paymentAmount.toLocaleString()}원`
+  if (weekendAllowance > 0) {
+    paymentFormula += ` + 주말수당(${weekendAllowancePerSession.toLocaleString()}원 × ${weekendSessions}차시) = ${totalAmount.toLocaleString()}원`
+  }
   
   return {
     training,
@@ -268,7 +288,10 @@ function calculateTrainingPayment(
     ratePerSession,
     paymentFormula,
     paymentAmount,
-    totalAmount: paymentAmount,
+    additionalAllowances: {
+      weekend: weekendAllowance,
+    },
+    totalAmount,
   }
 }
 

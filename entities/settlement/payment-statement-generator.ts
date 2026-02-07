@@ -134,6 +134,8 @@ export function generateDailyPaymentStatement(
     }
     
     // Weekend allowance (휴일/주말 수당) - 5,000원 per session
+    // Rule: 차시별 Date가 weekend일 경우 차시당 추가 강사료 5,000원
+    // Exception: 행사참여수당과 중복 지급 불가 (행사참여 시 주말수당 제외)
     // Note: Event participation excludes weekend allowance, but we don't have that data yet
     weekendAllowance += weekendSessions * 5000
     
@@ -281,6 +283,8 @@ export function generatePaymentStatement(
       }
       
       // Weekend allowance (휴일/주말 수당) - 5,000원 per session
+      // Rule: 차시별 Date가 weekend일 경우 차시당 추가 강사료 5,000원
+      // Exception: 행사참여수당과 중복 지급 불가 (행사참여 시 주말수당 제외)
       // Note: Event participation excludes weekend allowance, but we don't have that data yet
       weekendAllowance += weekendSessions * 5000
       

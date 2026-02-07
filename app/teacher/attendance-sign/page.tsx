@@ -183,7 +183,16 @@ export default function TeacherAttendanceSignPage() {
           message.success('서명이 업데이트되었습니다.')
         } else {
           // Use addTeacherSignature for new signatures
-          const result = attendanceSheetStore.addTeacherSignature(sheet.attendanceId, signature)
+          const actor = {
+            role: 'teacher' as const,
+            id: userProfile?.userId || currentTeacherId,
+            name: userProfile?.name,
+          }
+          const result = attendanceSheetStore.addTeacherSignature(
+            sheet.attendanceId,
+            signature,
+            actor
+          )
           if (result) {
             message.success('서명이 완료되었습니다.')
           } else {
