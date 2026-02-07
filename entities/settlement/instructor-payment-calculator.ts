@@ -14,6 +14,7 @@ import type {
   DailyTravelRoute,
   DailyTravelAllowance,
   TrainingPaymentBreakdown,
+  TrainingRole,
   InstructorRegion,
   InstitutionRegion,
 } from './instructor-payment-types'
