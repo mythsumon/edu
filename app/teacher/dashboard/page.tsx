@@ -819,11 +819,11 @@ export default function TeacherDashboard() {
                         signedAt: selectedSheet.teacherSignature.signedAt || '',
                         signatureImageUrl: selectedSheet.teacherSignature.signatureRef || '',
                       } : undefined,
-                      session1MainInstructor: selectedSheet.sessions?.[0]?.instructorSignature ? {
+                      session1MainInstructor: selectedSheet.instructorSignature ? {
                         signedByUserId: 'instructor',
-                        signedByUserName: selectedSheet.sessions[0].instructorSignature.signedBy || '',
-                        signedAt: selectedSheet.sessions[0].instructorSignature.signedAt || '',
-                        signatureImageUrl: selectedSheet.sessions[0].instructorSignature.signatureRef || '',
+                        signedByUserName: selectedSheet.instructorSignature.signedBy || '',
+                        signedAt: selectedSheet.instructorSignature.signedAt || '',
+                        signatureImageUrl: selectedSheet.instructorSignature.signatureRef || '',
                       } : undefined,
                     }}
                     session1MainInstructorName={selectedSheet.sessions?.[0]?.mainInstructor || ''}

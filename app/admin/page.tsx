@@ -36,7 +36,7 @@ import { EntryCards } from '@/components/dashboard/EntryCards'
 import { CompactSearchControls } from '@/components/dashboard/CompactSearchControls'
 import { EnhancedResultPanel } from '@/components/dashboard/EnhancedResultPanel'
 import { CollapsibleSection } from '@/components/dashboard/CollapsibleSection'
-import { ArrowLeft, BookOpen, Users, MapPin, ChevronDown, ChevronUp, FileCheck, GraduationCap } from 'lucide-react'
+import { ArrowLeft, BookOpen, Users, MapPin, ChevronDown, ChevronUp, FileCheck, GraduationCap, TrendingUp } from 'lucide-react'
 import { 
   statusBreakdownData, 
   kpiMetrics 
@@ -942,52 +942,171 @@ export default function AdminDashboardPage() {
             <Card className="rounded-2xl shadow-lg border border-slate-200 mb-6 bg-gradient-to-br from-white to-slate-50/50">
               <div className="pt-8 px-2">
                 {activeTab === 'dashboard' ? (
-                <div className="space-y-6">
-                  {/* KPI Cards Row - Modern Layout */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-8 px-4 pb-8">
+                  {/* Welcome Header Section */}
+                  <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-3xl p-8 text-white shadow-xl">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div>
+                        <h1 className="text-3xl font-bold mb-2">전체 프로그램 현황</h1>
+                        <p className="text-blue-100 text-lg">실시간 교육 프로그램 운영 현황을 한눈에 확인하세요</p>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="bg-white/10 backdrop-blur-sm rounded-2xl px-6 py-4 border border-white/20">
+                          <div className="text-sm text-blue-100 mb-1">마지막 업데이트</div>
+                          <div className="text-xl font-semibold">{dayjs().format('YYYY년 MM월 DD일 HH:mm')}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Main KPI Cards - Enhanced Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {kpiData.map((kpi, index) => (
                       <ModernKPICard key={index} kpi={kpi} loading={loading} />
                     ))}
+                    
+                    {/* Additional Stat Cards */}
+                    {!loading && (
+                      <>
+                        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl border border-emerald-200/60 p-6 shadow-sm hover:shadow-lg transition-all duration-300">
+                          <div className="flex items-start justify-between mb-4">
+                            <p className="text-sm font-medium text-emerald-700">진행률</p>
+                            <div className="p-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg">
+                              <GraduationCap className="w-5 h-5 text-white" />
+                            </div>
+                          </div>
+                          <div className="mb-4">
+                            <p className="text-4xl font-bold text-emerald-900">72%</p>
+                          </div>
+                          <div className="w-full bg-emerald-200 rounded-full h-2.5 mb-3">
+                            <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-2.5 rounded-full" style={{ width: '72%' }}></div>
+                          </div>
+                          <p className="text-xs text-emerald-600">전체 프로그램 진행률</p>
+                        </div>
+                        
+                        <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-3xl border border-amber-200/60 p-6 shadow-sm hover:shadow-lg transition-all duration-300">
+                          <div className="flex items-start justify-between mb-4">
+                            <p className="text-sm font-medium text-amber-700">이번 달 완료</p>
+                            <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 shadow-lg">
+                              <FileCheck className="w-5 h-5 text-white" />
+                            </div>
+                          </div>
+                          <div className="mb-4">
+                            <p className="text-4xl font-bold text-amber-900">12</p>
+                            <p className="text-sm text-amber-600 mt-1">/ 100개 프로그램</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <TrendingUp className="w-4 h-4 text-amber-600" />
+                            <span className="text-xs font-semibold text-amber-700">지난 달 대비 +3개</span>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
 
-                  {/* Charts Section - Main Chart Only */}
-                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="px-6 py-4 border-b border-slate-100">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
-                          <BookOpen className="w-4 h-4 text-white" />
+                  {/* Statistics Overview Grid */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Chart Section - Takes 2 columns */}
+                    <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                      <div className="px-8 py-6 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
+                              <BookOpen className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                              <h3 className="text-xl font-bold text-slate-900">프로그램 상태 분석</h3>
+                              <p className="text-sm text-slate-600 mt-1">교육 프로그램별 상태 분포 현황</p>
+                            </div>
+                          </div>
                         </div>
-                        <h3 className="text-lg font-bold text-slate-900">차트 분석</h3>
+                      </div>
+                      <div className="px-8 pb-8 pt-8">
+                        <StatusBreakdownChart data={statusData} loading={loading} />
                       </div>
                     </div>
-                    <div className="px-6 pb-6 pt-6">
-                      <div className="grid grid-cols-1 gap-6">
-                          <StatusBreakdownChart data={statusData} loading={loading} />
+
+                    {/* Quick Stats Panel */}
+                    <div className="space-y-6">
+                      {/* Status Summary Card */}
+                      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div className="px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
+                          <h3 className="text-lg font-bold text-slate-900">상태 요약</h3>
+                        </div>
+                        <div className="p-6 space-y-4">
+                          {statusData.map((item, index) => (
+                            <div key={index} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
+                              <div className="flex items-center gap-3">
+                                <div 
+                                  className="w-4 h-4 rounded-full shadow-sm"
+                                  style={{ backgroundColor: item.color }}
+                                ></div>
+                                <span className="text-sm font-medium text-slate-700">{item.name}</span>
+                              </div>
+                              <span className="text-lg font-bold text-slate-900">{item.value}</span>
+                            </div>
+                          ))}
                         </div>
                       </div>
+
+                      {/* Quick Actions */}
+                      <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-3xl border border-indigo-200/60 p-6 shadow-sm">
+                        <h3 className="text-lg font-bold text-slate-900 mb-4">빠른 작업</h3>
+                        <div className="space-y-3">
+                          <button 
+                            onClick={() => router.push('/admin/education')}
+                            className="w-full bg-white hover:bg-indigo-50 border border-indigo-200 rounded-xl px-4 py-3 text-left transition-colors flex items-center gap-3"
+                          >
+                            <BookOpen className="w-5 h-5 text-indigo-600" />
+                            <span className="font-medium text-slate-700">새 프로그램 등록</span>
+                          </button>
+                          <button 
+                            onClick={() => setActiveTab('submissions')}
+                            className="w-full bg-white hover:bg-indigo-50 border border-indigo-200 rounded-xl px-4 py-3 text-left transition-colors flex items-center gap-3"
+                          >
+                            <FileCheck className="w-5 h-5 text-indigo-600" />
+                            <span className="font-medium text-slate-700">문서 검토하기</span>
+                          </button>
+                          <button 
+                            onClick={() => router.push('/admin/instructor')}
+                            className="w-full bg-white hover:bg-indigo-50 border border-indigo-200 rounded-xl px-4 py-3 text-left transition-colors flex items-center gap-3"
+                          >
+                            <Users className="w-5 h-5 text-indigo-600" />
+                            <span className="font-medium text-slate-700">강사 관리</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Operational Panels - Collapsible */}
-                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <button
-                      onClick={() => setCollapsedSections({ ...collapsedSections, operational: !collapsedSections.operational })}
-                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg">
-                          <Users className="w-4 h-4 text-white" />
+                  {/* Operational Panels - Enhanced */}
+                  <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="px-8 py-6 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg">
+                            <Users className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold text-slate-900">운영 현황</h3>
+                            <p className="text-sm text-slate-600 mt-1">대기 중인 신청서 및 증빙 자료</p>
+                          </div>
                         </div>
-                        <h3 className="text-lg font-bold text-slate-900">운영 패널</h3>
+                        <button
+                          onClick={() => setCollapsedSections({ ...collapsedSections, operational: !collapsedSections.operational })}
+                          className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                        >
+                          {collapsedSections.operational ? (
+                            <ChevronDown className="w-5 h-5 text-slate-500" />
+                          ) : (
+                            <ChevronUp className="w-5 h-5 text-slate-500" />
+                          )}
+                        </button>
                       </div>
-                      {collapsedSections.operational ? (
-                        <ChevronDown className="w-5 h-5 text-slate-500" />
-                      ) : (
-                        <ChevronUp className="w-5 h-5 text-slate-500" />
-                      )}
-                    </button>
+                    </div>
                     {!collapsedSections.operational && (
-                      <div className="px-6 pb-6 border-t border-slate-100">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6">
+                      <div className="px-8 pb-8 pt-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                           <PendingApplicationsPanel />
                           <PendingEvidencePanel />
                         </div>
