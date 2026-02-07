@@ -222,6 +222,77 @@ export function computeDailyTravelKm(
 }
 
 /**
+ * Compute total daily travel km with detailed breakdown
+ */
+export function computeDailyTravelKmWithDetail(
+  homeCity: string,
+  classActivities: ClassActivity[],
+  institutionsById: Map<string, Institution>,
+  matrix: CityDistanceMatrix
+): TravelCalculationDetail | null {
+  if (classActivities.length === 0) return null
+  
+  // Get unique institutions in order (preserve order from activities)
+  const institutionIds: string[] = []
+  const seen = new Set<string>()
+  for (const activity of classActivities) {
+    if (!seen.has(activity.institutionId)) {
+      institutionIds.push(activity.institutionId)
+      seen.add(activity.institutionId)
+    }
+  }
+  
+  // Build route: Home -> Inst1 -> Inst2 -> ... -> Home
+  const routeCities: string[] = [homeCity]
+  for (const instId of institutionIds) {
+    const institution = institutionsById.get(instId)
+    if (institution) {
+      routeCities.push(institution.city)
+    }
+  }
+  routeCities.push(homeCity)
+  
+  // Calculate distances for each segment
+  const routeDistances: Array<{ from: string; to: string; km: number }> = []
+  let totalKm = 0
+  for (let i = 0; i < routeCities.length - 1; i++) {
+    const from = routeCities[i]
+    const to = routeCities[i + 1]
+    const km = getDistance(from, to, matrix)
+    routeDistances.push({ from, to, km })
+    totalKm += km
+  }
+  
+  // Calculate allowance
+  const allowanceAmount = travelAllowanceFromKm(totalKm)
+  
+  // Determine allowance bracket description
+  let allowanceBracket = ''
+  if (totalKm < 50) {
+    allowanceBracket = '50km 미만 (지급 없음)'
+  } else if (totalKm >= 50 && totalKm < 70) {
+    allowanceBracket = '50-70km (20,000원)'
+  } else if (totalKm >= 70 && totalKm < 90) {
+    allowanceBracket = '70-90km (30,000원)'
+  } else if (totalKm >= 90 && totalKm < 110) {
+    allowanceBracket = '90-110km (40,000원)'
+  } else if (totalKm >= 110 && totalKm < 130) {
+    allowanceBracket = '110-130km (50,000원)'
+  } else {
+    allowanceBracket = '130km 이상 (60,000원)'
+  }
+  
+  return {
+    homeCity,
+    route: routeCities,
+    routeDistances,
+    totalKm,
+    allowanceBracket,
+    allowanceAmount,
+  }
+}
+
+/**
  * Travel allowance from km (flat brackets)
  */
 export function travelAllowanceFromKm(km: number): number {
