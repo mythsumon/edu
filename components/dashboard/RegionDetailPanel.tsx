@@ -6,7 +6,7 @@ import { REGIONS, type RegionData, type SpecialCategory, type LocalStat } from '
 interface RegionDetailPanelProps {
   selectedRegionId: number | undefined
   onRegionChange: (regionId: number) => void
-  onCategorySelect?: (category: SpecialCategory) => void
+  onCategorySelect?: (category: SpecialCategory | undefined) => void
 }
 
 export function RegionDetailPanel({ selectedRegionId, onRegionChange, onCategorySelect }: RegionDetailPanelProps) {

@@ -10,7 +10,7 @@ interface ResultPanelProps {
   selectedSpecialCategory?: SpecialCategory
   onRegionChange: (regionId: number | undefined) => void
   onCategoryClose: () => void
-  onCategorySelect?: (category: SpecialCategory) => void
+  onCategorySelect?: (category: SpecialCategory | undefined) => void
 }
 
 export function ResultPanel({

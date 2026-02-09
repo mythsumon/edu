@@ -5,7 +5,7 @@ import { REGIONS, type RegionData, type SpecialCategory } from '@/types/region'
 interface RegionDetailViewProps {
   selectedRegionId: number
   onRegionChange: (regionId: number | undefined) => void
-  onCategorySelect?: (category: SpecialCategory) => void
+  onCategorySelect?: (category: SpecialCategory | undefined) => void
 }
 
 export function RegionDetailView({
