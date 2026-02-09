@@ -794,7 +794,7 @@ export default function AdminDashboardPage() {
             </button>
             <button
               onClick={() => setActiveTab('regional')}
-              className={`flex-1 md:flex-none px-4 md:px-8 py-2.5 md:py-3 rounded-xl font-semibold text-sm md:text-base transition-all duration-300 ${
+              className={`hidden flex-1 md:flex-none px-4 md:px-8 py-2.5 md:py-3 rounded-xl font-semibold text-sm md:text-base transition-all duration-300 ${
                 activeTab === 'regional'
                   ? 'bg-slate-800 text-white shadow-lg scale-105'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
