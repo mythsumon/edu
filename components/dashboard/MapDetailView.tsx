@@ -30,11 +30,6 @@ export function MapDetailView({
     ? REGIONS.find(r => r.id === selectedRegion)
     : null
 
-  const color = selectedRegion 
-    ? regionColors[selectedRegion as keyof typeof regionColors] || regionColors[1]
-    : null
-
-
   if (!selectedRegionData) {
   return (
     <div className="flex flex-col h-full">
@@ -64,6 +59,11 @@ export function MapDetailView({
       </div>
     )
   }
+
+  // Calculate color when selectedRegionData exists
+  const color = selectedRegionData && selectedRegion
+    ? regionColors[selectedRegion as keyof typeof regionColors] || regionColors[1]
+    : regionColors[1]
 
   return (
     <div className="flex flex-col h-full">
