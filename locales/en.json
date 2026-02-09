@@ -88,6 +88,7 @@
     "systemSettings": "System Settings",
     "userManagement": "User Management",
     "commonCode": "Common Code",
+    "settlementManagement": "Settlement Management",
     "instructorSettlement": "Instructor Payment Summary",
     "instructorApplicationPolicy": "Instructor Application Policy Management"
   },

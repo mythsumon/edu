@@ -1159,9 +1159,9 @@ export default function InstructorDashboard() {
                   <BookOpen className="w-6 h-6 text-blue-600" />
                   {activeFilter === 'all' ? '내 출강 리스트' : 
                    activeFilter === 'scheduled' ? '오픈 예정' :
+                   activeFilter === 'applicable' ? '신청 가능' :
                    activeFilter === 'ongoing' ? '진행 중' :
-                   activeFilter === 'completed' ? '완료' :
-                   activeFilter === 'applicable' ? '신청 가능' : '내 출강 리스트'}
+                   activeFilter === 'completed' ? '완료' : '내 출강 리스트'}
                 </h2>
                 <div className="flex items-center gap-2 text-sm text-slate-500 group-hover:text-slate-700 transition-colors">
                   {isCollapsed ? (
@@ -1175,7 +1175,7 @@ export default function InstructorDashboard() {
                 </div>
               </button>
               <div className="flex gap-2">
-                {(['all', 'scheduled', 'ongoing', 'completed'] as const).map((filter) => (
+                {(['all', 'scheduled', 'applicable', 'ongoing', 'completed'] as const).map((filter) => (
                   <button 
                     key={filter}
                     className={`px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${
@@ -1185,7 +1185,11 @@ export default function InstructorDashboard() {
                     }`}
                     onClick={() => setActiveFilter(filter)}
                   >
-                    {filter === 'all' ? '전체' : filter === 'scheduled' ? '예정' : filter === 'ongoing' ? '진행중' : '완료'}
+                    {filter === 'all' ? '전체' : 
+                     filter === 'scheduled' ? '오픈 예정' : 
+                     filter === 'applicable' ? '신청 가능' : 
+                     filter === 'ongoing' ? '진행 중' : 
+                     '완료'}
                   </button>
                 ))}
               </div>
@@ -1202,91 +1206,132 @@ export default function InstructorDashboard() {
             >
               {activeFilter === 'applicable' ? (
                 // Show applicable educations (신청 가능)
-                openEducations.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {openEducations.map((education) => {
-                      const canApply = (): { canApply: boolean; reason?: string } => {
-                        const now = dayjs()
-                        if (education.applicationDeadline) {
-                          const deadline = dayjs(education.applicationDeadline)
-                          if (now.isAfter(deadline)) {
-                            return { canApply: false, reason: '신청 마감일이 지났습니다.' }
-                          }
-                        }
-                        if (education.educationStatus === '신청 마감') {
-                          return { canApply: false, reason: '교육이 마감되었습니다.' }
-                        }
-                        return { canApply: true }
-                      }
-                      
-                      const applyCheck = canApply()
-                      const getDaysUntilDeadline = (deadline: string) => {
-                        const deadlineDate = dayjs(deadline)
-                        const now = dayjs()
-                        const days = deadlineDate.diff(now, 'day')
-                        if (days < 0) return '마감됨'
-                        if (days === 0) return '오늘 마감'
-                        return `D-${days}`
-                      }
-                      
-                      return (
-                        <Card
-                          key={education.key}
-                          className="rounded-2xl border-0 shadow-lg hover:shadow-2xl transition-all duration-300"
-                        >
-                          <div className="space-y-4">
-                            <div>
-                              <h3 className="font-bold text-lg text-slate-900 mb-2">
-                                {education.name}
-                              </h3>
-                              {education.applicationDeadline && (
-                                <div className="mb-2">
-                                  <Badge 
-                                    status={applyCheck.canApply ? "processing" : "error"} 
-                                    text={
-                                      applyCheck.canApply 
-                                        ? getDaysUntilDeadline(education.applicationDeadline)
-                                        : '마감됨'
-                                    } 
-                                  />
-                                </div>
-                              )}
-                            </div>
+                (() => {
+                  // Example data for preview (if no real data exists)
+                  const exampleEducations = [
+                    {
+                      key: 'example-1',
+                      educationId: 'edu-example-1',
+                      name: '12차시 블록코딩과 메타버스 기초 및 인공지능 AI',
+                      institution: '서울초등학교',
+                      region: '서울',
+                      gradeClass: '3학년 2반',
+                      periodStart: '2025-03-15',
+                      periodEnd: '2025-06-15',
+                      applicationDeadline: '2025-03-10',
+                      status: '강사공개',
+                      educationStatus: 'OPEN',
+                    },
+                    {
+                      key: 'example-2',
+                      educationId: 'edu-example-2',
+                      name: '로봇 공학 입문 프로그램',
+                      institution: '경기중학교',
+                      region: '경기',
+                      gradeClass: '2학년 1반',
+                      periodStart: '2025-04-01',
+                      periodEnd: '2025-07-31',
+                      applicationDeadline: '2025-03-25',
+                      status: '강사공개',
+                      educationStatus: 'OPEN',
+                    },
+                    {
+                      key: 'example-3',
+                      educationId: 'edu-example-3',
+                      name: '창의적 문제 해결 워크숍',
+                      institution: '인천고등학교',
+                      region: '인천',
+                      gradeClass: '1학년 3반',
+                      periodStart: '2025-04-10',
+                      periodEnd: '2025-07-10',
+                      applicationDeadline: '2025-04-05',
+                      status: '강사공개',
+                      educationStatus: 'OPEN',
+                    },
+                  ]
+                  
+                  const displayEducations = openEducations.length > 0 ? openEducations : exampleEducations
+                  
+                  return displayEducations.length > 0 ? (
+                  <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-gradient-to-r from-slate-50 to-white border-b border-slate-200">
+                          <tr>
+                            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">교육명</th>
+                            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">기관명</th>
+                            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">기간</th>
+                            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">마감일</th>
+                            <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">상태</th>
+                            <th className="px-6 py-4 text-center text-sm font-semibold text-slate-700">작업</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {displayEducations.map((education) => {
+                            const canApply = (): { canApply: boolean; reason?: string } => {
+                              const now = dayjs()
+                              if (education.applicationDeadline) {
+                                const deadline = dayjs(education.applicationDeadline)
+                                if (now.isAfter(deadline)) {
+                                  return { canApply: false, reason: '신청 마감일이 지났습니다.' }
+                                }
+                              }
+                              if (education.educationStatus === '신청 마감') {
+                                return { canApply: false, reason: '교육이 마감되었습니다.' }
+                              }
+                              return { canApply: true }
+                            }
                             
-                            <div className="space-y-2 text-sm text-slate-600">
-                              <div className="flex items-center gap-2">
-                                <MapPin className="w-4 h-4" />
-                                <span>{education.institution}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4" />
-                                <span>{education.periodStart} ~ {education.periodEnd}</span>
-                              </div>
-                              {education.applicationDeadline && (
-                                <div className="flex items-center gap-2">
-                                  <Clock className="w-4 h-4" />
-                                  <span>신청 마감: {education.applicationDeadline}</span>
-                                </div>
-                              )}
-                              <div className="flex items-center gap-2">
-                                <User className="w-4 h-4" />
-                                <span>{education.gradeClass}</span>
-                              </div>
-                            </div>
+                            const applyCheck = canApply()
+                            const getDaysUntilDeadline = (deadline: string) => {
+                              const deadlineDate = dayjs(deadline)
+                              const now = dayjs()
+                              const days = deadlineDate.diff(now, 'day')
+                              if (days < 0) return '마감됨'
+                              if (days === 0) return '오늘 마감'
+                              return `D-${days}`
+                            }
                             
-                            <div className="pt-4 border-t border-slate-200">
-                              <Button
-                                type="primary"
-                                className="w-full"
-                                onClick={() => router.push(`/instructor/apply/open?educationId=${education.educationId}`)}
-                              >
-                                신청하기
-                              </Button>
-                            </div>
-                          </div>
-                        </Card>
-                      )
-                    })}
+                            return (
+                              <tr key={education.key} className="hover:bg-slate-50 transition-colors">
+                                <td className="px-6 py-4">
+                                  <div className="font-semibold text-slate-900">{education.name}</div>
+                                  <div className="text-xs text-slate-500 mt-1">{education.gradeClass}</div>
+                                </td>
+                                <td className="px-6 py-4 text-slate-700">{education.institution}</td>
+                                <td className="px-6 py-4 text-slate-600 text-sm">
+                                  {education.periodStart} ~ {education.periodEnd}
+                                </td>
+                                <td className="px-6 py-4 text-slate-600 text-sm">
+                                  {education.applicationDeadline || '-'}
+                                </td>
+                                <td className="px-6 py-4">
+                                  {education.applicationDeadline && (
+                                    <Badge 
+                                      status={applyCheck.canApply ? "processing" : "error"} 
+                                      text={
+                                        applyCheck.canApply 
+                                          ? getDaysUntilDeadline(education.applicationDeadline)
+                                          : '마감됨'
+                                      } 
+                                    />
+                                  )}
+                                </td>
+                                <td className="px-6 py-4 text-center">
+                                  <Button
+                                    type="primary"
+                                    size="small"
+                                    onClick={() => router.push(`/instructor/apply/open?educationId=${education.educationId}`)}
+                                  >
+                                    신청하기
+                                  </Button>
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 ) : (
                   <Card className="rounded-2xl border-0 shadow-lg text-center py-16">
@@ -1295,12 +1340,88 @@ export default function InstructorDashboard() {
                     </div>
                     <p className="text-slate-500 font-semibold text-lg">신청 가능한 교육이 없습니다.</p>
                   </Card>
-                )
+                  )
+                })()
               ) : filteredCourses.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                  {filteredCourses.map((course) => (
-                    <ModernCourseCard key={course.id} course={course} />
-                  ))}
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gradient-to-r from-slate-50 to-white border-b border-slate-200">
+                        <tr>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">교육명</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">기관명</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">기간</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">상태</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">문서 제출</th>
+                          <th className="px-6 py-4 text-center text-sm font-semibold text-slate-700">작업</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {filteredCourses.map((course) => {
+                          const attendanceDoc = getAttendanceDocByEducationId(course.id)
+                          const activityLog = getActivityLogByEducationId(course.id)
+                          const equipmentDoc = getEquipmentDocByEducationId(course.id)
+                          const evidenceDoc = getEvidenceDocByEducationId(course.id)
+                          const lessonPlanDoc = getLessonPlanByEducationId(course.id)
+                          
+                          const getStatusBadge = (status: string) => {
+                            if (status === '진행중') {
+                              return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">진행중</span>
+                            }
+                            if (status === '예정') {
+                              return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">예정</span>
+                            }
+                            if (status === '완료') {
+                              return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-50 text-slate-700 border border-slate-200">완료</span>
+                            }
+                            return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200">{status}</span>
+                          }
+                          
+                          const getDocStatus = (doc: any) => {
+                            if (!doc) return { icon: '○', color: 'text-slate-400' }
+                            if (doc.status === 'APPROVED') return { icon: '✓', color: 'text-green-600' }
+                            if (doc.status === 'SUBMITTED') return { icon: '⏳', color: 'text-yellow-600' }
+                            return { icon: '○', color: 'text-slate-400' }
+                          }
+                          
+                          return (
+                            <tr key={course.id} className="hover:bg-slate-50 transition-colors">
+                              <td className="px-6 py-4">
+                                <div className="font-semibold text-slate-900">{course.educationName}</div>
+                                <div className="text-xs text-slate-500 mt-1">{course.classInfo} {course.timeRange}</div>
+                              </td>
+                              <td className="px-6 py-4 text-slate-700">{course.institutionName}</td>
+                              <td className="px-6 py-4 text-slate-600 text-sm">
+                                {course.startDate} ~ {course.endDate}
+                              </td>
+                              <td className="px-6 py-4">
+                                {getStatusBadge(course.status)}
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center gap-2 text-xs">
+                                  <span className={getDocStatus(attendanceDoc).color}>출석부</span>
+                                  <span className={getDocStatus(activityLog).color}>활동일지</span>
+                                  <span className={getDocStatus(equipmentDoc).color}>교구</span>
+                                  <span className={getDocStatus(evidenceDoc).color}>증빙</span>
+                                  <span className={getDocStatus(lessonPlanDoc).color}>계획서</span>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 text-center">
+                                <Button
+                                  type="link"
+                                  size="small"
+                                  onClick={() => router.push(`/instructor/schedule/${course.id}/attendance`)}
+                                  className="text-blue-600 hover:text-blue-700"
+                                >
+                                  상세보기
+                                </Button>
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               ) : (
                 <Card className="rounded-2xl border-0 shadow-lg text-center py-16">

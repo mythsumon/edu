@@ -15,6 +15,7 @@ import {
   Save,
   Receipt,
   ShieldCheck,
+  DollarSign,
 } from 'lucide-react'
 import { useLanguage } from '@/components/localization/LanguageContext'
 import { useState } from 'react'
@@ -70,13 +71,19 @@ const adminMenuConfig: MenuGroup[] = [
     ],
   },
   {
+    labelKey: 'sidebar.settlementManagement',
+    icon: DollarSign,
+    items: [
+      { labelKey: 'sidebar.instructorSettlement', href: '/admin/settlements/instructor' },
+    ],
+  },
+  {
     labelKey: 'sidebar.systemManagement',
     icon: Settings,
     items: [
       { labelKey: 'sidebar.settings', href: '/admin/system' },
       { labelKey: 'sidebar.userManagement', href: '/admin/users' },
       { labelKey: 'sidebar.commonCode', href: '/admin/common-code' },
-      { labelKey: 'sidebar.instructorSettlement', href: '/admin/settlements/instructor', icon: User },
       { labelKey: 'sidebar.instructorApplicationPolicy', href: '/admin/policies/instructor-application', icon: ShieldCheck },
     ],
   },
