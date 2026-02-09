@@ -30,7 +30,7 @@ export function EnhancedResultPanel({
           onRegionChange={onRegionChange}
           onCategorySelect={onCategorySelect}
         />
-      ) : searchType === 'special' && selectedSpecialCategory ? (
+      ) : (searchType === 'special' || (searchType === 'map' && selectedSpecialCategory)) && selectedSpecialCategory ? (
         <SpecialItemDetailView
           selectedCategory={selectedSpecialCategory}
           onClose={onCategoryClose}
@@ -38,7 +38,9 @@ export function EnhancedResultPanel({
       ) : searchType === 'map' ? (
         <MapDetailView
           selectedRegion={selectedRegion}
+          selectedSpecialCategory={selectedSpecialCategory}
           onRegionSelect={onRegionChange}
+          onCategorySelect={onCategorySelect}
         />
       ) : (
         <div className="flex-1 flex items-center justify-center p-12">

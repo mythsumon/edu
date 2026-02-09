@@ -8,8 +8,6 @@ import { Card } from 'antd'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { ModernKPICard, KPIData } from '@/components/dashboard/ModernKPICard'
 import { StatusBreakdownChart } from '@/components/dashboard/StatusBreakdownChart'
-import { PendingApplicationsPanel } from '@/components/dashboard/PendingApplicationsPanel'
-import { PendingEvidencePanel } from '@/components/dashboard/PendingEvidencePanel'
 import { Table, Badge, Space, Tabs, Button, Input, Tooltip } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { Eye, Search } from 'lucide-react'
@@ -31,7 +29,6 @@ import { SearchPanel } from '@/components/dashboard/SearchPanel'
 import { ResultPanel } from '@/components/dashboard/ResultPanel'
 import { RegionMap } from '@/components/dashboard/RegionMap'
 import { ErrorToast } from '@/components/dashboard/ErrorToast'
-import { EntryCards } from '@/components/dashboard/EntryCards'
 import { CompactSearchControls } from '@/components/dashboard/CompactSearchControls'
 import { EnhancedResultPanel } from '@/components/dashboard/EnhancedResultPanel'
 import { CollapsibleSection } from '@/components/dashboard/CollapsibleSection'
@@ -115,14 +112,11 @@ export default function AdminDashboardPage() {
   const [selectedEducationId, setSelectedEducationId] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [searchText, setSearchText] = useState<string>('')
-  const [collapsedSections, setCollapsedSections] = useState<{ [key: string]: boolean }>({
-    operational: false,
-  })
+  const [collapsedSections, setCollapsedSections] = useState<{ [key: string]: boolean }>({})
   
   // Regional status states
   const [selectedSpecialCategory, setSelectedSpecialCategory] = useState<SpecialCategory | undefined>()
   const [error, setError] = useState<string | null>(null)
-  const [showRegionSelection, setShowRegionSelection] = useState(true)
   const [searchType, setSearchType] = useState<'region' | 'special' | 'map' | null>(null)
 
   // Initialize region from URL parameter
@@ -137,6 +131,13 @@ export default function AdminDashboardPage() {
       }
     }
   }, [searchParams])
+
+  // Auto-initialize map view when regional tab is active
+  useEffect(() => {
+    if (activeTab === 'regional' && !searchType) {
+      setSearchType('map')
+    }
+  }, [activeTab, searchType])
 
   // Load dashboard data
   useEffect(() => {
@@ -746,31 +747,7 @@ export default function AdminDashboardPage() {
   const allCount = summaries.length
 
 
-  const handleBackClick = () => {
-    setShowRegionSelection(true)
-    setSearchType(null)
-    setSelectedRegion(undefined)
-    setSelectedSpecialCategory(undefined)
-  }
-
-  const handleEntryCardClick = (type: 'region' | 'special' | 'map') => {
-    setSearchType(type)
-    setShowRegionSelection(false)
-    if (type === 'region' || type === 'map') {
-      setSelectedSpecialCategory(undefined)
-    } else {
-      setSelectedRegion(undefined)
-    }
-  }
-
   const handleResetSearch = () => {
-    setSelectedRegion(undefined)
-    setSelectedSpecialCategory(undefined)
-  }
-
-  const handleBackToEntry = () => {
-    setShowRegionSelection(true)
-    setSearchType(null)
     setSelectedRegion(undefined)
     setSelectedSpecialCategory(undefined)
   }
@@ -932,7 +909,7 @@ export default function AdminDashboardPage() {
                     <div className="absolute inset-0 opacity-10">
                       <div className="absolute top-0 left-0 w-96 h-96 bg-blue-400 rounded-full blur-3xl animate-pulse"></div>
                       <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-400 rounded-full blur-3xl animate-pulse delay-1000"></div>
-                    </div>
+                      </div>
                     
                     <div className="relative z-10">
                       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
@@ -940,11 +917,11 @@ export default function AdminDashboardPage() {
                           <div className="flex items-center gap-3">
                             <div className="p-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30">
                               <BarChart3 className="w-6 h-6 text-white" />
-                            </div>
+                        </div>
                             <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
                               전체 프로그램 현황
                             </h1>
-                          </div>
+                      </div>
                           <p className="text-blue-100 text-base md:text-lg max-w-2xl">
                             실시간 교육 프로그램 운영 현황을 한눈에 확인하고 효율적으로 관리하세요
                           </p>
@@ -973,18 +950,18 @@ export default function AdminDashboardPage() {
                         <div className="xl:col-span-2 group relative overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
                           <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
                           <div className="relative z-10">
-                            <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-start justify-between mb-4">
                               <p className="text-sm font-semibold text-white/90">전체 진행률</p>
                               <div className="p-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30">
-                                <GraduationCap className="w-5 h-5 text-white" />
-                              </div>
+                              <GraduationCap className="w-5 h-5 text-white" />
                             </div>
-                            <div className="mb-4">
+                          </div>
+                          <div className="mb-4">
                               <p className="text-4xl md:text-5xl font-bold text-white mb-2">72%</p>
-                            </div>
+                          </div>
                             <div className="w-full bg-white/20 rounded-full h-3 mb-2 backdrop-blur-sm">
                               <div className="bg-white h-3 rounded-full shadow-lg" style={{ width: '72%' }}></div>
-                            </div>
+                          </div>
                             <p className="text-xs text-white/80 font-medium">전체 프로그램 진행률</p>
                           </div>
                         </div>
@@ -992,16 +969,16 @@ export default function AdminDashboardPage() {
                         <div className="xl:col-span-2 group relative overflow-hidden bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
                           <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
                           <div className="relative z-10">
-                            <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-start justify-between mb-4">
                               <p className="text-sm font-semibold text-white/90">이번 달 완료</p>
                               <div className="p-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30">
-                                <FileCheck className="w-5 h-5 text-white" />
-                              </div>
+                              <FileCheck className="w-5 h-5 text-white" />
                             </div>
-                            <div className="mb-4">
+                          </div>
+                          <div className="mb-4">
                               <p className="text-4xl md:text-5xl font-bold text-white mb-1">12</p>
                               <p className="text-sm text-white/80">/ 100개 프로그램</p>
-                            </div>
+                          </div>
                             <div className="flex items-center gap-2 mt-3">
                               <TrendingUp className="w-4 h-4 text-white" />
                               <span className="text-xs font-semibold text-white/90">지난 달 대비 +3개</span>
@@ -1059,83 +1036,9 @@ export default function AdminDashboardPage() {
                           ))}
                         </div>
                       </div>
-
-                      {/* Quick Actions - Redesigned */}
-                      <div className="relative bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-2xl border border-indigo-300/50 p-6 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-                        <div className="relative z-10">
-                          <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2">
-                            <div className="w-1 h-4 bg-white/30 rounded-full"></div>
-                            빠른 작업
-                          </h3>
-                          <div className="space-y-2.5">
-                            <button 
-                              onClick={() => router.push('/admin/education')}
-                              className="w-full bg-white/90 hover:bg-white border border-white/50 rounded-xl px-4 py-3 text-left transition-all duration-200 flex items-center gap-3 shadow-md hover:shadow-lg hover:scale-[1.02] group"
-                            >
-                              <div className="p-1.5 bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors">
-                                <BookOpen className="w-4 h-4 text-indigo-600" />
-                              </div>
-                              <span className="font-semibold text-slate-700 text-sm">새 프로그램 등록</span>
-                            </button>
-                            <button 
-                              onClick={() => setActiveTab('submissions')}
-                              className="w-full bg-white/90 hover:bg-white border border-white/50 rounded-xl px-4 py-3 text-left transition-all duration-200 flex items-center gap-3 shadow-md hover:shadow-lg hover:scale-[1.02] group"
-                            >
-                              <div className="p-1.5 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors">
-                                <FileCheck className="w-4 h-4 text-purple-600" />
-                              </div>
-                              <span className="font-semibold text-slate-700 text-sm">문서 검토하기</span>
-                            </button>
-                            <button 
-                              onClick={() => router.push('/admin/instructor')}
-                              className="w-full bg-white/90 hover:bg-white border border-white/50 rounded-xl px-4 py-3 text-left transition-all duration-200 flex items-center gap-3 shadow-md hover:shadow-lg hover:scale-[1.02] group"
-                            >
-                              <div className="p-1.5 bg-pink-100 rounded-lg group-hover:bg-pink-200 transition-colors">
-                                <Users className="w-4 h-4 text-pink-600" />
-                              </div>
-                              <span className="font-semibold text-slate-700 text-sm">강사 관리</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
                     </div>
                   </div>
 
-                  {/* Operational Panels - Redesigned */}
-                  <div className="bg-white rounded-2xl border border-slate-200/80 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                    <div className="px-6 md:px-8 py-5 border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-slate-50">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="p-2.5 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-md">
-                            <Users className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="text-lg md:text-xl font-bold text-slate-900">운영 현황</h3>
-                            <p className="text-xs md:text-sm text-slate-600 mt-0.5">대기 중인 신청서 및 증빙 자료</p>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => setCollapsedSections({ ...collapsedSections, operational: !collapsedSections.operational })}
-                          className="p-2 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200 hover:border-slate-300"
-                        >
-                          {collapsedSections.operational ? (
-                            <ChevronDown className="w-5 h-5 text-slate-500" />
-                          ) : (
-                            <ChevronUp className="w-5 h-5 text-slate-500" />
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                    {!collapsedSections.operational && (
-                      <div className="px-6 md:px-8 pb-6 md:pb-8 pt-6">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                          <PendingApplicationsPanel />
-                          <PendingEvidencePanel />
-                        </div>
-                      </div>
-                    )}
-                  </div>
                 </div>
               ) : (
                 <div>
@@ -1156,16 +1059,8 @@ export default function AdminDashboardPage() {
                       </h2>
                     </div>
                     
-                    {/* Stage 1: Entry Cards */}
-                    {showRegionSelection && !searchType ? (
-                      <div className="bg-white rounded-card shadow-card p-8 border border-gray-200">
-                        <EntryCards
-                          onRegionSelect={() => handleEntryCardClick('region')}
-                          onSpecialItemSelect={() => handleEntryCardClick('special')}
-                          onMapSelect={() => handleEntryCardClick('map')}
-                        />
-                      </div>
-                    ) : searchType ? (
+                    {/* Search Mode Layout */}
+                    {searchType ? (
                       /* Stage 2: Search Mode Layout */
                       <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 transition-all duration-300 ease-in-out">
                         {/* Left: Compact Search Controls */}
@@ -1182,7 +1077,6 @@ export default function AdminDashboardPage() {
                             setSelectedRegion(undefined)
                           }}
                           onReset={handleResetSearch}
-                          onBack={handleBackToEntry}
                         />
                         
                         {/* Right: Enhanced Result Panel */}
@@ -1221,372 +1115,9 @@ export default function AdminDashboardPage() {
                         </div>
                       </div>
 
-                      {/* Region Selection Mode */}
-                      {showRegionSelection ? (
-                        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-slate-200/50 p-8 lg:p-10">
-                          <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8">
-                            {/* Left Side - Region Cards */}
-                            <div className="space-y-8">
-                              {/* Region Cards */}
-                              <div>
-                                <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                                  <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full"></div>
-                                  권역별 교육 진행 현황
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                  {[1, 2, 3, 4, 5, 6].map((regionNumber) => {
-                                    const regionData = [
-                                      { regionNumber: 1, progress: 60, educationProgress: 60, items: { 도서벽지: 10, '50차시': 50, 특수학급: 1000 } },
-                                      { regionNumber: 2, progress: 75, educationProgress: 70, items: { 도서벽지: 15, '50차시': 60, 특수학급: 1200 } },
-                                      { regionNumber: 3, progress: 45, educationProgress: 50, items: { 도서벽지: 8, '50차시': 40, 특수학급: 800 } },
-                                      { regionNumber: 4, progress: 80, educationProgress: 75, items: { 도서벽지: 20, '50차시': 70, 특수학급: 1500 } },
-                                      { regionNumber: 5, progress: 55, educationProgress: 55, items: { 도서벽지: 12, '50차시': 45, 특수학급: 900 } },
-                                      { regionNumber: 6, progress: 70, educationProgress: 65, items: { 도서벽지: 18, '50차시': 55, 특수학급: 1100 } },
-                                    ]
-                                    const region = regionData.find(r => r.regionNumber === regionNumber)
-                                    if (!region) return null
-                                    
-                                    const color = regionColors[regionNumber as keyof typeof regionColors]
-                                    const isSelected = selectedRegion === regionNumber
-                                    
-                                    const tooltipContent = getKpiTooltip('REGION', { regionNumber })
-                                    
-                                    return (
-                                      <Tooltip
-                                        key={regionNumber}
-                                        title={
-                                          <div className="py-1">
-                                            <div className="font-semibold text-white mb-2">{tooltipContent.title}</div>
-                                            <ul className="list-none space-y-1 m-0 p-0">
-                                              {tooltipContent.lines.map((line, idx) => (
-                                                <li key={idx} className="text-white text-sm before:content-['•'] before:mr-2">
-                                                  {line}
-                                                </li>
-                                              ))}
-                                            </ul>
-                                          </div>
-                                        }
-                                        placement="top"
-                                        overlayStyle={{ maxWidth: '300px' }}
-                                      >
-                                        <div
-                                          onClick={(e) => {
-                                            e.preventDefault()
-                                            e.stopPropagation()
-                                            try {
-                                              setSelectedRegion(regionNumber)
-                                              setSelectedSpecialCategory(undefined)
-                                              setShowRegionSelection(false)
-                                            } catch (error) {
-                                              console.error('Error selecting region:', error)
-                                            }
-                                          }}
-                                          className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all duration-300 ${
-                                            isSelected 
-                                              ? 'shadow-2xl scale-105 ring-4 ring-offset-2' 
-                                              : 'shadow-lg hover:shadow-xl hover:scale-[1.02]'
-                                          }`}
-                                          style={{
-                                            background: isSelected 
-                                              ? `linear-gradient(135deg, ${color.light} 0%, white 100%)`
-                                              : 'white',
-                                            border: isSelected ? `3px solid ${color.bg}` : '2px solid #e2e8f0',
-                                          }}
-                                        >
-                                        <div 
-                                          className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${regionGradients[regionNumber as keyof typeof regionGradients]} opacity-10 rounded-bl-full transition-opacity duration-300 group-hover:opacity-20`}
-                                        />
-                                        
-                                        <div className="relative p-4">
-                                          <div className="flex items-center justify-between mb-3">
-                                            <div className="flex items-center gap-1.5">
-                                              <div 
-                                                className="w-2.5 h-2.5 rounded-full shadow-sm"
-                                                style={{ backgroundColor: color.bg }}
-                                              />
-                                              <span className="text-base font-bold" style={{ color: color.text }}>
-                                                {regionNumber}권역
-                                              </span>
-                                            </div>
-                                            {isSelected && (
-                                              <div className="px-1.5 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
-                                                선택됨
-                                              </div>
-                                            )}
-                                          </div>
-
-                                          <div className="flex justify-center mb-3">
-                                            <div className="relative w-20 h-20">
-                                              <svg className="transform -rotate-90 w-20 h-20">
-                                                <circle
-                                                  cx="40"
-                                                  cy="40"
-                                                  r="32"
-                                                  stroke="#e2e8f0"
-                                                  strokeWidth="6"
-                                                  fill="none"
-                                                />
-                                                <circle
-                                                  cx="40"
-                                                  cy="40"
-                                                  r="32"
-                                                  stroke={color.bg}
-                                                  strokeWidth="6"
-                                                  fill="none"
-                                                  strokeDasharray={`${2 * Math.PI * 32}`}
-                                                  strokeDashoffset={`${2 * Math.PI * 32 * (1 - region.progress / 100)}`}
-                                                  strokeLinecap="round"
-                                                  className="transition-all duration-500"
-                                                />
-                                              </svg>
-                                              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                <span className="text-xl font-bold" style={{ color: color.text }}>
-                                                  {region.progress}%
-                                                </span>
-                                                <span className="text-[10px] text-slate-500">진행률</span>
-                                              </div>
-                                            </div>
-                                          </div>
-
-                                          <div className="mb-3">
-                                            <div className="flex items-center justify-between mb-1.5">
-                                              <span className="text-xs text-slate-600">교육 진행률</span>
-                                              <span className="text-xs font-semibold" style={{ color: color.text }}>
-                                                {region.educationProgress}%
-                                              </span>
-                                            </div>
-                                            <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                                              <div
-                                                className="h-full rounded-full transition-all duration-500"
-                                                style={{
-                                                  width: `${region.educationProgress}%`,
-                                                  background: `linear-gradient(90deg, ${color.bg} 0%, ${color.bg}CC 100%)`,
-                                                }}
-                                              />
-                                            </div>
-                                          </div>
-
-                                          <div className="space-y-1.5 pt-3 border-t border-slate-100">
-                                            <Tooltip
-                                              title={
-                                                <div className="py-1">
-                                                  <div className="font-semibold text-white mb-2">{getKpiTooltip('CATEGORY_REMOTE').title}</div>
-                                                  <ul className="list-none space-y-1 m-0 p-0">
-                                                    {getKpiTooltip('CATEGORY_REMOTE').lines.map((line, idx) => (
-                                                      <li key={idx} className="text-white text-sm before:content-['•'] before:mr-2">
-                                                        {line}
-                                                      </li>
-                                                    ))}
-                                                  </ul>
-                                                </div>
-                                              }
-                                              placement="top"
-                                              overlayStyle={{ maxWidth: '300px' }}
-                                            >
-                                              <div className="flex items-center justify-between text-xs">
-                                                <span className="text-slate-600">도서·벽지</span>
-                                                <span className="font-semibold text-slate-900">{region.items.도서벽지}</span>
-                                              </div>
-                                            </Tooltip>
-                                            <Tooltip
-                                              title={
-                                                <div className="py-1">
-                                                  <div className="font-semibold text-white mb-2">{getKpiTooltip('SESSIONS_50').title}</div>
-                                                  <ul className="list-none space-y-1 m-0 p-0">
-                                                    {getKpiTooltip('SESSIONS_50').lines.map((line, idx) => (
-                                                      <li key={idx} className="text-white text-sm before:content-['•'] before:mr-2">
-                                                        {line}
-                                                      </li>
-                                                    ))}
-                                                  </ul>
-                                                </div>
-                                              }
-                                              placement="top"
-                                              overlayStyle={{ maxWidth: '300px' }}
-                                            >
-                                              <div className="flex items-center justify-between text-xs">
-                                                <span className="text-slate-600">50차시</span>
-                                                <span className="font-semibold text-slate-900">{region.items['50차시']}</span>
-                                              </div>
-                                            </Tooltip>
-                                            <Tooltip
-                                              title={
-                                                <div className="py-1">
-                                                  <div className="font-semibold text-white mb-2">{getKpiTooltip('CATEGORY_SPECIAL').title}</div>
-                                                  <ul className="list-none space-y-1 m-0 p-0">
-                                                    {getKpiTooltip('CATEGORY_SPECIAL').lines.map((line, idx) => (
-                                                      <li key={idx} className="text-white text-sm before:content-['•'] before:mr-2">
-                                                        {line}
-                                                      </li>
-                                                    ))}
-                                                  </ul>
-                                                </div>
-                                              }
-                                              placement="top"
-                                              overlayStyle={{ maxWidth: '300px' }}
-                                            >
-                                              <div className="flex items-center justify-between text-xs">
-                                                <span className="text-slate-600">특수학급</span>
-                                                <span className="font-semibold text-slate-900">{region.items.특수학급}</span>
-                                              </div>
-                                            </Tooltip>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      </Tooltip>
-                                    )
-                                  })}
-                                </div>
-                              </div>
-                              
-                              {/* Special Items Cards */}
-                              <div>
-                                <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                                  <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-purple-600 rounded-full"></div>
-                                  특수 항목별 세부조회
-                                </h3>
-                                <div className="grid grid-cols-1 gap-3">
-                                  {[
-                                    { label: '도서·벽지 진행률', category: '도서·벽지' as SpecialCategory, progress: 50, completed: 10, target: 20, color: '#F97316', icon: BookOpen },
-                                    { label: '50차시 진행률', category: '50차시' as SpecialCategory, progress: 75, completed: 15, target: 20, color: '#22C55E', icon: GraduationCap },
-                                    { label: '특수학급 진행률', category: '특수학급' as SpecialCategory, progress: 60, completed: 12, target: 20, color: '#3B82F6', icon: Users },
-                                  ].map((item) => {
-                                    const isSelected = selectedSpecialCategory === item.category
-                                    const Icon = item.icon
-                                    
-                                    // Determine tooltip type based on category
-                                    let tooltipType: 'CATEGORY_REMOTE' | 'CATEGORY_SPECIAL' | 'SESSIONS_50' = 'CATEGORY_REMOTE'
-                                    if (item.category === '특수학급') {
-                                      tooltipType = 'CATEGORY_SPECIAL'
-                                    } else if (item.category === '50차시') {
-                                      tooltipType = 'SESSIONS_50'
-                                    }
-                                    
-                                    const tooltipContent = getKpiTooltip(tooltipType)
-                                    
-                                    return (
-                                      <Tooltip
-                                        key={item.label}
-                                        title={
-                                          <div className="py-1">
-                                            <div className="font-semibold text-white mb-2">{tooltipContent.title}</div>
-                                            <ul className="list-none space-y-1 m-0 p-0">
-                                              {tooltipContent.lines.map((line, idx) => (
-                                                <li key={idx} className="text-white text-sm before:content-['•'] before:mr-2">
-                                                  {line}
-                                                </li>
-                                              ))}
-                                            </ul>
-                                          </div>
-                                        }
-                                        placement="top"
-                                        overlayStyle={{ maxWidth: '300px' }}
-                                      >
-                                        <div
-                                          onClick={(e) => {
-                                            e.preventDefault()
-                                            e.stopPropagation()
-                                            try {
-                                              setSelectedSpecialCategory(item.category)
-                                              setSelectedRegion(undefined)
-                                              setShowRegionSelection(false)
-                                            } catch (error) {
-                                              console.error('Error selecting special category:', error)
-                                            }
-                                          }}
-                                          className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all duration-300 ${
-                                            isSelected 
-                                              ? 'shadow-2xl scale-105 ring-4 ring-offset-2' 
-                                              : 'shadow-lg hover:shadow-xl hover:scale-[1.02]'
-                                          }`}
-                                          style={{
-                                            background: isSelected 
-                                              ? `linear-gradient(135deg, ${item.color}15 0%, white 100%)`
-                                              : 'white',
-                                            border: isSelected ? `3px solid ${item.color}` : '2px solid #e2e8f0',
-                                          }}
-                                        >
-                                        <div 
-                                          className={`absolute top-0 right-0 w-40 h-40 bg-gradient-to-br ${specialItemGradients[item.category as keyof typeof specialItemGradients]} opacity-10 rounded-bl-full transition-opacity duration-300 group-hover:opacity-20`}
-                                        />
-                                        
-                                            <div className="relative p-4">
-                                              <div className="flex items-start justify-between mb-3">
-                                                <div className="flex items-center gap-2">
-                                                  <div 
-                                                    className="p-2 rounded-lg shadow-sm"
-                                                    style={{ backgroundColor: `${item.color}20` }}
-                                                  >
-                                                    <Icon className="w-4 h-4" style={{ color: item.color }} />
-                                                  </div>
-                                                  <div>
-                                                    <div className="text-xs text-slate-600 mb-0.5">{item.label}</div>
-                                                    <div className="text-2xl font-bold text-slate-900">{item.progress}%</div>
-                                                  </div>
-                                                </div>
-                                                {isSelected && (
-                                                  <div className="px-1.5 py-0.5 text-xs font-semibold rounded-full" style={{ backgroundColor: `${item.color}20`, color: item.color }}>
-                                                    선택됨
-                                                  </div>
-                                                )}
-                                              </div>
-                                              
-                                              <div className="mb-2">
-                                                <div className="flex items-center justify-between text-xs text-slate-600 mb-1.5">
-                                                  <span>목표 {item.target}개 중 {item.completed}개 완료</span>
-                                                  <span className="font-semibold">{item.completed}/{item.target}</span>
-                                                </div>
-                                                <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden shadow-inner">
-                                                  <div
-                                                    className="h-full rounded-full transition-all duration-500"
-                                                    style={{
-                                                      width: `${item.progress}%`,
-                                                      background: `linear-gradient(90deg, ${item.color} 0%, ${item.color}DD 100%)`,
-                                                    }}
-                                                  />
-                                                </div>
-                                              </div>
-                                            </div>
-                                        </div>
-                                      </Tooltip>
-                                    )
-                                  })}
-                                </div>
-                              </div>
-                            </div>
-                            
-                            {/* Right Side - Map */}
-                            <div>
-                              <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                                <div className="w-1 h-6 bg-gradient-to-b from-green-500 to-green-600 rounded-full"></div>
-                                권역 지도
-                              </h3>
-                              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-200/50 p-6">
-                                <RegionMap 
-                                  selectedRegion={selectedRegion} 
-                                  onRegionSelect={(id) => {
-                                    setSelectedRegion(id)
-                                    setSelectedSpecialCategory(undefined)
-                                    setShowRegionSelection(false)
-                                  }} 
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        /* Search Panel + Result Panel Layout */
+                      {/* Search Panel + Result Panel Layout */}
                         <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1.6fr] gap-6">
                           <div className="lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto">
-                            <div className="mb-4">
-                              <Button
-                                icon={<ArrowLeft className="w-4 h-4" />}
-                                onClick={handleBackClick}
-                                className="w-full h-11 px-6 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium transition-all shadow-lg hover:shadow-xl"
-                              >
-                                뒤로
-                              </Button>
-                            </div>
                             <SearchPanel
                               selectedRegion={selectedRegion}
                               selectedSpecialCategory={selectedSpecialCategory}
@@ -1594,7 +1125,6 @@ export default function AdminDashboardPage() {
                                 try {
                                   setSelectedRegion(id)
                                   setSelectedSpecialCategory(undefined)
-                                  setShowRegionSelection(false)
                                 } catch (error) {
                                   console.error('Error selecting region:', error)
                                 }
@@ -1648,7 +1178,6 @@ export default function AdminDashboardPage() {
                             />
                           </div>
                         </div>
-                      )}
                         </div>
                       </div>
                     )}
