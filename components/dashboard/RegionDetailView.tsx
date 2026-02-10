@@ -93,66 +93,66 @@ export function RegionDetailView({
               <div className="w-1 h-5 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full"></div>
               자치단체별 상세 현황
             </h3>
-            
+          
             <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
+            <div className="overflow-x-auto">
+              <table className="w-full">
                   <thead className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200 sticky top-0">
-                    <tr>
+                  <tr>
                       <th className="px-4 py-3.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                        자치단체
-                      </th>
+                      자치단체
+                    </th>
                       <th className="px-4 py-3.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                        교육기관수
-                      </th>
+                      교육기관수
+                    </th>
                       <th className="px-4 py-3.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                        학급
-                      </th>
+                      학급
+                    </th>
                       <th className="px-4 py-3.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                        학생수
-                      </th>
+                      학생수
+                    </th>
                       <th className="px-4 py-3.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                        도서·벽지
-                      </th>
+                      도서·벽지
+                    </th>
                       <th className="px-4 py-3.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                        50차시
-                      </th>
+                      50차시
+                    </th>
                       <th className="px-4 py-3.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                        특수학급
-                      </th>
-                    </tr>
-                  </thead>
+                      특수학급
+                    </th>
+                  </tr>
+                </thead>
                   <tbody className="bg-white divide-y divide-slate-100">
-                    {region.locals.map((local, index) => (
-                      <tr
-                        key={index}
-                        className="hover:bg-slate-50 transition-colors"
-                      >
+                  {region.locals.map((local, index) => (
+                    <tr
+                      key={index}
+                      className="hover:bg-slate-50 transition-colors"
+                    >
                         <td className="px-4 py-3.5 text-sm font-medium text-slate-900">
-                          {local.name}
-                        </td>
+                        {local.name}
+                      </td>
                         <td className="px-4 py-3.5 text-sm text-slate-700">
-                          {local.institutions}개
-                        </td>
+                        {local.institutions}개
+                      </td>
                         <td className="px-4 py-3.5 text-sm text-slate-700">
-                          {local.classes}개
-                        </td>
+                        {local.classes}개
+                      </td>
                         <td className="px-4 py-3.5 text-sm text-slate-700">
-                          {local.students}명
-                        </td>
+                        {local.students}명
+                      </td>
                         <td className="px-4 py-3.5 text-sm text-slate-700 font-medium">
-                          {local.bookWall}
-                        </td>
+                        {local.bookWall}
+                      </td>
                         <td className="px-4 py-3.5 text-sm text-slate-700 font-medium">
-                          {local.fiftyHours}
-                        </td>
+                        {local.fiftyHours}
+                      </td>
                         <td className="px-4 py-3.5 text-sm text-slate-700 font-medium">
-                          {local.specialClass}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        {local.specialClass}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
               </div>
             </div>
           </div>

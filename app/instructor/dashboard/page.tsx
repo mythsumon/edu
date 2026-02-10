@@ -1268,31 +1268,31 @@ export default function InstructorDashboard() {
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                           {displayEducations.map((education) => {
-                            const canApply = (): { canApply: boolean; reason?: string } => {
-                              const now = dayjs()
-                              if (education.applicationDeadline) {
-                                const deadline = dayjs(education.applicationDeadline)
-                                if (now.isAfter(deadline)) {
-                                  return { canApply: false, reason: '신청 마감일이 지났습니다.' }
-                                }
-                              }
-                              if (education.educationStatus === '신청 마감') {
-                                return { canApply: false, reason: '교육이 마감되었습니다.' }
-                              }
-                              return { canApply: true }
-                            }
-                            
-                            const applyCheck = canApply()
-                            const getDaysUntilDeadline = (deadline: string) => {
-                              const deadlineDate = dayjs(deadline)
-                              const now = dayjs()
-                              const days = deadlineDate.diff(now, 'day')
-                              if (days < 0) return '마감됨'
-                              if (days === 0) return '오늘 마감'
-                              return `D-${days}`
-                            }
-                            
-                            return (
+                      const canApply = (): { canApply: boolean; reason?: string } => {
+                        const now = dayjs()
+                        if (education.applicationDeadline) {
+                          const deadline = dayjs(education.applicationDeadline)
+                          if (now.isAfter(deadline)) {
+                            return { canApply: false, reason: '신청 마감일이 지났습니다.' }
+                          }
+                        }
+                        if (education.educationStatus === '신청 마감') {
+                          return { canApply: false, reason: '교육이 마감되었습니다.' }
+                        }
+                        return { canApply: true }
+                      }
+                      
+                      const applyCheck = canApply()
+                      const getDaysUntilDeadline = (deadline: string) => {
+                        const deadlineDate = dayjs(deadline)
+                        const now = dayjs()
+                        const days = deadlineDate.diff(now, 'day')
+                        if (days < 0) return '마감됨'
+                        if (days === 0) return '오늘 마감'
+                        return `D-${days}`
+                      }
+                      
+                      return (
                               <tr key={education.key} className="hover:bg-slate-50 transition-colors">
                                 <td className="px-6 py-4">
                                   <div className="font-semibold text-slate-900">{education.name}</div>
@@ -1306,29 +1306,29 @@ export default function InstructorDashboard() {
                                   {education.applicationDeadline || '-'}
                                 </td>
                                 <td className="px-6 py-4">
-                                  {education.applicationDeadline && (
-                                    <Badge 
-                                      status={applyCheck.canApply ? "processing" : "error"} 
-                                      text={
-                                        applyCheck.canApply 
-                                          ? getDaysUntilDeadline(education.applicationDeadline)
-                                          : '마감됨'
-                                      } 
-                                    />
-                                  )}
+                              {education.applicationDeadline && (
+                                  <Badge 
+                                    status={applyCheck.canApply ? "processing" : "error"} 
+                                    text={
+                                      applyCheck.canApply 
+                                        ? getDaysUntilDeadline(education.applicationDeadline)
+                                        : '마감됨'
+                                    } 
+                                  />
+                              )}
                                 </td>
                                 <td className="px-6 py-4 text-center">
-                                  <Button
-                                    type="primary"
+                              <Button
+                                type="primary"
                                     size="small"
-                                    onClick={() => router.push(`/instructor/apply/open?educationId=${education.educationId}`)}
-                                  >
-                                    신청하기
-                                  </Button>
+                                onClick={() => router.push(`/instructor/apply/open?educationId=${education.educationId}`)}
+                              >
+                                신청하기
+                              </Button>
                                 </td>
                               </tr>
-                            )
-                          })}
+                      )
+                    })}
                         </tbody>
                       </table>
                     </div>
@@ -1340,7 +1340,7 @@ export default function InstructorDashboard() {
                     </div>
                     <p className="text-slate-500 font-semibold text-lg">신청 가능한 교육이 없습니다.</p>
                   </Card>
-                  )
+                )
                 })()
               ) : filteredCourses.length > 0 ? (
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">

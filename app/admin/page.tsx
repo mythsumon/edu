@@ -985,6 +985,26 @@ export default function AdminDashboardPage() {
                             </div>
                           </div>
                         </div>
+                        
+                        <div className="xl:col-span-2 group relative overflow-hidden bg-gradient-to-br from-purple-500 via-pink-500 to-rose-500 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
+                          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+                          <div className="relative z-10">
+                          <div className="flex items-start justify-between mb-4">
+                              <p className="text-sm font-semibold text-white/90">활성 프로그램</p>
+                              <div className="p-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30">
+                              <Users className="w-5 h-5 text-white" />
+                            </div>
+                          </div>
+                          <div className="mb-4">
+                              <p className="text-4xl md:text-5xl font-bold text-white mb-1">45</p>
+                              <p className="text-sm text-white/80">현재 진행 중</p>
+                          </div>
+                            <div className="flex items-center gap-2 mt-3">
+                              <BarChart3 className="w-4 h-4 text-white" />
+                              <span className="text-xs font-semibold text-white/90">전체의 45%</span>
+                            </div>
+                          </div>
+                        </div>
                       </>
                     )}
                   </div>

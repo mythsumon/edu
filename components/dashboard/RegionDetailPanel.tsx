@@ -143,10 +143,10 @@ export function RegionDetailPanel({ selectedRegionId, onRegionChange, onCategory
           자치단체별 현황
         </h4>
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
+        <div className="overflow-x-auto">
+          <table className="w-full">
               <thead className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200">
-                <tr>
+              <tr>
                   <th className="px-4 py-3.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">자치단체</th>
                   <th className="px-4 py-3.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">교육기관수</th>
                   <th className="px-4 py-3.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">학급</th>
@@ -154,10 +154,10 @@ export function RegionDetailPanel({ selectedRegionId, onRegionChange, onCategory
                   <th className="px-4 py-3.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">도서·벽지</th>
                   <th className="px-4 py-3.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">50차시</th>
                   <th className="px-4 py-3.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">특수학급</th>
-                </tr>
-              </thead>
+              </tr>
+            </thead>
               <tbody className="bg-white divide-y divide-slate-100">
-                {region.locals.map((local, index) => (
+              {region.locals.map((local, index) => (
                   <tr key={index} className="hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3.5 text-sm font-medium text-slate-900">{local.name}</td>
                     <td className="px-4 py-3.5 text-sm text-slate-700">{local.institutions}개</td>
@@ -166,10 +166,10 @@ export function RegionDetailPanel({ selectedRegionId, onRegionChange, onCategory
                     <td className="px-4 py-3.5 text-sm text-slate-700 font-medium">{local.bookWall}</td>
                     <td className="px-4 py-3.5 text-sm text-slate-700 font-medium">{local.fiftyHours}</td>
                     <td className="px-4 py-3.5 text-sm text-slate-700 font-medium">{local.specialClass}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                </tr>
+              ))}
+            </tbody>
+          </table>
           </div>
         </div>
       </div>
@@ -181,33 +181,33 @@ export function RegionDetailPanel({ selectedRegionId, onRegionChange, onCategory
           요약
         </h4>
         <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
+        <div className="overflow-x-auto">
+          <table className="w-full">
               <thead className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200">
-                <tr>
+              <tr>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 uppercase tracking-wider">구분</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 uppercase tracking-wider">수치</th>
-                </tr>
-              </thead>
+              </tr>
+            </thead>
               <tbody className="bg-white divide-y divide-slate-100">
                 <tr className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4 text-sm font-medium text-slate-700">교육 퍼센트</td>
                   <td className="px-6 py-4 text-sm font-bold text-slate-900">{region.summary.percent}%</td>
-                </tr>
+              </tr>
                 <tr className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4 text-sm font-medium text-slate-700">도서·벽지</td>
                   <td className="px-6 py-4 text-sm font-bold text-slate-900">{region.summary.bookWall}</td>
-                </tr>
+              </tr>
                 <tr className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4 text-sm font-medium text-slate-700">50차시</td>
                   <td className="px-6 py-4 text-sm font-bold text-slate-900">{region.summary.fiftyHours}</td>
-                </tr>
+              </tr>
                 <tr className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4 text-sm font-medium text-slate-700">특수학급</td>
                   <td className="px-6 py-4 text-sm font-bold text-slate-900">{region.summary.specialClass}</td>
-                </tr>
-              </tbody>
-            </table>
+              </tr>
+            </tbody>
+          </table>
           </div>
         </div>
       </div>

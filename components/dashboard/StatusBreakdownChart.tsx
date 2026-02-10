@@ -1,6 +1,7 @@
 'use client'
 
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts'
+import { useState } from 'react'
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts'
 import { ChartCard } from './ChartCard'
 
 interface StatusData {
@@ -42,31 +43,10 @@ const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name
 
 export function StatusBreakdownChart({ data, loading = false }: StatusBreakdownChartProps) {
   const total = data.reduce((sum, item) => sum + item.value, 0)
+  const [activeIndex, setActiveIndex] = useState<number | null>(null)
   
-  // Enhanced tooltip that has access to total
-  const EnhancedTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const entry = payload[0].payload as StatusData
-      const percent = total > 0 ? ((entry.value / total) * 100).toFixed(1) : '0'
-      
-      return (
-        <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-4">
-          <div className="flex items-center gap-3 mb-2">
-            <div 
-              className="w-4 h-4 rounded-full shadow-sm"
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className="font-semibold text-slate-900">{entry.name}</span>
-          </div>
-          <div className="space-y-1">
-            <div className="text-2xl font-bold text-slate-900">{entry.value.toLocaleString()}</div>
-            <div className="text-sm text-slate-600">전체의 {percent}%</div>
-          </div>
-        </div>
-      )
-    }
-    return null
-  }
+  const activeData = activeIndex !== null ? data[activeIndex] : null
+  const activePercent = activeData && total > 0 ? ((activeData.value / total) * 100).toFixed(1) : null
   
   return (
     <ChartCard title="상태별 분포" loading={loading}>
@@ -99,6 +79,9 @@ export function StatusBreakdownChart({ data, loading = false }: StatusBreakdownC
                 paddingAngle={3}
                 stroke="white"
                 strokeWidth={2}
+                activeIndex={activeIndex ?? undefined}
+                onMouseEnter={(_, index) => setActiveIndex(index)}
+                onMouseLeave={() => setActiveIndex(null)}
               >
                 {data.map((entry, index) => (
                   <Cell 
@@ -110,7 +93,6 @@ export function StatusBreakdownChart({ data, loading = false }: StatusBreakdownC
                   />
                 ))}
               </Pie>
-              <Tooltip content={<EnhancedTooltip />} />
               <Legend 
                 verticalAlign="bottom" 
                 height={60}
@@ -128,12 +110,29 @@ export function StatusBreakdownChart({ data, loading = false }: StatusBreakdownC
             </PieChart>
           </ResponsiveContainer>
           
-          {/* Center total display */}
+          {/* Center display - shows active item on hover, otherwise shows total */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-slate-900 mb-1">{total.toLocaleString()}</div>
-              <div className="text-sm text-slate-600 font-medium">전체 프로그램</div>
-            </div>
+            {activeData ? (
+              <div className="text-center bg-white rounded-xl shadow-lg border border-slate-200 px-6 py-4 min-w-[160px]">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <div 
+                    className="w-3 h-3 rounded-full shadow-sm"
+                    style={{ backgroundColor: activeData.color }}
+                  />
+                  <span className="text-sm font-semibold text-slate-900">{activeData.name}</span>
+                </div>
+                <div className="text-2xl font-bold text-slate-900 mb-1" style={{ color: activeData.color }}>
+                  {activeData.value}
+                </div>
+                <div className="text-xs text-slate-600">전체 프로그램</div>
+                <div className="text-lg font-semibold text-slate-700 mt-1">{activePercent}%</div>
+              </div>
+            ) : (
+              <div className="text-center">
+                <div className="text-3xl font-bold text-slate-900 mb-1">{total.toLocaleString()}</div>
+                <div className="text-sm text-slate-600 font-medium">전체 프로그램</div>
+              </div>
+            )}
           </div>
         </div>
       )}
