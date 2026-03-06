@@ -4,9 +4,9 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { Table, Button, Card, Select, Space, Descriptions, Checkbox, Modal, message, Input, Tabs } from 'antd'
+import { Table, Button, Card, Select, Space, Descriptions, Checkbox, Modal, message, Input, Tabs, Drawer, Badge } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { ChevronRight, Download, RotateCcw, Check, X, ArrowLeft, Eye, Search, RefreshCw, Filter } from 'lucide-react'
+import { ChevronRight, Download, RotateCcw, Check, X, ArrowLeft, Eye, Search, RefreshCw, Filter, Users, CheckCircle2, XCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import dayjs from 'dayjs'
 import { dataStore, type Lesson } from '@/lib/dataStore'
@@ -488,6 +488,10 @@ export default function InstructorApplicationPage() {
   const router = useRouter()
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list')
   const [selectedApplication, setSelectedApplication] = useState<InstructorApplicationItem | null>(null)
+  const [selectedEducationId, setSelectedEducationId] = useState<string | null>(null)
+  const [selectedInstructorTab, setSelectedInstructorTab] = useState<string>('')
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [drawerInstructorName, setDrawerInstructorName] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [searchText, setSearchText] = useState<string>('')
@@ -881,7 +885,7 @@ export default function InstructorApplicationPage() {
   }
 
   // Handle lesson-level accept/reject
-  const handleLessonAccept = (educationId: string, lesson: LessonInfo, role: string) => {
+  const handleLessonAccept = (educationId: string, lesson: LessonInfo, role: string, instructorName?: string) => {
     Modal.confirm({
       title: '수업 수락 확인',
       content: `${educationId}의 ${lesson.session}차시 수업을 수락하시겠습니까?`,
@@ -894,7 +898,11 @@ export default function InstructorApplicationPage() {
         // Update lesson status in data
         setData(prevData =>
           prevData.map(item => {
-            if (item.educationId === educationId && item.role === role) {
+            const matchesEducation = item.educationId === educationId
+            const matchesRole = item.role === role
+            const matchesInstructor = !instructorName || item.instructorName === instructorName
+            
+            if (matchesEducation && matchesRole && matchesInstructor) {
               const updatedLessons = item.lessons?.map(l => 
                 l.session === lesson.session && l.date === lesson.date
                   ? { ...l, status: '수락됨' as const }
@@ -910,7 +918,7 @@ export default function InstructorApplicationPage() {
     })
   }
 
-  const handleLessonReject = (educationId: string, lesson: LessonInfo, role: string) => {
+  const handleLessonReject = (educationId: string, lesson: LessonInfo, role: string, instructorName?: string) => {
     Modal.confirm({
       title: '수업 거절 확인',
       content: `${educationId}의 ${lesson.session}차시 수업을 거절하시겠습니까?`,
@@ -923,7 +931,11 @@ export default function InstructorApplicationPage() {
         // Update lesson status in data
         setData(prevData =>
           prevData.map(item => {
-            if (item.educationId === educationId && item.role === role) {
+            const matchesEducation = item.educationId === educationId
+            const matchesRole = item.role === role
+            const matchesInstructor = !instructorName || item.instructorName === instructorName
+            
+            if (matchesEducation && matchesRole && matchesInstructor) {
               const updatedLessons = item.lessons?.map(l => 
                 l.session === lesson.session && l.date === lesson.date
                   ? { ...l, status: '거절됨' as const }
@@ -1040,16 +1052,50 @@ export default function InstructorApplicationPage() {
     setViewMode('detail')
   }
 
+  const handleEducationIdClick = (educationId: string, instructorName?: string) => {
+    setSelectedEducationId(educationId)
+    setDrawerOpen(true)
+    // If instructor name is provided, open that instructor's tab
+    if (instructorName) {
+      setDrawerInstructorName(instructorName)
+      setSelectedInstructorTab(instructorName)
+    } else {
+      // Find first instructor for this education to set as default tab
+      const firstApp = data.find(app => app.educationId === educationId && app.instructorName)
+      if (firstApp && firstApp.instructorName) {
+        setDrawerInstructorName(firstApp.instructorName)
+        setSelectedInstructorTab(firstApp.instructorName)
+      } else {
+        setDrawerInstructorName(null)
+        setSelectedInstructorTab('')
+      }
+    }
+  }
+
+  const handleCloseDrawer = () => {
+    setDrawerOpen(false)
+    setSelectedEducationId(null)
+    setDrawerInstructorName(null)
+    setSelectedInstructorTab('')
+  }
+
   const handleBackToList = () => {
     setViewMode('list')
     setSelectedApplication(null)
+    setSelectedEducationId(null)
+    setSelectedInstructorTab('')
+  }
+
+  // Get all instructors who applied for the selected education
+  const getInstructorsForEducation = (educationId: string): InstructorApplicationItem[] => {
+    return data.filter(app => app.educationId === educationId)
   }
 
   const handleSearch = () => {
     setCurrentPage(1)
   }
 
-  const getLessonColumns = (educationId: string, role: string): ColumnsType<LessonInfo> => {
+  const getLessonColumns = (educationId: string, role: string, instructorName?: string): ColumnsType<LessonInfo> => {
     const baseColumns: ColumnsType<LessonInfo> = [
       {
         title: '수업 차시',
@@ -1255,6 +1301,19 @@ export default function InstructorApplicationPage() {
     }
   }, [data, selectedApplication?.key])
 
+  // Auto-select first instructor tab when education ID changes
+  useEffect(() => {
+    if (selectedEducationId && viewMode === 'detail') {
+      const instructorsForEducation = data.filter(app => app.educationId === selectedEducationId)
+      const firstInstructor = instructorsForEducation.find(inst => inst.instructorName)
+      if (firstInstructor && firstInstructor.instructorName) {
+        if (!selectedInstructorTab || !instructorsForEducation.some(inst => inst.instructorName === selectedInstructorTab)) {
+          setSelectedInstructorTab(firstInstructor.instructorName)
+        }
+      }
+    }
+  }, [selectedEducationId, viewMode, data, selectedInstructorTab])
+
   const selectedCount = selectedRowKeys.length
   const processableForApprove = getProcessableRows('approve').length
   const processableForReject = getProcessableRows('reject').length
@@ -1380,7 +1439,28 @@ export default function InstructorApplicationPage() {
         width: 150,
         render: (text: string, record: InstructorApplicationItem & { _totalLessons?: number }) => (
           <div className="flex items-center gap-2">
-            <span className="text-base font-medium text-gray-900">{text}</span>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                handleEducationIdClick(text, record.instructorName)
+              }}
+              className="text-base font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+            >
+              {text}
+            </button>
+            <Button
+              type="link"
+              icon={<Users className="w-4 h-4" />}
+              onClick={(e) => {
+                e.stopPropagation()
+                handleEducationIdClick(text)
+              }}
+              className="h-8 px-2 text-blue-600 hover:text-blue-800"
+              size="small"
+              title="강사 관리"
+            >
+              관리
+            </Button>
             {record._totalLessons !== undefined && record._totalLessons > 0 && (
               <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
                 {record._totalLessons}차시
@@ -1870,117 +1950,202 @@ export default function InstructorApplicationPage() {
             )}
           </Modal>
         </>
-      ) : viewMode === 'detail' && selectedApplication ? (
-        /* Detail View - Redesigned to match Create/Edit page */
-        <div className="bg-slate-50 min-h-screen -mx-6 -mt-6 px-6 pt-0">
-          {/* Sticky Header */}
-          <DetailPageHeaderSticky
-            onBack={handleBackToList}
-          />
-
-          {/* Main Content Container */}
-          <div className="max-w-5xl mx-auto pt-6 pb-12 space-y-4">
-            {/* Summary Card */}
-            <ApplicationSummaryCard
-              educationId={selectedApplication.educationId}
-              educationName={selectedApplication.educationName}
-              institution={selectedApplication.institution}
-              region={selectedApplication.region}
-              gradeClass={selectedApplication.gradeClass}
-              role={selectedApplication.role}
-              applicationDate={selectedApplication.applicationDate}
-              status={selectedApplication.status}
-            />
-
-            {/* Application Info Section */}
-            <DetailSectionCard title="신청 정보">
-              <DefinitionListGrid
-                items={[
-                  { label: '교육ID', value: selectedApplication.educationId },
-                  { label: '교육명', value: selectedApplication.educationName },
-                  { label: '교육기관', value: selectedApplication.institution },
-                  { label: '구역', value: selectedApplication.region },
-                  { label: '학년·반', value: selectedApplication.gradeClass },
-                  { label: '신청 역할', value: selectedApplication.role },
-                  { label: '강사명', value: selectedApplication.instructorName },
-                  { label: '신청일', value: selectedApplication.applicationDate },
-                  {
-                    label: '상태',
-                    value: (
-                      <span
-                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                          selectedApplication.status === '수락됨'
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : selectedApplication.status === '거절됨'
-                              ? 'bg-red-100 text-red-700'
-                              : 'bg-amber-100 text-amber-700'
-                        }`}
-                      >
-                        {selectedApplication.status}
-                      </span>
-                    ),
-                  },
-                ]}
-              />
-            </DetailSectionCard>
-
-            {/* Applier Info Section */}
-            {selectedApplication.applier && (
-              <DetailSectionCard title="신청자 정보">
-                <DefinitionListGrid
-                  items={[
-                    { label: '이름', value: selectedApplication.applier.name },
-                    { label: '이메일', value: selectedApplication.applier.email },
-                    { label: '전화번호', value: selectedApplication.applier.phone },
-                    { label: '주소', value: selectedApplication.applier.address },
-                  ]}
-                />
-                {selectedApplication.status === '대기' && (
-                  <div className="border-t border-gray-100 pt-6 mt-6 flex flex-col sm:flex-row gap-3">
-                    <Button
-                      type="primary"
-                      disabled={!canApproveApplication(selectedApplication)}
-                      icon={<Check className="w-4 h-4" />}
-                      onClick={() => {
-                        if (canApproveApplication(selectedApplication)) {
-                          handleAcceptClick(selectedApplication)
-                        } else {
-                          const reason = selectedApplication.educationStatus === '신청 마감' 
-                            ? '교육이 마감되어 수락할 수 없습니다.'
-                            : selectedApplication.applicationDeadline && dayjs().isAfter(dayjs(selectedApplication.applicationDeadline))
-                            ? '신청 마감일이 지나 수락할 수 없습니다.'
-                            : '수락할 수 없습니다.'
-                          message.warning(reason)
-                        }
-                      }}
-                      className="h-11 px-6 rounded-xl bg-green-600 hover:bg-green-500 hover:brightness-110 hover:ring-2 hover:ring-green-400/40 active:bg-green-600 border-0 text-white font-medium transition-all shadow-sm hover:shadow-md w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600 disabled:hover:brightness-100 disabled:hover:ring-0"
-                    >
-                      수락하기
-                    </Button>
-                    <Button
-                      danger
-                      type="default"
-                      icon={<X className="w-4 h-4" />}
-                      onClick={() => handleReject(selectedApplication.key)}
-                      className="h-11 px-6 rounded-xl font-medium transition-all shadow-sm hover:shadow-md w-full sm:w-auto"
-                    >
-                      거절하기
-                    </Button>
-                  </div>
-                )}
-              </DetailSectionCard>
-            )}
-
-            {/* Lessons Info Section */}
-            {selectedApplication.lessons && selectedApplication.lessons.length > 0 && (
-              <LessonsListCard
-                lessons={selectedApplication.lessons}
-                columns={getLessonColumns(selectedApplication.educationId, selectedApplication.role)}
-              />
-            )}
-          </div>
-        </div>
       ) : null}
+
+      {/* Instructor Approval Drawer */}
+      <Drawer
+        title={
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Users className="w-5 h-5 text-blue-600" />
+              <span className="text-lg font-semibold">강사 승인 관리</span>
+            </div>
+            <Button
+              type="text"
+              icon={<X className="w-4 h-4" />}
+              onClick={handleCloseDrawer}
+              className="h-8 w-8 p-0"
+            />
+          </div>
+        }
+        placement="right"
+        onClose={handleCloseDrawer}
+        open={drawerOpen}
+        width={800}
+        className="[&_.ant-drawer-header]:border-b [&_.ant-drawer-header]:border-gray-200 [&_.ant-drawer-body]:p-0"
+      >
+        {selectedEducationId && (() => {
+          const instructorsForEducation = getInstructorsForEducation(selectedEducationId)
+          if (instructorsForEducation.length === 0) {
+            return (
+              <div className="p-6">
+                <p className="text-center text-gray-500 py-8">해당 교육에 지원한 강사가 없습니다.</p>
+              </div>
+            )
+          }
+
+          const firstInstructor = instructorsForEducation[0]
+          if (!firstInstructor) return null
+
+          // Get unique instructor names for tabs
+          const uniqueInstructors = Array.from(new Set(instructorsForEducation.map(inst => inst.instructorName).filter(Boolean)))
+          
+          if (uniqueInstructors.length === 0) return null
+
+          // Set default tab if not set or if current tab doesn't exist
+          const defaultInstructorName = drawerInstructorName && uniqueInstructors.includes(drawerInstructorName)
+            ? drawerInstructorName
+            : uniqueInstructors[0]
+          
+          const currentInstructorName = (selectedInstructorTab && uniqueInstructors.includes(selectedInstructorTab)) 
+            ? selectedInstructorTab 
+            : defaultInstructorName
+
+          // Update selected tab if it was invalid
+          if (selectedInstructorTab !== currentInstructorName) {
+            setSelectedInstructorTab(currentInstructorName)
+          }
+
+          return (
+            <div className="flex flex-col" style={{ height: 'calc(100vh - 64px)' }}>
+              {/* Education Info Header */}
+              <div className="p-4 border-b border-gray-200 bg-gray-50">
+                <div className="space-y-1">
+                  <div className="text-sm text-gray-600">교육 ID</div>
+                  <div className="text-base font-semibold text-gray-900">{firstInstructor.educationId}</div>
+                  <div className="text-sm text-gray-700">{firstInstructor.educationName}</div>
+                  <div className="text-xs text-gray-500">{firstInstructor.institution} · {firstInstructor.region} · {firstInstructor.gradeClass}</div>
+                </div>
+              </div>
+
+              {/* Instructor Tabs */}
+              <Tabs
+                activeKey={currentInstructorName}
+                onChange={(key) => setSelectedInstructorTab(key)}
+                items={uniqueInstructors.map(instructorName => {
+                  const instructor = instructorsForEducation.find(inst => inst.instructorName === instructorName) || firstInstructor
+                  const instructorLessons = instructor.lessons || []
+                  const pendingCount = instructorLessons.filter(l => !l.status || l.status === '대기').length
+                  const approvedCount = instructorLessons.filter(l => l.status === '수락됨').length
+                  const rejectedCount = instructorLessons.filter(l => l.status === '거절됨').length
+
+                  return {
+                    key: instructorName,
+                    label: (
+                      <div className="flex items-center gap-2">
+                        <span>{instructorName}</span>
+                        {instructorLessons.length > 0 && (
+                          <Badge count={instructorLessons.length} showZero className="bg-blue-100 text-blue-700" />
+                        )}
+                      </div>
+                    ),
+                    children: (
+                      <div className="flex flex-col" style={{ height: 'calc(100vh - 200px)' }}>
+                        {/* Bulk Actions */}
+                        <div className="p-4 border-b border-gray-200 bg-white flex items-center justify-between flex-shrink-0">
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <span>대기: {pendingCount}</span>
+                            <span className="text-green-600">승인: {approvedCount}</span>
+                            <span className="text-red-600">거절: {rejectedCount}</span>
+                          </div>
+                          <Space>
+                            <Button
+                              type="primary"
+                              icon={<CheckCircle2 className="w-4 h-4" />}
+                              onClick={() => {
+                                const pendingLessons = instructorLessons.filter(l => !l.status || l.status === '대기')
+                                if (pendingLessons.length === 0) {
+                                  message.info('승인할 수업이 없습니다.')
+                                  return
+                                }
+                                Modal.confirm({
+                                  title: '전체 승인 확인',
+                                  content: `${instructorName} 강사의 대기 중인 ${pendingLessons.length}개 차시를 모두 승인하시겠습니까?`,
+                                  okText: '승인',
+                                  cancelText: '취소',
+                                  okButtonProps: {
+                                    className: 'bg-green-600 hover:bg-green-500 border-0 text-white'
+                                  },
+                                  onOk: () => {
+                                    pendingLessons.forEach(lesson => {
+                                      handleLessonAccept(instructor.educationId, lesson, instructor.role, instructorName)
+                                    })
+                                    message.success(`${pendingLessons.length}개 차시가 승인되었습니다.`)
+                                  },
+                                })
+                              }}
+                              className="h-9 px-4 bg-green-600 hover:bg-green-500 border-0 text-white"
+                              size="small"
+                            >
+                              전체 승인
+                            </Button>
+                            <Button
+                              danger
+                              icon={<XCircle className="w-4 h-4" />}
+                              onClick={() => {
+                                const pendingLessons = instructorLessons.filter(l => !l.status || l.status === '대기')
+                                if (pendingLessons.length === 0) {
+                                  message.info('거절할 수업이 없습니다.')
+                                  return
+                                }
+                                Modal.confirm({
+                                  title: '전체 거절 확인',
+                                  content: `${instructorName} 강사의 대기 중인 ${pendingLessons.length}개 차시를 모두 거절하시겠습니까?`,
+                                  okText: '거절',
+                                  cancelText: '취소',
+                                  okButtonProps: {
+                                    className: 'bg-red-600 hover:bg-red-500 border-0 text-white'
+                                  },
+                                  onOk: () => {
+                                    pendingLessons.forEach(lesson => {
+                                      handleLessonReject(instructor.educationId, lesson, instructor.role, instructorName)
+                                    })
+                                    message.success(`${pendingLessons.length}개 차시가 거절되었습니다.`)
+                                  },
+                                })
+                              }}
+                              className="h-9 px-4"
+                              size="small"
+                            >
+                              전체 거절
+                            </Button>
+                          </Space>
+                        </div>
+
+                        {/* Sessions Table */}
+                        <div className="flex-1 overflow-auto min-h-0">
+                          {instructorLessons.length > 0 ? (
+                            <Table
+                              columns={getLessonColumns(instructor.educationId, instructor.role)}
+                              dataSource={instructorLessons.map(lesson => ({
+                                ...lesson,
+                                educationId: instructor.educationId,
+                                role: instructor.role,
+                                lessonKey: `${instructor.educationId}-${instructor.role}-${lesson.session}-${lesson.date}`,
+                                status: lesson.status || '대기',
+                              }))}
+                              rowKey={(lesson) => lesson.lessonKey || `lesson-${lesson.session}-${lesson.date}`}
+                              pagination={false}
+                              size="small"
+                              scroll={{ x: 'max-content' }}
+                              className="[&_.ant-table-thead>tr>th]:bg-white [&_.ant-table-tbody>tr]:bg-white"
+                            />
+                          ) : (
+                            <div className="p-8 text-center text-gray-500">
+                              수업 정보가 없습니다.
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ),
+                  }
+                })}
+                className="flex-1 flex flex-col [&_.ant-tabs-content-holder]:flex-1 [&_.ant-tabs-content]:flex-1 [&_.ant-tabs-tabpane]:flex-1 [&_.ant-tabs-tab]:px-4 [&_.ant-tabs-tab]:py-2 [&_.ant-tabs-tab]:rounded-lg [&_.ant-tabs-tab-active]:bg-blue-50 [&_.ant-tabs-tab-active]:border-blue-200"
+              />
+            </div>
+          )
+        })()}
+      </Drawer>
       </div>
     </ProtectedRoute>
   )

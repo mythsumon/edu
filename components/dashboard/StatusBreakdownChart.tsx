@@ -57,7 +57,7 @@ export function StatusBreakdownChart({ data, loading = false }: StatusBreakdownC
       ) : (
         <div className="relative">
           <ResponsiveContainer width="100%" height={360}>
-            <PieChart>
+          <PieChart>
               <defs>
                 {data.map((entry, index) => (
                   <linearGradient key={`gradient-${index}`} id={`gradient-${index}`} x1="0" y1="0" x2="0" y2="1">
@@ -66,24 +66,24 @@ export function StatusBreakdownChart({ data, loading = false }: StatusBreakdownC
                   </linearGradient>
                 ))}
               </defs>
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
                 label={CustomLabel}
                 outerRadius={130}
                 innerRadius={70}
-                fill="#8884d8"
-                dataKey="value"
+              fill="#8884d8"
+              dataKey="value"
                 paddingAngle={3}
                 stroke="white"
                 strokeWidth={2}
                 activeIndex={activeIndex ?? undefined}
                 onMouseEnter={(_, index) => setActiveIndex(index)}
                 onMouseLeave={() => setActiveIndex(null)}
-              >
-                {data.map((entry, index) => (
+            >
+              {data.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
                     fill={`url(#gradient-${index})`}
@@ -91,12 +91,12 @@ export function StatusBreakdownChart({ data, loading = false }: StatusBreakdownC
                       filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
                     }}
                   />
-                ))}
-              </Pie>
-              <Legend 
-                verticalAlign="bottom" 
+              ))}
+            </Pie>
+            <Legend 
+              verticalAlign="bottom" 
                 height={60}
-                iconType="circle"
+              iconType="circle"
                 wrapperStyle={{ paddingTop: '24px' }}
                 formatter={(value, entry: any) => {
                   const entryData = entry.payload as StatusData
@@ -106,9 +106,9 @@ export function StatusBreakdownChart({ data, loading = false }: StatusBreakdownC
                     </span>
                   )
                 }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+            />
+          </PieChart>
+        </ResponsiveContainer>
           
           {/* Center display - shows active item on hover, otherwise shows total */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
