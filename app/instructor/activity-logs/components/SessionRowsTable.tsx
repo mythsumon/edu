@@ -10,14 +10,30 @@ interface SessionRowsTableProps {
   sessions: ActivityLogSessionRow[]
   onChange: (sessions: ActivityLogSessionRow[]) => void
   disabled?: boolean
+  /** 특정 날짜로 필터링. 'ALL' 또는 undefined이면 전체 표시 */
+  filterDate?: string
+  /** 섹션 헤더 숨김 (외부에서 헤더 제공 시) */
+  hideHeader?: boolean
 }
 
-export function SessionRowsTable({ sessions, onChange, disabled = false }: SessionRowsTableProps) {
+export function SessionRowsTable({
+  sessions,
+  onChange,
+  disabled = false,
+  filterDate,
+  hideHeader = false,
+}: SessionRowsTableProps) {
+  const isFiltered = !!filterDate && filterDate !== 'ALL'
+  const displayedSessions = isFiltered
+    ? sessions.filter((s) => s.date === filterDate)
+    : sessions
+
   const handleAddRow = () => {
     const newSession: ActivityLogSessionRow = {
       id: `session-${Date.now()}`,
       sessionNumber: sessions.length + 1,
-      date: '',
+      // 날짜 필터가 활성화되어 있으면 해당 날짜로 자동 세팅
+      date: isFiltered ? (filterDate as string) : '',
       time: '',
       activityName: '',
     }
@@ -122,26 +138,44 @@ export function SessionRowsTable({ sessions, onChange, disabled = false }: Sessi
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-          차시 목록
-        </h3>
-        {!disabled && (
+      {!hideHeader && (
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            차시 목록
+          </h3>
+          {!disabled && (
+            <Button
+              type="primary"
+              icon={<Plus className="w-4 h-4" />}
+              onClick={handleAddRow}
+            >
+              차시 추가
+            </Button>
+          )}
+        </div>
+      )}
+      {hideHeader && !disabled && (
+        <div className="flex justify-end">
           <Button
             type="primary"
             icon={<Plus className="w-4 h-4" />}
             onClick={handleAddRow}
           >
-            차시 추가
+            {isFiltered ? `${dayjs(filterDate).format('M/D')} 차시 추가` : '차시 추가'}
           </Button>
-        )}
-      </div>
+        </div>
+      )}
       <Table
         columns={columns}
-        dataSource={sessions}
+        dataSource={displayedSessions}
         rowKey="id"
         pagination={false}
         className="bg-white dark:bg-gray-800"
+        locale={{
+          emptyText: isFiltered
+            ? '선택한 날짜에 등록된 차시가 없습니다. 우측 상단의 "차시 추가"를 눌러 추가하세요.'
+            : '등록된 차시가 없습니다',
+        }}
       />
     </div>
   )

@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { Button, Card, Input, Select, DatePicker, InputNumber, Space, message, Modal, Upload, Badge, Tooltip } from 'antd'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { Button, Card, Input, Select, DatePicker, InputNumber, Space, message, Modal, Upload, Badge, Tooltip, Tag } from 'antd'
 import { UploadOutlined } from '@ant-design/icons'
-import { ArrowLeft, Save, Trash2, Edit, X, CheckCircle2, XCircle, Info } from 'lucide-react'
+import { ArrowLeft, Save, Trash2, Edit, X, CheckCircle2, XCircle, Info, AlertTriangle, Printer, Image as ImageIcon, Calendar, Plus } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { DetailSectionCard } from '@/components/admin/operations'
@@ -13,13 +13,36 @@ import { PhotoUploader } from '../components/PhotoUploader'
 import { SessionRowsTable } from '../components/SessionRowsTable'
 import { ActivityLog, ActivityLogSessionRow, UploadedImage } from '../types'
 import { upsertActivityLog, getActivityLogById, getActivityLogByEducationId } from '../storage'
+import { dataStore } from '@/lib/dataStore'
 import dayjs from 'dayjs'
 
 const { TextArea } = Input
 
+// 시연용 고정 기준일 — 오늘은 2026-04-18
+// 출강일 + 3일이 지난 후에도 DRAFT/REJECTED 상태면 [지연/경고]
+const TODAY_FOR_LATE_CHECK = '2026-04-18'
+const LATE_THRESHOLD_DAYS = 3
+
+function getLateInfo(sessions: ActivityLogSessionRow[], status?: string) {
+  if (status === 'SUBMITTED' || status === 'APPROVED') return null
+  if (!sessions || sessions.length === 0) return null
+  // 출강일 중 가장 이른 날짜 기준
+  const dates = sessions.map(s => s.date).filter(Boolean).sort()
+  if (dates.length === 0) return null
+  const earliest = dates[0]
+  const today = new Date(TODAY_FOR_LATE_CHECK).getTime()
+  const start = new Date(earliest).getTime()
+  const daysPassed = Math.floor((today - start) / (1000 * 60 * 60 * 24))
+  const overdue = daysPassed - LATE_THRESHOLD_DAYS
+  if (overdue <= 0) return null
+  return { earliest, overdueDays: overdue }
+}
+
 export default function ActivityLogDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const queryDate = searchParams?.get('date') || ''
   const { userProfile, userRole } = useAuth()
   const logId = params?.logId as string
   const isNew = logId === 'new'
@@ -27,6 +50,9 @@ export default function ActivityLogDetailPage() {
 
   const [loading, setLoading] = useState(false)
   const [isEditMode, setIsEditMode] = useState(isNew) // New logs start in edit mode
+  const [selectedDate, setSelectedDate] = useState<string>('ALL')
+  const [addDateModalOpen, setAddDateModalOpen] = useState(false)
+  const [newDateValue, setNewDateValue] = useState<string>('')
   const [formData, setFormData] = useState<ActivityLog>({
     logCode: '',
     educationType: '',
@@ -52,6 +78,7 @@ export default function ActivityLogDetailPage() {
   const [signatureModalVisible, setSignatureModalVisible] = useState(false)
   const [tempSignatureUrl, setTempSignatureUrl] = useState<string>('')
   const [tempSignatureName, setTempSignatureName] = useState<string>('')
+  const [printPreviewOpen, setPrintPreviewOpen] = useState(false)
 
   // Auto-load profile signature when modal opens
   useEffect(() => {
@@ -116,6 +143,15 @@ export default function ActivityLogDetailPage() {
   useEffect(() => {
     loadActivityLog()
   }, [logId, isNew, userProfile])
+
+  // URL ?date= 쿼리가 있으면 해당 날짜 탭으로 자동 이동
+  useEffect(() => {
+    if (queryDate) {
+      setSelectedDate(queryDate)
+      // 편집 모드로 자동 전환 (작성 버튼에서 진입한 경우)
+      if (!isAdmin) setIsEditMode(true)
+    }
+  }, [queryDate, isAdmin])
 
   // Listen for localStorage changes (when admin updates status)
   useEffect(() => {
@@ -356,7 +392,7 @@ export default function ActivityLogDetailPage() {
                       <Info className="w-5 h-5 text-slate-400 hover:text-slate-600 transition-colors cursor-help" />
                     </Tooltip>
                   </div>
-                  <div className="mt-1">
+                  <div className="mt-1 flex items-center gap-3 flex-wrap">
                     {(() => {
                       const statusMap = {
                         DRAFT: { color: 'default', text: '초안' },
@@ -367,10 +403,28 @@ export default function ActivityLogDetailPage() {
                       const status = statusMap[formData.status || 'DRAFT']
                       return <Badge status={status.color as any} text={status.text} />
                     })()}
+                    {(() => {
+                      const lateInfo = getLateInfo(formData.sessions, formData.status)
+                      if (!lateInfo) return null
+                      return (
+                        <Tag
+                          icon={<AlertTriangle className="w-3 h-3 inline mb-0.5 mr-1" />}
+                          color="error"
+                        >
+                          지연 · 출강일({lateInfo.earliest}) 기준 {lateInfo.overdueDays}일 초과
+                        </Tag>
+                      )
+                    })()}
                   </div>
                 </div>
               </div>
               <Space>
+                <Button
+                  icon={<Printer className="w-4 h-4" />}
+                  onClick={() => setPrintPreviewOpen(true)}
+                >
+                  인쇄 미리보기
+                </Button>
                 {!isEditMode ? (
                   <>
                     {/* Admin can always edit */}
@@ -735,14 +789,325 @@ export default function ActivityLogDetailPage() {
             />
           </DetailSectionCard>
 
-          {/* SECTION 2: 차시 목록 */}
-          <DetailSectionCard title="차시 목록" className="mb-6">
-            <SessionRowsTable
-              sessions={formData.sessions}
-              onChange={(sessions) => setFormData({ ...formData, sessions })}
-              disabled={!isEditMode}
-            />
+          {/* SECTION 2: 차시 목록 - 날짜별 네비게이션 */}
+          <DetailSectionCard title="차시 목록 (날짜별 작성)" className="mb-6">
+            {(() => {
+              // 현재 강사의 배정 조회 → 권한 있는 날짜 집합 계산
+              const educationId = formData.educationId
+              const assignments = dataStore.getInstructorAssignments()
+              const assignment = educationId
+                ? assignments.find((a) => a.educationId === educationId)
+                : undefined
+
+              const matchesCurrentUser = (inst: unknown): boolean => {
+                if (!inst || typeof inst !== 'object') return false
+                const i = inst as { id?: string; name?: string }
+                if (userProfile?.userId && i.id === userProfile.userId) return true
+                if (userProfile?.name && i.name === userProfile.name) return true
+                return false
+              }
+
+              // Map<date, role> — 강사가 배정된 날짜와 역할
+              const allowedDateRole = new Map<string, 'MAIN' | 'ASSISTANT'>()
+              if (assignment?.lessons) {
+                assignment.lessons.forEach((lesson) => {
+                  const mains = Array.isArray(lesson.mainInstructors)
+                    ? lesson.mainInstructors
+                    : []
+                  const assists = Array.isArray(lesson.assistantInstructors)
+                    ? lesson.assistantInstructors
+                    : []
+                  if (mains.some(matchesCurrentUser)) {
+                    allowedDateRole.set(lesson.date, 'MAIN')
+                  } else if (assists.some(matchesCurrentUser)) {
+                    allowedDateRole.set(lesson.date, 'ASSISTANT')
+                  }
+                })
+              }
+
+              // 강사(비관리자)는 배정된 날짜만 접근 가능
+              const restrictToAllowed = !isAdmin && allowedDateRole.size > 0
+
+              const allSessionDates = Array.from(
+                new Set(formData.sessions.map((s) => s.date).filter(Boolean))
+              )
+              // 권한 제한 시, 배정 날짜 ∪ 실제 작성된 날짜 중 배정된 것만
+              const visibleDateSet = restrictToAllowed
+                ? new Set(
+                    allSessionDates.filter((d) => allowedDateRole.has(d))
+                  )
+                : new Set(allSessionDates)
+
+              // 배정은 됐지만 아직 세션이 없는 날짜도 탭으로 노출 (강사가 작성 착수 가능)
+              if (restrictToAllowed) {
+                allowedDateRole.forEach((_, d) => visibleDateSet.add(d))
+              }
+
+              const uniqueDates = Array.from(visibleDateSet).sort()
+
+              const visibleSessions = restrictToAllowed
+                ? formData.sessions.filter((s) => allowedDateRole.has(s.date))
+                : formData.sessions
+
+              const dateStats = uniqueDates.map((date) => {
+                const rows = visibleSessions.filter((s) => s.date === date)
+                const filledRows = rows.filter(
+                  (s) => s.activityName.trim() && s.time.trim()
+                )
+                return {
+                  date,
+                  total: rows.length,
+                  filled: filledRows.length,
+                  done: rows.length > 0 && filledRows.length === rows.length,
+                  role: allowedDateRole.get(date),
+                }
+              })
+              const allFilled = visibleSessions.filter(
+                (s) => s.activityName.trim() && s.time.trim()
+              ).length
+              const totalSessions = visibleSessions.length
+
+              // 선택된 날짜가 허용 범위를 벗어나면 자동으로 첫 허용 날짜로 전환 (view-only)
+              const effectiveSelectedDate =
+                selectedDate !== 'ALL' && restrictToAllowed && !allowedDateRole.has(selectedDate)
+                  ? 'ALL'
+                  : selectedDate
+
+              return (
+                <div className="space-y-4">
+                  {/* 권한 안내 (강사용) */}
+                  {restrictToAllowed && (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-900/10 dark:border-amber-900 dark:text-amber-300 flex items-start gap-2">
+                      <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                      <div>
+                        본인에게 배정된 수업 날짜만 표시됩니다. 총{' '}
+                        <span className="font-semibold">{allowedDateRole.size}일</span>{' '}
+                        의 일지를 작성할 수 있습니다.
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 권한이 아예 없는 강사 */}
+                  {!isAdmin && allowedDateRole.size === 0 && assignment && (
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500 dark:bg-gray-900 dark:border-gray-700">
+                      이 교육에서 배정된 수업 일정이 없습니다. 관리자에게 문의하세요.
+                    </div>
+                  )}
+
+                  {/* 진행률 + 요약 */}
+                  <div className="rounded-xl border border-slate-200 bg-gradient-to-r from-blue-50/40 to-indigo-50/30 dark:from-blue-900/10 dark:to-indigo-900/10 dark:border-gray-700 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-gray-300">
+                        <Calendar className="w-4 h-4 text-blue-600" />
+                        <span>
+                          {restrictToAllowed ? '내 담당' : '총'}{' '}
+                          <span className="font-bold text-slate-900 dark:text-gray-100">
+                            {uniqueDates.length}일
+                          </span>{' '}
+                          · 차시{' '}
+                          <span className="font-bold text-slate-900 dark:text-gray-100">
+                            {totalSessions}개
+                          </span>
+                          {' · '}
+                          <span className="font-semibold text-blue-700 dark:text-blue-400">
+                            {allFilled}/{totalSessions} 작성
+                          </span>
+                        </span>
+                      </div>
+                      {isEditMode && !restrictToAllowed && (
+                        <Button
+                          type="primary"
+                          icon={<Plus className="w-4 h-4" />}
+                          onClick={() => setAddDateModalOpen(true)}
+                        >
+                          새 날짜 추가
+                        </Button>
+                      )}
+                    </div>
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-gray-700">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all"
+                        style={{
+                          width: `${totalSessions > 0 ? Math.round((allFilled / totalSessions) * 100) : 0}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* 날짜 탭 */}
+                  {uniqueDates.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 dark:border-gray-700 pb-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedDate('ALL')}
+                        className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                          effectiveSelectedDate === 'ALL'
+                            ? 'bg-slate-900 text-white'
+                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-gray-700 dark:text-gray-200'
+                        }`}
+                      >
+                        전체
+                        <span
+                          className={`inline-flex min-w-[20px] justify-center rounded-full px-1.5 text-[10px] font-semibold ${
+                            effectiveSelectedDate === 'ALL'
+                              ? 'bg-white/20 text-white'
+                              : 'bg-white text-slate-600 dark:bg-gray-800 dark:text-gray-300'
+                          }`}
+                        >
+                          {totalSessions}
+                        </span>
+                      </button>
+                      {dateStats.map((s) => {
+                        const active = effectiveSelectedDate === s.date
+                        const dateLabel = dayjs(s.date).format('M/D(dd)')
+                        const roleLabel =
+                          s.role === 'MAIN'
+                            ? '주'
+                            : s.role === 'ASSISTANT'
+                              ? '보조'
+                              : null
+                        const roleBadgeClass = active
+                          ? 'bg-white/20 text-white'
+                          : s.role === 'MAIN'
+                            ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+                            : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
+                        return (
+                          <button
+                            key={s.date}
+                            type="button"
+                            onClick={() => setSelectedDate(s.date)}
+                            className={`group inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                              active
+                                ? 'bg-blue-600 text-white'
+                                : s.done
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-300'
+                                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-gray-700 dark:text-gray-200'
+                            }`}
+                          >
+                            {s.done && !active && (
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                            )}
+                            {dateLabel}
+                            {roleLabel && (
+                              <span
+                                className={`inline-flex items-center rounded px-1 text-[9px] font-bold ${roleBadgeClass}`}
+                              >
+                                {roleLabel}
+                              </span>
+                            )}
+                            <span
+                              className={`inline-flex min-w-[30px] justify-center rounded-full px-1.5 text-[10px] font-semibold ${
+                                active
+                                  ? 'bg-white/20 text-white'
+                                  : s.done
+                                    ? 'bg-emerald-200/60 text-emerald-800 dark:bg-emerald-900/40'
+                                    : 'bg-white text-slate-600 dark:bg-gray-800 dark:text-gray-300'
+                              }`}
+                            >
+                              {s.filled}/{s.total}
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+
+                  {/* 선택 날짜 안내 */}
+                  {effectiveSelectedDate !== 'ALL' && (
+                    <div className="rounded-lg border border-blue-200 bg-blue-50/40 px-3 py-2 text-xs text-blue-800 dark:bg-blue-900/10 dark:border-blue-900 dark:text-blue-300">
+                      <span className="font-semibold">
+                        {dayjs(effectiveSelectedDate).format('YYYY년 M월 D일 (dddd)')}
+                      </span>
+                      {allowedDateRole.get(effectiveSelectedDate) && (
+                        <span className="ml-1">
+                          · {allowedDateRole.get(effectiveSelectedDate) === 'MAIN' ? '주강사' : '보조강사'}
+                        </span>
+                      )}
+                      <span>
+                        {' '}의 차시를 편집 중입니다. 추가되는 차시는 이 날짜로 자동 저장됩니다.
+                      </span>
+                    </div>
+                  )}
+
+                  <SessionRowsTable
+                    sessions={visibleSessions}
+                    onChange={(nextVisible) => {
+                      // 숨겨진(비노출) 세션은 유지, 노출되던 세션만 교체
+                      if (restrictToAllowed) {
+                        const hidden = formData.sessions.filter(
+                          (s) => !allowedDateRole.has(s.date)
+                        )
+                        setFormData({ ...formData, sessions: [...hidden, ...nextVisible] })
+                      } else {
+                        setFormData({ ...formData, sessions: nextVisible })
+                      }
+                    }}
+                    disabled={!isEditMode}
+                    filterDate={effectiveSelectedDate}
+                    hideHeader
+                  />
+                </div>
+              )
+            })()}
           </DetailSectionCard>
+
+          {/* 새 날짜 추가 모달 (관리자 전용) */}
+          <Modal
+            title="새 날짜 추가"
+            open={addDateModalOpen && isAdmin}
+            onCancel={() => {
+              setAddDateModalOpen(false)
+              setNewDateValue('')
+            }}
+            onOk={() => {
+              if (!newDateValue) {
+                message.warning('날짜를 선택해주세요.')
+                return
+              }
+              const uniqueDates = Array.from(
+                new Set(formData.sessions.map((s) => s.date).filter(Boolean))
+              )
+              if (uniqueDates.includes(newDateValue)) {
+                message.info('이미 등록된 날짜입니다. 해당 탭으로 이동합니다.')
+                setSelectedDate(newDateValue)
+                setAddDateModalOpen(false)
+                setNewDateValue('')
+                return
+              }
+              const newSession: ActivityLogSessionRow = {
+                id: `session-${Date.now()}`,
+                sessionNumber: formData.sessions.length + 1,
+                date: newDateValue,
+                time: '',
+                activityName: '',
+              }
+              setFormData({
+                ...formData,
+                sessions: [...formData.sessions, newSession],
+              })
+              setSelectedDate(newDateValue)
+              setAddDateModalOpen(false)
+              setNewDateValue('')
+            }}
+            okText="추가"
+            cancelText="취소"
+          >
+            <div className="space-y-3">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                활동일지에 새 수업 날짜를 추가합니다. 추가 후 해당 날짜 탭에서 차시를
+                입력할 수 있습니다.
+              </p>
+              <DatePicker
+                value={newDateValue ? dayjs(newDateValue) : null}
+                onChange={(date) =>
+                  setNewDateValue(date ? date.format('YYYY-MM-DD') : '')
+                }
+                format="YYYY-MM-DD"
+                className="w-full"
+                placeholder="날짜 선택"
+              />
+            </div>
+          </Modal>
 
           {/* SECTION 3: 사진자료 */}
           <DetailSectionCard title="사진자료" className="mb-6">
@@ -934,6 +1299,121 @@ export default function ActivityLogDetailPage() {
                 </p>
               </div>
             </div>
+          </Modal>
+
+          {/* 인쇄 미리보기 모달 — 대표 사진 2장만 상단에 배치된 공식 서식 */}
+          <Modal
+            title="인쇄 미리보기 (공식 서식)"
+            open={printPreviewOpen}
+            onCancel={() => setPrintPreviewOpen(false)}
+            width={760}
+            footer={[
+              <Button key="close" onClick={() => setPrintPreviewOpen(false)}>
+                닫기
+              </Button>,
+            ]}
+          >
+            {(() => {
+              const mainPhotos = (formData.photos || []).filter(p => p.isMainPhoto)
+              const totalPhotos = (formData.photos || []).length
+              return (
+                <div className="border border-slate-300 p-6 bg-white">
+                  <div className="text-center border-b-2 border-slate-800 pb-3 mb-4">
+                    <div className="text-xs text-slate-500">2025 소프트웨어(SW) 미래채움</div>
+                    <div className="text-xl font-bold tracking-wide">교육 활동 일지</div>
+                  </div>
+
+                  <table className="w-full text-sm border-collapse mb-4">
+                    <tbody>
+                      <tr>
+                        <td className="border border-slate-300 bg-slate-50 p-2 w-24">교육명</td>
+                        <td className="border border-slate-300 p-2">{formData.educationType || '-'}</td>
+                        <td className="border border-slate-300 bg-slate-50 p-2 w-24">기관</td>
+                        <td className="border border-slate-300 p-2">{formData.institutionName || '-'}</td>
+                      </tr>
+                      <tr>
+                        <td className="border border-slate-300 bg-slate-50 p-2">기간</td>
+                        <td className="border border-slate-300 p-2">
+                          {formData.startDate || '-'} ~ {formData.endDate || '-'}
+                        </td>
+                        <td className="border border-slate-300 bg-slate-50 p-2">작성자</td>
+                        <td className="border border-slate-300 p-2">
+                          {formData.createdBy || userProfile?.name || '-'}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <div className="mb-3 text-sm font-semibold">■ 대표 사진 (2장)</div>
+                  {mainPhotos.length === 0 ? (
+                    <div className="border border-dashed border-slate-300 p-8 text-center text-slate-400 text-sm mb-4">
+                      대표 사진이 선택되지 않았습니다. 사진자료 섹션에서 별 아이콘을 눌러 2장을 선택해주세요.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                      {mainPhotos.map((photo) => (
+                        <div
+                          key={photo.id}
+                          className="aspect-[4/3] border border-slate-400 flex items-center justify-center bg-slate-50 overflow-hidden"
+                        >
+                          {photo.url ? (
+                            <img
+                              src={photo.url}
+                              alt={photo.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="text-center text-slate-500">
+                              <ImageIcon className="w-8 h-8 mx-auto" />
+                              <div className="text-xs mt-1">{photo.name}</div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {mainPhotos.length === 1 && (
+                        <div className="aspect-[4/3] border border-dashed border-slate-300 flex items-center justify-center text-slate-400 text-xs">
+                          (두 번째 대표 사진 미선택)
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="mb-2 text-sm font-semibold">■ 회차별 활동</div>
+                  <table className="w-full text-xs border-collapse mb-4">
+                    <thead>
+                      <tr className="bg-slate-50">
+                        <th className="border border-slate-300 p-2 w-12">회차</th>
+                        <th className="border border-slate-300 p-2 w-28">일자</th>
+                        <th className="border border-slate-300 p-2 w-28">시간</th>
+                        <th className="border border-slate-300 p-2">활동명</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(formData.sessions || []).length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="border border-slate-300 p-4 text-center text-slate-400">
+                            등록된 회차가 없습니다
+                          </td>
+                        </tr>
+                      ) : (
+                        formData.sessions.map((s) => (
+                          <tr key={s.id}>
+                            <td className="border border-slate-300 p-2 text-center">{s.sessionNumber}</td>
+                            <td className="border border-slate-300 p-2 text-center">{s.date}</td>
+                            <td className="border border-slate-300 p-2 text-center">{s.time}</td>
+                            <td className="border border-slate-300 p-2">{s.activityName}</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+
+                  <div className="text-xs text-slate-500">
+                    업로드된 전체 사진 {totalPhotos}장 중 강사가 선택한 대표 사진 {mainPhotos.length}장이 상단에 배치됩니다.
+                  </div>
+                </div>
+              )
+            })()}
           </Modal>
         </div>
       </div>

@@ -136,17 +136,28 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
             summary.activity?.count ?? 0,
             DEFAULT_MIN_SESSIONS
           )
-          const start = education?.periodStart
+          const rawStart = education?.periodStart
             ? dayjs(education.periodStart)
             : summary.activity?.submittedAt
               ? dayjs(summary.activity.submittedAt)
               : dayjs()
-          const rawEnd = education?.periodEnd ? dayjs(education.periodEnd) : start
+          const rawEnd = education?.periodEnd ? dayjs(education.periodEnd) : rawStart
+
+          // 모든 기간이 오늘 기준 -3일 이전이면 미작성 상태가 하나도 생기지 않음.
+          // 데모/미래 보기용으로 최소 2개 차시는 '미작성' 구간(오늘-3일~미래)에 배치.
+          const today = dayjs().startOf('day')
+          const overdueThreshold = today.subtract(3, 'day')
+          const willAllBeOverdue = rawEnd.isBefore(overdueThreshold)
+          let start = rawStart
+          let end = rawEnd
+          if (willAllBeOverdue) {
+            // 끝 지점을 오늘 이후로 이동해서 뒷쪽 세션들은 '미작성'이 되게 함
+            end = today.add(Math.max(Math.ceil(totalSessions / 2), 2), 'day')
+          }
           // 기간이 너무 좁으면 차시 수만큼 펼쳐서 날짜 구분이 되도록 함
-          const end =
-            rawEnd.diff(start, 'day') < totalSessions - 1
-              ? start.add(totalSessions - 1, 'day')
-              : rawEnd
+          if (end.diff(start, 'day') < totalSessions - 1) {
+            end = start.add(totalSessions - 1, 'day')
+          }
           const totalDays = Math.max(end.diff(start, 'day'), 0)
 
           // 날짜마다 투입될 강사 목록: 주강사 1 + 보조강사 N
@@ -238,6 +249,24 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
             lesson.assistantInstructorName,
             `assist-${lesson.date}`
           )
+
+          // 강사 계정: 본인 행만 작성 대상. 주/보조 중 매칭되는 쪽으로 1개만 추가.
+          if (!isAdmin) {
+            const selfInMain = mainArr.find(
+              (inst) => inst.name === summary.instructorName
+            )
+            if (selfInMain) {
+              push(selfInMain, 'MAIN')
+            } else {
+              const selfInAssist = assistArr.find(
+                (inst) => inst.name === summary.instructorName
+              )
+              if (selfInAssist) push(selfInAssist, 'ASSISTANT')
+            }
+            // 배정이 없는 날짜는 건너뜀 (권한 없음)
+            return
+          }
+
           mainArr.forEach((inst) => push(inst, 'MAIN'))
           assistArr.forEach((inst) => push(inst, 'ASSISTANT'))
         })
@@ -278,7 +307,7 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
             },
             NOT_WRITTEN: {
               label: '미작성',
-              className: 'bg-slate-50 text-slate-600 border-slate-200',
+              className: 'bg-amber-50 text-amber-700 border-amber-200',
             },
           }
           const conf = map[status]
@@ -673,7 +702,57 @@ export const EducationDetailDrawer: React.FC<EducationDetailDrawerProps> = ({
                                             <div className="shrink-0">
                                               {renderEntryStatusBadge(entry.status)}
                                             </div>
-                                            {isClickable && (
+                                            {!isAdmin &&
+                                              (entry.status === 'NOT_WRITTEN' ||
+                                                entry.status === 'OVERDUE' ||
+                                                entry.status === 'DRAFT' ||
+                                                entry.status === 'REJECTED') && (
+                                                <Button
+                                                  size="small"
+                                                  type={
+                                                    entry.status === 'OVERDUE' ||
+                                                    entry.status === 'NOT_WRITTEN'
+                                                      ? 'primary'
+                                                      : 'default'
+                                                  }
+                                                  danger={entry.status === 'OVERDUE'}
+                                                  onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    const target = `/instructor/activity-logs/${summary.educationId}?date=${entry.date}&role=${entry.role}`
+                                                    router.push(target)
+                                                  }}
+                                                  className="shrink-0 !h-7 !px-2.5 !text-xs"
+                                                >
+                                                  {entry.status === 'REJECTED'
+                                                    ? '재작성'
+                                                    : entry.status === 'DRAFT'
+                                                      ? '이어쓰기'
+                                                      : '작성'}
+                                                </Button>
+                                              )}
+                                            {!isAdmin &&
+                                              (entry.status === 'SUBMITTED' ||
+                                                entry.status === 'APPROVED') && (
+                                                <Button
+                                                  size="small"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    if (entry.submissionId) {
+                                                      router.push(
+                                                        `/instructor/activity-logs/${entry.submissionId}`
+                                                      )
+                                                    } else {
+                                                      router.push(
+                                                        `/instructor/activity-logs/${summary.educationId}?date=${entry.date}`
+                                                      )
+                                                    }
+                                                  }}
+                                                  className="shrink-0 !h-7 !px-2.5 !text-xs"
+                                                >
+                                                  상세
+                                                </Button>
+                                              )}
+                                            {isAdmin && isClickable && (
                                               <ChevronRight className="h-4 w-4 shrink-0 text-slate-300 group-hover:text-blue-500" />
                                             )}
                                           </li>
