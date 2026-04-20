@@ -12,6 +12,7 @@ export interface UploadedImage {
   url?: string
   name: string
   size: number
+  isMainPhoto?: boolean
 }
 
 export interface ActivityLog {

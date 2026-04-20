@@ -9,7 +9,47 @@ function getDummyActivityLogs(): ActivityLog[] {
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
   const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
 
+  // 삼척 돌봄 프로그램 · AI 로봇 코딩 (4/15~4/16) — 지연 경고 시연용
+  // 출강일(4/15, 4/16) + 3일 경과 후에도 DRAFT 상태 → 지연 배지 노출
+  const aiRobotCreatedAt = '2026-04-15T09:00:00.000Z'
+
   return [
+    {
+      id: 'activity-ai-robot-samcheok',
+      logCode: 'LOG-2026-AI-001',
+      educationType: 'AI 로봇 코딩',
+      institutionType: '돌봄 프로그램',
+      region: '삼척',
+      institutionName: '삼척 돌봄 프로그램',
+      grade: '초등',
+      class: '혼합반',
+      startDate: '2026-04-15',
+      endDate: '2026-04-16',
+      totalApplicants: 20,
+      graduateMale: 10,
+      graduateFemale: 10,
+      sessions: [
+        {
+          id: 'session-ai-0415',
+          sessionNumber: 1,
+          date: '2026-04-15',
+          time: '14:00-16:00',
+          activityName: 'AI 로봇 코딩 · 1일차 (주강사: 홍길동 / 보조강사: 이보조)',
+        },
+        {
+          id: 'session-ai-0416',
+          sessionNumber: 2,
+          date: '2026-04-16',
+          time: '14:00-16:00',
+          activityName: 'AI 로봇 코딩 · 2일차 (주강사: 홍길동 / 보조강사: 이보조)',
+        },
+      ],
+      photos: [],
+      educationId: 'edu-ai-robot-samcheok',
+      status: 'DRAFT',
+      createdBy: '홍길동',
+      createdAt: aiRobotCreatedAt,
+    },
     {
       id: 'activity-1',
       logCode: 'LOG-2025-001',
@@ -299,7 +339,8 @@ export function getActivityLogs(): ActivityLog[] {
     const parsed = JSON.parse(stored)
     // Check if data has old format (edu-001, etc.) and reset if needed
     const hasOldFormat = Array.isArray(parsed) && parsed.some((log: any) => log.educationId?.startsWith('edu-'))
-    if (hasOldFormat && process.env.NODE_ENV === 'development') {
+    const missingAiRobot = Array.isArray(parsed) && !parsed.some((log: any) => log.id === 'activity-ai-robot-samcheok')
+    if ((hasOldFormat || missingAiRobot) && process.env.NODE_ENV === 'development') {
       // Reset to new dummy data format
       const dummyData = getDummyActivityLogs()
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dummyData))
